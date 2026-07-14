@@ -5,8 +5,28 @@ jugadores, calcular la rentabilidad diaria y acumulada de cada uno, y
 publicar un ranking — todo en un repositorio público **sin exponer las
 operaciones ni los importes de nadie** (los extractos se suben cifrados).
 
-📊 **El ranking se publica en [`docs/ranking.md`](docs/ranking.md)** y se
-actualiza automáticamente cada día de mercado con una GitHub Action.
+📊 **El ranking se publica en dos formatos**, actualizados automáticamente
+cada día de mercado por una GitHub Action:
+
+- **Web con gráficas**: `docs/index.html`, servida con GitHub Pages en
+  **https://fedegarlo.github.io/trader/** (ver [Ver en web](#ver-en-web)).
+- **Markdown**: [`docs/ranking.md`](docs/ranking.md), legible directamente
+  en GitHub.
+
+## Ver en web
+
+La página es estática y autocontenida (tabla de clasificación + gráfica de
+rentabilidad acumulada por jugador + detalle diario). Para activarla, una
+sola vez:
+
+1. Ve a **Settings → Pages** del repositorio.
+2. En *Build and deployment*, elige **Deploy from a branch**,
+   rama **`main`**, carpeta **`/docs`**, y guarda.
+
+En un par de minutos la web queda en
+`https://<usuario>.github.io/trader/` (para este repo:
+**https://fedegarlo.github.io/trader/**). Cada vez que la Action actualiza
+`docs/`, Pages redespliega solo.
 
 > El ranking incluye un jugador **Demo 🤖** con operaciones ficticias
 > (cifradas con la frase pública `demo`) para ver la primera iteración

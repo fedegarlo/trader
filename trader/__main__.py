@@ -16,7 +16,7 @@ import sys
 
 from . import players as players_mod
 from . import report as report_mod
-from . import secretbox
+from . import secretbox, webpage
 from .portfolio import compute_daily_series
 from .prices import PriceCache
 
@@ -82,6 +82,7 @@ def cmd_ranking(args: argparse.Namespace) -> None:
         computed.append((player, series))
 
     content = report_mod.write_ranking(computed, out_path=args.out)
+    webpage.write_index(computed, out_path=args.html_out)
     print(content)
 
 
@@ -115,6 +116,7 @@ def main(argv: list[str] | None = None) -> None:
     p_rank.add_argument("--prices-dir", default="data/prices")
     p_rank.add_argument("--public-dir", default="data/public")
     p_rank.add_argument("--out", default="docs/ranking.md")
+    p_rank.add_argument("--html-out", default="docs/index.html")
     p_rank.add_argument("--offline", action="store_true")
     p_rank.add_argument("--refresh", action="store_true",
                         help="volver a descargar precios aunque haya caché")
