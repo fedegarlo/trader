@@ -1,0 +1,56 @@
+name: Ranking diario
+
+on:
+  schedule:
+    # Todos los días a las 22:30 UTC (tras el cierre de la bolsa de EE. UU.)
+    - cron: "30 22 * * 1-5"
+  workflow_dispatch: {}
+  push:
+    branches: [main]
+    paths:
+      - "players/**"
+      - "trader/**"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ranking
+  cancel-in-progress: true
+
+jobs:
+  ranking:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Tests
+        run: python -m pytest tests/ -q
+
+      - name: Calcular ranking
+        env:
+          # Una línea por jugador: el secret PLAYER_<ID>_KEY es la frase de
+          # paso con la que ese jugador cifró su extracto. Al añadir un
+          # jugador nuevo, añade su línea aquí y crea el secret en
+          # Settings -> Secrets and variables -> Actions.
+          PLAYER_FEDE_KEY: ${{ secrets.PLAYER_FEDE_KEY }}
+        run: python -m trader ranking
+
+      - name: Publicar resultados
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/ data/public/ data/prices/
+          if git diff --cached --quiet; then
+            echo "Sin cambios que publicar"
+          else
+            git commit -m "Actualizar ranking $(date -u +%F)"
+            git push
+          fi
