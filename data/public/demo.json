@@ -6,35 +6,35 @@
   "days": [
     {
       "date": "2026-07-01",
-      "daily_return_pct": 0.64,
-      "cumulative_return_pct": 0.64,
+      "daily_return_pct": 37.752,
+      "cumulative_return_pct": 37.752,
       "start_value": 0.0,
-      "end_value": 1003.2,
+      "end_value": 1188.76,
       "external_flow": 1000.0,
-      "pnl": 3.2
+      "pnl": 188.76
     },
     {
       "date": "2026-07-02",
-      "daily_return_pct": 0.5084,
-      "cumulative_return_pct": 1.1516,
-      "start_value": 1003.2,
-      "end_value": 1008.3,
+      "daily_return_pct": 10.0096,
+      "cumulative_return_pct": 51.5404,
+      "start_value": 1188.76,
+      "end_value": 1307.75,
       "external_flow": 0.0,
-      "pnl": 5.1
+      "pnl": 118.99
     },
     {
       "date": "2026-07-03",
-      "daily_return_pct": 1.2794,
-      "cumulative_return_pct": 2.4457,
-      "start_value": 1008.3,
+      "daily_return_pct": -21.9117,
+      "cumulative_return_pct": 18.3354,
+      "start_value": 1307.75,
       "end_value": 1021.2,
       "external_flow": 0.0,
-      "pnl": 12.9
+      "pnl": -286.55
     },
     {
       "date": "2026-07-04",
       "daily_return_pct": 0.0,
-      "cumulative_return_pct": 2.4457,
+      "cumulative_return_pct": 18.3354,
       "start_value": 1021.2,
       "end_value": 1021.2,
       "external_flow": 0.0,
@@ -43,7 +43,7 @@
     {
       "date": "2026-07-05",
       "daily_return_pct": 0.0,
-      "cumulative_return_pct": 2.4457,
+      "cumulative_return_pct": 18.3354,
       "start_value": 1021.2,
       "end_value": 1021.2,
       "external_flow": 0.0,
@@ -51,84 +51,84 @@
     },
     {
       "date": "2026-07-06",
-      "daily_return_pct": -0.0685,
-      "cumulative_return_pct": 2.3755,
+      "daily_return_pct": 18.821,
+      "cumulative_return_pct": 40.6073,
       "start_value": 1021.2,
-      "end_value": 1020.5,
+      "end_value": 1213.4,
       "external_flow": 0.0,
-      "pnl": -0.7
+      "pnl": 192.2
     },
     {
       "date": "2026-07-07",
-      "daily_return_pct": 0.0294,
-      "cumulative_return_pct": 2.4056,
-      "start_value": 1020.5,
-      "end_value": 1020.8,
+      "daily_return_pct": 0.0082,
+      "cumulative_return_pct": 40.6188,
+      "start_value": 1213.4,
+      "end_value": 1213.5,
       "external_flow": 0.0,
-      "pnl": 0.3
+      "pnl": 0.1
     },
     {
       "date": "2026-07-08",
-      "daily_return_pct": 0.0294,
-      "cumulative_return_pct": 2.4357,
-      "start_value": 1020.8,
-      "end_value": 1021.1,
+      "daily_return_pct": 6.5159,
+      "cumulative_return_pct": 49.7814,
+      "start_value": 1213.5,
+      "end_value": 1292.57,
       "external_flow": 0.0,
-      "pnl": 0.3
+      "pnl": 79.07
     },
     {
       "date": "2026-07-09",
-      "daily_return_pct": -0.0196,
-      "cumulative_return_pct": 2.4156,
-      "start_value": 1021.1,
-      "end_value": 1020.9,
+      "daily_return_pct": 0.3768,
+      "cumulative_return_pct": 50.3457,
+      "start_value": 1292.57,
+      "end_value": 1297.44,
       "external_flow": 0.0,
-      "pnl": -0.2
+      "pnl": 4.87
     },
     {
       "date": "2026-07-10",
-      "daily_return_pct": 0.0588,
-      "cumulative_return_pct": 2.4758,
-      "start_value": 1020.9,
-      "end_value": 1021.5,
+      "daily_return_pct": -8.227,
+      "cumulative_return_pct": 37.9768,
+      "start_value": 1297.44,
+      "end_value": 1190.7,
       "external_flow": 0.0,
-      "pnl": 0.6
+      "pnl": -106.74
     },
     {
       "date": "2026-07-11",
       "daily_return_pct": 0.0,
-      "cumulative_return_pct": 2.4758,
-      "start_value": 1021.5,
-      "end_value": 1021.5,
+      "cumulative_return_pct": 37.9768,
+      "start_value": 1190.7,
+      "end_value": 1190.7,
       "external_flow": 0.0,
       "pnl": 0.0
     },
     {
       "date": "2026-07-12",
       "daily_return_pct": 0.0,
-      "cumulative_return_pct": 2.4758,
-      "start_value": 1021.5,
-      "end_value": 1021.5,
+      "cumulative_return_pct": 37.9768,
+      "start_value": 1190.7,
+      "end_value": 1190.7,
       "external_flow": 0.0,
       "pnl": 0.0
     },
     {
       "date": "2026-07-13",
-      "daily_return_pct": -0.0979,
-      "cumulative_return_pct": 2.3755,
-      "start_value": 1021.5,
-      "end_value": 1020.5,
+      "daily_return_pct": 0.9893,
+      "cumulative_return_pct": 39.3419,
+      "start_value": 1190.7,
+      "end_value": 1202.48,
       "external_flow": 0.0,
-      "pnl": -1.0
+      "pnl": 11.78
     },
     {
       "date": "2026-07-14",
-      "daily_return_pct": -0.098,
-      "cumulative_return_pct": 2.2752,
-      "start_value": 1020.5,
-      "end_value": 1019.5,
+      "daily_return_pct": -0.6686,
+      "cumulative_return_pct": 38.4102,
+      "start_value": 1202.48,
+      "end_value": 1194.44,
       "external_flow": 0.0,
-      "pnl": -1.0
+      "pnl": -8.04
     }
   ]
 }

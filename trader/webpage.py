@@ -112,7 +112,8 @@ _TEMPLATE = """<!doctype html>
 <main>
   <header>
     <h1>🏆 Ranking de rentabilidad</h1>
-    <p class="sub">Actualizado: __UPDATED__ · competición de trading con Revolut</p>
+    <p class="sub">Actualizado: __UPDATED__ · competición de trading con Revolut ·
+      <a href="subir.html" style="color:var(--s1)">⬆️ Subir tu extracto</a></p>
   </header>
 
   <section class="card">
