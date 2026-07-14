@@ -80,7 +80,14 @@ Para cada día natural se calcula:
 > Con la subida desde la web (`docs/subir.html`) el commit va directo a la
 > rama por defecto con el token del jugador: el ranking se recalcula sin fork
 > ni PR, y **dar de alta a alguien nuevo no requiere crear ningún secret**
-> (basta con que use la frase compartida y sea colaborador con permiso Write).
+> (basta con que sea colaborador con permiso Write, use la frase compartida y
+> quede registrado en la Variable `PLAYER_OWNERS`).
+>
+> **Integridad:** como cada jugador escribe con su propio token (que da acceso
+> a todo el repo, no solo a su carpeta), un guardián de CI
+> (`.github/workflows/guard.yml`) revierte cualquier push que toque carpetas
+> ajenas o ficheros fuera de la del propio jugador, según ese mapa
+> `PLAYER_OWNERS`. Ver [`players/README.md`](players/README.md).
 
 ## Empezar
 
