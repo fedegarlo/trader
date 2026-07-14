@@ -5,6 +5,11 @@ on:
     # Todos los días a las 22:30 UTC (tras el cierre de la bolsa de EE. UU.)
     - cron: "30 22 * * 1-5"
   workflow_dispatch: {}
+  # La web (docs/subir.html) lanza este evento tras subir un extracto: los
+  # commits creados por la API de GitHub no disparan el evento `push`, así que
+  # este `repository_dispatch` garantiza que el ranking se recalcule al subir.
+  repository_dispatch:
+    types: [extracto-subido]
   push:
     branches: [main]
     paths:
