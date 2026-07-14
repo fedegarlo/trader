@@ -1,0 +1,9 @@
+# NUNCA subir extractos sin cifrar (solo se permiten los .csv.enc)
+players/**/*.csv
+*.csv.dec
+
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/

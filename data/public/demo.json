@@ -1,0 +1,134 @@
+{
+  "player": "demo",
+  "display_name": "Demo 🤖",
+  "currency": "USD",
+  "show_amounts": true,
+  "days": [
+    {
+      "date": "2026-07-01",
+      "daily_return_pct": 0.64,
+      "cumulative_return_pct": 0.64,
+      "start_value": 0.0,
+      "end_value": 1003.2,
+      "external_flow": 1000.0,
+      "pnl": 3.2
+    },
+    {
+      "date": "2026-07-02",
+      "daily_return_pct": 0.5084,
+      "cumulative_return_pct": 1.1516,
+      "start_value": 1003.2,
+      "end_value": 1008.3,
+      "external_flow": 0.0,
+      "pnl": 5.1
+    },
+    {
+      "date": "2026-07-03",
+      "daily_return_pct": 1.2794,
+      "cumulative_return_pct": 2.4457,
+      "start_value": 1008.3,
+      "end_value": 1021.2,
+      "external_flow": 0.0,
+      "pnl": 12.9
+    },
+    {
+      "date": "2026-07-04",
+      "daily_return_pct": 0.0,
+      "cumulative_return_pct": 2.4457,
+      "start_value": 1021.2,
+      "end_value": 1021.2,
+      "external_flow": 0.0,
+      "pnl": 0.0
+    },
+    {
+      "date": "2026-07-05",
+      "daily_return_pct": 0.0,
+      "cumulative_return_pct": 2.4457,
+      "start_value": 1021.2,
+      "end_value": 1021.2,
+      "external_flow": 0.0,
+      "pnl": 0.0
+    },
+    {
+      "date": "2026-07-06",
+      "daily_return_pct": -0.0685,
+      "cumulative_return_pct": 2.3755,
+      "start_value": 1021.2,
+      "end_value": 1020.5,
+      "external_flow": 0.0,
+      "pnl": -0.7
+    },
+    {
+      "date": "2026-07-07",
+      "daily_return_pct": 0.0294,
+      "cumulative_return_pct": 2.4056,
+      "start_value": 1020.5,
+      "end_value": 1020.8,
+      "external_flow": 0.0,
+      "pnl": 0.3
+    },
+    {
+      "date": "2026-07-08",
+      "daily_return_pct": 0.0294,
+      "cumulative_return_pct": 2.4357,
+      "start_value": 1020.8,
+      "end_value": 1021.1,
+      "external_flow": 0.0,
+      "pnl": 0.3
+    },
+    {
+      "date": "2026-07-09",
+      "daily_return_pct": -0.0196,
+      "cumulative_return_pct": 2.4156,
+      "start_value": 1021.1,
+      "end_value": 1020.9,
+      "external_flow": 0.0,
+      "pnl": -0.2
+    },
+    {
+      "date": "2026-07-10",
+      "daily_return_pct": 0.0588,
+      "cumulative_return_pct": 2.4758,
+      "start_value": 1020.9,
+      "end_value": 1021.5,
+      "external_flow": 0.0,
+      "pnl": 0.6
+    },
+    {
+      "date": "2026-07-11",
+      "daily_return_pct": 0.0,
+      "cumulative_return_pct": 2.4758,
+      "start_value": 1021.5,
+      "end_value": 1021.5,
+      "external_flow": 0.0,
+      "pnl": 0.0
+    },
+    {
+      "date": "2026-07-12",
+      "daily_return_pct": 0.0,
+      "cumulative_return_pct": 2.4758,
+      "start_value": 1021.5,
+      "end_value": 1021.5,
+      "external_flow": 0.0,
+      "pnl": 0.0
+    },
+    {
+      "date": "2026-07-13",
+      "daily_return_pct": -0.0979,
+      "cumulative_return_pct": 2.3755,
+      "start_value": 1021.5,
+      "end_value": 1020.5,
+      "external_flow": 0.0,
+      "pnl": -1.0
+    },
+    {
+      "date": "2026-07-14",
+      "daily_return_pct": -0.098,
+      "cumulative_return_pct": 2.2752,
+      "start_value": 1020.5,
+      "end_value": 1019.5,
+      "external_flow": 0.0,
+      "pnl": -1.0
+    }
+  ]
+}
