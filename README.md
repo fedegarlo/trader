@@ -80,7 +80,14 @@ Para cada día natural se calcula:
 > Con la subida desde la web (`docs/subir.html`) el commit va directo a la
 > rama por defecto con el token del jugador: el ranking se recalcula sin fork
 > ni PR, y **dar de alta a alguien nuevo no requiere crear ningún secret**
-> (basta con que use la frase compartida y sea colaborador con permiso Write).
+> (basta con que sea colaborador con permiso Write, use la frase compartida y
+> quede registrado en la Variable `PLAYER_OWNERS`).
+>
+> **Integridad:** como cada jugador escribe con su propio token (que da acceso
+> a todo el repo, no solo a su carpeta), un guardián de CI
+> (`.github/workflows/guard.yml`) revierte cualquier push que toque carpetas
+> ajenas o ficheros fuera de la del propio jugador, según ese mapa
+> `PLAYER_OWNERS`. Ver [`players/README.md`](players/README.md).
 
 ## Empezar
 
@@ -116,13 +123,17 @@ La frase de paso se pide por prompt, o se toma de `TRADER_KEY` /
 ## Estructura
 
 ```
-trader/            código (parser Revolut, cartera, precios, cifrado, informes)
-players/<id>/      configuración pública + extracto cifrado de cada jugador
-data/prices/       caché de precios de cierre (se versiona; reproducible)
-data/public/       series diarias públicas en JSON (para gráficas)
-docs/ranking.md    el ranking 🏆
-examples/          jugador de ejemplo con precios ficticios para probar
-tests/             pytest
+trader/                     código (parser Revolut, cartera, precios, cifrado, informes)
+players/<id>/               configuración pública + extracto cifrado de cada jugador
+data/prices/                caché de precios de cierre (se versiona; reproducible)
+data/public/                series diarias públicas en JSON (para gráficas)
+docs/index.html             la web del ranking 🏆 (GitHub Pages)
+docs/subir.html             página para subir tu extracto (cifra en el navegador, sin PR)
+docs/ranking.md             el ranking en Markdown
+.github/workflows/ranking.yml   recalcula y publica el ranking
+.github/workflows/guard.yml     revierte pushes que toquen carpetas ajenas
+examples/                   jugador de ejemplo con precios ficticios para probar
+tests/                      pytest
 ```
 
 ## Limitaciones conocidas

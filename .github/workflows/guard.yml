@@ -1,0 +1,120 @@
+name: Guardián de carpetas
+
+# Red de seguridad para el modelo "cada jugador sube con su propio token":
+# comprueba que en cada push a main quien empuja solo ha tocado SU carpeta
+# players/<id>/. Si toca la de otro, una carpeta no registrada o ficheros
+# fuera de players/, revierte el push y abre una issue.
+#
+# Fuente de la verdad = Variable del repo PLAYER_OWNERS (Settings -> Secrets
+# and variables -> Actions -> Variables), un JSON id->login de GitHub, p.ej.:
+#   { "fede": "fedegarlo", "juan": "juangh" }
+# Los jugadores no pueden editar ni esta Variable ni este workflow (su token
+# fine-grained solo tiene Contents), así que el guardián es fiable frente a
+# despistes y gamberreo casual. No frena a un insider decidido (eso solo lo
+# haría el gatekeeper serverless): esto es una malla de seguridad, no una
+# cárcel.
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: guard-${{ github.sha }}
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Comprobar propiedad de las carpetas
+        id: check
+        uses: actions/github-script@v7
+        env:
+          PLAYER_OWNERS: ${{ vars.PLAYER_OWNERS }}
+        with:
+          script: |
+            const actor = context.actor;
+            const before = context.payload.before;
+            const after = context.payload.after;
+
+            // 1) Bots (p.ej. el que publica el ranking) quedan exentos.
+            if (actor.endsWith('[bot]')) return core.info(`Push de bot ${actor}, se omite.`);
+
+            // 2) Admin y maintainer del repo quedan exentos.
+            let perm = 'none';
+            try {
+              const r = await github.rest.repos.getCollaboratorPermissionLevel({
+                owner: context.repo.owner, repo: context.repo.repo, username: actor });
+              perm = r.data.permission;
+            } catch (e) { core.info('No se pudo leer el permiso de ' + actor + ': ' + e.message); }
+            if (perm === 'admin' || perm === 'maintain')
+              return core.info(`Push de ${actor} (${perm}), se omite.`);
+
+            // 3) Rama recién creada u origen desconocido: nada que comparar.
+            if (/^0+$/.test(before)) return core.info('Sin commit base, se omite.');
+
+            // 4) Mapa de propietarios.
+            let owners;
+            try { owners = JSON.parse(process.env.PLAYER_OWNERS || '{}'); }
+            catch (e) { return core.setFailed('La Variable PLAYER_OWNERS no es JSON válido.'); }
+            const mine = new Set(Object.keys(owners).filter(
+              id => String(owners[id]).toLowerCase() === actor.toLowerCase()));
+
+            // 5) Ficheros cambiados en el rango del push.
+            const cmp = await github.rest.repos.compareCommitsWithBasehead({
+              owner: context.repo.owner, repo: context.repo.repo,
+              basehead: `${before}...${after}` });
+            const files = (cmp.data.files || []).map(f => f.filename);
+
+            const problems = [];
+            for (const f of files) {
+              const m = f.match(/^players\/([^/]+)\//);
+              if (!m) { problems.push(`\`${f}\` — fuera de tu carpeta de jugador`); continue; }
+              const id = m[1];
+              if (!(id in owners)) { problems.push(`\`players/${id}/\` — jugador no registrado en PLAYER_OWNERS`); continue; }
+              if (!mine.has(id)) { problems.push(`\`players/${id}/\` — pertenece a otro jugador`); continue; }
+            }
+
+            if (!problems.length) return core.info('Push correcto: solo carpetas propias.');
+            core.setOutput('violation', 'true');
+            core.setOutput('reason', '- ' + problems.join('\n- '));
+
+      - name: Revertir push no autorizado
+        if: steps.check.outputs.violation == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git revert --no-edit ${{ github.event.before }}..${{ github.sha }}
+          git push origin HEAD:main
+
+      - name: Avisar en una issue
+        if: steps.check.outputs.violation == 'true'
+        uses: actions/github-script@v7
+        env:
+          REASON: ${{ steps.check.outputs.reason }}
+          BAD_ACTOR: ${{ github.actor }}
+          BAD_SHA: ${{ github.sha }}
+        with:
+          script: |
+            await github.rest.issues.create({
+              owner: context.repo.owner, repo: context.repo.repo,
+              title: `Push revertido de @${process.env.BAD_ACTOR}`,
+              body: `He revertido automáticamente el push \`${process.env.BAD_SHA}\` de ` +
+                    `@${process.env.BAD_ACTOR} porque tocaba lo que no debía:\n\n` +
+                    `${process.env.REASON}\n\nCada jugador solo puede modificar su propia ` +
+                    `carpeta \`players/<id>/\`. Si es un error, revísalo con el administrador ` +
+                    `(quizá falte añadir el jugador a la Variable \`PLAYER_OWNERS\`).`,
+            });
+
+      - name: Marcar el run como fallido
+        if: steps.check.outputs.violation == 'true'
+        run: |
+          echo "Push revertido por tocar carpetas ajenas." >&2
+          exit 1

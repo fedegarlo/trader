@@ -23,8 +23,10 @@ players/
 La forma más simple es la página **[⬆️ Subir tu extracto](https://fedegarlo.github.io/trader/subir.html)**
 (enlazada desde el ranking):
 
-1. Pídele al administrador que te añada como **colaborador con permiso Write**
-   y que te diga la **frase de paso de la liga**.
+1. Pídele al administrador que te añada como **colaborador con permiso Write**,
+   que te **registre** (tu id ↔ tu usuario de GitHub) y que te diga la
+   **frase de paso de la liga**. Un guardián de CI solo te deja escribir en
+   tu propia carpeta `players/<tu-id>/`.
 2. Exporta tu extracto desde la app de Revolut
    (**Inversiones → ⋯ → Extractos → CSV**).
 3. En la web, rellena tu id, nombre y la **frase compartida**, y elige el CSV.
@@ -59,3 +61,33 @@ subirlo de nuevo (misma frase). El administrador **no tiene que hacer nada**.
 
 3. Sube `player.json` y `trades.csv.enc` en un pull request. **Jamás subas el
    CSV sin cifrar** (el `.gitignore` ayuda, pero revisa el diff).
+
+## Para el administrador
+
+**Configuración inicial (una sola vez para toda la liga):** crea el secret
+`TRADER_KEY` (Settings → Secrets and variables → Actions → *Secrets*) con la
+frase compartida. La Variable `PLAYER_OWNERS` se va rellenando conforme entran
+jugadores.
+
+**Dar de alta a un jugador** — tres pasos, **una vez por jugador** (las
+actualizaciones no requieren nada):
+
+1. **Colaborador:** invítalo con permiso **Write** (Settings → Collaborators).
+2. **Regístralo** en la Variable `PLAYER_OWNERS` (Settings → Secrets and
+   variables → Actions → *Variables*), un JSON `id → usuario de GitHub`:
+
+   ```json
+   { "fede": "fedegarlo", "juan": "juangh" }
+   ```
+
+   El guardián de CI (`.github/workflows/guard.yml`) usa este mapa: si alguien
+   toca una carpeta que no es la suya, un id no registrado o ficheros fuera de
+   `players/`, **revierte el push y abre una issue**. Tú (admin) y los bots
+   quedáis exentos.
+3. **Frase de la liga:** dile la frase compartida. El secret `TRADER_KEY` ya lo
+   creaste una vez para toda la liga; no hay que crear más secrets.
+
+> El guardián es una malla de seguridad contra despistes y gamberreo casual
+> (los jugadores no pueden editar ni el workflow ni la Variable). Un insider
+> decidido con un token más amplio podría sortearlo; para prevención estricta
+> haría falta el *gatekeeper* serverless.
