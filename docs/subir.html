@@ -340,6 +340,22 @@ async function ghCommit({ owner, repo, branch, token, files, message }) {
   return { branch, commit };
 }
 
+// Avisa al workflow del ranking para que recalcule ya. Los commits hechos por
+// la API no disparan el evento `push`, así que sin esto el dashboard no se
+// actualizaría hasta el siguiente cron. Usa el mismo permiso Contents.
+async function ghDispatch({ owner, repo, token }) {
+  const res = await fetch("https://api.github.com/repos/" + owner + "/" + repo + "/dispatches", {
+    method: "POST",
+    headers: {
+      "Authorization": "Bearer " + token,
+      "Accept": "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28",
+    },
+    body: JSON.stringify({ event_type: "extracto-subido" }),
+  });
+  return res.ok; // 204 si va bien; si falla, no es crítico (queda el cron diario)
+}
+
 // ---------- autodetección de repo ----------
 (function detectRepo() {
   let owner = "fedegarlo", repo = "trader";
@@ -435,10 +451,14 @@ $("btn-upload").addEventListener("click", async () => {
       owner, repo, branch, token, files,
       message: "Actualizar extracto de " + pid,
     });
+    const kicked = await ghDispatch({ owner, repo, token });
     st.clear();
     st.box("ok",
       "<b>✅ Subido a la rama <code>" + res.branch + "</code></b> — sin pull request.<br>" +
-      "Commit <code>" + res.commit.sha.slice(0, 7) + "</code>. El ranking se recalculará solo en unos minutos.");
+      "Commit <code>" + res.commit.sha.slice(0, 7) + "</code>. " +
+      (kicked
+        ? "He lanzado el recálculo del ranking; en 1–2 min verás tus datos."
+        : "El ranking se actualizará en el próximo recálculo diario."));
     st.box("",
       "Si tu extracto <b>no aparece</b> en el ranking, casi seguro es que la frase de paso no " +
       "coincide con la compartida de la liga: vuelve a subirlo con la frase correcta.");
