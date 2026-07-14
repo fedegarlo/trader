@@ -8,6 +8,11 @@ operaciones ni los importes de nadie** (los extractos se suben cifrados).
 📊 **El ranking se publica en [`docs/ranking.md`](docs/ranking.md)** y se
 actualiza automáticamente cada día de mercado con una GitHub Action.
 
+> El ranking incluye un jugador **Demo 🤖** con operaciones ficticias
+> (cifradas con la frase pública `demo`) para ver la primera iteración
+> funcionando de punta a punta. Se elimina borrando `players/demo/` y su
+> línea en el workflow.
+
 ## Cómo funciona
 
 Revolut no ofrece API pública de trading para cuentas personales, así que el

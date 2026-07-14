@@ -1,5 +1,10 @@
 # Jugadores
 
+> El directorio `demo/` es un jugador de demostración con operaciones
+> ficticias; su frase de paso es pública (`demo`) para que se pueda ver el
+> flujo completo funcionando. Bórralo (y su línea en
+> `.github/workflows/ranking.yml`) cuando haya jugadores reales.
+
 Cada jugador tiene su propio directorio:
 
 ```

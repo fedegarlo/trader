@@ -41,7 +41,11 @@ jobs:
           # jugador nuevo, añade su línea aquí y crea el secret en
           # Settings -> Secrets and variables -> Actions.
           PLAYER_FEDE_KEY: ${{ secrets.PLAYER_FEDE_KEY }}
-        run: python -m trader ranking
+          # El jugador demo usa datos ficticios: su clave es pública a
+          # propósito. Elimina esta línea (y players/demo/) cuando ya no
+          # haga falta.
+          PLAYER_DEMO_KEY: demo
+        run: python -m trader ranking --refresh
 
       - name: Publicar resultados
         run: |

@@ -67,7 +67,8 @@ def cmd_report(args: argparse.Namespace) -> None:
 
 def cmd_ranking(args: argparse.Namespace) -> None:
     ids = players_mod.discover_players(args.players_dir)
-    prices = PriceCache(cache_dir=args.prices_dir, offline=args.offline)
+    prices = PriceCache(cache_dir=args.prices_dir, offline=args.offline,
+                        refresh=getattr(args, "refresh", False))
     computed = []
     for player_id in ids:
         player = players_mod.load_player(args.players_dir, player_id)
@@ -115,6 +116,8 @@ def main(argv: list[str] | None = None) -> None:
     p_rank.add_argument("--public-dir", default="data/public")
     p_rank.add_argument("--out", default="docs/ranking.md")
     p_rank.add_argument("--offline", action="store_true")
+    p_rank.add_argument("--refresh", action="store_true",
+                        help="volver a descargar precios aunque haya caché")
     p_rank.set_defaults(func=cmd_ranking)
 
     args = parser.parse_args(argv)

@@ -22,9 +22,11 @@ class PriceError(RuntimeError):
 class PriceCache:
     """Precios de cierre por ticker con caché en disco y descarga de Yahoo."""
 
-    def __init__(self, cache_dir: str = "data/prices", offline: bool = False):
+    def __init__(self, cache_dir: str = "data/prices", offline: bool = False,
+                 refresh: bool = False):
         self.cache_dir = cache_dir
         self.offline = offline
+        self.refresh = refresh  # fuerza la descarga aunque la caché cubra el rango
         self._series: dict[str, dict[date, float]] = {}
 
     # ------------------------------------------------------------- caché
@@ -82,7 +84,8 @@ class PriceCache:
     def ensure_range(self, ticker: str, start: date, end: date) -> None:
         """Garantiza que la caché cubre [start, end] (días de mercado)."""
         series = self._load(ticker)
-        need = not series or min(series) > start or max(series) < end - timedelta(days=4)
+        need = (self.refresh or not series or min(series) > start
+                or max(series) < end - timedelta(days=4))
         if need and not self.offline:
             self._fetch(ticker, start - timedelta(days=7), end)
 

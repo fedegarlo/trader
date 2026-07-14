@@ -1,0 +1,6 @@
+{
+  "display_name": "Demo 🤖",
+  "currency": "USD",
+  "show_amounts": true,
+  "comment": "Jugador de demostración con datos ficticios. Su frase de paso es pública: 'demo'. Bórralo cuando haya jugadores reales."
+}
