@@ -36,14 +36,14 @@ jobs:
 
       - name: Calcular ranking
         env:
-          # Una línea por jugador: el secret PLAYER_<ID>_KEY es la frase de
-          # paso con la que ese jugador cifró su extracto. Al añadir un
-          # jugador nuevo, añade su línea aquí y crea el secret en
-          # Settings -> Secrets and variables -> Actions.
-          PLAYER_FEDE_KEY: ${{ secrets.PLAYER_FEDE_KEY }}
-          # El jugador demo usa datos ficticios: su clave es pública a
-          # propósito. Elimina esta línea (y players/demo/) cuando ya no
-          # haga falta.
+          # Frase de paso COMPARTIDA de la liga: con ella se cifran (y se
+          # descifran) todos los extractos. Créala UNA sola vez en
+          # Settings -> Secrets and variables -> Actions con nombre TRADER_KEY.
+          # Añadir un jugador nuevo NO requiere tocar nada aquí ni crear más
+          # secrets. Los extractos se suben sin PR desde docs/subir.html.
+          TRADER_KEY: ${{ secrets.TRADER_KEY }}
+          # El jugador demo usa datos ficticios con su propia clave pública.
+          # Elimina esta línea (y players/demo/) cuando ya no haga falta.
           PLAYER_DEMO_KEY: demo
         run: python -m trader ranking --refresh
 

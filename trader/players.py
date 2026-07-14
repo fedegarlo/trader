@@ -37,6 +37,20 @@ def env_var_for(player_id: str) -> str:
     return "PLAYER_" + player_id.upper().replace("-", "_") + "_KEY"
 
 
+def passphrase_from_env(player_id: str) -> str | None:
+    """Frase de paso de un jugador desde el entorno.
+
+    Primero la variable propia ``PLAYER_<ID>_KEY`` (por si algún jugador usa
+    una frase distinta, como el demo); si no, la frase **compartida** de la
+    liga ``TRADER_KEY``, con la que se cifran todos los extractos. Así, dar de
+    alta a un jugador nuevo no requiere ningún secret adicional.
+    """
+    env = env_var_for(player_id)
+    if os.environ.get(env):
+        return os.environ[env]
+    return os.environ.get("TRADER_KEY")
+
+
 def load_player(players_dir: str, player_id: str, passphrase: str | None = None) -> Player:
     pdir = os.path.join(players_dir, player_id)
     config_path = os.path.join(pdir, "player.json")
@@ -52,7 +66,7 @@ def load_player(players_dir: str, player_id: str, passphrase: str | None = None)
         show_amounts=bool(config.get("show_amounts", False)),
     )
 
-    passphrase = passphrase or os.environ.get(env_var_for(player_id))
+    passphrase = passphrase or passphrase_from_env(player_id)
 
     texts: list[str] = []
     for name in sorted(os.listdir(pdir)):

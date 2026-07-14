@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>⬆️ Subir extracto · Trader</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page: #f9f9f7; --surface: #fcfcfb;
+    --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+    --grid: #e1e0d9; --ring: rgba(11,11,11,0.10);
+    --up: #006300; --down: #d03b3b; --accent: #2a78d6;
+    --field: #ffffff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --page: #0d0d0d; --surface: #1a1a19;
+      --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781;
+      --grid: #2c2c2a; --ring: rgba(255,255,255,0.10);
+      --up: #0ca30c; --down: #e66767; --accent: #3987e5;
+      --field: #111110;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19;
+    --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --ring: rgba(255,255,255,0.10);
+    --up: #0ca30c; --down: #e66767; --accent: #3987e5;
+    --field: #111110;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    background: var(--page); color: var(--ink);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+    padding: 24px 16px 48px;
+  }
+  main { max-width: 640px; margin: 0 auto; display: grid; gap: 20px; }
+  a { color: var(--accent); }
+  h1 { font-size: 24px; }
+  .sub { color: var(--ink-2); font-size: 13px; margin-top: 2px; }
+  .back { font-size: 13px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--ring);
+    border-radius: 12px; padding: 20px;
+  }
+  .card h2 { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
+  .note { font-size: 13px; color: var(--ink-2); }
+  .note ul { margin: 8px 0 0 18px; }
+  .note li { margin: 3px 0; }
+  label { display: block; font-size: 13px; font-weight: 600; margin: 14px 0 5px; }
+  label .opt { font-weight: 400; color: var(--muted); }
+  .hint { font-size: 12px; color: var(--muted); font-weight: 400; margin-top: 3px; }
+  input[type=text], input[type=password], input[type=file], select {
+    width: 100%; padding: 9px 11px; font: inherit; color: var(--ink);
+    background: var(--field); border: 1px solid var(--grid); border-radius: 8px;
+  }
+  input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: var(--accent); }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .check { display: flex; align-items: center; gap: 8px; margin-top: 14px; font-size: 13px; font-weight: 400; }
+  .check input { width: auto; }
+  .check label { margin: 0; font-weight: 400; }
+  button {
+    font: inherit; font-weight: 600; cursor: pointer; border-radius: 8px;
+    border: 1px solid var(--accent); background: var(--accent); color: #fff;
+    padding: 10px 16px; margin-top: 18px;
+  }
+  button.secondary { background: transparent; color: var(--accent); }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .status { margin-top: 16px; font-size: 13.5px; display: none; }
+  .status.show { display: block; }
+  .status .line { padding: 3px 0; display: flex; gap: 8px; align-items: baseline; }
+  .status .ok { color: var(--up); } .status .err { color: var(--down); }
+  .status .mut { color: var(--muted); }
+  .box { border: 1px solid var(--grid); border-radius: 8px; padding: 12px 14px; margin-top: 12px; font-size: 13px; }
+  .box.ok { border-color: color-mix(in srgb, var(--up) 45%, var(--grid)); }
+  .box.err { border-color: color-mix(in srgb, var(--down) 45%, var(--grid)); }
+  .box b { font-weight: 600; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px;
+         background: color-mix(in srgb, var(--ink) 8%, transparent); padding: 1px 5px; border-radius: 4px; }
+  details.adv { margin-top: 8px; }
+  details.adv summary { cursor: pointer; font-size: 13px; color: var(--ink-2); font-weight: 600; }
+  footer { color: var(--muted); font-size: 12.5px; margin-top: 8px; }
+  @media (max-width: 560px) {
+    body { padding: 14px 10px 32px; }
+    .row2 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <p class="back"><a href="index.html">← Volver al ranking</a></p>
+    <h1>⬆️ Subir tu extracto</h1>
+    <p class="sub">Cífralo en tu navegador y súbelo al repo sin abrir un pull request.</p>
+  </header>
+
+  <section class="card note">
+    <h2>Cómo funciona</h2>
+    <ul>
+      <li>Tu CSV <b>se cifra aquí, en tu navegador</b> (AES + PBKDF2, formato del proyecto). El extracto en claro <b>nunca sale de tu dispositivo</b>.</li>
+      <li>Solo se sube el fichero <code>.csv.enc</code> (ilegible) y tu <code>player.json</code>, con un commit directo hecho <b>con tu propio token</b> — sin pull request.</li>
+      <li>El token viaja únicamente a <code>api.github.com</code> por HTTPS. No hay servidor intermedio.</li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2>1 · Tus datos y el extracto</h2>
+
+    <label for="pid">Tu id de jugador <span class="hint">carpeta <code>players/&lt;id&gt;</code> — minúsculas, números y guiones</span></label>
+    <input type="text" id="pid" placeholder="fede" autocomplete="off" spellcheck="false">
+
+    <label for="name">Nombre a mostrar</label>
+    <input type="text" id="name" placeholder="Fede 🚀" autocomplete="off">
+
+    <div class="row2">
+      <div>
+        <label for="cur">Divisa del extracto</label>
+        <select id="cur">
+          <option>USD</option><option>EUR</option><option>GBP</option>
+        </select>
+      </div>
+      <div>
+        <label>Privacidad</label>
+        <div class="check">
+          <input type="checkbox" id="amounts">
+          <label for="amounts">Mostrar importes en el ranking</label>
+        </div>
+        <div class="hint">Desactivado: solo se publican porcentajes.</div>
+      </div>
+    </div>
+
+    <label for="csv">Extracto CSV de Revolut <span class="hint">Inversiones → ⋯ → Extractos → CSV</span></label>
+    <input type="file" id="csv" accept=".csv,text/csv">
+
+    <label for="pass">Frase de paso de la liga <span class="hint">la misma para todos — la que os habéis puesto entre vosotros</span></label>
+    <input type="password" id="pass" placeholder="frase compartida de la liga" autocomplete="off">
+
+    <div class="actions">
+      <button id="btn-check">Validar y cifrar</button>
+      <button id="btn-dl" class="secondary" disabled>Descargar .enc (copia)</button>
+    </div>
+    <div class="status" id="check-status"></div>
+  </section>
+
+  <section class="card">
+    <h2>2 · Subir al repositorio (sin PR)</h2>
+    <p class="note">Necesitas un <a href="https://github.com/settings/tokens?type=beta" target="_blank" rel="noopener">token de acceso personal</a> (fine-grained) sobre este repositorio con permiso <b>Contents: Read and write</b>.</p>
+
+    <label for="token">Token de GitHub</label>
+    <input type="password" id="token" placeholder="github_pat_…" autocomplete="off" spellcheck="false">
+    <div class="check">
+      <input type="checkbox" id="remember">
+      <label for="remember">Recordar token y frase de la liga en este dispositivo</label>
+    </div>
+
+    <details class="adv">
+      <summary>Opciones avanzadas (repositorio y rama)</summary>
+      <div class="row2" style="margin-top:10px">
+        <div><label for="owner">Owner</label><input type="text" id="owner" autocomplete="off"></div>
+        <div><label for="repo">Repo</label><input type="text" id="repo" autocomplete="off"></div>
+      </div>
+      <label for="branch">Rama <span class="hint">vacío = rama por defecto del repo</span></label>
+      <input type="text" id="branch" placeholder="main" autocomplete="off">
+    </details>
+
+    <div class="actions">
+      <button id="btn-upload" disabled>Subir sin PR</button>
+    </div>
+    <div class="status" id="upload-status"></div>
+  </section>
+
+  <footer>
+    Compatible con <code>python -m trader decrypt</code>. El ranking se recalcula solo
+    cuando el commit llega a la rama por defecto.
+  </footer>
+</main>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const enc = new TextEncoder();
+
+// ---------- estado ----------
+let encryptedFile = null;   // { bytes, filename }
+let validation = null;      // resumen del CSV
+
+// ---------- utilidades de status ----------
+function statusBox(el) {
+  el.classList.add("show"); el.innerHTML = "";
+  return {
+    line(cls, txt) {
+      const d = document.createElement("div"); d.className = "line";
+      const s = document.createElement("span"); s.className = cls; s.textContent = txt;
+      d.appendChild(s); el.appendChild(d); return s;
+    },
+    box(cls, html) {
+      const d = document.createElement("div"); d.className = "box " + cls;
+      d.innerHTML = html; el.appendChild(d); return d;
+    },
+    clear() { el.innerHTML = ""; },
+  };
+}
+
+// ---------- validación de extracto Revolut (puerto de trader/revolut.py) ----------
+const TYPE_MAP = [
+  [/^BUY\b/, "compra"], [/^SELL\b/, "venta"],
+  [/^CASH TOP-?UP/, "ingreso"], [/^(CASH WITHDRAWAL|WITHDRAWAL)/, "retirada"],
+  [/^DIVIDEND/, "dividendo"], [/^(CUSTODY FEE|FEE|SERVICE FEE)/, "comisión"],
+  [/^STOCK SPLIT/, "split"], [/^TRANSFER FROM/, "ingreso"], [/^TRANSFER TO/, "retirada"],
+];
+function classify(t) {
+  const u = (t || "").trim().toUpperCase();
+  for (const [re, name] of TYPE_MAP) if (re.test(u)) return name;
+  return null;
+}
+// Parser CSV mínimo con soporte de comillas.
+function parseCsv(text) {
+  const rows = []; let row = [], field = "", q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) {
+      if (c === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else q = false; }
+      else field += c;
+    } else if (c === '"') q = true;
+    else if (c === ",") { row.push(field); field = ""; }
+    else if (c === "\n") { row.push(field); rows.push(row); row = []; field = ""; }
+    else if (c === "\r") { /* ignore */ }
+    else field += c;
+  }
+  if (field.length || row.length) { row.push(field); rows.push(row); }
+  return rows;
+}
+function parseDate(raw) {
+  raw = (raw || "").trim();
+  let m = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return m[1] + "-" + m[2] + "-" + m[3];
+  m = raw.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+  if (m) return m[3] + "-" + m[2] + "-" + m[1];
+  return null;
+}
+function validateCsv(text) {
+  if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1); // BOM
+  const rows = parseCsv(text).filter(r => r.some(c => c.trim() !== ""));
+  if (!rows.length) return { ok: false, error: "El CSV está vacío." };
+  const header = rows[0].map(h => h.trim().toLowerCase());
+  const idx = name => header.indexOf(name);
+  if (idx("type") < 0 || idx("date") < 0)
+    return { ok: false, error: "No parece un extracto de Revolut: faltan las columnas Date y/o Type." };
+  const tI = idx("type"), dI = idx("date");
+  let recognized = 0, warnings = 0; const kinds = {}; const days = [];
+  for (let r = 1; r < rows.length; r++) {
+    const raw = (rows[r][tI] || "").trim();
+    if (!raw) continue;
+    const k = classify(raw);
+    if (!k) { warnings++; continue; }
+    const d = parseDate(rows[r][dI]);
+    if (!d) { warnings++; continue; }
+    recognized++; kinds[k] = (kinds[k] || 0) + 1; days.push(d);
+  }
+  if (!recognized)
+    return { ok: false, error: "No se ha reconocido ninguna operación en el extracto." };
+  days.sort();
+  return { ok: true, recognized, warnings, kinds, from: days[0], to: days[days.length - 1] };
+}
+
+// ---------- cifrado (formato TRADERENC1 + Fernet), todo en el navegador ----------
+function bytesToBase64(bytes) {
+  let bin = ""; const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk)
+    bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+  return btoa(bin);
+}
+async function encryptTraderEnc(plaintextBytes, passphrase) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  // PBKDF2-HMAC-SHA256, 600k -> 32 bytes crudos
+  const base = await crypto.subtle.importKey("raw", enc.encode(passphrase), "PBKDF2", false, ["deriveBits"]);
+  const rawBits = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", salt, iterations: 600000, hash: "SHA-256" }, base, 256);
+  const raw = new Uint8Array(rawBits);
+  const signKey = raw.slice(0, 16), encKey = raw.slice(16, 32);
+  // token Fernet a mano
+  const iv = crypto.getRandomValues(new Uint8Array(16));
+  const aesKey = await crypto.subtle.importKey("raw", encKey, { name: "AES-CBC" }, false, ["encrypt"]);
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-CBC", iv }, aesKey, plaintextBytes));
+  const ts = Math.floor(Date.now() / 1000);
+  const header = new Uint8Array(1 + 8 + 16 + ct.length);
+  header[0] = 0x80;
+  new DataView(header.buffer).setUint32(5, ts >>> 0); // 8 bytes BE; parte alta = 0 hasta 2106
+  header.set(iv, 9); header.set(ct, 25);
+  const hmacKey = await crypto.subtle.importKey("raw", signKey, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const mac = new Uint8Array(await crypto.subtle.sign("HMAC", hmacKey, header));
+  const token = new Uint8Array(header.length + 32);
+  token.set(header, 0); token.set(mac, header.length);
+  const tokenB64Url = bytesToBase64(token).replace(/\+/g, "-").replace(/\//g, "_"); // urlsafe, con padding
+  const magic = enc.encode("TRADERENC1");
+  const tokenAscii = enc.encode(tokenB64Url);
+  const out = new Uint8Array(magic.length + 16 + tokenAscii.length);
+  out.set(magic, 0); out.set(salt, magic.length); out.set(tokenAscii, magic.length + 16);
+  return out;
+}
+
+// ---------- GitHub API: commit único con la Git Data API ----------
+async function ghCommit({ owner, repo, branch, token, files, message }) {
+  const call = async (path, method = "GET", body = null) => {
+    const res = await fetch("https://api.github.com/repos/" + owner + "/" + repo + path, {
+      method,
+      headers: {
+        "Authorization": "Bearer " + token,
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+      },
+      body: body ? JSON.stringify(body) : null,
+    });
+    if (!res.ok) {
+      let msg = res.status + " " + res.statusText;
+      try { const j = await res.json(); if (j.message) msg += " — " + j.message; } catch (e) {}
+      throw new Error(msg);
+    }
+    return res.status === 204 ? null : res.json();
+  };
+  if (!branch) {
+    const info = await call("");
+    branch = info.default_branch;
+  }
+  const ref = await call("/git/ref/heads/" + encodeURIComponent(branch));
+  const baseSha = ref.object.sha;
+  const baseCommit = await call("/git/commits/" + baseSha);
+  const tree = [];
+  for (const f of files) {
+    const blob = await call("/git/blobs", "POST", { content: f.base64, encoding: "base64" });
+    tree.push({ path: f.path, mode: "100644", type: "blob", sha: blob.sha });
+  }
+  const newTree = await call("/git/trees", "POST", { base_tree: baseCommit.tree.sha, tree });
+  const commit = await call("/git/commits", "POST", { message, tree: newTree.sha, parents: [baseSha] });
+  await call("/git/refs/heads/" + encodeURIComponent(branch), "PATCH", { sha: commit.sha });
+  return { branch, commit };
+}
+
+// ---------- autodetección de repo ----------
+(function detectRepo() {
+  let owner = "fedegarlo", repo = "trader";
+  const h = location.hostname;
+  if (h.endsWith(".github.io")) {
+    owner = h.split(".")[0];
+    const seg = location.pathname.split("/").filter(Boolean);
+    repo = seg.length ? seg[0] : owner + ".github.io";
+  }
+  $("owner").value = owner; $("repo").value = repo;
+})();
+// token y frase recordados
+if (localStorage.getItem("trader_token")) { $("token").value = localStorage.getItem("trader_token"); $("remember").checked = true; }
+if (localStorage.getItem("trader_pass")) { $("pass").value = localStorage.getItem("trader_pass"); }
+
+// ---------- paso 1: validar + cifrar ----------
+$("btn-check").addEventListener("click", async () => {
+  const st = statusBox($("check-status"));
+  encryptedFile = null; $("btn-dl").disabled = true; $("btn-upload").disabled = true;
+  const pid = $("pid").value.trim().toLowerCase();
+  const pass = $("pass").value;
+  const file = $("csv").files[0];
+  if (!/^[a-z0-9-]+$/.test(pid)) return void st.line("err", "El id de jugador solo puede tener minúsculas, números y guiones.");
+  if (!$("name").value.trim()) return void st.line("err", "Falta el nombre a mostrar.");
+  if (!file) return void st.line("err", "Selecciona tu extracto CSV.");
+  if (pass.length < 4) return void st.line("err", "Escribe la frase de paso de la liga.");
+
+  try {
+    const buf = new Uint8Array(await file.arrayBuffer());
+    const text = new TextDecoder("utf-8").decode(buf);
+    const v = validateCsv(text);
+    if (!v.ok) return void st.line("err", "❌ " + v.error);
+    validation = v;
+    st.line("mut", "Cifrando (PBKDF2 600k, puede tardar 1–2 s)…");
+    const bytes = await encryptTraderEnc(buf, pass);
+    encryptedFile = { bytes, filename: "trades.csv.enc" };
+    st.clear();
+    const parts = Object.entries(v.kinds).map(([k, n]) => n + " " + k + (n > 1 ? "s" : "")).join(", ");
+    st.box("ok",
+      "<b>✅ Extracto válido y cifrado</b><br>" +
+      v.recognized + " operaciones reconocidas (" + parts + ")<br>" +
+      "del " + v.from + " al " + v.to +
+      (v.warnings ? "<br><span class='mut'>" + v.warnings + " líneas no reconocidas se ignorarán</span>" : "") +
+      "<br><span class='mut'>" + bytes.length + " bytes cifrados · listo para subir</span>");
+    $("btn-dl").disabled = false; $("btn-upload").disabled = false;
+  } catch (e) {
+    st.line("err", "Error al cifrar: " + e.message);
+  }
+});
+
+// descarga de copia local del .enc
+$("btn-dl").addEventListener("click", () => {
+  if (!encryptedFile) return;
+  const blob = new Blob([encryptedFile.bytes], { type: "application/octet-stream" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = encryptedFile.filename; a.click();
+  URL.revokeObjectURL(a.href);
+});
+
+// ---------- paso 2: subir ----------
+$("btn-upload").addEventListener("click", async () => {
+  const st = statusBox($("upload-status"));
+  if (!encryptedFile) return void st.line("err", "Primero valida y cifra tu extracto.");
+  const pid = $("pid").value.trim().toLowerCase();
+  const token = $("token").value.trim();
+  const owner = $("owner").value.trim(), repo = $("repo").value.trim();
+  const branch = $("branch").value.trim();
+  if (!token) return void st.line("err", "Introduce tu token de GitHub.");
+  if (!owner || !repo) return void st.line("err", "Falta owner o repo (opciones avanzadas).");
+
+  if ($("remember").checked) {
+    localStorage.setItem("trader_token", token);
+    localStorage.setItem("trader_pass", $("pass").value);
+  } else {
+    localStorage.removeItem("trader_token");
+    localStorage.removeItem("trader_pass");
+  }
+
+  const playerJson = JSON.stringify({
+    display_name: $("name").value.trim(),
+    currency: $("cur").value,
+    show_amounts: $("amounts").checked,
+  }, null, 2) + "\n";
+  const files = [
+    { path: "players/" + pid + "/player.json", base64: bytesToBase64(enc.encode(playerJson)) },
+    { path: "players/" + pid + "/trades.csv.enc", base64: bytesToBase64(encryptedFile.bytes) },
+  ];
+
+  $("btn-upload").disabled = true;
+  st.clear(); st.line("mut", "Subiendo a " + owner + "/" + repo + "…");
+  try {
+    const res = await ghCommit({
+      owner, repo, branch, token, files,
+      message: "Actualizar extracto de " + pid,
+    });
+    st.clear();
+    st.box("ok",
+      "<b>✅ Subido a la rama <code>" + res.branch + "</code></b> — sin pull request.<br>" +
+      "Commit <code>" + res.commit.sha.slice(0, 7) + "</code>. El ranking se recalculará solo en unos minutos.");
+    st.box("",
+      "Si tu extracto <b>no aparece</b> en el ranking, casi seguro es que la frase de paso no " +
+      "coincide con la compartida de la liga: vuelve a subirlo con la frase correcta.");
+  } catch (e) {
+    st.clear();
+    let hint = "";
+    if (/40[13]/.test(e.message)) hint = "<br><span class='mut'>Revisa que el token tenga permiso <b>Contents: Read and write</b> sobre " + owner + "/" + repo + ".</span>";
+    if (/404/.test(e.message)) hint = "<br><span class='mut'>Repo o rama no encontrados, o el token no tiene acceso.</span>";
+    st.box("err", "<b>❌ No se pudo subir</b><br>" + e.message + hint);
+    $("btn-upload").disabled = false;
+  }
+});
+</script>
+</body>
+</html>

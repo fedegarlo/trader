@@ -41,7 +41,7 @@ flujo se basa en el extracto CSV que exporta la propia app:
 ```
 extracto CSV de Revolut ──cifrar──> players/<id>/trades.csv.enc  (público, ilegible)
                                             │
-                     GitHub Action (diaria) │ descifra con el secret PLAYER_<ID>_KEY
+                     GitHub Action (diaria) │ descifra con el secret TRADER_KEY
                                             ▼
                         reconstruye posiciones día a día
                         valora al cierre (Yahoo Finance)
@@ -62,18 +62,32 @@ Para cada día natural se calcula:
 
 ## Privacidad en un repo público
 
-- Cada jugador cifra su extracto con una **frase de paso propia**
-  (`python -m trader encrypt ...`, AES vía Fernet + PBKDF2 600k iteraciones).
-  En el repo solo hay ficheros `.csv.enc` ilegibles.
-- Las frases de paso viven como **GitHub Actions Secrets**
-  (`PLAYER_<ID>_KEY`), que solo el workflow puede leer. Nadie —ni siquiera
-  los administradores— puede ver un secret una vez guardado.
+- Los extractos se cifran (AES vía Fernet + PBKDF2 600k iteraciones) con una
+  **única frase de paso compartida por la liga**. En el repo solo hay ficheros
+  `.csv.enc` ilegibles para quien no conozca esa frase.
+- La frase vive como **GitHub Actions Secret** (`TRADER_KEY`), que solo el
+  workflow puede leer. Nadie que no esté en la liga —ni por ser público el
+  repo— puede descifrar los extractos.
 - En `player.json`, con `"show_amounts": false` el ranking muestra **solo
   porcentajes**: ni importes, ni tickers, ni operaciones.
 
-> ⚠️ Los secrets no están disponibles en workflows lanzados desde forks:
-> los jugadores añaden sus ficheros por PR, pero el ranking solo se
-> recalcula al hacer merge a `main`.
+> **Modelo de confianza:** al ser una liga entre colegas, todos comparten la
+> misma frase, así que entre vosotros os podéis descifrar los extractos; lo
+> que queda protegido es que el **público** (el repo es abierto) no pueda
+> leerlos. Si quisieras privacidad también entre jugadores, se usaría una
+> frase por jugador (un secret `PLAYER_<ID>_KEY` cada uno).
+>
+> Con la subida desde la web (`docs/subir.html`) el commit va directo a la
+> rama por defecto con el token del jugador: el ranking se recalcula sin fork
+> ni PR, y **dar de alta a alguien nuevo no requiere crear ningún secret**
+> (basta con que sea colaborador con permiso Write, use la frase compartida y
+> quede registrado en la Variable `PLAYER_OWNERS`).
+>
+> **Integridad:** como cada jugador escribe con su propio token (que da acceso
+> a todo el repo, no solo a su carpeta), un guardián de CI
+> (`.github/workflows/guard.yml`) revierte cualquier push que toque carpetas
+> ajenas o ficheros fuera de la del propio jugador, según ese mapa
+> `PLAYER_OWNERS`. Ver [`players/README.md`](players/README.md).
 
 ## Empezar
 
@@ -88,8 +102,11 @@ python -m trader ranking --players-dir examples/players \
 
 ### Unirse a la competición
 
-Sigue los pasos de [`players/README.md`](players/README.md): exportar el
-extracto de Revolut, cifrarlo, subirlo por PR y registrar tu secret.
+Lo más fácil es la página **[⬆️ Subir tu extracto](https://fedegarlo.github.io/trader/subir.html)**
+(enlazada desde el ranking): cifra tu CSV en el propio navegador, lo valida y
+lo sube al repo con un commit directo usando tu token de GitHub —**sin pull
+request**. También puedes hacerlo por CLI + PR. Los detalles, en
+[`players/README.md`](players/README.md).
 
 ### Comandos
 
@@ -106,13 +123,17 @@ La frase de paso se pide por prompt, o se toma de `TRADER_KEY` /
 ## Estructura
 
 ```
-trader/            código (parser Revolut, cartera, precios, cifrado, informes)
-players/<id>/      configuración pública + extracto cifrado de cada jugador
-data/prices/       caché de precios de cierre (se versiona; reproducible)
-data/public/       series diarias públicas en JSON (para gráficas)
-docs/ranking.md    el ranking 🏆
-examples/          jugador de ejemplo con precios ficticios para probar
-tests/             pytest
+trader/                     código (parser Revolut, cartera, precios, cifrado, informes)
+players/<id>/               configuración pública + extracto cifrado de cada jugador
+data/prices/                caché de precios de cierre (se versiona; reproducible)
+data/public/                series diarias públicas en JSON (para gráficas)
+docs/index.html             la web del ranking 🏆 (GitHub Pages)
+docs/subir.html             página para subir tu extracto (cifra en el navegador, sin PR)
+docs/ranking.md             el ranking en Markdown
+.github/workflows/ranking.yml   recalcula y publica el ranking
+.github/workflows/guard.yml     revierte pushes que toquen carpetas ajenas
+examples/                   jugador de ejemplo con precios ficticios para probar
+tests/                      pytest
 ```
 
 ## Limitaciones conocidas
