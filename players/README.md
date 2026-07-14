@@ -62,9 +62,15 @@ subirlo de nuevo (misma frase). El administrador **no tiene que hacer nada**.
 3. Sube `player.json` y `trades.csv.enc` en un pull request. **Jamás subas el
    CSV sin cifrar** (el `.gitignore` ayuda, pero revisa el diff).
 
-## Para el administrador: dar de alta a un jugador
+## Para el administrador
 
-Tres pasos, **una sola vez por jugador** (las actualizaciones no requieren nada):
+**Configuración inicial (una sola vez para toda la liga):** crea el secret
+`TRADER_KEY` (Settings → Secrets and variables → Actions → *Secrets*) con la
+frase compartida. La Variable `PLAYER_OWNERS` se va rellenando conforme entran
+jugadores.
+
+**Dar de alta a un jugador** — tres pasos, **una vez por jugador** (las
+actualizaciones no requieren nada):
 
 1. **Colaborador:** invítalo con permiso **Write** (Settings → Collaborators).
 2. **Regístralo** en la Variable `PLAYER_OWNERS` (Settings → Secrets and

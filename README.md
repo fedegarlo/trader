@@ -123,13 +123,17 @@ La frase de paso se pide por prompt, o se toma de `TRADER_KEY` /
 ## Estructura
 
 ```
-trader/            código (parser Revolut, cartera, precios, cifrado, informes)
-players/<id>/      configuración pública + extracto cifrado de cada jugador
-data/prices/       caché de precios de cierre (se versiona; reproducible)
-data/public/       series diarias públicas en JSON (para gráficas)
-docs/ranking.md    el ranking 🏆
-examples/          jugador de ejemplo con precios ficticios para probar
-tests/             pytest
+trader/                     código (parser Revolut, cartera, precios, cifrado, informes)
+players/<id>/               configuración pública + extracto cifrado de cada jugador
+data/prices/                caché de precios de cierre (se versiona; reproducible)
+data/public/                series diarias públicas en JSON (para gráficas)
+docs/index.html             la web del ranking 🏆 (GitHub Pages)
+docs/subir.html             página para subir tu extracto (cifra en el navegador, sin PR)
+docs/ranking.md             el ranking en Markdown
+.github/workflows/ranking.yml   recalcula y publica el ranking
+.github/workflows/guard.yml     revierte pushes que toquen carpetas ajenas
+examples/                   jugador de ejemplo con precios ficticios para probar
+tests/                      pytest
 ```
 
 ## Limitaciones conocidas
