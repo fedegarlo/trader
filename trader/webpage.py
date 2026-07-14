@@ -122,7 +122,7 @@ _TEMPLATE = """<!doctype html>
   </section>
 
   <section class="card">
-    <h2>Rentabilidad acumulada (%)</h2>
+    <h2>Rentabilidad acumulada (%) · últimos 30 días</h2>
     <div class="chartwrap">
       <svg id="chart" viewBox="0 0 860 360" role="img"
            aria-label="Evolución de la rentabilidad acumulada por jugador"></svg>
@@ -132,7 +132,7 @@ _TEMPLATE = """<!doctype html>
   </section>
 
   <section class="card">
-    <h2>Detalle diario</h2>
+    <h2>Detalle diario · últimos 30 días</h2>
     <div id="detail"></div>
   </section>
 </main>
@@ -172,7 +172,7 @@ const MEDALS = ["🥇","🥈","🥉"];
     tr.appendChild(name);
     tr.appendChild(mk("td", "big " + (last.cum >= 0 ? "pos" : "neg"), fmtPct(last.cum)));
     tr.appendChild(mk("td", last.day >= 0 ? "pos" : "neg", fmtPct(last.day)));
-    tr.appendChild(mk("td", "", p.days[0].date));
+    tr.appendChild(mk("td", "", p.since || p.days[0].date));
   });
 }
 
@@ -378,8 +378,15 @@ svg.addEventListener("pointerleave", () => {
 """
 
 
-def build_payload(computed: list[tuple[Player, list[DayResult]]]) -> dict:
-    """Datos embebidos en la página. Respeta show_amounts por jugador."""
+def build_payload(computed: list[tuple[Player, list[DayResult]]],
+                  last_days: int = 30) -> dict:
+    """Datos embebidos en la página. Respeta show_amounts por jugador.
+
+    Solo se incluyen los últimos ``last_days`` días de cada jugador (la gráfica
+    y las tablas de detalle muestran esa ventana). El ``% acumulado`` de cada
+    día sigue siendo el de siempre (desde el inicio real), y ``since`` guarda la
+    fecha de inicio real para la columna «Desde» de la clasificación.
+    """
     players = []
     # Slot de color por orden alfabético de id: estable aunque cambie el ranking
     order = {p.player_id: i for i, p in enumerate(
@@ -387,8 +394,9 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]]) -> dict:
     for player, series in computed:
         if not series:
             continue
+        window = series[-last_days:] if last_days else series
         days = []
-        for row in series:
+        for row in window:
             day = {
                 "date": row.day.isoformat(),
                 "day": round(row.daily_return * 100, 4),
@@ -407,6 +415,7 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]]) -> dict:
             "name": player.display_name,
             "slot": order[player.player_id],
             "amounts": player.show_amounts,
+            "since": series[0].day.isoformat(),
             "days": days,
         })
     return {"players": players}
@@ -416,8 +425,9 @@ def write_index(
     computed: list[tuple[Player, list[DayResult]]],
     out_path: str = "docs/index.html",
     today: date | None = None,
+    last_days: int = 30,
 ) -> str:
-    payload = json.dumps(build_payload(computed), ensure_ascii=False)
+    payload = json.dumps(build_payload(computed, last_days=last_days), ensure_ascii=False)
     payload = payload.replace("</", "<\\/")  # nunca cerrar el <script> desde los datos
     html = (_TEMPLATE
             .replace("__UPDATED__", (today or date.today()).isoformat())
