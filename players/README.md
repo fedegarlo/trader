@@ -14,11 +14,32 @@ players/
     trades.csv.enc   <- extracto de Revolut CIFRADO (nunca subas el .csv en claro)
 ```
 
-## Cómo unirte a la competición
+## Cómo unirte (recomendado: desde la web, sin PR)
 
-1. Exporta tu extracto desde la app de Revolut:
-   **Inversiones → ⋯ → Extractos → Extracto de la cuenta (Excel/CSV)**.
-2. Crea tu directorio `players/<tu-id>/` con un `player.json`:
+La forma más simple es la página **[⬆️ Subir tu extracto](https://fedegarlo.github.io/trader/subir.html)**
+(enlazada desde el ranking):
+
+1. Exporta tu extracto desde la app de Revolut
+   (**Inversiones → ⋯ → Extractos → CSV**).
+2. En la web, rellena tu id, nombre y frase de paso, y elige el CSV. El
+   extracto **se cifra en tu propio navegador** (nunca sale en claro) y la web
+   valida que es un extracto de Revolut legible.
+3. Pega un [token fine-grained](https://github.com/settings/tokens?type=beta)
+   con permiso **Contents: Read and write** sobre este repo y pulsa *Subir sin
+   PR*: hace un commit directo de `player.json` y `trades.csv.enc`.
+
+> **Solo la primera vez**, pide al administrador que cree el secret
+> `PLAYER_<TU_ID>_KEY` con tu frase de paso
+> (Settings → Secrets and variables → Actions). Ya no hace falta editar el
+> workflow: `trader` lee todas las claves de los secrets automáticamente. Las
+> siguientes actualizaciones no requieren nada del administrador.
+
+Para actualizar tus operaciones basta con volver a exportar el extracto y
+subirlo de nuevo con la misma frase de paso.
+
+## Alternativa: por línea de comandos y pull request
+
+1. Crea tu directorio `players/<tu-id>/` con un `player.json`:
 
    ```json
    {
@@ -30,18 +51,13 @@ players/
 
    Con `show_amounts: false` el ranking público solo muestra porcentajes;
    tus importes no se publican.
-3. Elige una frase de paso y cifra tu extracto:
+2. Elige una frase de paso y cifra tu extracto:
 
    ```bash
    python -m trader encrypt extracto.csv --out players/<tu-id>/trades.csv.enc
    ```
 
-4. Sube `player.json` y `trades.csv.enc` en un pull request. **Jamás subas el
+3. Sube `player.json` y `trades.csv.enc` en un pull request. **Jamás subas el
    CSV sin cifrar** (el `.gitignore` ayuda, pero revisa el diff).
-5. Pide al administrador del repositorio que cree el secret
-   `PLAYER_<TU_ID>_KEY` con tu frase de paso
-   (Settings → Secrets and variables → Actions) y que añada la línea
-   correspondiente en `.github/workflows/ranking.yml`.
-
-Para actualizar tus operaciones, vuelve a exportar el extracto completo,
-cífralo con la misma frase y reemplaza el `.csv.enc`.
+4. Pide al administrador que cree el secret `PLAYER_<TU_ID>_KEY` con tu frase
+   de paso (Settings → Secrets and variables → Actions).

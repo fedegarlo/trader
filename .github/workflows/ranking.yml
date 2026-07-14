@@ -36,14 +36,16 @@ jobs:
 
       - name: Calcular ranking
         env:
-          # Una línea por jugador: el secret PLAYER_<ID>_KEY es la frase de
-          # paso con la que ese jugador cifró su extracto. Al añadir un
-          # jugador nuevo, añade su línea aquí y crea el secret en
-          # Settings -> Secrets and variables -> Actions.
-          PLAYER_FEDE_KEY: ${{ secrets.PLAYER_FEDE_KEY }}
+          # Todos los secrets del repo en un solo JSON: trader busca ahí la
+          # clave PLAYER_<ID>_KEY de cada jugador. Así, dar de alta a alguien
+          # nuevo solo requiere crear su secret en
+          # Settings -> Secrets and variables -> Actions (no hay que tocar
+          # este fichero). Los extractos se pueden subir sin PR desde
+          # docs/subir.html.
+          TRADER_SECRETS_JSON: ${{ toJSON(secrets) }}
           # El jugador demo usa datos ficticios: su clave es pública a
-          # propósito. Elimina esta línea (y players/demo/) cuando ya no
-          # haga falta.
+          # propósito (no es un secret). Elimina esta línea (y players/demo/)
+          # cuando ya no haga falta.
           PLAYER_DEMO_KEY: demo
         run: python -m trader ranking --refresh
 

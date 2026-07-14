@@ -71,9 +71,13 @@ Para cada día natural se calcula:
 - En `player.json`, con `"show_amounts": false` el ranking muestra **solo
   porcentajes**: ni importes, ni tickers, ni operaciones.
 
-> ⚠️ Los secrets no están disponibles en workflows lanzados desde forks:
-> los jugadores añaden sus ficheros por PR, pero el ranking solo se
-> recalcula al hacer merge a `main`.
+> Con la subida desde la web (`docs/subir.html`) el commit va directo a la
+> rama por defecto con el token del jugador, así que el ranking se recalcula
+> sin necesidad de fork ni PR. La frase de paso sigue viviendo solo como
+> secret de Actions: el workflow inyecta `toJSON(secrets)` en
+> `TRADER_SECRETS_JSON` y `trader` lee de ahí la clave de cada jugador, de
+> modo que dar de alta a alguien nuevo solo requiere **crear su secret una
+> vez** (sin tocar el YAML).
 
 ## Empezar
 
@@ -88,8 +92,11 @@ python -m trader ranking --players-dir examples/players \
 
 ### Unirse a la competición
 
-Sigue los pasos de [`players/README.md`](players/README.md): exportar el
-extracto de Revolut, cifrarlo, subirlo por PR y registrar tu secret.
+Lo más fácil es la página **[⬆️ Subir tu extracto](https://fedegarlo.github.io/trader/subir.html)**
+(enlazada desde el ranking): cifra tu CSV en el propio navegador, lo valida y
+lo sube al repo con un commit directo usando tu token de GitHub —**sin pull
+request**. También puedes hacerlo por CLI + PR. Los detalles, en
+[`players/README.md`](players/README.md).
 
 ### Comandos
 
