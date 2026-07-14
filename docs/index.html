@@ -41,6 +41,7 @@
     padding: 24px 16px 48px;
   }
   main { max-width: 880px; margin: 0 auto; display: grid; gap: 20px; }
+  main > * { min-width: 0; }
   h1 { font-size: 24px; }
   .sub { color: var(--ink-2); font-size: 13px; margin-top: 2px; }
   .card {
@@ -59,7 +60,7 @@
   .pos { color: var(--up); } .neg { color: var(--down); }
   .big { font-weight: 600; }
   .chartwrap { position: relative; }
-  svg { display: block; width: 100%; height: auto; }
+  svg { display: block; width: 100%; height: auto; touch-action: pan-y; }
   .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 10px;
             font-size: 13px; color: var(--ink-2); }
   .legend span { display: inline-flex; align-items: center; }
@@ -76,8 +77,18 @@
   details { border-top: 1px solid var(--grid); }
   details:first-of-type { border-top: none; }
   summary { cursor: pointer; padding: 10px 0; font-weight: 600; font-size: 14px; }
-  .overx { overflow-x: auto; }
+  .overx { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .overx table { white-space: nowrap; }
   footer { color: var(--muted); font-size: 12.5px; max-width: 880px; margin: 24px auto 0; }
+  @media (max-width: 600px) {
+    body { font-size: 14px; padding: 14px 10px 32px; }
+    main { gap: 12px; }
+    h1 { font-size: 20px; }
+    .card { padding: 14px 12px; border-radius: 10px; }
+    th, td { padding: 6px 7px; font-size: 13px; }
+    .legend { font-size: 12px; }
+    summary { font-size: 13.5px; }
+  }
 </style>
 </head>
 <body>
@@ -149,8 +160,20 @@ const MEDALS = ["🥇","🥈","🥉"];
 
 // ---- gráfica de líneas: % acumulado ----
 const svg = document.getElementById("chart");
+const wrap = document.querySelector(".chartwrap");
 const NS = "http://www.w3.org/2000/svg";
-const W = 860, H = 360, M = {t: 16, r: 64, b: 30, l: 52};
+// Dimensiones en unidades del viewBox == px reales del contenedor, para que
+// el texto no se encoja al escalar en pantallas estrechas.
+let W = 860, H = 360;
+const M = {t: 16, r: 64, b: 30, l: 52};
+function computeSize() {
+  W = Math.max(300, Math.round(wrap.clientWidth || 860));
+  const narrow = W < 520;
+  H = narrow ? 300 : 360;
+  M.r = narrow ? 52 : 64;
+  M.l = narrow ? 48 : 52;
+  svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+}
 const dates = DATA.players.length
   ? DATA.players.map(p => p.days.map(d => d.date)).flat().filter((v,i,a) => a.indexOf(v) === i).sort()
   : [];
@@ -176,6 +199,7 @@ function niceTicks(lo, hi, n) {
 }
 
 function draw() {
+  computeSize();
   while (svg.firstChild) svg.removeChild(svg.firstChild);
   if (!DATA.players.length) {
     const t = el("text", {x: W/2, y: H/2, "text-anchor": "middle", fill: css("--muted"), "font-size": 14});
@@ -192,8 +216,9 @@ function draw() {
     t.textContent = (v > 0 ? "+" : "") + v.toFixed(Math.abs(v) < 10 && v % 1 ? 1 : 0) + "%";
     svg.appendChild(t);
   });
-  // eje X: ~6 fechas
-  const stepX = Math.max(1, Math.round(dates.length / 6));
+  // eje X: tantas fechas como quepan (~1 cada 120px)
+  const nTicks = Math.max(3, Math.round((W - M.l - M.r) / 120));
+  const stepX = Math.max(1, Math.round(dates.length / nTicks));
   dates.forEach((d, i) => {
     const isLast = i === dates.length - 1;
     // el último siempre; los intermedios solo si no se pegan al último
@@ -237,6 +262,11 @@ function draw() {
 draw();
 const mq = window.matchMedia("(prefers-color-scheme: dark)");
 if (mq.addEventListener) mq.addEventListener("change", draw);
+let rafId;
+window.addEventListener("resize", () => {
+  cancelAnimationFrame(rafId);
+  rafId = requestAnimationFrame(draw);
+});
 
 // ---- leyenda ----
 {
@@ -252,7 +282,6 @@ if (mq.addEventListener) mq.addEventListener("change", draw);
 
 // ---- tooltip con crosshair ----
 const tip = document.getElementById("tip");
-const wrap = document.querySelector(".chartwrap");
 function onMove(ev) {
   if (!DATA.players.length) return;
   const rect = svg.getBoundingClientRect();
