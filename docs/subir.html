@@ -136,10 +136,8 @@
     <label for="csv">Extracto CSV de Revolut <span class="hint">Inversiones → ⋯ → Extractos → CSV</span></label>
     <input type="file" id="csv" accept=".csv,text/csv">
 
-    <label for="pass">Frase de paso</label>
-    <input type="password" id="pass" placeholder="tu frase secreta" autocomplete="new-password">
-    <label for="pass2">Repite la frase de paso</label>
-    <input type="password" id="pass2" autocomplete="new-password">
+    <label for="pass">Frase de paso de la liga <span class="hint">la misma para todos — la que os habéis puesto entre vosotros</span></label>
+    <input type="password" id="pass" placeholder="frase compartida de la liga" autocomplete="off">
 
     <div class="actions">
       <button id="btn-check">Validar y cifrar</button>
@@ -156,7 +154,7 @@
     <input type="password" id="token" placeholder="github_pat_…" autocomplete="off" spellcheck="false">
     <div class="check">
       <input type="checkbox" id="remember">
-      <label for="remember">Recordar el token en este dispositivo</label>
+      <label for="remember">Recordar token y frase de la liga en este dispositivo</label>
     </div>
 
     <details class="adv">
@@ -353,21 +351,21 @@ async function ghCommit({ owner, repo, branch, token, files, message }) {
   }
   $("owner").value = owner; $("repo").value = repo;
 })();
-// token recordado
+// token y frase recordados
 if (localStorage.getItem("trader_token")) { $("token").value = localStorage.getItem("trader_token"); $("remember").checked = true; }
+if (localStorage.getItem("trader_pass")) { $("pass").value = localStorage.getItem("trader_pass"); }
 
 // ---------- paso 1: validar + cifrar ----------
 $("btn-check").addEventListener("click", async () => {
   const st = statusBox($("check-status"));
   encryptedFile = null; $("btn-dl").disabled = true; $("btn-upload").disabled = true;
   const pid = $("pid").value.trim().toLowerCase();
-  const pass = $("pass").value, pass2 = $("pass2").value;
+  const pass = $("pass").value;
   const file = $("csv").files[0];
   if (!/^[a-z0-9-]+$/.test(pid)) return void st.line("err", "El id de jugador solo puede tener minúsculas, números y guiones.");
   if (!$("name").value.trim()) return void st.line("err", "Falta el nombre a mostrar.");
   if (!file) return void st.line("err", "Selecciona tu extracto CSV.");
-  if (pass.length < 6) return void st.line("err", "La frase de paso debe tener al menos 6 caracteres.");
-  if (pass !== pass2) return void st.line("err", "Las frases de paso no coinciden.");
+  if (pass.length < 4) return void st.line("err", "Escribe la frase de paso de la liga.");
 
   try {
     const buf = new Uint8Array(await file.arrayBuffer());
@@ -412,8 +410,13 @@ $("btn-upload").addEventListener("click", async () => {
   if (!token) return void st.line("err", "Introduce tu token de GitHub.");
   if (!owner || !repo) return void st.line("err", "Falta owner o repo (opciones avanzadas).");
 
-  if ($("remember").checked) localStorage.setItem("trader_token", token);
-  else localStorage.removeItem("trader_token");
+  if ($("remember").checked) {
+    localStorage.setItem("trader_token", token);
+    localStorage.setItem("trader_pass", $("pass").value);
+  } else {
+    localStorage.removeItem("trader_token");
+    localStorage.removeItem("trader_pass");
+  }
 
   const playerJson = JSON.stringify({
     display_name: $("name").value.trim(),
@@ -433,14 +436,12 @@ $("btn-upload").addEventListener("click", async () => {
       message: "Actualizar extracto de " + pid,
     });
     st.clear();
-    const envName = "PLAYER_" + pid.toUpperCase().replace(/-/g, "_") + "_KEY";
     st.box("ok",
       "<b>✅ Subido a la rama <code>" + res.branch + "</code></b> — sin pull request.<br>" +
       "Commit <code>" + res.commit.sha.slice(0, 7) + "</code>. El ranking se recalculará solo en unos minutos.");
     st.box("",
-      "<b>¿Primera vez?</b> Para que el ranking pueda descifrar tu extracto, el administrador " +
-      "debe crear una sola vez el secret <code>" + envName + "</code> con tu frase de paso " +
-      "(Settings → Secrets and variables → Actions). Las próximas actualizaciones no requieren nada más.");
+      "Si tu extracto <b>no aparece</b> en el ranking, casi seguro es que la frase de paso no " +
+      "coincide con la compartida de la liga: vuelve a subirlo con la frase correcta.");
   } catch (e) {
     st.clear();
     let hint = "";

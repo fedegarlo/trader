@@ -14,28 +14,28 @@ players/
     trades.csv.enc   <- extracto de Revolut CIFRADO (nunca subas el .csv en claro)
 ```
 
+> **La liga usa una única frase de paso compartida entre todos.** El
+> administrador la guarda una sola vez como secret `TRADER_KEY`; tú solo
+> tienes que usar esa misma frase al cifrar. No hay un secret por jugador.
+
 ## Cómo unirte (recomendado: desde la web, sin PR)
 
 La forma más simple es la página **[⬆️ Subir tu extracto](https://fedegarlo.github.io/trader/subir.html)**
 (enlazada desde el ranking):
 
-1. Exporta tu extracto desde la app de Revolut
+1. Pídele al administrador que te añada como **colaborador con permiso Write**
+   y que te diga la **frase de paso de la liga**.
+2. Exporta tu extracto desde la app de Revolut
    (**Inversiones → ⋯ → Extractos → CSV**).
-2. En la web, rellena tu id, nombre y frase de paso, y elige el CSV. El
-   extracto **se cifra en tu propio navegador** (nunca sale en claro) y la web
-   valida que es un extracto de Revolut legible.
-3. Pega un [token fine-grained](https://github.com/settings/tokens?type=beta)
+3. En la web, rellena tu id, nombre y la **frase compartida**, y elige el CSV.
+   El extracto **se cifra en tu propio navegador** (nunca sale en claro) y la
+   web valida que es un extracto de Revolut legible.
+4. Pega un [token fine-grained](https://github.com/settings/tokens?type=beta)
    con permiso **Contents: Read and write** sobre este repo y pulsa *Subir sin
    PR*: hace un commit directo de `player.json` y `trades.csv.enc`.
 
-> **Solo la primera vez**, pide al administrador que cree el secret
-> `PLAYER_<TU_ID>_KEY` con tu frase de paso
-> (Settings → Secrets and variables → Actions). Ya no hace falta editar el
-> workflow: `trader` lee todas las claves de los secrets automáticamente. Las
-> siguientes actualizaciones no requieren nada del administrador.
-
 Para actualizar tus operaciones basta con volver a exportar el extracto y
-subirlo de nuevo con la misma frase de paso.
+subirlo de nuevo (misma frase). El administrador **no tiene que hacer nada**.
 
 ## Alternativa: por línea de comandos y pull request
 
@@ -51,7 +51,7 @@ subirlo de nuevo con la misma frase de paso.
 
    Con `show_amounts: false` el ranking público solo muestra porcentajes;
    tus importes no se publican.
-2. Elige una frase de paso y cifra tu extracto:
+2. Cifra tu extracto con la **frase compartida de la liga**:
 
    ```bash
    python -m trader encrypt extracto.csv --out players/<tu-id>/trades.csv.enc
@@ -59,5 +59,3 @@ subirlo de nuevo con la misma frase de paso.
 
 3. Sube `player.json` y `trades.csv.enc` en un pull request. **Jamás subas el
    CSV sin cifrar** (el `.gitignore` ayuda, pero revisa el diff).
-4. Pide al administrador que cree el secret `PLAYER_<TU_ID>_KEY` con tu frase
-   de paso (Settings → Secrets and variables → Actions).

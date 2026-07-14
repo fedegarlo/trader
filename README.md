@@ -41,7 +41,7 @@ flujo se basa en el extracto CSV que exporta la propia app:
 ```
 extracto CSV de Revolut ──cifrar──> players/<id>/trades.csv.enc  (público, ilegible)
                                             │
-                     GitHub Action (diaria) │ descifra con el secret PLAYER_<ID>_KEY
+                     GitHub Action (diaria) │ descifra con el secret TRADER_KEY
                                             ▼
                         reconstruye posiciones día a día
                         valora al cierre (Yahoo Finance)
@@ -62,22 +62,25 @@ Para cada día natural se calcula:
 
 ## Privacidad en un repo público
 
-- Cada jugador cifra su extracto con una **frase de paso propia**
-  (`python -m trader encrypt ...`, AES vía Fernet + PBKDF2 600k iteraciones).
-  En el repo solo hay ficheros `.csv.enc` ilegibles.
-- Las frases de paso viven como **GitHub Actions Secrets**
-  (`PLAYER_<ID>_KEY`), que solo el workflow puede leer. Nadie —ni siquiera
-  los administradores— puede ver un secret una vez guardado.
+- Los extractos se cifran (AES vía Fernet + PBKDF2 600k iteraciones) con una
+  **única frase de paso compartida por la liga**. En el repo solo hay ficheros
+  `.csv.enc` ilegibles para quien no conozca esa frase.
+- La frase vive como **GitHub Actions Secret** (`TRADER_KEY`), que solo el
+  workflow puede leer. Nadie que no esté en la liga —ni por ser público el
+  repo— puede descifrar los extractos.
 - En `player.json`, con `"show_amounts": false` el ranking muestra **solo
   porcentajes**: ni importes, ni tickers, ni operaciones.
 
+> **Modelo de confianza:** al ser una liga entre colegas, todos comparten la
+> misma frase, así que entre vosotros os podéis descifrar los extractos; lo
+> que queda protegido es que el **público** (el repo es abierto) no pueda
+> leerlos. Si quisieras privacidad también entre jugadores, se usaría una
+> frase por jugador (un secret `PLAYER_<ID>_KEY` cada uno).
+>
 > Con la subida desde la web (`docs/subir.html`) el commit va directo a la
-> rama por defecto con el token del jugador, así que el ranking se recalcula
-> sin necesidad de fork ni PR. La frase de paso sigue viviendo solo como
-> secret de Actions: el workflow inyecta `toJSON(secrets)` en
-> `TRADER_SECRETS_JSON` y `trader` lee de ahí la clave de cada jugador, de
-> modo que dar de alta a alguien nuevo solo requiere **crear su secret una
-> vez** (sin tocar el YAML).
+> rama por defecto con el token del jugador: el ranking se recalcula sin fork
+> ni PR, y **dar de alta a alguien nuevo no requiere crear ningún secret**
+> (basta con que use la frase compartida y sea colaborador con permiso Write).
 
 ## Empezar
 
