@@ -1,9 +1,10 @@
 """Genera docs/index.html: dashboard estático para GitHub Pages.
 
-Autocontenido (datos embebidos, sin CDNs): tabla de ranking + gráfica de
-rentabilidad acumulada por jugador con crosshair y tooltip. El color se
-asigna a cada jugador por orden alfabético de id (estable: no cambia si
-cambia su posición en el ranking).
+Autocontenido (datos embebidos, sin CDNs): tarjetas tipo widget al estilo
+Revolut (fondo aurora, gráficas de área con degradado, tipografía compacta),
+tabla de ranking + gráfica de rentabilidad acumulada por jugador con crosshair
+y tooltip. El color se asigna a cada jugador por orden alfabético de id
+(estable: no cambia si cambia su posición en el ranking).
 """
 
 from __future__ import annotations
@@ -24,112 +25,236 @@ _TEMPLATE = """<!doctype html>
 <style>
   :root {
     color-scheme: light;
-    --page: #f9f9f7; --surface: #fcfcfb;
-    --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
-    --grid: #e1e0d9; --baseline: #c3c2b7; --ring: rgba(11,11,11,0.10);
-    --up: #006300; --down: #d03b3b;
+    --ink: #0b0a10; --ink-2: #5b5966; --muted: #918f9d;
+    --surface: rgba(255,255,255,0.66);
+    --surface-2: rgba(255,255,255,0.42);
+    --card-solid: #f6f4fb;
+    --grid: rgba(11,10,16,0.08); --baseline: rgba(11,10,16,0.20);
+    --ring: rgba(11,10,16,0.07); --hair: rgba(11,10,16,0.06);
+    --accent: #1f6bff;
+    --up: #12864c; --down: #e0483d;
+    --up-soft: rgba(18,134,76,0.14); --down-soft: rgba(224,72,61,0.14);
     --s1: #2a78d6; --s2: #1baf7a; --s3: #eda100; --s4: #008300;
     --s5: #4a3aa7; --s6: #e34948; --s7: #e87ba4; --s8: #eb6834;
+    --aura-1: #ffe4c2; --aura-2: #dcd4ff; --aura-3: #ffd6ea; --aura-base: #efeaf8;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       color-scheme: dark;
-      --page: #0d0d0d; --surface: #1a1a19;
-      --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781;
-      --grid: #2c2c2a; --baseline: #383835; --ring: rgba(255,255,255,0.10);
-      --up: #0ca30c; --down: #e66767;
+      --ink: #f6f5fb; --ink-2: #b9b6c6; --muted: #86838f;
+      --surface: rgba(30,29,38,0.62);
+      --surface-2: rgba(30,29,38,0.40);
+      --card-solid: #1b1a22;
+      --grid: rgba(255,255,255,0.09); --baseline: rgba(255,255,255,0.22);
+      --ring: rgba(255,255,255,0.10); --hair: rgba(255,255,255,0.07);
+      --accent: #5b9bff;
+      --up: #1fbf6b; --down: #ff6d63;
+      --up-soft: rgba(31,191,107,0.18); --down-soft: rgba(255,109,99,0.18);
       --s1: #3987e5; --s2: #199e70; --s3: #c98500; --s4: #008300;
       --s5: #9085e9; --s6: #e66767; --s7: #d55181; --s8: #d95926;
+      --aura-1: #3a2c55; --aura-2: #232c4d; --aura-3: #4a2740; --aura-base: #0e0d13;
     }
   }
   :root[data-theme="dark"] {
     color-scheme: dark;
-    --page: #0d0d0d; --surface: #1a1a19;
-    --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781;
-    --grid: #2c2c2a; --baseline: #383835; --ring: rgba(255,255,255,0.10);
-    --up: #0ca30c; --down: #e66767;
+    --ink: #f6f5fb; --ink-2: #b9b6c6; --muted: #86838f;
+    --surface: rgba(30,29,38,0.62);
+    --surface-2: rgba(30,29,38,0.40);
+    --card-solid: #1b1a22;
+    --grid: rgba(255,255,255,0.09); --baseline: rgba(255,255,255,0.22);
+    --ring: rgba(255,255,255,0.10); --hair: rgba(255,255,255,0.07);
+    --accent: #5b9bff;
+    --up: #1fbf6b; --down: #ff6d63;
+    --up-soft: rgba(31,191,107,0.18); --down-soft: rgba(255,109,99,0.18);
     --s1: #3987e5; --s2: #199e70; --s3: #c98500; --s4: #008300;
     --s5: #9085e9; --s6: #e66767; --s7: #d55181; --s8: #d95926;
+    --aura-1: #3a2c55; --aura-2: #232c4d; --aura-3: #4a2740; --aura-base: #0e0d13;
   }
   * { box-sizing: border-box; margin: 0; }
+  html { -webkit-text-size-adjust: 100%; }
   body {
-    background: var(--page); color: var(--ink);
-    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
-    padding: 24px 16px 48px;
+    color: var(--ink);
+    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "SF Pro Display",
+          system-ui, "Segoe UI", Roboto, sans-serif;
+    letter-spacing: -0.01em;
+    padding: 20px 14px calc(40px + env(safe-area-inset-bottom));
+    min-height: 100vh;
+    background:
+      radial-gradient(120% 78% at 2% -4%, var(--aura-1) 0%, transparent 52%),
+      radial-gradient(120% 82% at 100% -2%, var(--aura-2) 0%, transparent 54%),
+      radial-gradient(150% 90% at 50% 108%, var(--aura-3) 0%, transparent 60%),
+      var(--aura-base);
+    background-attachment: fixed;
   }
-  main { max-width: 880px; margin: 0 auto; display: grid; gap: 20px; }
+  main { max-width: 760px; margin: 0 auto; display: grid; gap: 12px; }
   main > * { min-width: 0; }
-  h1 { font-size: 24px; }
-  .sub { color: var(--ink-2); font-size: 13px; margin-top: 2px; }
-  .card {
-    background: var(--surface); border: 1px solid var(--ring);
-    border-radius: 12px; padding: 20px;
+
+  /* header */
+  header { padding: 4px 6px 6px; }
+  .eyebrow { color: var(--ink-2); font-size: 13px; font-weight: 600; }
+  .hrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 6px; }
+  h1 { font-size: clamp(30px, 9vw, 40px); font-weight: 800; letter-spacing: -0.035em; line-height: 1.02; }
+  .upload {
+    flex: none; text-decoration: none; color: #fff; background: var(--accent);
+    width: 46px; height: 46px; border-radius: 999px; display: grid; place-items: center;
+    box-shadow: 0 8px 18px -6px color-mix(in srgb, var(--accent) 75%, transparent);
   }
-  .card h2 { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
-  .card.warn { border-color: color-mix(in srgb, var(--s3) 55%, var(--ring)); }
-  .card.warn .sub { color: var(--ink-2); }
+  .upload svg { display: block; }
+  .upload:active { transform: translateY(1px); }
+  .hbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; }
+  .chip { font-weight: 700; font-size: 15px; color: var(--ink); }
+  .chip .caret { color: var(--muted); font-size: 12px; }
+  .period { font-weight: 700; font-size: 15px; color: var(--accent); }
+
+  /* tarjetas */
+  .card {
+    background: var(--surface);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    backdrop-filter: blur(24px) saturate(150%);
+    border: 1px solid var(--ring);
+    border-radius: 26px; padding: 18px;
+    box-shadow: 0 1px 1px rgba(11,10,16,0.03), 0 12px 28px -22px rgba(11,10,16,0.30);
+  }
+  .card h2 { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; }
+  .card.warn { border-color: color-mix(in srgb, var(--s3) 55%, var(--ring)); background: color-mix(in srgb, var(--s3) 10%, var(--surface)); }
+
+  /* widgets */
+  .widget { position: relative; overflow: hidden; padding-bottom: 0; }
+  .wlabel { color: var(--ink-2); font-size: 14px; font-weight: 600; }
+  .wbig { font-size: clamp(26px, 8vw, 34px); font-weight: 800; letter-spacing: -0.035em; line-height: 1.1; margin-top: 3px; display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; }
+  .wbig.sm { font-size: clamp(22px, 6.6vw, 28px); white-space: nowrap; }
+  .num { font-variant-numeric: tabular-nums; }
+  .delta { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+  .wsub { color: var(--ink-2); font-size: 13.5px; font-weight: 600; margin-top: 4px; }
+  .wsub.muted { color: var(--muted); font-weight: 500; }
+  .sparkwrap { margin: 12px -18px 0; height: 116px; }
+  .sparkwrap.sm { height: 58px; margin-top: 10px; }
+  svg.spark { display: block; width: 100%; height: 100%; }
+  .wrow { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .wrow .card { padding-bottom: 18px; display: flex; flex-direction: column; }
+  .wrow .card.widget { padding-bottom: 0; }
+
+  /* widget de cartera (asignación agregada de la liga) */
+  .alloc-bars { display: flex; gap: 10px; align-items: flex-end; margin-top: 16px; }
+  .acol { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 9px; }
+  .abar-track { width: 100%; height: 116px; display: flex; align-items: flex-end; justify-content: center; }
+  .abar { width: 13px; border-radius: 999px; min-height: 6px; }
+  .abadge { width: 34px; height: 34px; border-radius: 999px; display: grid; place-items: center;
+            color: #fff; font-size: 11px; font-weight: 800; letter-spacing: -0.02em; box-shadow: 0 2px 6px -2px rgba(11,10,16,0.4); }
+  .aw { font-size: 11.5px; font-weight: 700; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .alloc-insight { margin-top: 16px; font-size: 13.5px; font-weight: 700; color: var(--accent); }
+  .alloc-insight .muted { color: var(--muted); font-weight: 500; }
+
+  .pos { color: var(--up); } .neg { color: var(--down); }
+
+  /* tabla ranking */
   table { border-collapse: collapse; width: 100%; }
-  th, td { padding: 7px 10px; text-align: right; font-variant-numeric: tabular-nums; }
-  th { color: var(--muted); font-size: 12px; font-weight: 500; border-bottom: 1px solid var(--grid); }
-  td { border-bottom: 1px solid var(--grid); }
+  th, td { padding: 9px 10px; text-align: right; font-variant-numeric: tabular-nums; }
+  th { color: var(--muted); font-size: 12px; font-weight: 600; border-bottom: 1px solid var(--hair); }
+  td { border-bottom: 1px solid var(--hair); }
   tr:last-child td { border-bottom: none; }
   th:first-child, td:first-child, th.name, td.name { text-align: left; }
-  .key { display: inline-block; width: 14px; height: 3px; border-radius: 2px;
-         vertical-align: middle; margin-right: 7px; }
-  .pos { color: var(--up); } .neg { color: var(--down); }
-  .big { font-weight: 600; }
-  .chartwrap { position: relative; }
-  svg { display: block; width: 100%; height: auto; touch-action: pan-y; }
-  .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 10px;
-            font-size: 13px; color: var(--ink-2); }
+  td.rank { font-weight: 700; font-size: 15px; color: var(--muted); }
+  .key { display: inline-block; width: 9px; height: 9px; border-radius: 999px;
+         vertical-align: middle; margin-right: 8px; }
+  .big { font-weight: 700; }
+
+  /* gráfica multilínea */
+  .chartwrap { position: relative; margin-top: 12px; }
+  svg#chart { display: block; width: 100%; height: auto; touch-action: pan-y; }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-top: 12px;
+            font-size: 13px; font-weight: 600; color: var(--ink-2); }
   .legend span { display: inline-flex; align-items: center; }
   .tip {
     position: absolute; pointer-events: none; display: none; z-index: 2;
-    background: var(--surface); border: 1px solid var(--ring); border-radius: 8px;
-    padding: 8px 10px; font-size: 12.5px; box-shadow: 0 2px 10px rgba(0,0,0,.12);
-    min-width: 150px;
+    background: var(--card-solid); border: 1px solid var(--ring); border-radius: 14px;
+    padding: 9px 11px; font-size: 12.5px; box-shadow: 0 8px 24px -8px rgba(11,10,16,.35);
+    min-width: 152px;
   }
-  .tip .d { color: var(--muted); margin-bottom: 4px; }
+  .tip .d { color: var(--muted); margin-bottom: 5px; font-weight: 600; }
   .tip .row { display: flex; align-items: center; gap: 7px; justify-content: space-between; }
-  .tip .row b { font-variant-numeric: tabular-nums; }
-  .tip .row .nm { color: var(--ink-2); display: inline-flex; align-items: center; }
-  details { border-top: 1px solid var(--grid); }
+  .tip .row b { font-variant-numeric: tabular-nums; font-weight: 700; }
+  .tip .row .nm { color: var(--ink-2); display: inline-flex; align-items: center; font-weight: 500; }
+
+  /* detalle */
+  details { border-top: 1px solid var(--hair); }
   details:first-of-type { border-top: none; }
-  summary { cursor: pointer; padding: 10px 0; font-weight: 600; font-size: 14px; }
+  summary { cursor: pointer; padding: 12px 2px; font-weight: 700; font-size: 14px;
+            list-style: none; display: flex; align-items: center; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "⌄"; margin-left: auto; color: var(--muted); font-size: 16px; transform: translateY(-3px); }
+  details[open] summary::after { transform: translateY(1px) rotate(180deg); }
   .overx { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .overx table { white-space: nowrap; }
-  footer { color: var(--muted); font-size: 12.5px; max-width: 880px; margin: 24px auto 0; }
-  @media (max-width: 600px) {
-    body { font-size: 14px; padding: 14px 10px 32px; }
-    main { gap: 12px; }
-    h1 { font-size: 20px; }
-    .card { padding: 14px 12px; border-radius: 10px; }
-    th, td { padding: 6px 7px; font-size: 13px; }
-    .legend { font-size: 12px; }
-    summary { font-size: 13.5px; }
+  footer { color: var(--muted); font-size: 12.5px; max-width: 760px; margin: 20px auto 0; padding: 0 6px; }
+
+  @media (min-width: 620px) {
+    main { gap: 14px; }
+    .card { padding: 22px; }
+    .sparkwrap { margin: 14px -22px 0; }
   }
 </style>
 </head>
 <body>
 <main>
   <header>
-    <h1>🏆 Ranking de rentabilidad</h1>
-    <p class="sub">Actualizado: __UPDATED__ · competición de trading con Revolut</p>
-    <a href="subir.html" style="display:inline-block;margin-top:10px;padding:8px 14px;border-radius:8px;background:var(--s1);color:#fff;font-weight:600;font-size:13px;text-decoration:none">⬆️ Subir tu extracto</a>
+    <div class="eyebrow">🏆 Competición · Revolut · actualizado __UPDATED__</div>
+    <div class="hrow">
+      <h1>Rentabilidad</h1>
+      <a class="upload" href="subir.html" aria-label="Subir extracto" title="Subir extracto">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
+             stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M5 20h14"/>
+        </svg>
+      </a>
+    </div>
+    <div class="hbar">
+      <span class="chip" id="hchip">Todos los jugadores <span class="caret">▾</span></span>
+      <span class="period">Últimos 30 días</span>
+    </div>
   </header>
 
   <section class="card warn" id="pending-card" style="display:none">
     <h2>⏳ Pendiente de clave</h2>
-    <div class="sub" id="pending"></div>
+    <div class="wsub" id="pending" style="margin-top:6px"></div>
   </section>
+
+  <div id="widgets" style="display:grid;gap:12px">
+    <section class="card widget" id="hero-card">
+      <div class="wlabel">Líder · <span id="hero-name"></span></div>
+      <div class="wbig"><span class="num" id="hero-val"></span><span class="delta" id="hero-delta"></span></div>
+      <div class="sparkwrap" id="hero-spark"></div>
+    </section>
+    <div class="wrow">
+      <section class="card widget" id="best-card">
+        <div class="wlabel">Mejor del día</div>
+        <div class="wbig"><span class="num" id="best-val"></span></div>
+        <div class="wsub" id="best-name"></div>
+        <div class="sparkwrap sm" id="best-spark"></div>
+      </section>
+      <section class="card" id="gap-card">
+        <div class="wlabel">Diferencia 1º–último</div>
+        <div class="wbig sm"><span class="num" id="gap-val"></span></div>
+        <div style="margin-top:auto">
+          <div class="wsub" id="gap-top"></div>
+          <div class="wsub muted" id="gap-bot"></div>
+        </div>
+      </section>
+    </div>
+    <section class="card" id="alloc-card" style="display:none">
+      <div class="wlabel">Cartera de la liga</div>
+      <div class="alloc-bars" id="alloc-bars"></div>
+      <div class="alloc-insight" id="alloc-insight"></div>
+    </section>
+  </div>
 
   <section class="card">
     <h2>Clasificación</h2>
-    <div class="overx"><table id="ranking"></table></div>
+    <div class="overx" style="margin-top:6px"><table id="ranking"></table></div>
   </section>
 
   <section class="card">
-    <h2>Rentabilidad acumulada (%) · últimos 30 días</h2>
+    <h2>Rentabilidad acumulada · últimos 30 días</h2>
     <div class="chartwrap">
       <svg id="chart" viewBox="0 0 860 360" role="img"
            aria-label="Evolución de la rentabilidad acumulada por jugador"></svg>
@@ -140,7 +265,7 @@ _TEMPLATE = """<!doctype html>
 
   <section class="card">
     <h2>Detalle diario · últimos 30 días</h2>
-    <div id="detail"></div>
+    <div id="detail" style="margin-top:4px"></div>
   </section>
 </main>
 <footer>
@@ -155,10 +280,10 @@ const css = name => getComputedStyle(document.documentElement).getPropertyValue(
 const colorOf = p => css(SLOTS[p.slot % SLOTS.length]);
 const fmtPct = v => (v > 0 ? "+" : "") + v.toFixed(2) + "%";
 const fmtDate = iso => { const [y,m,d] = iso.split("-"); return d + "/" + m + "/" + y.slice(2); };
+const lastOf = p => p.days[p.days.length - 1];
 
 // ---- clasificación (ordenada por acumulado; el color sigue al jugador) ----
-const ranked = [...DATA.players].sort((a, b) =>
-  b.days[b.days.length-1].cum - a.days[a.days.length-1].cum);
+const ranked = [...DATA.players].sort((a, b) => lastOf(b).cum - lastOf(a).cum);
 const MEDALS = ["🥇","🥈","🥉"];
 {
   const t = document.getElementById("ranking");
@@ -170,9 +295,9 @@ const MEDALS = ["🥇","🥈","🥉"];
     th.textContent = h; if (i === 1) th.className = "name"; head.appendChild(th);
   });
   ranked.forEach((p, i) => {
-    const last = p.days[p.days.length-1];
+    const last = lastOf(p);
     const tr = t.insertRow();
-    tr.appendChild(mk("td", "", MEDALS[i] || String(i + 1)));
+    tr.appendChild(mk("td", "rank", MEDALS[i] || String(i + 1)));
     const name = mk("td", "name");
     const key = mk("span", "key"); key.style.background = colorOf(p);
     name.appendChild(key); name.appendChild(document.createTextNode(p.name));
@@ -191,6 +316,98 @@ if (DATA.pending && DATA.pending.length) {
     "frase de paso no es la de la liga: que lo vuelva a subir con la frase correcta.";
   document.getElementById("pending-card").style.display = "";
 }
+
+// ---- widgets tipo Revolut (gráficas de área con degradado) ----
+function sparkSVG(values, color, id) {
+  const W = 100, H = 40, pad = 3;
+  let mn = Math.min(...values), mx = Math.max(...values);
+  if (mx === mn) { mx += 1; mn -= 1; }
+  const xs = i => values.length < 2 ? W / 2 : (i / (values.length - 1)) * W;
+  const ys = v => pad + (1 - (v - mn) / (mx - mn)) * (H - 2 * pad);
+  const line = values.map((v, i) => (i ? "L" : "M") + xs(i).toFixed(2) + " " + ys(v).toFixed(2)).join(" ");
+  const area = "M" + xs(0).toFixed(2) + " " + H + " " +
+    values.map((v, i) => "L" + xs(i).toFixed(2) + " " + ys(v).toFixed(2)).join(" ") +
+    " L" + xs(values.length - 1).toFixed(2) + " " + H + " Z";
+  return '<svg class="spark" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-hidden="true">' +
+    '<defs><linearGradient id="sg' + id + '" x1="0" y1="0" x2="0" y2="1">' +
+    '<stop offset="0" stop-color="' + color + '" stop-opacity="0.34"/>' +
+    '<stop offset="1" stop-color="' + color + '" stop-opacity="0"/>' +
+    '</linearGradient></defs>' +
+    '<path d="' + area + '" fill="url(#sg' + id + ')"/>' +
+    '<path d="' + line + '" fill="none" stroke="' + color + '" stroke-width="2.4" ' +
+    'vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/>' +
+    '</svg>';
+}
+function paintWidgets() {
+  if (!DATA.players.length) { document.getElementById("widgets").style.display = "none"; return; }
+  const upC = css("--up"), downC = css("--down");
+  // héroe: líder
+  const leader = ranked[0], lc = lastOf(leader);
+  document.getElementById("hero-name").textContent = leader.name;
+  const hv = document.getElementById("hero-val");
+  hv.textContent = fmtPct(lc.cum); hv.className = "num " + (lc.cum >= 0 ? "pos" : "neg");
+  const hd = document.getElementById("hero-delta");
+  hd.textContent = (lc.day >= 0 ? "▲ " : "▼ ") + fmtPct(lc.day);
+  hd.className = "delta " + (lc.day >= 0 ? "pos" : "neg");
+  document.getElementById("hero-spark").innerHTML =
+    sparkSVG(leader.days.map(d => d.cum), lc.cum >= 0 ? upC : downC, "hero");
+
+  // mejor del día
+  const best = [...DATA.players].sort((a, b) => lastOf(b).day - lastOf(a).day)[0];
+  const bd = lastOf(best);
+  const bv = document.getElementById("best-val");
+  bv.textContent = fmtPct(bd.day); bv.className = "num " + (bd.day >= 0 ? "pos" : "neg");
+  document.getElementById("best-name").textContent = best.name;
+  document.getElementById("best-spark").innerHTML =
+    sparkSVG(best.days.map(d => d.day), bd.day >= 0 ? upC : downC, "best");
+
+  // diferencia 1º - último
+  const gapCard = document.getElementById("gap-card");
+  if (ranked.length < 2) {
+    gapCard.style.display = "none";
+    document.querySelector(".wrow").style.gridTemplateColumns = "1fr";
+    return;
+  }
+  const last = ranked[ranked.length - 1];
+  const gap = lastOf(ranked[0]).cum - lastOf(last).cum;
+  document.getElementById("gap-val").textContent = "+" + gap.toFixed(2) + "\\u00a0pp";
+  document.getElementById("gap-top").textContent = "🥇 " + ranked[0].name + " · " + fmtPct(lastOf(ranked[0]).cum);
+  document.getElementById("gap-bot").textContent = last.name + " · " + fmtPct(lastOf(last).cum);
+}
+paintWidgets();
+
+// ---- widget de cartera: asignación agregada por ticker (solo pesos) ----
+function badgeColor(t) {
+  let h = 0; for (let i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) >>> 0;
+  return "hsl(" + (h % 360) + " 58% 52%)";
+}
+function paintAllocation() {
+  const all = DATA.allocation || [];
+  const card = document.getElementById("alloc-card");
+  if (!all.length) { card.style.display = "none"; return; }
+  card.style.display = "";
+  let items = all;
+  if (all.length > 6) {
+    const rest = all.slice(5).reduce((s, x) => s + x.w, 0);
+    items = all.slice(0, 5).concat([{ticker: "Otros", w: Math.round(rest * 100) / 100, other: true}]);
+  }
+  const max = Math.max(...items.map(x => x.w)) || 1;
+  const fmtW = w => w.toFixed(w < 10 ? 1 : 0) + "%";
+  document.getElementById("alloc-bars").innerHTML = items.map(x => {
+    const col = x.other ? css("--muted") : badgeColor(x.ticker);
+    const h = Math.max(6, Math.round(x.w / max * 116));
+    const badge = x.other ? "···" : x.ticker.slice(0, 2).toUpperCase();
+    return '<div class="acol"><div class="abar-track">' +
+      '<div class="abar" style="height:' + h + 'px;background:' + col + '"></div></div>' +
+      '<div class="abadge" style="background:' + col + '" title="' + x.ticker + '">' + badge + '</div>' +
+      '<div class="aw">' + fmtW(x.w) + '</div></div>';
+  }).join("");
+  const top = all[0];
+  document.getElementById("alloc-insight").innerHTML =
+    "📊 Mayor posición · " + top.ticker +
+    ' <span class="muted">· ' + fmtW(top.w) + " del total</span>";
+}
+paintAllocation();
 
 // ---- gráfica de líneas: % acumulado ----
 const svg = document.getElementById("chart");
@@ -269,14 +486,14 @@ function draw() {
       .filter(Boolean);
     svg.appendChild(el("path", {
       d: pts.map((pt, i) => (i ? "L" : "M") + pt[0].toFixed(1) + " " + pt[1].toFixed(1)).join(""),
-      fill: "none", stroke: c, "stroke-width": 2,
+      fill: "none", stroke: c, "stroke-width": 2.4,
       "stroke-linejoin": "round", "stroke-linecap": "round"}));
     const end = pts[pts.length - 1];
     svg.appendChild(el("circle", {cx: end[0], cy: end[1], r: 4, fill: c,
-      stroke: css("--surface"), "stroke-width": 2}));
+      stroke: css("--card-solid"), "stroke-width": 2.5}));
   });
   // etiquetas directas al final (solo si no chocan; la leyenda siempre está)
-  if (DATA.players.length <= 4) {
+  if (DATA.players.length <= 4 && W >= 520) {
     const ends = DATA.players.map(p => {
       const lastDate = p.days[p.days.length-1].date;
       return {v: p.days[p.days.length-1].cum, yy: y(byDate[p.id][lastDate])};
@@ -284,7 +501,7 @@ function draw() {
     const collide = ends.some((e, i) => i && e.yy - ends[i-1].yy < 14);
     if (!collide) ends.forEach(e => {
       const t = el("text", {x: W - M.r + 4, y: e.yy + 4, fill: css("--ink-2"),
-        "font-size": 11.5, style: "font-variant-numeric:tabular-nums"});
+        "font-size": 11.5, style: "font-variant-numeric:tabular-nums;font-weight:600"});
       t.textContent = fmtPct(e.v);
       svg.appendChild(t);
     });
@@ -295,7 +512,7 @@ function draw() {
 }
 draw();
 const mq = window.matchMedia("(prefers-color-scheme: dark)");
-if (mq.addEventListener) mq.addEventListener("change", draw);
+if (mq.addEventListener) mq.addEventListener("change", () => { draw(); paintWidgets(); paintAllocation(); });
 let rafId;
 window.addEventListener("resize", () => {
   cancelAnimationFrame(rafId);
@@ -394,15 +611,38 @@ svg.addEventListener("pointerleave", () => {
 """
 
 
+def _allocation_weights(allocation: dict[str, float] | None) -> list[dict]:
+    """Normaliza el valor de mercado agregado por ticker a pesos (%).
+
+    Recibe ``{ticker: valor}`` (agregado de toda la liga) y devuelve una lista
+    ordenada de mayor a menor ``[{"ticker", "w"}]`` con el peso en porcentaje.
+    Solo se exponen pesos, nunca importes: el mix agregado no revela ni las
+    operaciones ni el dinero de ningún jugador.
+    """
+    if not allocation:
+        return []
+    total = sum(v for v in allocation.values() if v > 0)
+    if total <= 0:
+        return []
+    out = [{"ticker": t, "w": round(v / total * 100, 2)}
+           for t, v in allocation.items() if v > 0]
+    out.sort(key=lambda d: d["w"], reverse=True)
+    return out
+
+
 def build_payload(computed: list[tuple[Player, list[DayResult]]],
                   last_days: int = 30,
-                  pending: list[dict] | None = None) -> dict:
+                  pending: list[dict] | None = None,
+                  allocation: dict[str, float] | None = None) -> dict:
     """Datos embebidos en la página. Respeta show_amounts por jugador.
 
     Solo se incluyen los últimos ``last_days`` días de cada jugador (la gráfica
     y las tablas de detalle muestran esa ventana). El ``% acumulado`` de cada
     día sigue siendo el de siempre (desde el inicio real), y ``since`` guarda la
     fecha de inicio real para la columna «Desde» de la clasificación.
+
+    ``allocation`` es el valor de mercado agregado por ticker de toda la liga;
+    se publica solo como pesos (%) para el widget de cartera, sin importes.
     """
     players = []
     # Slot de color por orden alfabético de id: estable aunque cambie el ranking
@@ -435,7 +675,8 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
             "since": series[0].day.isoformat(),
             "days": days,
         })
-    return {"players": players, "pending": pending or []}
+    return {"players": players, "pending": pending or [],
+            "allocation": _allocation_weights(allocation)}
 
 
 def write_index(
@@ -444,9 +685,11 @@ def write_index(
     today: date | None = None,
     last_days: int = 30,
     pending: list[dict] | None = None,
+    allocation: dict[str, float] | None = None,
 ) -> str:
-    payload = json.dumps(build_payload(computed, last_days=last_days, pending=pending),
-                         ensure_ascii=False)
+    payload = json.dumps(
+        build_payload(computed, last_days=last_days, pending=pending, allocation=allocation),
+        ensure_ascii=False)
     payload = payload.replace("</", "<\\/")  # nunca cerrar el <script> desde los datos
     html = (_TEMPLATE
             .replace("__UPDATED__", (today or date.today()).isoformat())

@@ -4,7 +4,7 @@ from datetime import date
 import pytest
 
 from trader import revolut
-from trader.portfolio import compute_daily_series
+from trader.portfolio import compute_daily_series, holdings_value
 from trader.prices import PriceCache
 
 DATA = os.path.join(os.path.dirname(__file__), "data")
@@ -75,3 +75,15 @@ def test_cumulative_is_geometric():
 
 def test_empty_events():
     assert compute_daily_series([], PRICES) == []
+
+
+def test_holdings_value_prices_open_positions():
+    events, _ = revolut.parse_file(os.path.join(DATA, "sample.csv"))
+    values = holdings_value(events, PRICES, until=date(2026, 7, 4))
+    # Solo posiciones abiertas, valoradas al cierre; sin efectivo ni importes.
+    assert set(values) <= {"AAPL", "MSFT"}
+    assert all(v > 0 for v in values.values())
+
+
+def test_holdings_value_empty():
+    assert holdings_value([], PRICES) == {}

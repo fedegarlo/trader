@@ -62,3 +62,19 @@ def test_pending_defaults_empty():
     player = Player(player_id="fede", display_name="Fede")
     payload = webpage.build_payload([(player, _series(5))])
     assert payload["pending"] == []
+
+
+def test_allocation_normalized_to_weights_sorted():
+    player = Player(player_id="fede", display_name="Fede")
+    alloc = {"AAPL": 300.0, "MSFT": 100.0}
+    payload = webpage.build_payload([(player, _series(5))], allocation=alloc)
+    assert payload["allocation"] == [
+        {"ticker": "AAPL", "w": 75.0},
+        {"ticker": "MSFT", "w": 25.0},
+    ]
+
+
+def test_allocation_defaults_empty():
+    player = Player(player_id="fede", display_name="Fede")
+    payload = webpage.build_payload([(player, _series(5))])
+    assert payload["allocation"] == []
