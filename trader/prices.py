@@ -10,9 +10,18 @@ from __future__ import annotations
 import csv
 import json
 import os
+import sys
+import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from datetime import date, datetime, timedelta
+
+# Hosts equivalentes del endpoint chart de Yahoo: si uno responde con un error
+# transitorio (400/429/5xx, habituales cuando limita peticiones anónimas), se
+# reintenta en el otro.
+_YAHOO_HOSTS = ("query1.finance.yahoo.com", "query2.finance.yahoo.com")
+_FETCH_ATTEMPTS = 4
 
 
 class PriceError(RuntimeError):
@@ -59,17 +68,37 @@ class PriceCache:
 
     # ---------------------------------------------------------- descarga
     def _fetch(self, ticker: str, start: date, end: date) -> None:
-        """Descarga cierres diarios del endpoint chart de Yahoo Finance."""
+        """Descarga cierres diarios del endpoint chart de Yahoo Finance.
+
+        Yahoo limita las peticiones anónimas de forma intermitente (400/429),
+        así que se reintenta con espera exponencial y alternando de host antes
+        de rendirse. Un fallo persistente se eleva como ``PriceError``.
+        """
         period1 = int(datetime(start.year, start.month, start.day).timestamp())
         period2 = int(datetime(end.year, end.month, end.day).timestamp()) + 86400
-        url = (
-            "https://query1.finance.yahoo.com/v8/finance/chart/"
+        query = (
             f"{urllib.parse.quote(ticker)}?period1={period1}&period2={period2}"
             "&interval=1d&events=div%2Csplit"
         )
-        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            payload = json.load(resp)
+        payload = None
+        last_err: Exception | None = None
+        for attempt in range(_FETCH_ATTEMPTS):
+            host = _YAHOO_HOSTS[attempt % len(_YAHOO_HOSTS)]
+            url = f"https://{host}/v8/finance/chart/{query}"
+            req = urllib.request.Request(url, headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+                "Accept": "application/json",
+            })
+            try:
+                with urllib.request.urlopen(req, timeout=30) as resp:
+                    payload = json.load(resp)
+                break
+            except (urllib.error.URLError, TimeoutError) as exc:
+                last_err = exc
+                if attempt < _FETCH_ATTEMPTS - 1:
+                    time.sleep(2 ** attempt)  # 1 s, 2 s, 4 s
+        if payload is None:
+            raise PriceError(f"Yahoo Finance no respondió para {ticker}: {last_err}")
         result = (payload.get("chart") or {}).get("result") or []
         if not result:
             raise PriceError(f"Yahoo Finance no devolvió datos para {ticker}")
@@ -84,10 +113,19 @@ class PriceCache:
     def ensure_range(self, ticker: str, start: date, end: date) -> None:
         """Garantiza que la caché cubre [start, end] (días de mercado)."""
         series = self._load(ticker)
-        need = (self.refresh or not series or min(series) > start
-                or max(series) < end - timedelta(days=4))
-        if need and not self.offline:
+        covered = (bool(series) and min(series) <= start
+                   and max(series) >= end - timedelta(days=4))
+        if self.offline or (covered and not self.refresh):
+            return
+        try:
             self._fetch(ticker, start - timedelta(days=7), end)
+        except PriceError as exc:
+            # Si solo era un refresco y la caché ya cubre el rango, seguimos con
+            # ella; solo es fatal si no teníamos datos para valorar el ticker.
+            if not covered:
+                raise
+            print(f"AVISO: no se pudo actualizar {ticker}, se usa la caché "
+                  f"({exc})", file=sys.stderr)
 
     # -------------------------------------------------------- precio en vivo
     def live_price(self, ticker: str) -> float | None:
