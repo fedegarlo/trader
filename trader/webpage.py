@@ -125,6 +125,15 @@ _TEMPLATE = """<!doctype html>
   .wbig.sm { font-size: clamp(22px, 6.6vw, 28px); white-space: nowrap; }
   .num { font-variant-numeric: tabular-nums; }
   .delta { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+  .live { align-items: center; gap: 6px; margin-top: 8px; font-size: 13px; font-weight: 700; }
+  .live .dot { width: 7px; height: 7px; border-radius: 999px; background: currentColor;
+               animation: pulse 1.8s ease-out infinite; }
+  .live .tag { color: var(--muted); font-weight: 600; font-size: 11.5px; }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 55%, transparent); }
+    70% { box-shadow: 0 0 0 6px transparent; }
+    100% { box-shadow: 0 0 0 0 transparent; }
+  }
   .wsub { color: var(--ink-2); font-size: 13.5px; font-weight: 600; margin-top: 4px; }
   .wsub.muted { color: var(--muted); font-weight: 500; }
   .sparkwrap { margin: 12px -18px 0; height: 116px; }
@@ -223,6 +232,7 @@ _TEMPLATE = """<!doctype html>
     <section class="card widget" id="hero-card">
       <div class="wlabel">Líder · <span id="hero-name"></span></div>
       <div class="wbig"><span class="num" id="hero-val"></span><span class="delta" id="hero-delta"></span></div>
+      <div class="live" id="hero-live" style="display:none"></div>
       <div class="sparkwrap" id="hero-spark"></div>
     </section>
     <div class="wrow">
@@ -273,6 +283,8 @@ _TEMPLATE = """<!doctype html>
   Rentabilidad diaria con Dietz simple (ingresos y retiradas no cuentan como
   ganancia); acumulado por composición geométrica (time-weighted return).
   Datos: extractos de Revolut cifrados · precios de cierre de Yahoo Finance.
+  El indicador «en vivo» valora hoy a precio actual y es provisional: no cuenta
+  para la clasificación oficial.
 </footer>
 <script>
 const DATA = __DATA__;
@@ -371,6 +383,15 @@ function paintWidgets() {
   const hd = document.getElementById("hero-delta");
   hd.textContent = (lc.day >= 0 ? "▲ " : "▼ ") + fmtPct(lc.day);
   hd.className = "delta " + (lc.day >= 0 ? "pos" : "neg");
+  const hl = document.getElementById("hero-live");
+  if (leader.live) {
+    hl.style.display = "inline-flex";
+    hl.className = "live " + (leader.live.cum >= 0 ? "pos" : "neg");
+    hl.innerHTML = '<span class="dot"></span>en vivo ' + fmtPct(leader.live.cum) +
+      ' <span class="tag">provisional</span>';
+  } else {
+    hl.style.display = "none";
+  }
   document.getElementById("hero-spark").innerHTML =
     sparkSVG(leader.days.map(d => d.cum), lc.cum >= 0 ? upC : downC, "hero", {baseline0: true});
 
@@ -655,7 +676,8 @@ def _allocation_weights(allocation: dict[str, float] | None) -> list[dict]:
 def build_payload(computed: list[tuple[Player, list[DayResult]]],
                   last_days: int = 30,
                   pending: list[dict] | None = None,
-                  allocation: dict[str, float] | None = None) -> dict:
+                  allocation: dict[str, float] | None = None,
+                  live: dict[str, dict] | None = None) -> dict:
     """Datos embebidos en la página. Respeta show_amounts por jugador.
 
     Solo se incluyen los últimos ``last_days`` días de cada jugador (la gráfica
@@ -665,7 +687,12 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
 
     ``allocation`` es el valor de mercado agregado por ticker de toda la liga;
     se publica solo como pesos (%) para el widget de cartera, sin importes.
+
+    ``live`` es un indicador provisional por jugador (``{id: {"cum","day"}}``)
+    con la valoración de hoy a precio en vivo. Es solo informativo: no altera
+    la serie oficial ni la clasificación.
     """
+    live = live or {}
     players = []
     # Slot de color por orden alfabético de id: estable aunque cambie el ranking
     order = {p.player_id: i for i, p in enumerate(
@@ -689,14 +716,17 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
                     "pnl": round(row.pnl, 2),
                 })
             days.append(day)
-        players.append({
+        entry = {
             "id": player.player_id,
             "name": player.display_name,
             "slot": order[player.player_id],
             "amounts": player.show_amounts,
             "since": series[0].day.isoformat(),
             "days": days,
-        })
+        }
+        if player.player_id in live:
+            entry["live"] = live[player.player_id]
+        players.append(entry)
     return {"players": players, "pending": pending or [],
             "allocation": _allocation_weights(allocation)}
 
@@ -708,9 +738,11 @@ def write_index(
     last_days: int = 30,
     pending: list[dict] | None = None,
     allocation: dict[str, float] | None = None,
+    live: dict[str, dict] | None = None,
 ) -> str:
     payload = json.dumps(
-        build_payload(computed, last_days=last_days, pending=pending, allocation=allocation),
+        build_payload(computed, last_days=last_days, pending=pending,
+                      allocation=allocation, live=live),
         ensure_ascii=False)
     payload = payload.replace("</", "<\\/")  # nunca cerrar el <script> desde los datos
     html = (_TEMPLATE

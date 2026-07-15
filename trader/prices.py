@@ -89,6 +89,31 @@ class PriceCache:
         if need and not self.offline:
             self._fetch(ticker, start - timedelta(days=7), end)
 
+    # -------------------------------------------------------- precio en vivo
+    def live_price(self, ticker: str) -> float | None:
+        """Cotización actual (regularMarketPrice) de Yahoo, sin cachear.
+
+        Best-effort: devuelve ``None`` en modo offline o ante cualquier fallo
+        de red/formato. Es un dato provisional, así que nunca se persiste en la
+        caché de cierres (que debe contener solo cierres finales).
+        """
+        if self.offline:
+            return None
+        url = (
+            "https://query1.finance.yahoo.com/v8/finance/chart/"
+            f"{urllib.parse.quote(ticker)}?range=1d&interval=1d"
+        )
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        try:
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                payload = json.load(resp)
+            result = (payload.get("chart") or {}).get("result") or []
+            meta = (result[0].get("meta") or {}) if result else {}
+            price = meta.get("regularMarketPrice")
+            return float(price) if price is not None else None
+        except Exception:
+            return None
+
     # ------------------------------------------------------------ lookup
     def close_on(self, ticker: str, day: date) -> float:
         """Cierre del día, o el último cierre anterior (fines de semana, festivos)."""

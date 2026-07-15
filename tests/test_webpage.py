@@ -78,3 +78,16 @@ def test_allocation_defaults_empty():
     player = Player(player_id="fede", display_name="Fede")
     payload = webpage.build_payload([(player, _series(5))])
     assert payload["allocation"] == []
+
+
+def test_live_indicator_passthrough():
+    player = Player(player_id="fede", display_name="Fede")
+    payload = webpage.build_payload([(player, _series(5))],
+                                    live={"fede": {"cum": 3.5, "day": 0.4}})
+    assert payload["players"][0]["live"] == {"cum": 3.5, "day": 0.4}
+
+
+def test_live_absent_by_default():
+    player = Player(player_id="fede", display_name="Fede")
+    payload = webpage.build_payload([(player, _series(5))])
+    assert "live" not in payload["players"][0]
