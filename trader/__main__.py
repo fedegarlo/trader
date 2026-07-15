@@ -18,7 +18,7 @@ import sys
 from . import players as players_mod
 from . import report as report_mod
 from . import secretbox, webpage
-from .portfolio import compute_daily_series, holdings_value
+from .portfolio import compute_daily_series, holdings_value, provisional_today
 from .prices import PriceCache
 
 
@@ -93,9 +93,26 @@ def cmd_ranking(args: argparse.Namespace) -> None:
         for ticker, value in holdings_value(player.events, prices).items():
             allocation[ticker] = allocation.get(ticker, 0.0) + value
 
+    # Indicador provisional «en vivo»: revalora hoy con la cotización actual de
+    # cada ticker (cacheada por ticker para no repetir descargas). Es solo
+    # informativo; la serie y la clasificación oficiales no cambian.
+    live: dict[str, dict] = {}
+    if not args.offline:
+        live_px: dict[str, float | None] = {}
+
+        def get_live(ticker: str) -> float | None:
+            if ticker not in live_px:
+                live_px[ticker] = prices.live_price(ticker)
+            return live_px[ticker]
+
+        for player, series in computed:
+            prov = provisional_today(player.events, series, prices, get_live)
+            if prov is not None:
+                live[player.player_id] = prov
+
     content = report_mod.write_ranking(computed, out_path=args.out)
     webpage.write_index(computed, out_path=args.html_out, pending=pending,
-                        allocation=allocation)
+                        allocation=allocation, live=live)
     with open(args.pending_out, "w", encoding="utf-8") as fh:
         json.dump(pending, fh, ensure_ascii=False)
     print(content)

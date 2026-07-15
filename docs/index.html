@@ -107,6 +107,15 @@
   .wbig.sm { font-size: clamp(22px, 6.6vw, 28px); white-space: nowrap; }
   .num { font-variant-numeric: tabular-nums; }
   .delta { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+  .live { align-items: center; gap: 6px; margin-top: 8px; font-size: 13px; font-weight: 700; }
+  .live .dot { width: 7px; height: 7px; border-radius: 999px; background: currentColor;
+               animation: pulse 1.8s ease-out infinite; }
+  .live .tag { color: var(--muted); font-weight: 600; font-size: 11.5px; }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 55%, transparent); }
+    70% { box-shadow: 0 0 0 6px transparent; }
+    100% { box-shadow: 0 0 0 0 transparent; }
+  }
   .wsub { color: var(--ink-2); font-size: 13.5px; font-weight: 600; margin-top: 4px; }
   .wsub.muted { color: var(--muted); font-weight: 500; }
   .sparkwrap { margin: 12px -18px 0; height: 116px; }
@@ -205,6 +214,7 @@
     <section class="card widget" id="hero-card">
       <div class="wlabel">Líder · <span id="hero-name"></span></div>
       <div class="wbig"><span class="num" id="hero-val"></span><span class="delta" id="hero-delta"></span></div>
+      <div class="live" id="hero-live" style="display:none"></div>
       <div class="sparkwrap" id="hero-spark"></div>
     </section>
     <div class="wrow">
@@ -269,6 +279,8 @@
   Rentabilidad diaria con Dietz simple (ingresos y retiradas no cuentan como
   ganancia); acumulado por composición geométrica (time-weighted return).
   Datos: extractos de Revolut cifrados · precios de cierre de Yahoo Finance.
+  El indicador «en vivo» valora hoy a precio actual y es provisional: no cuenta
+  para la clasificación oficial.
 </footer>
 <script>
 const DATA = {"players": [{"id": "ana", "name": "ana", "slot": 0, "amounts": false, "since": "2026-07-14", "days": [{"date": "2026-07-14", "day": 1.5255, "cum": 1.5255}, {"date": "2026-07-15", "day": 0.0486, "cum": 1.5748}]}, {"id": "fede", "name": "Fede", "slot": 1, "amounts": false, "since": "2025-04-22", "days": [{"date": "2026-06-16", "day": 0.0, "cum": 0.0}, {"date": "2026-06-17", "day": 0.0, "cum": 0.0}, {"date": "2026-06-18", "day": 0.0, "cum": 0.0}, {"date": "2026-06-19", "day": 0.0, "cum": 0.0}, {"date": "2026-06-20", "day": 0.0, "cum": 0.0}, {"date": "2026-06-21", "day": 0.0, "cum": 0.0}, {"date": "2026-06-22", "day": 0.0, "cum": 0.0}, {"date": "2026-06-23", "day": 0.0, "cum": 0.0}, {"date": "2026-06-24", "day": 0.0, "cum": 0.0}, {"date": "2026-06-25", "day": 0.0, "cum": 0.0}, {"date": "2026-06-26", "day": 0.0, "cum": 0.0}, {"date": "2026-06-27", "day": 0.0, "cum": 0.0}, {"date": "2026-06-28", "day": 0.0, "cum": 0.0}, {"date": "2026-06-29", "day": 0.0, "cum": 0.0}, {"date": "2026-06-30", "day": 0.0, "cum": 0.0}, {"date": "2026-07-01", "day": 0.0, "cum": 0.0}, {"date": "2026-07-02", "day": 0.0, "cum": 0.0}, {"date": "2026-07-03", "day": 0.0, "cum": 0.0}, {"date": "2026-07-04", "day": 0.0, "cum": 0.0}, {"date": "2026-07-05", "day": 0.0, "cum": 0.0}, {"date": "2026-07-06", "day": 0.0, "cum": 0.0}, {"date": "2026-07-07", "day": 0.0, "cum": 0.0}, {"date": "2026-07-08", "day": 0.0, "cum": 0.0}, {"date": "2026-07-09", "day": 0.0, "cum": 0.0}, {"date": "2026-07-10", "day": 0.0, "cum": 0.0}, {"date": "2026-07-11", "day": 0.0, "cum": 0.0}, {"date": "2026-07-12", "day": 0.0, "cum": 0.0}, {"date": "2026-07-13", "day": -1.0794, "cum": -1.0794}, {"date": "2026-07-14", "day": 2.604, "cum": 1.4964}, {"date": "2026-07-15", "day": -5.4941, "cum": -4.0799}]}], "pending": [], "allocation": [{"ticker": "PLTR", "w": 54.34}, {"ticker": "WDC", "w": 23.0}, {"ticker": "NVDA", "w": 22.66}], "monthly": {"current": {"name": "ana", "value": 1.57, "slot": 0, "month_name": "julio", "month_year": 2026, "spark": [1.5255, 1.5748]}, "previous": null}};
@@ -367,6 +379,15 @@ function paintWidgets() {
   const hd = document.getElementById("hero-delta");
   hd.textContent = (lc.day >= 0 ? "▲ " : "▼ ") + fmtPct(lc.day);
   hd.className = "delta " + (lc.day >= 0 ? "pos" : "neg");
+  const hl = document.getElementById("hero-live");
+  if (leader.live) {
+    hl.style.display = "inline-flex";
+    hl.className = "live " + (leader.live.cum >= 0 ? "pos" : "neg");
+    hl.innerHTML = '<span class="dot"></span>en vivo ' + fmtPct(leader.live.cum) +
+      ' <span class="tag">provisional</span>';
+  } else {
+    hl.style.display = "none";
+  }
   document.getElementById("hero-spark").innerHTML =
     sparkSVG(leader.days.map(d => d.cum), lc.cum >= 0 ? upC : downC, "hero", {baseline0: true});
 
