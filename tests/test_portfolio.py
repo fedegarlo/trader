@@ -4,7 +4,12 @@ from datetime import date
 import pytest
 
 from trader import revolut
-from trader.portfolio import compute_daily_series, holdings_value, provisional_today
+from trader.portfolio import (
+    compute_daily_series,
+    holdings_value,
+    provisional_today,
+    rebase_from,
+)
 from trader.prices import PriceCache
 
 DATA = os.path.join(os.path.dirname(__file__), "data")
@@ -75,6 +80,28 @@ def test_cumulative_is_geometric():
 
 def test_empty_events():
     assert compute_daily_series([], PRICES) == []
+
+
+def test_rebase_from_drops_prior_days_and_recompounds():
+    series = _series()  # 2026-07-01 .. 2026-07-04
+    start = date(2026, 7, 3)
+    rebased = rebase_from(series, start)
+    # Los días anteriores a la fecha de inicio desaparecen.
+    assert [r.day for r in rebased] == [date(2026, 7, 3), date(2026, 7, 4)]
+    # La rentabilidad diaria se conserva intacta.
+    assert rebased[0].daily_return == pytest.approx(series[2].daily_return)
+    # El acumulado se recompone desde la nueva fecha (ignora 07-01 y 07-02).
+    acc = 1.0
+    for r in series[2:]:
+        acc *= 1 + r.daily_return
+    assert rebased[-1].cumulative_return == pytest.approx(acc - 1.0)
+    # El primer día de competición arranca solo con su propia rentabilidad.
+    assert rebased[0].cumulative_return == pytest.approx(series[2].daily_return)
+
+
+def test_rebase_from_empty_when_all_before_start():
+    series = _series()
+    assert rebase_from(series, date(2030, 1, 1)) == []
 
 
 def test_holdings_value_prices_open_positions():
