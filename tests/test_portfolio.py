@@ -4,7 +4,7 @@ from datetime import date
 import pytest
 
 from trader import revolut
-from trader.portfolio import compute_daily_series, holdings_value
+from trader.portfolio import compute_daily_series, holdings_value, provisional_today
 from trader.prices import PriceCache
 
 DATA = os.path.join(os.path.dirname(__file__), "data")
@@ -87,3 +87,28 @@ def test_holdings_value_prices_open_positions():
 
 def test_holdings_value_empty():
     assert holdings_value([], PRICES) == {}
+
+
+def test_provisional_today_uses_live_prices():
+    events, _ = revolut.parse_file(os.path.join(DATA, "sample.csv"))
+    series = compute_daily_series(events, PRICES, until=date(2026, 7, 4))
+    # Cotización en vivo por encima del cierre cacheado (205/310) => mejor cum.
+    live = {"AAPL": 250.0, "MSFT": 400.0}
+    prov = provisional_today(events, series, PRICES, lambda t: live.get(t))
+    assert prov is not None
+    assert prov["cum"] > round(series[-1].cumulative_return * 100, 4)
+
+
+def test_provisional_none_without_live_quotes():
+    events, _ = revolut.parse_file(os.path.join(DATA, "sample.csv"))
+    series = compute_daily_series(events, PRICES, until=date(2026, 7, 4))
+    # Sin ninguna cotización en vivo no hay indicador provisional.
+    assert provisional_today(events, series, PRICES, lambda t: None) is None
+
+
+def test_provisional_none_without_positions():
+    assert provisional_today([], [], PRICES, lambda t: 100.0) is None
+
+
+def test_live_price_offline_returns_none():
+    assert PRICES.live_price("AAPL") is None

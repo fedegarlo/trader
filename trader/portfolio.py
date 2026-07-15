@@ -62,6 +62,17 @@ def _apply_event(ev: Event, positions: dict[str, float], cash: float) -> tuple[f
     return cash, 0.0
 
 
+def _positions_at(events: list[Event], until: date) -> tuple[dict[str, float], float]:
+    """Reproduce los eventos hasta ``until`` y devuelve (posiciones, efectivo)."""
+    positions: dict[str, float] = {}
+    cash = 0.0
+    for ev in events:
+        if ev.day > until:
+            continue
+        cash, _ = _apply_event(ev, positions, cash)
+    return {t: q for t, q in positions.items() if q > 1e-9}, cash
+
+
 def holdings_value(
     events: list[Event],
     prices: PriceCache,
@@ -84,18 +95,50 @@ def holdings_value(
     for ticker in tickers:
         prices.ensure_range(ticker, min(days), last)
 
-    positions: dict[str, float] = {}
-    cash = 0.0
-    for ev in events:
-        if ev.day > last:
-            continue
-        cash, _ = _apply_event(ev, positions, cash)
+    positions, _ = _positions_at(events, last)
+    return {t: qty * prices.close_on(t, last) for t, qty in positions.items()}
 
-    values: dict[str, float] = {}
-    for ticker, qty in positions.items():
-        if qty > 1e-9:
-            values[ticker] = qty * prices.close_on(ticker, last)
-    return values
+
+def provisional_today(
+    events: list[Event],
+    series: list[DayResult],
+    prices: PriceCache,
+    live_price,
+) -> dict[str, float] | None:
+    """Revalora *solo hoy* con precios en vivo, sin tocar la serie oficial.
+
+    Es un indicador provisional: la rentabilidad del día se recalcula usando
+    ``live_price(ticker)`` (que puede devolver ``None`` si no hay cotización) y
+    se compone sobre el acumulado hasta *ayer* de la serie oficial. No escribe
+    en la caché ni altera la clasificación. Devuelve ``{"cum", "day"}`` en % o
+    ``None`` si no hay posiciones abiertas o ninguna cotización en vivo.
+    """
+    if not events or not series:
+        return None
+    today = series[-1].day
+    positions, cash = _positions_at(events, today)
+    if not positions:
+        return None
+
+    prices_now: dict[str, float] = {}
+    any_live = False
+    for ticker in positions:
+        live = live_price(ticker)
+        if live is not None:
+            prices_now[ticker] = float(live)
+            any_live = True
+        else:
+            prices_now[ticker] = prices.close_on(ticker, today)
+    if not any_live:
+        return None
+
+    last = series[-1]
+    end_value = cash + sum(qty * prices_now[t] for t, qty in positions.items())
+    denom = last.start_value + last.external_flow / 2.0
+    daily = (end_value - last.start_value - last.external_flow) / denom if denom > 1e-9 else 0.0
+    base = 1.0 + (series[-2].cumulative_return if len(series) >= 2 else 0.0)
+    cumulative = base * (1.0 + daily) - 1.0
+    return {"cum": round(cumulative * 100, 4), "day": round(daily * 100, 4)}
 
 
 def compute_daily_series(

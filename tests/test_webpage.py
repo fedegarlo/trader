@@ -131,3 +131,16 @@ def test_monthly_none_when_no_competition_data():
     payload = webpage.build_payload([(fede, _series(5))], today=date(2026, 1, 20))
     assert payload["monthly"]["current"] is None
     assert payload["monthly"]["previous"] is None
+
+
+def test_live_indicator_passthrough():
+    player = Player(player_id="fede", display_name="Fede")
+    payload = webpage.build_payload([(player, _series(5))],
+                                    live={"fede": {"cum": 3.5, "day": 0.4}})
+    assert payload["players"][0]["live"] == {"cum": 3.5, "day": 0.4}
+
+
+def test_live_absent_by_default():
+    player = Player(player_id="fede", display_name="Fede")
+    payload = webpage.build_payload([(player, _series(5))])
+    assert "live" not in payload["players"][0]
