@@ -223,6 +223,20 @@
         </div>
       </section>
     </div>
+    <div class="wrow" id="month-row" style="display:none">
+      <section class="card widget" id="month-cur-card">
+        <div class="wlabel">Mejor de este mes · <span id="month-cur-name"></span></div>
+        <div class="wbig sm"><span class="num" id="month-cur-val"></span></div>
+        <div class="wsub" id="month-cur-player"></div>
+        <div class="sparkwrap sm" id="month-cur-spark"></div>
+      </section>
+      <section class="card widget" id="month-prev-card">
+        <div class="wlabel">Mejor del mes pasado · <span id="month-prev-name"></span></div>
+        <div class="wbig sm"><span class="num" id="month-prev-val"></span></div>
+        <div class="wsub" id="month-prev-player"></div>
+        <div class="sparkwrap sm" id="month-prev-spark"></div>
+      </section>
+    </div>
   </div>
 
   <section class="card">
@@ -257,7 +271,7 @@
   Datos: extractos de Revolut cifrados · precios de cierre de Yahoo Finance.
 </footer>
 <script>
-const DATA = {"players": [{"id": "ana", "name": "ana", "slot": 0, "amounts": false, "since": "2026-07-14", "days": [{"date": "2026-07-14", "day": 1.5255, "cum": 1.5255}, {"date": "2026-07-15", "day": -0.071, "cum": 1.4534}]}, {"id": "fede", "name": "Fede", "slot": 1, "amounts": false, "since": "2025-04-22", "days": [{"date": "2026-06-16", "day": 0.0, "cum": 0.0}, {"date": "2026-06-17", "day": 0.0, "cum": 0.0}, {"date": "2026-06-18", "day": 0.0, "cum": 0.0}, {"date": "2026-06-19", "day": 0.0, "cum": 0.0}, {"date": "2026-06-20", "day": 0.0, "cum": 0.0}, {"date": "2026-06-21", "day": 0.0, "cum": 0.0}, {"date": "2026-06-22", "day": 0.0, "cum": 0.0}, {"date": "2026-06-23", "day": 0.0, "cum": 0.0}, {"date": "2026-06-24", "day": 0.0, "cum": 0.0}, {"date": "2026-06-25", "day": 0.0, "cum": 0.0}, {"date": "2026-06-26", "day": 0.0, "cum": 0.0}, {"date": "2026-06-27", "day": 0.0, "cum": 0.0}, {"date": "2026-06-28", "day": 0.0, "cum": 0.0}, {"date": "2026-06-29", "day": 0.0, "cum": 0.0}, {"date": "2026-06-30", "day": 0.0, "cum": 0.0}, {"date": "2026-07-01", "day": 0.0, "cum": 0.0}, {"date": "2026-07-02", "day": 0.0, "cum": 0.0}, {"date": "2026-07-03", "day": 0.0, "cum": 0.0}, {"date": "2026-07-04", "day": 0.0, "cum": 0.0}, {"date": "2026-07-05", "day": 0.0, "cum": 0.0}, {"date": "2026-07-06", "day": 0.0, "cum": 0.0}, {"date": "2026-07-07", "day": 0.0, "cum": 0.0}, {"date": "2026-07-08", "day": 0.0, "cum": 0.0}, {"date": "2026-07-09", "day": 0.0, "cum": 0.0}, {"date": "2026-07-10", "day": 0.0, "cum": 0.0}, {"date": "2026-07-11", "day": 0.0, "cum": 0.0}, {"date": "2026-07-12", "day": 0.0, "cum": 0.0}, {"date": "2026-07-13", "day": -1.0794, "cum": -1.0794}, {"date": "2026-07-14", "day": 2.604, "cum": 1.4964}, {"date": "2026-07-15", "day": -6.9536, "cum": -5.5612}]}], "pending": [], "allocation": [{"ticker": "PLTR", "w": 54.71}, {"ticker": "WDC", "w": 22.75}, {"ticker": "NVDA", "w": 22.54}]};
+const DATA = {"players": [{"id": "ana", "name": "ana", "slot": 0, "amounts": false, "since": "2026-07-14", "days": [{"date": "2026-07-14", "day": 1.5255, "cum": 1.5255}, {"date": "2026-07-15", "day": 0.0486, "cum": 1.5748}]}, {"id": "fede", "name": "Fede", "slot": 1, "amounts": false, "since": "2025-04-22", "days": [{"date": "2026-06-16", "day": 0.0, "cum": 0.0}, {"date": "2026-06-17", "day": 0.0, "cum": 0.0}, {"date": "2026-06-18", "day": 0.0, "cum": 0.0}, {"date": "2026-06-19", "day": 0.0, "cum": 0.0}, {"date": "2026-06-20", "day": 0.0, "cum": 0.0}, {"date": "2026-06-21", "day": 0.0, "cum": 0.0}, {"date": "2026-06-22", "day": 0.0, "cum": 0.0}, {"date": "2026-06-23", "day": 0.0, "cum": 0.0}, {"date": "2026-06-24", "day": 0.0, "cum": 0.0}, {"date": "2026-06-25", "day": 0.0, "cum": 0.0}, {"date": "2026-06-26", "day": 0.0, "cum": 0.0}, {"date": "2026-06-27", "day": 0.0, "cum": 0.0}, {"date": "2026-06-28", "day": 0.0, "cum": 0.0}, {"date": "2026-06-29", "day": 0.0, "cum": 0.0}, {"date": "2026-06-30", "day": 0.0, "cum": 0.0}, {"date": "2026-07-01", "day": 0.0, "cum": 0.0}, {"date": "2026-07-02", "day": 0.0, "cum": 0.0}, {"date": "2026-07-03", "day": 0.0, "cum": 0.0}, {"date": "2026-07-04", "day": 0.0, "cum": 0.0}, {"date": "2026-07-05", "day": 0.0, "cum": 0.0}, {"date": "2026-07-06", "day": 0.0, "cum": 0.0}, {"date": "2026-07-07", "day": 0.0, "cum": 0.0}, {"date": "2026-07-08", "day": 0.0, "cum": 0.0}, {"date": "2026-07-09", "day": 0.0, "cum": 0.0}, {"date": "2026-07-10", "day": 0.0, "cum": 0.0}, {"date": "2026-07-11", "day": 0.0, "cum": 0.0}, {"date": "2026-07-12", "day": 0.0, "cum": 0.0}, {"date": "2026-07-13", "day": -1.0794, "cum": -1.0794}, {"date": "2026-07-14", "day": 2.604, "cum": 1.4964}, {"date": "2026-07-15", "day": -5.4941, "cum": -4.0799}]}], "pending": [], "allocation": [{"ticker": "PLTR", "w": 54.34}, {"ticker": "WDC", "w": 23.0}, {"ticker": "NVDA", "w": 22.66}], "monthly": {"current": {"name": "ana", "value": 1.57, "slot": 0, "month_name": "julio", "month_year": 2026, "spark": [1.5255, 1.5748]}, "previous": null}};
 const SLOTS = ["--s1","--s2","--s3","--s4","--s5","--s6","--s7","--s8"];
 const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 const colorOf = p => css(SLOTS[p.slot % SLOTS.length]);
@@ -379,6 +393,34 @@ function paintWidgets() {
   document.getElementById("gap-bot").textContent = last.name + " · " + fmtPct(lastOf(last).cum);
 }
 paintWidgets();
+
+// ---- widgets «mejor del mes»: este mes y el mes pasado (si hay datos) ----
+function paintMonthly() {
+  const m = DATA.monthly || {};
+  const upC = css("--up"), downC = css("--down");
+  const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+  const paint = (info, key, spark0) => {
+    const card = document.getElementById(key + "-card");
+    if (!info) { card.style.display = "none"; return false; }
+    card.style.display = "";
+    document.getElementById(key + "-name").textContent =
+      cap(info.month_name) + " " + info.month_year;
+    const val = document.getElementById(key + "-val");
+    val.textContent = fmtPct(info.value);
+    val.className = "num " + (info.value >= 0 ? "pos" : "neg");
+    document.getElementById(key + "-player").textContent = info.name;
+    document.getElementById(key + "-spark").innerHTML =
+      sparkSVG(info.spark, info.value >= 0 ? upC : downC, spark0, {baseline0: true});
+    return true;
+  };
+  const hasCur = paint(m.current, "month-cur", "mcur");
+  const hasPrev = paint(m.previous, "month-prev", "mprev");
+  const row = document.getElementById("month-row");
+  if (!hasCur && !hasPrev) { row.style.display = "none"; return; }
+  row.style.display = "grid";
+  row.style.gridTemplateColumns = (hasCur && hasPrev) ? "1fr 1fr" : "1fr";
+}
+paintMonthly();
 
 // ---- widget de cartera: asignación agregada por ticker (solo pesos) ----
 function badgeColor(t) {
@@ -516,7 +558,7 @@ function draw() {
 }
 draw();
 const mq = window.matchMedia("(prefers-color-scheme: dark)");
-if (mq.addEventListener) mq.addEventListener("change", () => { draw(); paintWidgets(); paintAllocation(); });
+if (mq.addEventListener) mq.addEventListener("change", () => { draw(); paintWidgets(); paintMonthly(); paintAllocation(); });
 let rafId;
 window.addEventListener("resize", () => {
   cancelAnimationFrame(rafId);
