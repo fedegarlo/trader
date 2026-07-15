@@ -18,7 +18,7 @@ import sys
 from . import players as players_mod
 from . import report as report_mod
 from . import secretbox, webpage
-from .portfolio import compute_daily_series, holdings_value, provisional_today
+from .portfolio import compute_daily_series, holdings_value, provisional_today, rebase_from
 from .prices import PriceCache
 
 
@@ -87,7 +87,14 @@ def cmd_ranking(args: argparse.Namespace) -> None:
             else:
                 print(f"AVISO [{player_id}]: sin operaciones, se omite", file=sys.stderr)
             continue
-        series = compute_daily_series(player.events, prices)
+        # La competición empieza en COMPETITION_START (incluido): los días
+        # anteriores no cuentan y todos los jugadores se comparan desde ahí.
+        series = rebase_from(compute_daily_series(player.events, prices),
+                             webpage.COMPETITION_START)
+        if not series:
+            print(f"AVISO [{player_id}]: sin días de competición, se omite",
+                  file=sys.stderr)
+            continue
         report_mod.write_player_json(player, series, args.public_dir)
         computed.append((player, series))
         for ticker, value in holdings_value(player.events, prices).items():

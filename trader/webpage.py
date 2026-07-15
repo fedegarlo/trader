@@ -17,7 +17,10 @@ from .players import Player
 from .portfolio import DayResult
 
 # La competición oficial empezó este día: los días anteriores (pruebas o
-# histórico previo) no cuentan para los widgets de «mejor del mes».
+# histórico previo) no cuentan. Todos los jugadores se comparan desde esta
+# fecha (incluida), rebasando la rentabilidad acumulada al inicio real de la
+# competición (ver ``rebase_from`` en portfolio.py), y también acota los
+# widgets de «mejor del mes».
 COMPETITION_START = date(2026, 7, 14)
 
 _MONTHS_ES = [
@@ -29,7 +32,7 @@ _TEMPLATE = """<!doctype html>
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>🏆 Ranking de rentabilidad</title>
 <style>
   :root {
@@ -86,8 +89,13 @@ _TEMPLATE = """<!doctype html>
     font: 15px/1.5 -apple-system, BlinkMacSystemFont, "SF Pro Display",
           system-ui, "Segoe UI", Roboto, sans-serif;
     letter-spacing: -0.01em;
-    padding: 20px 14px calc(40px + env(safe-area-inset-bottom));
+    padding:
+      calc(20px + env(safe-area-inset-top))
+      calc(14px + env(safe-area-inset-right))
+      calc(40px + env(safe-area-inset-bottom))
+      calc(14px + env(safe-area-inset-left));
     min-height: 100vh;
+    min-height: 100dvh;
     background:
       radial-gradient(120% 78% at 2% -4%, var(--aura-1) 0%, transparent 52%),
       radial-gradient(120% 82% at 100% -2%, var(--aura-2) 0%, transparent 54%),

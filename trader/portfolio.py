@@ -18,7 +18,7 @@ para comparar jugadores con importes distintos.
 from __future__ import annotations
 
 from collections import defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date, timedelta
 
 from .prices import PriceCache
@@ -195,3 +195,23 @@ def compute_daily_series(
         day += timedelta(days=1)
 
     return results
+
+
+def rebase_from(series: list[DayResult], start: date) -> list[DayResult]:
+    """Recorta la serie a los días ``>= start`` y recompone la rentabilidad
+    acumulada desde ese día.
+
+    Los días anteriores a ``start`` (histórico previo o pruebas) no cuentan: la
+    competición empieza en ``start`` (incluido) y todos los jugadores se comparan
+    desde la misma fecha. La rentabilidad diaria de cada día se conserva; solo se
+    recompone el acumulado (``prod(1 + r_dia) - 1``) sobre los días de la
+    competición.
+    """
+    cumulative = 1.0
+    out: list[DayResult] = []
+    for r in series:
+        if r.day < start:
+            continue
+        cumulative *= 1.0 + r.daily_return
+        out.append(replace(r, cumulative_return=cumulative - 1.0))
+    return out
