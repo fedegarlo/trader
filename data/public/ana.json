@@ -1,0 +1,18 @@
+{
+  "player": "ana",
+  "display_name": "Ana 🍀",
+  "currency": "USD",
+  "show_amounts": false,
+  "days": [
+    {
+      "date": "2026-07-14",
+      "daily_return_pct": 0.0,
+      "cumulative_return_pct": 0.0
+    },
+    {
+      "date": "2026-07-15",
+      "daily_return_pct": 74.0943,
+      "cumulative_return_pct": 74.0943
+    }
+  ]
+}
