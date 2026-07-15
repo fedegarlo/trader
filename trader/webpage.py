@@ -16,6 +16,15 @@ from datetime import date
 from .players import Player
 from .portfolio import DayResult
 
+# La competición oficial empezó este día: los días anteriores (pruebas o
+# histórico previo) no cuentan para los widgets de «mejor del mes».
+COMPETITION_START = date(2026, 7, 14)
+
+_MONTHS_ES = [
+    "enero", "febrero", "marzo", "abril", "mayo", "junio",
+    "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+]
+
 _TEMPLATE = """<!doctype html>
 <html lang="es">
 <head>
@@ -241,6 +250,20 @@ _TEMPLATE = """<!doctype html>
         </div>
       </section>
     </div>
+    <div class="wrow" id="month-row" style="display:none">
+      <section class="card widget" id="month-cur-card">
+        <div class="wlabel">Mejor de este mes · <span id="month-cur-name"></span></div>
+        <div class="wbig sm"><span class="num" id="month-cur-val"></span></div>
+        <div class="wsub" id="month-cur-player"></div>
+        <div class="sparkwrap sm" id="month-cur-spark"></div>
+      </section>
+      <section class="card widget" id="month-prev-card">
+        <div class="wlabel">Mejor del mes pasado · <span id="month-prev-name"></span></div>
+        <div class="wbig sm"><span class="num" id="month-prev-val"></span></div>
+        <div class="wsub" id="month-prev-player"></div>
+        <div class="sparkwrap sm" id="month-prev-spark"></div>
+      </section>
+    </div>
   </div>
 
   <section class="card">
@@ -398,6 +421,34 @@ function paintWidgets() {
 }
 paintWidgets();
 
+// ---- widgets «mejor del mes»: este mes y el mes pasado (si hay datos) ----
+function paintMonthly() {
+  const m = DATA.monthly || {};
+  const upC = css("--up"), downC = css("--down");
+  const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+  const paint = (info, key, spark0) => {
+    const card = document.getElementById(key + "-card");
+    if (!info) { card.style.display = "none"; return false; }
+    card.style.display = "";
+    document.getElementById(key + "-name").textContent =
+      cap(info.month_name) + " " + info.month_year;
+    const val = document.getElementById(key + "-val");
+    val.textContent = fmtPct(info.value);
+    val.className = "num " + (info.value >= 0 ? "pos" : "neg");
+    document.getElementById(key + "-player").textContent = info.name;
+    document.getElementById(key + "-spark").innerHTML =
+      sparkSVG(info.spark, info.value >= 0 ? upC : downC, spark0, {baseline0: true});
+    return true;
+  };
+  const hasCur = paint(m.current, "month-cur", "mcur");
+  const hasPrev = paint(m.previous, "month-prev", "mprev");
+  const row = document.getElementById("month-row");
+  if (!hasCur && !hasPrev) { row.style.display = "none"; return; }
+  row.style.display = "grid";
+  row.style.gridTemplateColumns = (hasCur && hasPrev) ? "1fr 1fr" : "1fr";
+}
+paintMonthly();
+
 // ---- widget de cartera: asignación agregada por ticker (solo pesos) ----
 function badgeColor(t) {
   let h = 0; for (let i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) >>> 0;
@@ -534,7 +585,7 @@ function draw() {
 }
 draw();
 const mq = window.matchMedia("(prefers-color-scheme: dark)");
-if (mq.addEventListener) mq.addEventListener("change", () => { draw(); paintWidgets(); paintAllocation(); });
+if (mq.addEventListener) mq.addEventListener("change", () => { draw(); paintWidgets(); paintMonthly(); paintAllocation(); });
 let rafId;
 window.addEventListener("resize", () => {
   cancelAnimationFrame(rafId);
@@ -652,10 +703,62 @@ def _allocation_weights(allocation: dict[str, float] | None) -> list[dict]:
     return out
 
 
+def _prev_month(year: int, month: int) -> tuple[int, int]:
+    return (year - 1, 12) if month == 1 else (year, month - 1)
+
+
+def _month_best(computed: list[tuple[Player, list[DayResult]]],
+                year: int, month: int, order: dict[str, int]) -> dict | None:
+    """Mejor jugador de un mes concreto (composición de sus % diarios).
+
+    Solo cuentan los días de la competición (``day >= COMPETITION_START``). Si
+    nadie tiene datos ese mes devuelve ``None`` (el widget no se pinta). El
+    ``spark`` es el acumulado intra-mes del ganador, para la mini gráfica.
+    """
+    best = None
+    best_ret = None
+    for player, series in computed:
+        rows = sorted(
+            (r for r in series
+             if r.day.year == year and r.day.month == month
+             and r.day >= COMPETITION_START),
+            key=lambda r: r.day)
+        if not rows:
+            continue
+        factor = 1.0
+        spark = []
+        for r in rows:
+            factor *= 1.0 + r.daily_return
+            spark.append(round((factor - 1.0) * 100, 4))
+        ret = (factor - 1.0) * 100
+        if best_ret is None or ret > best_ret:
+            best_ret = ret
+            best = {
+                "name": player.display_name,
+                "value": round(ret, 2),
+                "slot": order[player.player_id],
+                "month_name": _MONTHS_ES[month - 1],
+                "month_year": year,
+                "spark": spark,
+            }
+    return best
+
+
+def _monthly_bests(computed: list[tuple[Player, list[DayResult]]],
+                   today: date, order: dict[str, int]) -> dict:
+    """Mejor de este mes y del mes pasado (``None`` si no hay datos)."""
+    py, pm = _prev_month(today.year, today.month)
+    return {
+        "current": _month_best(computed, today.year, today.month, order),
+        "previous": _month_best(computed, py, pm, order),
+    }
+
+
 def build_payload(computed: list[tuple[Player, list[DayResult]]],
                   last_days: int = 30,
                   pending: list[dict] | None = None,
-                  allocation: dict[str, float] | None = None) -> dict:
+                  allocation: dict[str, float] | None = None,
+                  today: date | None = None) -> dict:
     """Datos embebidos en la página. Respeta show_amounts por jugador.
 
     Solo se incluyen los últimos ``last_days`` días de cada jugador (la gráfica
@@ -666,6 +769,7 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
     ``allocation`` es el valor de mercado agregado por ticker de toda la liga;
     se publica solo como pesos (%) para el widget de cartera, sin importes.
     """
+    today = today or date.today()
     players = []
     # Slot de color por orden alfabético de id: estable aunque cambie el ranking
     order = {p.player_id: i for i, p in enumerate(
@@ -698,7 +802,8 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
             "days": days,
         })
     return {"players": players, "pending": pending or [],
-            "allocation": _allocation_weights(allocation)}
+            "allocation": _allocation_weights(allocation),
+            "monthly": _monthly_bests(computed, today, order)}
 
 
 def write_index(
@@ -710,7 +815,8 @@ def write_index(
     allocation: dict[str, float] | None = None,
 ) -> str:
     payload = json.dumps(
-        build_payload(computed, last_days=last_days, pending=pending, allocation=allocation),
+        build_payload(computed, last_days=last_days, pending=pending,
+                      allocation=allocation, today=today or date.today()),
         ensure_ascii=False)
     payload = payload.replace("</", "<\\/")  # nunca cerrar el <script> desde los datos
     html = (_TEMPLATE
