@@ -78,3 +78,56 @@ def test_allocation_defaults_empty():
     player = Player(player_id="fede", display_name="Fede")
     payload = webpage.build_payload([(player, _series(5))])
     assert payload["allocation"] == []
+
+
+def _day(day: date, daily_return: float) -> DayResult:
+    return DayResult(
+        day=day, start_value=100.0, end_value=100.0 * (1 + daily_return),
+        external_flow=0.0, pnl=100.0 * daily_return,
+        daily_return=daily_return, cumulative_return=0.0,
+    )
+
+
+def test_monthly_best_current_month():
+    fede = Player(player_id="fede", display_name="Fede")
+    ana = Player(player_id="ana", display_name="Ana")
+    fede_series = [_day(date(2026, 7, 14), 0.02), _day(date(2026, 7, 15), 0.01)]
+    ana_series = [_day(date(2026, 7, 14), 0.05), _day(date(2026, 7, 15), -0.01)]
+    payload = webpage.build_payload(
+        [(fede, fede_series), (ana, ana_series)], today=date(2026, 7, 15))
+
+    cur = payload["monthly"]["current"]
+    assert cur["month_name"] == "julio"
+    assert cur["month_year"] == 2026
+    # Ana: 1.05*0.99-1 = 3.95% > Fede: 1.02*1.01-1 = 3.02%
+    assert cur["name"] == "Ana"
+    assert cur["value"] == 3.95
+    assert cur["spark"] == [5.0, 3.95]
+    # Junio no tiene datos de competición: sin widget de mes pasado.
+    assert payload["monthly"]["previous"] is None
+
+
+def test_monthly_ignores_pre_competition_days():
+    fede = Player(player_id="fede", display_name="Fede")
+    # El 10 de julio es anterior al inicio oficial (14 de julio): no cuenta.
+    series = [_day(date(2026, 7, 10), 0.50), _day(date(2026, 7, 14), 0.01)]
+    payload = webpage.build_payload([(fede, series)], today=date(2026, 7, 14))
+    assert payload["monthly"]["current"]["value"] == 1.0
+
+
+def test_monthly_previous_month_when_data():
+    fede = Player(player_id="fede", display_name="Fede")
+    series = [_day(date(2026, 7, 20), 0.03), _day(date(2026, 8, 2), 0.02)]
+    payload = webpage.build_payload([(fede, series)], today=date(2026, 8, 5))
+    assert payload["monthly"]["current"]["month_name"] == "agosto"
+    assert payload["monthly"]["current"]["value"] == 2.0
+    assert payload["monthly"]["previous"]["month_name"] == "julio"
+    assert payload["monthly"]["previous"]["value"] == 3.0
+
+
+def test_monthly_none_when_no_competition_data():
+    fede = Player(player_id="fede", display_name="Fede")
+    # Serie de enero de 2026, anterior al inicio de la competición.
+    payload = webpage.build_payload([(fede, _series(5))], today=date(2026, 1, 20))
+    assert payload["monthly"]["current"] is None
+    assert payload["monthly"]["previous"] is None
