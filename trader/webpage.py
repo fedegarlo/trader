@@ -241,16 +241,17 @@ _TEMPLATE = """<!doctype html>
         </div>
       </section>
     </div>
-    <section class="card" id="alloc-card" style="display:none">
-      <div class="wlabel">Cartera de la liga</div>
-      <div class="alloc-bars" id="alloc-bars"></div>
-      <div class="alloc-insight" id="alloc-insight"></div>
-    </section>
   </div>
 
   <section class="card">
     <h2>Clasificación</h2>
     <div class="overx" style="margin-top:6px"><table id="ranking"></table></div>
+  </section>
+
+  <section class="card" id="alloc-card" style="display:none">
+    <div class="wlabel">Cartera de la liga</div>
+    <div class="alloc-bars" id="alloc-bars"></div>
+    <div class="alloc-insight" id="alloc-insight"></div>
   </section>
 
   <section class="card">
@@ -318,9 +319,12 @@ if (DATA.pending && DATA.pending.length) {
 }
 
 // ---- widgets tipo Revolut (gráficas de área con degradado) ----
-function sparkSVG(values, color, id) {
+function sparkSVG(values, color, id, opts) {
   const W = 100, H = 40, pad = 3;
+  // Con línea base en 0 la magnitud es honesta: una serie casi plana no se
+  // estira a toda la altura (evita la falsa «cuesta» con pocos puntos).
   let mn = Math.min(...values), mx = Math.max(...values);
+  if (opts && opts.baseline0) { mn = Math.min(0, mn); mx = Math.max(0, mx); }
   if (mx === mn) { mx += 1; mn -= 1; }
   const xs = i => values.length < 2 ? W / 2 : (i / (values.length - 1)) * W;
   const ys = v => pad + (1 - (v - mn) / (mx - mn)) * (H - 2 * pad);
@@ -338,6 +342,24 @@ function sparkSVG(values, color, id) {
     'vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/>' +
     '</svg>';
 }
+// Mini gráfico de barras con línea base en 0: retornos diarios, verde hacia
+// arriba y rojo hacia abajo. Un día positivo se ve literalmente subiendo.
+function barsSVG(values, upC, downC) {
+  const n = values.length || 1, unit = 4, gap = 1.3, W = n * unit, H = 40;
+  let mn = Math.min(0, ...values), mx = Math.max(0, ...values);
+  if (mx === mn) { mx += 1; mn -= 1; }
+  const y = v => H - ((v - mn) / (mx - mn)) * H;
+  const yZero = y(0);
+  const bw = Math.max(0.8, unit - gap);
+  const bars = values.map((v, i) => {
+    const yv = y(v), top = Math.min(yv, yZero), h = Math.max(1.2, Math.abs(yv - yZero));
+    return '<rect x="' + (i * unit + gap / 2).toFixed(2) + '" y="' + top.toFixed(2) +
+      '" width="' + bw.toFixed(2) + '" height="' + h.toFixed(2) + '" rx="0.7" fill="' +
+      (v >= 0 ? upC : downC) + '"/>';
+  }).join("");
+  return '<svg class="spark" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-hidden="true">' +
+    bars + '</svg>';
+}
 function paintWidgets() {
   if (!DATA.players.length) { document.getElementById("widgets").style.display = "none"; return; }
   const upC = css("--up"), downC = css("--down");
@@ -350,7 +372,7 @@ function paintWidgets() {
   hd.textContent = (lc.day >= 0 ? "▲ " : "▼ ") + fmtPct(lc.day);
   hd.className = "delta " + (lc.day >= 0 ? "pos" : "neg");
   document.getElementById("hero-spark").innerHTML =
-    sparkSVG(leader.days.map(d => d.cum), lc.cum >= 0 ? upC : downC, "hero");
+    sparkSVG(leader.days.map(d => d.cum), lc.cum >= 0 ? upC : downC, "hero", {baseline0: true});
 
   // mejor del día
   const best = [...DATA.players].sort((a, b) => lastOf(b).day - lastOf(a).day)[0];
@@ -359,7 +381,7 @@ function paintWidgets() {
   bv.textContent = fmtPct(bd.day); bv.className = "num " + (bd.day >= 0 ? "pos" : "neg");
   document.getElementById("best-name").textContent = best.name;
   document.getElementById("best-spark").innerHTML =
-    sparkSVG(best.days.map(d => d.day), bd.day >= 0 ? upC : downC, "best");
+    barsSVG(best.days.map(d => d.day), upC, downC);
 
   // diferencia 1º - último
   const gapCard = document.getElementById("gap-card");
