@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#efeaf8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e0d13" media="(prefers-color-scheme: dark)">
 <title>🏆 Ranking de rentabilidad</title>
 <style>
   :root {
@@ -56,12 +58,7 @@
   html {
     -webkit-text-size-adjust: 100%;
     min-height: 100%;
-    background:
-      radial-gradient(120% 78% at 2% -4%, var(--aura-1) 0%, transparent 52%),
-      radial-gradient(120% 82% at 100% -2%, var(--aura-2) 0%, transparent 54%),
-      radial-gradient(150% 90% at 50% 108%, var(--aura-3) 0%, transparent 60%),
-      var(--aura-base);
-    background-attachment: fixed;
+    background: var(--aura-base);
   }
   body {
     color: var(--ink);
@@ -76,6 +73,20 @@
     min-height: 100vh;
     min-height: 100dvh;
     background: transparent;
+  }
+  /* Capa de fondo fija que cubre TODO el viewport, incluida el área
+     segura tras la barra de estado en iOS (viewport-fit=cover). */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(120% 78% at 2% -4%, var(--aura-1) 0%, transparent 52%),
+      radial-gradient(120% 82% at 100% -2%, var(--aura-2) 0%, transparent 54%),
+      radial-gradient(150% 90% at 50% 108%, var(--aura-3) 0%, transparent 60%),
+      var(--aura-base);
   }
   main { max-width: 760px; margin: 0 auto; display: grid; gap: 12px; }
   main > * { min-width: 0; }
