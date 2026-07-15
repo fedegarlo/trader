@@ -74,20 +74,6 @@
     min-height: 100dvh;
     background: transparent;
   }
-  /* Capa de fondo fija que cubre TODO el viewport, incluida el área
-     segura tras la barra de estado en iOS (viewport-fit=cover). */
-  body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    pointer-events: none;
-    background:
-      radial-gradient(120% 78% at 2% -4%, var(--aura-1) 0%, transparent 52%),
-      radial-gradient(120% 82% at 100% -2%, var(--aura-2) 0%, transparent 54%),
-      radial-gradient(150% 90% at 50% 108%, var(--aura-3) 0%, transparent 60%),
-      var(--aura-base);
-  }
   main { max-width: 760px; margin: 0 auto; display: grid; gap: 12px; }
   main > * { min-width: 0; }
 
