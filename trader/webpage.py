@@ -161,14 +161,18 @@ _TEMPLATE = """<!doctype html>
   .wrow .card { padding-bottom: 18px; display: flex; flex-direction: column; }
   .wrow .card.widget { padding-bottom: 0; }
 
-  /* widget de cartera (asignación agregada de la liga) */
-  .alloc-bars { display: flex; gap: 10px; align-items: flex-end; margin-top: 16px; }
-  .acol { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 9px; }
-  .abar-track { width: 100%; height: 116px; display: flex; align-items: flex-end; justify-content: center; }
-  .abar { width: 13px; border-radius: 999px; min-height: 6px; }
-  .abadge { width: 34px; height: 34px; border-radius: 999px; display: grid; place-items: center;
-            color: #fff; font-size: 11px; font-weight: 800; letter-spacing: -0.02em; box-shadow: 0 2px 6px -2px rgba(11,10,16,0.4); }
-  .aw { font-size: 11.5px; font-weight: 700; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  /* widget de cartera: gráfico de tarta (cada porción = su peso real) */
+  .donut-wrap { display: flex; align-items: center; gap: 18px; margin-top: 16px; }
+  .donut { flex: none; display: block; }
+  .donut-legend { flex: 1 1 0; min-width: 0; list-style: none;
+                  display: flex; flex-direction: column; gap: 9px; }
+  .dl { display: flex; align-items: center; gap: 9px; font-size: 13.5px; }
+  .dl .dot { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+  .dl .tk { font-weight: 700; color: var(--ink); letter-spacing: -0.01em;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dl .w { margin-left: auto; font-weight: 700; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .donut-center { fill: var(--ink); font-weight: 800; letter-spacing: -0.02em; }
+  .donut-sub { fill: var(--muted); font-weight: 600; }
   .alloc-insight { margin-top: 16px; font-size: 13.5px; font-weight: 700; color: var(--accent); }
   .alloc-insight .muted { color: var(--muted); font-weight: 500; }
 
@@ -177,8 +181,7 @@ _TEMPLATE = """<!doctype html>
   .wallet:first-child { border-top: none; padding-top: 4px; }
   .whead { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; }
   .whead .top { margin-left: auto; font-size: 12.5px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
-  .wallet .alloc-bars { margin-top: 12px; }
-  .wallet .abar-track { height: 84px; }
+  .wallet .donut-wrap { margin-top: 12px; }
 
   .pos { color: var(--up); } .neg { color: var(--down); }
 
@@ -300,7 +303,7 @@ _TEMPLATE = """<!doctype html>
 
   <section class="card" id="alloc-card" style="display:none">
     <div class="wlabel">Cartera de la liga</div>
-    <div class="alloc-bars" id="alloc-bars"></div>
+    <div id="alloc-bars"></div>
     <div class="alloc-insight" id="alloc-insight"></div>
   </section>
 
@@ -505,24 +508,62 @@ function allocItems(all) {
   const rest = all.slice(5).reduce((s, x) => s + x.w, 0);
   return all.slice(0, 5).concat([{ticker: "Otros", w: Math.round(rest * 100) / 100, other: true}]);
 }
-function allocBarsHTML(items, trackPx) {
-  const max = Math.max(...items.map(x => x.w)) || 1;
-  return items.map(x => {
+// Gráfico de tarta (donut): el ángulo de cada porción es su peso real en la
+// cartera, así que la superficie refleja el % verdadero (no relativo al mayor,
+// como hacían las barras). Se dibuja con arcos de una circunferencia via
+// stroke-dasharray; un hueco de 2px separa las porciones. En el centro, el
+// número de posiciones. ``count`` es el total real de tickers (antes de
+// agrupar la cola en «Otros»), no el número de porciones.
+function donutSVG(items, count, size) {
+  const S = size || 132, sw = S < 120 ? 16 : 20;
+  const cx = S / 2, cy = S / 2, r = (S - sw) / 2 - 1, C = 2 * Math.PI * r;
+  const drawn = items.filter(x => x.w > 0);
+  const gap = drawn.length > 1 ? 2 : 0;
+  let acc = 0;
+  const segs = drawn.map(x => {
     const col = x.other ? css("--muted") : badgeColor(x.ticker);
-    const h = Math.max(6, Math.round(x.w / max * trackPx));
-    const badge = x.other ? "···" : x.ticker.slice(0, 2).toUpperCase();
-    return '<div class="acol"><div class="abar-track">' +
-      '<div class="abar" style="height:' + h + 'px;background:' + col + '"></div></div>' +
-      '<div class="abadge" style="background:' + col + '" title="' + x.ticker + '">' + badge + '</div>' +
-      '<div class="aw">' + fmtW(x.w) + '</div></div>';
+    const frac = x.w / 100;
+    const len = Math.max(0.5, frac * C - gap);
+    const dash = len.toFixed(2) + " " + (C - len).toFixed(2);
+    const off = (-acc * C).toFixed(2);
+    acc += frac;
+    return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r.toFixed(2) +
+      '" fill="none" stroke="' + col + '" stroke-width="' + sw +
+      '" stroke-dasharray="' + dash + '" stroke-dashoffset="' + off + '">' +
+      '<title>' + x.ticker + ' · ' + fmtW(x.w) + '</title></circle>';
   }).join("");
+  const big = S < 120 ? 20 : 24;
+  const center = count
+    ? '<text x="' + cx + '" y="' + (cy - 1) + '" text-anchor="middle" class="donut-center" ' +
+        'font-size="' + big + '">' + count + '</text>' +
+      '<text x="' + cx + '" y="' + (cy + 14) + '" text-anchor="middle" class="donut-sub" ' +
+        'font-size="10.5">' + (count === 1 ? "activo" : "activos") + '</text>'
+    : "";
+  return '<svg class="donut" width="' + S + '" height="' + S + '" viewBox="0 0 ' + S + ' ' + S +
+    '" role="img" aria-label="Reparto de la cartera por peso">' +
+    '<g transform="rotate(-90 ' + cx + ' ' + cy + ')">' + segs + '</g>' + center + '</svg>';
+}
+function donutLegendHTML(items) {
+  return '<ul class="donut-legend">' + items.map(x => {
+    const col = x.other ? css("--muted") : badgeColor(x.ticker);
+    return '<li class="dl"><span class="dot" style="background:' + col + '"></span>' +
+      '<span class="tk">' + x.ticker + '</span><span class="w">' + fmtW(x.w) + '</span></li>';
+  }).join("") + '</ul>';
+}
+// Tarta + leyenda. ``all`` es la lista completa de posiciones (peso ya en %);
+// se agrupa la cola en «Otros» para no fragmentar la tarta, pero el contador
+// central refleja el número real de activos.
+function donutHTML(all, size) {
+  const items = allocItems(all);
+  return '<div class="donut-wrap">' + donutSVG(items, all.length, size) +
+    donutLegendHTML(items) + '</div>';
 }
 function paintAllocation() {
   const all = DATA.allocation || [];
   const card = document.getElementById("alloc-card");
   if (!all.length) { card.style.display = "none"; return; }
   card.style.display = "";
-  document.getElementById("alloc-bars").innerHTML = allocBarsHTML(allocItems(all), 116);
+  document.getElementById("alloc-bars").innerHTML = donutHTML(all);
   const top = all[0];
   document.getElementById("alloc-insight").innerHTML =
     "📊 Mayor posición · " + top.ticker +
@@ -547,9 +588,9 @@ function paintWallets() {
     const top = document.createElement("span"); top.className = "top";
     top.textContent = "Mayor · " + p.holdings[0].ticker + " " + fmtW(p.holdings[0].w);
     head.appendChild(top);
-    const bars = document.createElement("div"); bars.className = "alloc-bars";
-    bars.innerHTML = allocBarsHTML(allocItems(p.holdings), 84);
-    wrap.appendChild(head); wrap.appendChild(bars);
+    const chart = document.createElement("div");
+    chart.innerHTML = donutHTML(p.holdings, 108);
+    wrap.appendChild(head); wrap.appendChild(chart.firstChild);
     box.appendChild(wrap);
   });
 }
