@@ -141,6 +141,14 @@
   .alloc-insight { margin-top: 16px; font-size: 13.5px; font-weight: 700; color: var(--accent); }
   .alloc-insight .muted { color: var(--muted); font-weight: 500; }
 
+  /* carteras por jugador */
+  .wallet { border-top: 1px solid var(--hair); padding: 14px 0 4px; }
+  .wallet:first-child { border-top: none; padding-top: 4px; }
+  .whead { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; }
+  .whead .top { margin-left: auto; font-size: 12.5px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .wallet .alloc-bars { margin-top: 12px; }
+  .wallet .abar-track { height: 84px; }
+
   .pos { color: var(--up); } .neg { color: var(--down); }
 
   /* tabla ranking */
@@ -265,6 +273,11 @@
     <div class="alloc-insight" id="alloc-insight"></div>
   </section>
 
+  <section class="card" id="wallets-card" style="display:none">
+    <h2>Carteras por jugador</h2>
+    <div id="wallets" style="margin-top:4px"></div>
+  </section>
+
   <section class="card">
     <h2>Rentabilidad acumulada · últimos 30 días</h2>
     <div class="chartwrap">
@@ -288,7 +301,7 @@
   para la clasificación oficial.
 </footer>
 <script>
-const DATA = {"players": [{"id": "ana", "name": "ana", "slot": 0, "amounts": false, "since": "2026-07-14", "days": [{"date": "2026-07-14", "day": 1.5255, "cum": 1.5255}, {"date": "2026-07-15", "day": 0.1159, "cum": 1.6432}], "live": {"cum": 1.6432, "day": 0.1159}}, {"id": "fede", "name": "Fede", "slot": 1, "amounts": false, "since": "2026-07-14", "days": [{"date": "2026-07-14", "day": 2.604, "cum": 2.604}, {"date": "2026-07-15", "day": -4.7877, "cum": -2.3084}], "live": {"cum": -2.3084, "day": -4.7877}}], "pending": [], "allocation": [{"ticker": "PLTR", "w": 54.17}, {"ticker": "WDC", "w": 23.17}, {"ticker": "NVDA", "w": 22.66}], "monthly": {"current": {"name": "ana", "value": 1.64, "slot": 0, "month_name": "julio", "month_year": 2026, "spark": [1.5255, 1.6432]}, "previous": null}};
+const DATA = {"players": [{"id": "ana", "name": "ana", "slot": 0, "amounts": false, "since": "2026-07-14", "days": [{"date": "2026-07-14", "day": 1.5255, "cum": 1.5255}, {"date": "2026-07-15", "day": -0.3216, "cum": 1.199}], "holdings": [{"ticker": "PLTR", "w": 100.0}], "live": {"cum": 1.199, "day": -0.3216}}, {"id": "fede", "name": "Fede", "slot": 1, "amounts": false, "since": "2026-07-14", "days": [{"date": "2026-07-14", "day": 2.604, "cum": 2.604}, {"date": "2026-07-15", "day": -5.213, "cum": -2.7448}], "holdings": [{"ticker": "WDC", "w": 50.31}, {"ticker": "NVDA", "w": 49.69}], "live": {"cum": -2.7301, "day": -5.1987}}], "pending": [], "allocation": [{"ticker": "PLTR", "w": 54.17}, {"ticker": "WDC", "w": 23.06}, {"ticker": "NVDA", "w": 22.77}], "monthly": {"current": {"name": "ana", "value": 1.2, "slot": 0, "month_name": "julio", "month_year": 2026, "spark": [1.5255, 1.199]}, "previous": null}};
 const SLOTS = ["--s1","--s2","--s3","--s4","--s5","--s6","--s7","--s8"];
 const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 const colorOf = p => css(SLOTS[p.slot % SLOTS.length]);
@@ -448,38 +461,68 @@ function paintMonthly() {
 }
 paintMonthly();
 
-// ---- widget de cartera: asignación agregada por ticker (solo pesos) ----
+// ---- widgets de cartera: asignación por ticker (solo pesos, sin importes) ----
 function badgeColor(t) {
   let h = 0; for (let i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) >>> 0;
   return "hsl(" + (h % 360) + " 58% 52%)";
 }
-function paintAllocation() {
-  const all = DATA.allocation || [];
-  const card = document.getElementById("alloc-card");
-  if (!all.length) { card.style.display = "none"; return; }
-  card.style.display = "";
-  let items = all;
-  if (all.length > 6) {
-    const rest = all.slice(5).reduce((s, x) => s + x.w, 0);
-    items = all.slice(0, 5).concat([{ticker: "Otros", w: Math.round(rest * 100) / 100, other: true}]);
-  }
+const fmtW = w => w.toFixed(w < 10 ? 1 : 0) + "%";
+// Agrupa la cola en «Otros» cuando hay más de 6 posiciones (misma regla que
+// usa la cartera de la liga), para que las barras no se aprieten.
+function allocItems(all) {
+  if (all.length <= 6) return all;
+  const rest = all.slice(5).reduce((s, x) => s + x.w, 0);
+  return all.slice(0, 5).concat([{ticker: "Otros", w: Math.round(rest * 100) / 100, other: true}]);
+}
+function allocBarsHTML(items, trackPx) {
   const max = Math.max(...items.map(x => x.w)) || 1;
-  const fmtW = w => w.toFixed(w < 10 ? 1 : 0) + "%";
-  document.getElementById("alloc-bars").innerHTML = items.map(x => {
+  return items.map(x => {
     const col = x.other ? css("--muted") : badgeColor(x.ticker);
-    const h = Math.max(6, Math.round(x.w / max * 116));
+    const h = Math.max(6, Math.round(x.w / max * trackPx));
     const badge = x.other ? "···" : x.ticker.slice(0, 2).toUpperCase();
     return '<div class="acol"><div class="abar-track">' +
       '<div class="abar" style="height:' + h + 'px;background:' + col + '"></div></div>' +
       '<div class="abadge" style="background:' + col + '" title="' + x.ticker + '">' + badge + '</div>' +
       '<div class="aw">' + fmtW(x.w) + '</div></div>';
   }).join("");
+}
+function paintAllocation() {
+  const all = DATA.allocation || [];
+  const card = document.getElementById("alloc-card");
+  if (!all.length) { card.style.display = "none"; return; }
+  card.style.display = "";
+  document.getElementById("alloc-bars").innerHTML = allocBarsHTML(allocItems(all), 116);
   const top = all[0];
   document.getElementById("alloc-insight").innerHTML =
     "📊 Mayor posición · " + top.ticker +
     ' <span class="muted">· ' + fmtW(top.w) + " del total</span>";
 }
 paintAllocation();
+
+// ---- carteras por jugador: reparto por ticker de cada uno (solo pesos) ----
+function paintWallets() {
+  const withHoldings = ranked.filter(p => p.holdings && p.holdings.length);
+  const card = document.getElementById("wallets-card");
+  if (!withHoldings.length) { card.style.display = "none"; return; }
+  card.style.display = "";
+  const box = document.getElementById("wallets");
+  box.innerHTML = "";
+  withHoldings.forEach(p => {
+    const wrap = document.createElement("div"); wrap.className = "wallet";
+    const head = document.createElement("div"); head.className = "whead";
+    const key = document.createElement("span"); key.className = "key";
+    key.style.background = colorOf(p);
+    head.appendChild(key); head.appendChild(document.createTextNode(p.name));
+    const top = document.createElement("span"); top.className = "top";
+    top.textContent = "Mayor · " + p.holdings[0].ticker + " " + fmtW(p.holdings[0].w);
+    head.appendChild(top);
+    const bars = document.createElement("div"); bars.className = "alloc-bars";
+    bars.innerHTML = allocBarsHTML(allocItems(p.holdings), 84);
+    wrap.appendChild(head); wrap.appendChild(bars);
+    box.appendChild(wrap);
+  });
+}
+paintWallets();
 
 // ---- gráfica de líneas: % acumulado ----
 const svg = document.getElementById("chart");
@@ -584,7 +627,7 @@ function draw() {
 }
 draw();
 const mq = window.matchMedia("(prefers-color-scheme: dark)");
-if (mq.addEventListener) mq.addEventListener("change", () => { draw(); paintWidgets(); paintMonthly(); paintAllocation(); });
+if (mq.addEventListener) mq.addEventListener("change", () => { draw(); paintWidgets(); paintMonthly(); paintAllocation(); paintWallets(); });
 let rafId;
 window.addEventListener("resize", () => {
   cancelAnimationFrame(rafId);
