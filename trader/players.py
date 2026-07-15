@@ -48,7 +48,7 @@ def passphrase_from_env(player_id: str) -> str | None:
     """Frase de paso de un jugador desde el entorno.
 
     Primero la variable propia ``PLAYER_<ID>_KEY`` (por si algún jugador usa
-    una frase distinta, como el demo); si no, la frase **compartida** de la
+    una frase distinta); si no, la frase **compartida** de la
     liga ``TRADER_KEY``, con la que se cifran todos los extractos. Así, dar de
     alta a un jugador nuevo no requiere ningún secret adicional.
     """

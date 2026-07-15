@@ -28,11 +28,6 @@ En un par de minutos la web queda en
 **https://fedegarlo.github.io/trader/**). Cada vez que la Action actualiza
 `docs/`, Pages redespliega solo.
 
-> El ranking incluye un jugador **Demo 🤖** con operaciones ficticias
-> (cifradas con la frase pública `demo`) para ver la primera iteración
-> funcionando de punta a punta. Se elimina borrando `players/demo/` y su
-> línea en el workflow.
-
 ## Cómo funciona
 
 Revolut no ofrece API pública de trading para cuentas personales, así que el

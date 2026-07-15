@@ -48,9 +48,6 @@ jobs:
           # Añadir un jugador nuevo NO requiere tocar nada aquí ni crear más
           # secrets. Los extractos se suben sin PR desde docs/subir.html.
           TRADER_KEY: ${{ secrets.TRADER_KEY }}
-          # El jugador demo usa datos ficticios con su propia clave pública.
-          # Elimina esta línea (y players/demo/) cuando ya no haga falta.
-          PLAYER_DEMO_KEY: demo
         run: python -m trader ranking --refresh
 
       - name: Publicar resultados

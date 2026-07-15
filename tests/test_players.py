@@ -19,10 +19,10 @@ def test_shared_key_for_all_players(monkeypatch):
 
 
 def test_player_key_overrides_shared(monkeypatch):
-    # Una clave propia (p.ej. el demo) tiene prioridad sobre la compartida.
+    # Una clave propia tiene prioridad sobre la compartida.
     monkeypatch.setenv("TRADER_KEY", "frase-de-la-liga")
-    monkeypatch.setenv("PLAYER_DEMO_KEY", "demo")
-    assert players.passphrase_from_env("demo") == "demo"
+    monkeypatch.setenv("PLAYER_JUAN_KEY", "frase-propia")
+    assert players.passphrase_from_env("juan") == "frase-propia"
 
 
 def test_missing_passphrase(monkeypatch):
