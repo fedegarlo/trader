@@ -1,6 +1,8 @@
 """Carga de la frase de paso de cada jugador desde el entorno."""
 
-from trader import players
+import json
+
+from trader import players, secretbox
 
 
 def test_env_var_for():
@@ -27,3 +29,30 @@ def test_missing_passphrase(monkeypatch):
     monkeypatch.delenv("PLAYER_FEDE_KEY", raising=False)
     monkeypatch.delenv("TRADER_KEY", raising=False)
     assert players.passphrase_from_env("fede") is None
+
+
+def _make_player(tmp_path, player_id, enc_passphrase):
+    pdir = tmp_path / player_id
+    pdir.mkdir()
+    (pdir / "player.json").write_text(json.dumps({"display_name": "Ana"}))
+    blob = secretbox.encrypt(b"Date,Ticker,Type\n2026-01-01,AAPL,BUY - MARKET\n", enc_passphrase)
+    (pdir / "trades.csv.enc").write_bytes(blob)
+    return str(tmp_path)
+
+
+def test_undecryptable_when_wrong_passphrase(tmp_path):
+    # El extracto se cifró con una frase distinta a la de la liga.
+    players_dir = _make_player(tmp_path, "ana", "frase-de-ana")
+    player = players.load_player(players_dir, "ana", passphrase="frase-de-la-liga")
+    assert player.enc_count == 1
+    assert player.decrypt_failures == 1
+    assert player.undecryptable is True
+    assert player.events == []
+
+
+def test_not_undecryptable_with_right_passphrase(tmp_path):
+    players_dir = _make_player(tmp_path, "ana", "frase-de-la-liga")
+    player = players.load_player(players_dir, "ana", passphrase="frase-de-la-liga")
+    assert player.decrypt_failures == 0
+    assert player.undecryptable is False
+    assert len(player.events) == 1

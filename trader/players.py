@@ -31,6 +31,13 @@ class Player:
     show_amounts: bool = False
     events: list[Event] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
+    enc_count: int = 0          # ficheros .csv.enc encontrados
+    decrypt_failures: int = 0   # de esos, cuántos no se pudieron descifrar
+
+    @property
+    def undecryptable(self) -> bool:
+        """El extracto está subido pero no se ha podido descifrar (¿frase mala?)."""
+        return self.enc_count > 0 and self.decrypt_failures >= self.enc_count
 
 
 def env_var_for(player_id: str) -> str:
@@ -72,7 +79,9 @@ def load_player(players_dir: str, player_id: str, passphrase: str | None = None)
     for name in sorted(os.listdir(pdir)):
         path = os.path.join(pdir, name)
         if name.endswith(".csv.enc"):
+            player.enc_count += 1
             if not passphrase:
+                player.decrypt_failures += 1
                 player.warnings.append(
                     f"{name}: sin clave (variable {env_var_for(player_id)} no definida), omitido"
                 )
@@ -80,6 +89,7 @@ def load_player(players_dir: str, player_id: str, passphrase: str | None = None)
             try:
                 texts.append(secretbox.decrypt_file(path, passphrase).decode("utf-8-sig"))
             except secretbox.DecryptError as exc:
+                player.decrypt_failures += 1
                 player.warnings.append(f"{name}: {exc}")
         elif name.endswith(".csv"):
             with open(path, encoding="utf-8-sig") as fh:
