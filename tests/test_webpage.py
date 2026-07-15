@@ -80,6 +80,32 @@ def test_allocation_defaults_empty():
     assert payload["allocation"] == []
 
 
+def test_holdings_per_player_normalized_to_weights():
+    fede = Player(player_id="fede", display_name="Fede")
+    ana = Player(player_id="ana", display_name="Ana")
+    holdings = {
+        "fede": {"AAPL": 300.0, "MSFT": 100.0},
+        "ana": {"TSLA": 50.0, "NVDA": 50.0},
+    }
+    payload = webpage.build_payload(
+        [(fede, _series(5)), (ana, _series(5))], holdings=holdings)
+    by_id = {p["id"]: p for p in payload["players"]}
+    assert by_id["fede"]["holdings"] == [
+        {"ticker": "AAPL", "w": 75.0},
+        {"ticker": "MSFT", "w": 25.0},
+    ]
+    assert by_id["ana"]["holdings"] == [
+        {"ticker": "TSLA", "w": 50.0},
+        {"ticker": "NVDA", "w": 50.0},
+    ]
+
+
+def test_holdings_default_empty_per_player():
+    player = Player(player_id="fede", display_name="Fede")
+    payload = webpage.build_payload([(player, _series(5))])
+    assert payload["players"][0]["holdings"] == []
+
+
 def _day(day: date, daily_return: float) -> DayResult:
     return DayResult(
         day=day, start_value=100.0, end_value=100.0 * (1 + daily_return),

@@ -75,6 +75,9 @@ def cmd_ranking(args: argparse.Namespace) -> None:
     # Valor de mercado agregado por ticker de toda la liga: alimenta el widget
     # de cartera con pesos (%), sin exponer importes ni el desglose por jugador.
     allocation: dict[str, float] = {}
+    # El mismo valor de mercado por ticker, pero por jugador: alimenta la
+    # sección «Carteras» (también solo pesos %, nunca importes).
+    holdings: dict[str, dict[str, float]] = {}
     for player_id in ids:
         player = players_mod.load_player(args.players_dir, player_id)
         for warning in player.warnings:
@@ -97,7 +100,10 @@ def cmd_ranking(args: argparse.Namespace) -> None:
             continue
         report_mod.write_player_json(player, series, args.public_dir)
         computed.append((player, series))
-        for ticker, value in holdings_value(player.events, prices).items():
+        player_holdings = holdings_value(player.events, prices)
+        if player_holdings:
+            holdings[player_id] = player_holdings
+        for ticker, value in player_holdings.items():
             allocation[ticker] = allocation.get(ticker, 0.0) + value
 
     # Indicador provisional «en vivo»: revalora hoy con la cotización actual de
@@ -119,7 +125,7 @@ def cmd_ranking(args: argparse.Namespace) -> None:
 
     content = report_mod.write_ranking(computed, out_path=args.out)
     webpage.write_index(computed, out_path=args.html_out, pending=pending,
-                        allocation=allocation, live=live)
+                        allocation=allocation, holdings=holdings, live=live)
     with open(args.pending_out, "w", encoding="utf-8") as fh:
         json.dump(pending, fh, ensure_ascii=False)
     print(content)
