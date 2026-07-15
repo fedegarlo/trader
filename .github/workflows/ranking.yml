@@ -18,6 +18,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 concurrency:
   group: ranking
@@ -64,3 +65,41 @@ jobs:
             git pull --rebase origin main
             git push
           fi
+
+      - name: Avisar de extractos sin descifrar
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require("fs");
+            let pending = [];
+            try { pending = JSON.parse(fs.readFileSync("pending.json", "utf8")); } catch (e) {}
+            const MARKER = "Extractos sin descifrar";
+            const list = await github.paginate(github.rest.issues.listForRepo, {
+              owner: context.repo.owner, repo: context.repo.repo, state: "open", per_page: 100,
+            });
+            const existing = list.find(i => !i.pull_request && i.title.includes(MARKER));
+
+            if (pending.length) {
+              const rows = pending.map(p => `- **${p.name}** (\`players/${p.id}/\`)`).join("\n");
+              const body = [
+                "Estos extractos están subidos pero **no se han podido descifrar** en el último recálculo:",
+                "", rows, "",
+                "Causa casi segura: la **frase de paso** con la que se cifró **no coincide con la de " +
+                "la liga** (el secret `TRADER_KEY`). Solución: que esa persona **vuelva a subir** su " +
+                "extracto desde `docs/subir.html` con la frase compartida correcta.",
+                "", "_Esta issue se actualiza y se cierra sola cuando el extracto se descifra._",
+              ].join("\n");
+              if (existing) {
+                await github.rest.issues.update({ owner: context.repo.owner, repo: context.repo.repo,
+                  issue_number: existing.number, body });
+              } else {
+                await github.rest.issues.create({ owner: context.repo.owner, repo: context.repo.repo,
+                  title: "⚠️ " + MARKER, body });
+              }
+            } else if (existing) {
+              await github.rest.issues.createComment({ owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: existing.number, body: "✅ Todos los extractos se descifran correctamente. Cierro." });
+              await github.rest.issues.update({ owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: existing.number, state: "closed" });
+            }

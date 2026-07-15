@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import getpass
+import json
 import os
 import sys
 
@@ -70,19 +71,27 @@ def cmd_ranking(args: argparse.Namespace) -> None:
     prices = PriceCache(cache_dir=args.prices_dir, offline=args.offline,
                         refresh=getattr(args, "refresh", False))
     computed = []
+    pending = []  # extractos subidos pero que no se han podido descifrar
     for player_id in ids:
         player = players_mod.load_player(args.players_dir, player_id)
         for warning in player.warnings:
             print(f"AVISO [{player_id}]: {warning}", file=sys.stderr)
         if not player.events:
-            print(f"AVISO [{player_id}]: sin operaciones, se omite", file=sys.stderr)
+            if player.undecryptable:
+                pending.append({"id": player_id, "name": player.display_name})
+                print(f"AVISO [{player_id}]: extracto sin descifrar (¿frase incorrecta?), "
+                      "se omite", file=sys.stderr)
+            else:
+                print(f"AVISO [{player_id}]: sin operaciones, se omite", file=sys.stderr)
             continue
         series = compute_daily_series(player.events, prices)
         report_mod.write_player_json(player, series, args.public_dir)
         computed.append((player, series))
 
     content = report_mod.write_ranking(computed, out_path=args.out)
-    webpage.write_index(computed, out_path=args.html_out)
+    webpage.write_index(computed, out_path=args.html_out, pending=pending)
+    with open(args.pending_out, "w", encoding="utf-8") as fh:
+        json.dump(pending, fh, ensure_ascii=False)
     print(content)
 
 
@@ -117,6 +126,8 @@ def main(argv: list[str] | None = None) -> None:
     p_rank.add_argument("--public-dir", default="data/public")
     p_rank.add_argument("--out", default="docs/ranking.md")
     p_rank.add_argument("--html-out", default="docs/index.html")
+    p_rank.add_argument("--pending-out", default="pending.json",
+                        help="lista de extractos sin descifrar (para avisar en CI)")
     p_rank.add_argument("--offline", action="store_true")
     p_rank.add_argument("--refresh", action="store_true",
                         help="volver a descargar precios aunque haya caché")

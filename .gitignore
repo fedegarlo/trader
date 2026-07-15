@@ -2,6 +2,9 @@
 players/**/*.csv
 *.csv.dec
 
+# lista de extractos sin descifrar que genera `trader ranking` para la CI
+pending.json
+
 __pycache__/
 *.pyc
 .pytest_cache/

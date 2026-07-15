@@ -66,6 +66,8 @@ _TEMPLATE = """<!doctype html>
     border-radius: 12px; padding: 20px;
   }
   .card h2 { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
+  .card.warn { border-color: color-mix(in srgb, var(--s3) 55%, var(--ring)); }
+  .card.warn .sub { color: var(--ink-2); }
   table { border-collapse: collapse; width: 100%; }
   th, td { padding: 7px 10px; text-align: right; font-variant-numeric: tabular-nums; }
   th { color: var(--muted); font-size: 12px; font-weight: 500; border-bottom: 1px solid var(--grid); }
@@ -115,6 +117,11 @@ _TEMPLATE = """<!doctype html>
     <p class="sub">Actualizado: __UPDATED__ · competición de trading con Revolut</p>
     <a href="subir.html" style="display:inline-block;margin-top:10px;padding:8px 14px;border-radius:8px;background:var(--s1);color:#fff;font-weight:600;font-size:13px;text-decoration:none">⬆️ Subir tu extracto</a>
   </header>
+
+  <section class="card warn" id="pending-card" style="display:none">
+    <h2>⏳ Pendiente de clave</h2>
+    <div class="sub" id="pending"></div>
+  </section>
 
   <section class="card">
     <h2>Clasificación</h2>
@@ -174,6 +181,15 @@ const MEDALS = ["🥇","🥈","🥉"];
     tr.appendChild(mk("td", last.day >= 0 ? "pos" : "neg", fmtPct(last.day)));
     tr.appendChild(mk("td", "", p.since || p.days[0].date));
   });
+}
+
+// ---- pendientes de clave (extracto subido pero no descifrable) ----
+if (DATA.pending && DATA.pending.length) {
+  const names = DATA.pending.map(p => p.name).join(", ");
+  document.getElementById("pending").textContent =
+    names + " — su extracto está subido pero no se ha podido descifrar. Seguramente la " +
+    "frase de paso no es la de la liga: que lo vuelva a subir con la frase correcta.";
+  document.getElementById("pending-card").style.display = "";
 }
 
 // ---- gráfica de líneas: % acumulado ----
@@ -379,7 +395,8 @@ svg.addEventListener("pointerleave", () => {
 
 
 def build_payload(computed: list[tuple[Player, list[DayResult]]],
-                  last_days: int = 30) -> dict:
+                  last_days: int = 30,
+                  pending: list[dict] | None = None) -> dict:
     """Datos embebidos en la página. Respeta show_amounts por jugador.
 
     Solo se incluyen los últimos ``last_days`` días de cada jugador (la gráfica
@@ -418,7 +435,7 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
             "since": series[0].day.isoformat(),
             "days": days,
         })
-    return {"players": players}
+    return {"players": players, "pending": pending or []}
 
 
 def write_index(
@@ -426,8 +443,10 @@ def write_index(
     out_path: str = "docs/index.html",
     today: date | None = None,
     last_days: int = 30,
+    pending: list[dict] | None = None,
 ) -> str:
-    payload = json.dumps(build_payload(computed, last_days=last_days), ensure_ascii=False)
+    payload = json.dumps(build_payload(computed, last_days=last_days, pending=pending),
+                         ensure_ascii=False)
     payload = payload.replace("</", "<\\/")  # nunca cerrar el <script> desde los datos
     html = (_TEMPLATE
             .replace("__UPDATED__", (today or date.today()).isoformat())

@@ -49,3 +49,16 @@ def test_custom_window():
     player = Player(player_id="fede", display_name="Fede")
     payload = webpage.build_payload([(player, _series(45))], last_days=7)
     assert len(payload["players"][0]["days"]) == 7
+
+
+def test_pending_in_payload():
+    player = Player(player_id="fede", display_name="Fede")
+    pending = [{"id": "ana", "name": "Ana"}]
+    payload = webpage.build_payload([(player, _series(5))], pending=pending)
+    assert payload["pending"] == pending
+
+
+def test_pending_defaults_empty():
+    player = Player(player_id="fede", display_name="Fede")
+    payload = webpage.build_payload([(player, _series(5))])
+    assert payload["pending"] == []
