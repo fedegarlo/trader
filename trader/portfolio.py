@@ -62,6 +62,42 @@ def _apply_event(ev: Event, positions: dict[str, float], cash: float) -> tuple[f
     return cash, 0.0
 
 
+def holdings_value(
+    events: list[Event],
+    prices: PriceCache,
+    until: date | None = None,
+) -> dict[str, float]:
+    """Valor de mercado por ticker de la cartera al último día.
+
+    Reproduce todos los eventos y valora las posiciones abiertas al cierre de
+    ``until`` (o del último día con datos). Devuelve ``{ticker: valor}`` en la
+    divisa del extracto; solo incluye posiciones con cantidad positiva. El
+    efectivo no se incluye (el widget muestra el reparto entre acciones).
+    """
+    if not events:
+        return {}
+
+    days = [ev.day for ev in events]
+    last = until or max(max(days), date.today())
+
+    tickers = {ev.ticker for ev in events if ev.ticker and ev.kind in (BUY, SELL, SPLIT)}
+    for ticker in tickers:
+        prices.ensure_range(ticker, min(days), last)
+
+    positions: dict[str, float] = {}
+    cash = 0.0
+    for ev in events:
+        if ev.day > last:
+            continue
+        cash, _ = _apply_event(ev, positions, cash)
+
+    values: dict[str, float] = {}
+    for ticker, qty in positions.items():
+        if qty > 1e-9:
+            values[ticker] = qty * prices.close_on(ticker, last)
+    return values
+
+
 def compute_daily_series(
     events: list[Event],
     prices: PriceCache,

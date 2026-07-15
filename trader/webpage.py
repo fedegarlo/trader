@@ -95,10 +95,11 @@ _TEMPLATE = """<!doctype html>
   .hrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 6px; }
   h1 { font-size: clamp(30px, 9vw, 40px); font-weight: 800; letter-spacing: -0.035em; line-height: 1.02; }
   .upload {
-    flex: none; text-decoration: none; font-weight: 700; font-size: 13px;
-    color: #fff; background: var(--accent); padding: 9px 15px; border-radius: 999px;
-    box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--accent) 70%, transparent);
+    flex: none; text-decoration: none; color: #fff; background: var(--accent);
+    width: 46px; height: 46px; border-radius: 999px; display: grid; place-items: center;
+    box-shadow: 0 8px 18px -6px color-mix(in srgb, var(--accent) 75%, transparent);
   }
+  .upload svg { display: block; }
   .upload:active { transform: translateY(1px); }
   .hbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; }
   .chip { font-weight: 700; font-size: 15px; color: var(--ink); }
@@ -132,6 +133,17 @@ _TEMPLATE = """<!doctype html>
   .wrow { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .wrow .card { padding-bottom: 18px; display: flex; flex-direction: column; }
   .wrow .card.widget { padding-bottom: 0; }
+
+  /* widget de cartera (asignación agregada de la liga) */
+  .alloc-bars { display: flex; gap: 10px; align-items: flex-end; margin-top: 16px; }
+  .acol { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 9px; }
+  .abar-track { width: 100%; height: 116px; display: flex; align-items: flex-end; justify-content: center; }
+  .abar { width: 13px; border-radius: 999px; min-height: 6px; }
+  .abadge { width: 34px; height: 34px; border-radius: 999px; display: grid; place-items: center;
+            color: #fff; font-size: 11px; font-weight: 800; letter-spacing: -0.02em; box-shadow: 0 2px 6px -2px rgba(11,10,16,0.4); }
+  .aw { font-size: 11.5px; font-weight: 700; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .alloc-insight { margin-top: 16px; font-size: 13.5px; font-weight: 700; color: var(--accent); }
+  .alloc-insight .muted { color: var(--muted); font-weight: 500; }
 
   .pos { color: var(--up); } .neg { color: var(--down); }
 
@@ -189,7 +201,12 @@ _TEMPLATE = """<!doctype html>
     <div class="eyebrow">🏆 Competición · Revolut · actualizado __UPDATED__</div>
     <div class="hrow">
       <h1>Rentabilidad</h1>
-      <a class="upload" href="subir.html">Subir extracto</a>
+      <a class="upload" href="subir.html" aria-label="Subir extracto" title="Subir extracto">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
+             stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M5 20h14"/>
+        </svg>
+      </a>
     </div>
     <div class="hbar">
       <span class="chip" id="hchip">Todos los jugadores <span class="caret">▾</span></span>
@@ -224,6 +241,11 @@ _TEMPLATE = """<!doctype html>
         </div>
       </section>
     </div>
+    <section class="card" id="alloc-card" style="display:none">
+      <div class="wlabel">Cartera de la liga</div>
+      <div class="alloc-bars" id="alloc-bars"></div>
+      <div class="alloc-insight" id="alloc-insight"></div>
+    </section>
   </div>
 
   <section class="card">
@@ -354,6 +376,39 @@ function paintWidgets() {
 }
 paintWidgets();
 
+// ---- widget de cartera: asignación agregada por ticker (solo pesos) ----
+function badgeColor(t) {
+  let h = 0; for (let i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) >>> 0;
+  return "hsl(" + (h % 360) + " 58% 52%)";
+}
+function paintAllocation() {
+  const all = DATA.allocation || [];
+  const card = document.getElementById("alloc-card");
+  if (!all.length) { card.style.display = "none"; return; }
+  card.style.display = "";
+  let items = all;
+  if (all.length > 6) {
+    const rest = all.slice(5).reduce((s, x) => s + x.w, 0);
+    items = all.slice(0, 5).concat([{ticker: "Otros", w: Math.round(rest * 100) / 100, other: true}]);
+  }
+  const max = Math.max(...items.map(x => x.w)) || 1;
+  const fmtW = w => w.toFixed(w < 10 ? 1 : 0) + "%";
+  document.getElementById("alloc-bars").innerHTML = items.map(x => {
+    const col = x.other ? css("--muted") : badgeColor(x.ticker);
+    const h = Math.max(6, Math.round(x.w / max * 116));
+    const badge = x.other ? "···" : x.ticker.slice(0, 2).toUpperCase();
+    return '<div class="acol"><div class="abar-track">' +
+      '<div class="abar" style="height:' + h + 'px;background:' + col + '"></div></div>' +
+      '<div class="abadge" style="background:' + col + '" title="' + x.ticker + '">' + badge + '</div>' +
+      '<div class="aw">' + fmtW(x.w) + '</div></div>';
+  }).join("");
+  const top = all[0];
+  document.getElementById("alloc-insight").innerHTML =
+    "📊 Mayor posición · " + top.ticker +
+    ' <span class="muted">· ' + fmtW(top.w) + " del total</span>";
+}
+paintAllocation();
+
 // ---- gráfica de líneas: % acumulado ----
 const svg = document.getElementById("chart");
 const wrap = document.querySelector(".chartwrap");
@@ -457,7 +512,7 @@ function draw() {
 }
 draw();
 const mq = window.matchMedia("(prefers-color-scheme: dark)");
-if (mq.addEventListener) mq.addEventListener("change", () => { draw(); paintWidgets(); });
+if (mq.addEventListener) mq.addEventListener("change", () => { draw(); paintWidgets(); paintAllocation(); });
 let rafId;
 window.addEventListener("resize", () => {
   cancelAnimationFrame(rafId);
@@ -556,15 +611,38 @@ svg.addEventListener("pointerleave", () => {
 """
 
 
+def _allocation_weights(allocation: dict[str, float] | None) -> list[dict]:
+    """Normaliza el valor de mercado agregado por ticker a pesos (%).
+
+    Recibe ``{ticker: valor}`` (agregado de toda la liga) y devuelve una lista
+    ordenada de mayor a menor ``[{"ticker", "w"}]`` con el peso en porcentaje.
+    Solo se exponen pesos, nunca importes: el mix agregado no revela ni las
+    operaciones ni el dinero de ningún jugador.
+    """
+    if not allocation:
+        return []
+    total = sum(v for v in allocation.values() if v > 0)
+    if total <= 0:
+        return []
+    out = [{"ticker": t, "w": round(v / total * 100, 2)}
+           for t, v in allocation.items() if v > 0]
+    out.sort(key=lambda d: d["w"], reverse=True)
+    return out
+
+
 def build_payload(computed: list[tuple[Player, list[DayResult]]],
                   last_days: int = 30,
-                  pending: list[dict] | None = None) -> dict:
+                  pending: list[dict] | None = None,
+                  allocation: dict[str, float] | None = None) -> dict:
     """Datos embebidos en la página. Respeta show_amounts por jugador.
 
     Solo se incluyen los últimos ``last_days`` días de cada jugador (la gráfica
     y las tablas de detalle muestran esa ventana). El ``% acumulado`` de cada
     día sigue siendo el de siempre (desde el inicio real), y ``since`` guarda la
     fecha de inicio real para la columna «Desde» de la clasificación.
+
+    ``allocation`` es el valor de mercado agregado por ticker de toda la liga;
+    se publica solo como pesos (%) para el widget de cartera, sin importes.
     """
     players = []
     # Slot de color por orden alfabético de id: estable aunque cambie el ranking
@@ -597,7 +675,8 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
             "since": series[0].day.isoformat(),
             "days": days,
         })
-    return {"players": players, "pending": pending or []}
+    return {"players": players, "pending": pending or [],
+            "allocation": _allocation_weights(allocation)}
 
 
 def write_index(
@@ -606,9 +685,11 @@ def write_index(
     today: date | None = None,
     last_days: int = 30,
     pending: list[dict] | None = None,
+    allocation: dict[str, float] | None = None,
 ) -> str:
-    payload = json.dumps(build_payload(computed, last_days=last_days, pending=pending),
-                         ensure_ascii=False)
+    payload = json.dumps(
+        build_payload(computed, last_days=last_days, pending=pending, allocation=allocation),
+        ensure_ascii=False)
     payload = payload.replace("</", "<\\/")  # nunca cerrar el <script> desde los datos
     html = (_TEMPLATE
             .replace("__UPDATED__", (today or date.today()).isoformat())

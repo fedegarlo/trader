@@ -18,7 +18,7 @@ import sys
 from . import players as players_mod
 from . import report as report_mod
 from . import secretbox, webpage
-from .portfolio import compute_daily_series
+from .portfolio import compute_daily_series, holdings_value
 from .prices import PriceCache
 
 
@@ -72,6 +72,9 @@ def cmd_ranking(args: argparse.Namespace) -> None:
                         refresh=getattr(args, "refresh", False))
     computed = []
     pending = []  # extractos subidos pero que no se han podido descifrar
+    # Valor de mercado agregado por ticker de toda la liga: alimenta el widget
+    # de cartera con pesos (%), sin exponer importes ni el desglose por jugador.
+    allocation: dict[str, float] = {}
     for player_id in ids:
         player = players_mod.load_player(args.players_dir, player_id)
         for warning in player.warnings:
@@ -87,9 +90,12 @@ def cmd_ranking(args: argparse.Namespace) -> None:
         series = compute_daily_series(player.events, prices)
         report_mod.write_player_json(player, series, args.public_dir)
         computed.append((player, series))
+        for ticker, value in holdings_value(player.events, prices).items():
+            allocation[ticker] = allocation.get(ticker, 0.0) + value
 
     content = report_mod.write_ranking(computed, out_path=args.out)
-    webpage.write_index(computed, out_path=args.html_out, pending=pending)
+    webpage.write_index(computed, out_path=args.html_out, pending=pending,
+                        allocation=allocation)
     with open(args.pending_out, "w", encoding="utf-8") as fh:
         json.dump(pending, fh, ensure_ascii=False)
     print(content)
