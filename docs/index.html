@@ -49,6 +49,8 @@
     border-radius: 12px; padding: 20px;
   }
   .card h2 { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
+  .card.warn { border-color: color-mix(in srgb, var(--s3) 55%, var(--ring)); }
+  .card.warn .sub { color: var(--ink-2); }
   table { border-collapse: collapse; width: 100%; }
   th, td { padding: 7px 10px; text-align: right; font-variant-numeric: tabular-nums; }
   th { color: var(--muted); font-size: 12px; font-weight: 500; border-bottom: 1px solid var(--grid); }
@@ -99,6 +101,11 @@
     <a href="subir.html" style="display:inline-block;margin-top:10px;padding:8px 14px;border-radius:8px;background:var(--s1);color:#fff;font-weight:600;font-size:13px;text-decoration:none">⬆️ Subir tu extracto</a>
   </header>
 
+  <section class="card warn" id="pending-card" style="display:none">
+    <h2>⏳ Pendiente de clave</h2>
+    <div class="sub" id="pending"></div>
+  </section>
+
   <section class="card">
     <h2>Clasificación</h2>
     <div class="overx"><table id="ranking"></table></div>
@@ -125,7 +132,7 @@
   Datos: extractos de Revolut cifrados · precios de cierre de Yahoo Finance.
 </footer>
 <script>
-const DATA = {"players": [{"id": "demo", "name": "Demo 🤖", "slot": 0, "amounts": true, "since": "2026-07-01", "days": [{"date": "2026-07-01", "day": 37.752, "cum": 37.752, "start": 0.0, "end": 1188.76, "flow": 1000.0, "pnl": 188.76}, {"date": "2026-07-02", "day": 10.0096, "cum": 51.5404, "start": 1188.76, "end": 1307.75, "flow": 0.0, "pnl": 118.99}, {"date": "2026-07-03", "day": -21.9117, "cum": 18.3354, "start": 1307.75, "end": 1021.2, "flow": 0.0, "pnl": -286.55}, {"date": "2026-07-04", "day": 0.0, "cum": 18.3354, "start": 1021.2, "end": 1021.2, "flow": 0.0, "pnl": 0.0}, {"date": "2026-07-05", "day": 0.0, "cum": 18.3354, "start": 1021.2, "end": 1021.2, "flow": 0.0, "pnl": 0.0}, {"date": "2026-07-06", "day": 18.821, "cum": 40.6073, "start": 1021.2, "end": 1213.4, "flow": 0.0, "pnl": 192.2}, {"date": "2026-07-07", "day": 0.0082, "cum": 40.6188, "start": 1213.4, "end": 1213.5, "flow": 0.0, "pnl": 0.1}, {"date": "2026-07-08", "day": 6.5159, "cum": 49.7814, "start": 1213.5, "end": 1292.57, "flow": 0.0, "pnl": 79.07}, {"date": "2026-07-09", "day": 0.3768, "cum": 50.3457, "start": 1292.57, "end": 1297.44, "flow": 0.0, "pnl": 4.87}, {"date": "2026-07-10", "day": -8.227, "cum": 37.9768, "start": 1297.44, "end": 1190.7, "flow": 0.0, "pnl": -106.74}, {"date": "2026-07-11", "day": 0.0, "cum": 37.9768, "start": 1190.7, "end": 1190.7, "flow": 0.0, "pnl": 0.0}, {"date": "2026-07-12", "day": 0.0, "cum": 37.9768, "start": 1190.7, "end": 1190.7, "flow": 0.0, "pnl": 0.0}, {"date": "2026-07-13", "day": 0.9893, "cum": 39.3419, "start": 1190.7, "end": 1202.48, "flow": 0.0, "pnl": 11.78}, {"date": "2026-07-14", "day": -1.0079, "cum": 37.9374, "start": 1202.48, "end": 1190.36, "flow": 0.0, "pnl": -12.12}, {"date": "2026-07-15", "day": 0.0, "cum": 37.9374, "start": 1190.36, "end": 1190.36, "flow": 0.0, "pnl": 0.0}]}, {"id": "fede", "name": "Fede", "slot": 1, "amounts": false, "since": "2025-04-22", "days": [{"date": "2026-06-16", "day": 0.0, "cum": 0.0}, {"date": "2026-06-17", "day": 0.0, "cum": 0.0}, {"date": "2026-06-18", "day": 0.0, "cum": 0.0}, {"date": "2026-06-19", "day": 0.0, "cum": 0.0}, {"date": "2026-06-20", "day": 0.0, "cum": 0.0}, {"date": "2026-06-21", "day": 0.0, "cum": 0.0}, {"date": "2026-06-22", "day": 0.0, "cum": 0.0}, {"date": "2026-06-23", "day": 0.0, "cum": 0.0}, {"date": "2026-06-24", "day": 0.0, "cum": 0.0}, {"date": "2026-06-25", "day": 0.0, "cum": 0.0}, {"date": "2026-06-26", "day": 0.0, "cum": 0.0}, {"date": "2026-06-27", "day": 0.0, "cum": 0.0}, {"date": "2026-06-28", "day": 0.0, "cum": 0.0}, {"date": "2026-06-29", "day": 0.0, "cum": 0.0}, {"date": "2026-06-30", "day": 0.0, "cum": 0.0}, {"date": "2026-07-01", "day": 0.0, "cum": 0.0}, {"date": "2026-07-02", "day": 0.0, "cum": 0.0}, {"date": "2026-07-03", "day": 0.0, "cum": 0.0}, {"date": "2026-07-04", "day": 0.0, "cum": 0.0}, {"date": "2026-07-05", "day": 0.0, "cum": 0.0}, {"date": "2026-07-06", "day": 0.0, "cum": 0.0}, {"date": "2026-07-07", "day": 0.0, "cum": 0.0}, {"date": "2026-07-08", "day": 0.0, "cum": 0.0}, {"date": "2026-07-09", "day": 0.0, "cum": 0.0}, {"date": "2026-07-10", "day": 0.0, "cum": 0.0}, {"date": "2026-07-11", "day": 0.0, "cum": 0.0}, {"date": "2026-07-12", "day": 0.0, "cum": 0.0}, {"date": "2026-07-13", "day": -1.0794, "cum": -1.0794}, {"date": "2026-07-14", "day": 2.604, "cum": 1.4964}, {"date": "2026-07-15", "day": 0.0, "cum": 1.4964}]}]};
+const DATA = {"players": [{"id": "demo", "name": "Demo 🤖", "slot": 0, "amounts": true, "since": "2026-07-01", "days": [{"date": "2026-07-01", "day": 37.752, "cum": 37.752, "start": 0.0, "end": 1188.76, "flow": 1000.0, "pnl": 188.76}, {"date": "2026-07-02", "day": 10.0096, "cum": 51.5404, "start": 1188.76, "end": 1307.75, "flow": 0.0, "pnl": 118.99}, {"date": "2026-07-03", "day": -21.9117, "cum": 18.3354, "start": 1307.75, "end": 1021.2, "flow": 0.0, "pnl": -286.55}, {"date": "2026-07-04", "day": 0.0, "cum": 18.3354, "start": 1021.2, "end": 1021.2, "flow": 0.0, "pnl": 0.0}, {"date": "2026-07-05", "day": 0.0, "cum": 18.3354, "start": 1021.2, "end": 1021.2, "flow": 0.0, "pnl": 0.0}, {"date": "2026-07-06", "day": 18.821, "cum": 40.6073, "start": 1021.2, "end": 1213.4, "flow": 0.0, "pnl": 192.2}, {"date": "2026-07-07", "day": 0.0082, "cum": 40.6188, "start": 1213.4, "end": 1213.5, "flow": 0.0, "pnl": 0.1}, {"date": "2026-07-08", "day": 6.5159, "cum": 49.7814, "start": 1213.5, "end": 1292.57, "flow": 0.0, "pnl": 79.07}, {"date": "2026-07-09", "day": 0.3768, "cum": 50.3457, "start": 1292.57, "end": 1297.44, "flow": 0.0, "pnl": 4.87}, {"date": "2026-07-10", "day": -8.227, "cum": 37.9768, "start": 1297.44, "end": 1190.7, "flow": 0.0, "pnl": -106.74}, {"date": "2026-07-11", "day": 0.0, "cum": 37.9768, "start": 1190.7, "end": 1190.7, "flow": 0.0, "pnl": 0.0}, {"date": "2026-07-12", "day": 0.0, "cum": 37.9768, "start": 1190.7, "end": 1190.7, "flow": 0.0, "pnl": 0.0}, {"date": "2026-07-13", "day": 0.9893, "cum": 39.3419, "start": 1190.7, "end": 1202.48, "flow": 0.0, "pnl": 11.78}, {"date": "2026-07-14", "day": -1.0079, "cum": 37.9374, "start": 1202.48, "end": 1190.36, "flow": 0.0, "pnl": -12.12}, {"date": "2026-07-15", "day": 0.0, "cum": 37.9374, "start": 1190.36, "end": 1190.36, "flow": 0.0, "pnl": 0.0}]}, {"id": "fede", "name": "Fede", "slot": 1, "amounts": false, "since": "2025-04-22", "days": [{"date": "2026-06-16", "day": 0.0, "cum": 0.0}, {"date": "2026-06-17", "day": 0.0, "cum": 0.0}, {"date": "2026-06-18", "day": 0.0, "cum": 0.0}, {"date": "2026-06-19", "day": 0.0, "cum": 0.0}, {"date": "2026-06-20", "day": 0.0, "cum": 0.0}, {"date": "2026-06-21", "day": 0.0, "cum": 0.0}, {"date": "2026-06-22", "day": 0.0, "cum": 0.0}, {"date": "2026-06-23", "day": 0.0, "cum": 0.0}, {"date": "2026-06-24", "day": 0.0, "cum": 0.0}, {"date": "2026-06-25", "day": 0.0, "cum": 0.0}, {"date": "2026-06-26", "day": 0.0, "cum": 0.0}, {"date": "2026-06-27", "day": 0.0, "cum": 0.0}, {"date": "2026-06-28", "day": 0.0, "cum": 0.0}, {"date": "2026-06-29", "day": 0.0, "cum": 0.0}, {"date": "2026-06-30", "day": 0.0, "cum": 0.0}, {"date": "2026-07-01", "day": 0.0, "cum": 0.0}, {"date": "2026-07-02", "day": 0.0, "cum": 0.0}, {"date": "2026-07-03", "day": 0.0, "cum": 0.0}, {"date": "2026-07-04", "day": 0.0, "cum": 0.0}, {"date": "2026-07-05", "day": 0.0, "cum": 0.0}, {"date": "2026-07-06", "day": 0.0, "cum": 0.0}, {"date": "2026-07-07", "day": 0.0, "cum": 0.0}, {"date": "2026-07-08", "day": 0.0, "cum": 0.0}, {"date": "2026-07-09", "day": 0.0, "cum": 0.0}, {"date": "2026-07-10", "day": 0.0, "cum": 0.0}, {"date": "2026-07-11", "day": 0.0, "cum": 0.0}, {"date": "2026-07-12", "day": 0.0, "cum": 0.0}, {"date": "2026-07-13", "day": -1.0794, "cum": -1.0794}, {"date": "2026-07-14", "day": 2.604, "cum": 1.4964}, {"date": "2026-07-15", "day": 0.0, "cum": 1.4964}]}], "pending": [{"id": "ana", "name": "Ana 🍀"}]};
 const SLOTS = ["--s1","--s2","--s3","--s4","--s5","--s6","--s7","--s8"];
 const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 const colorOf = p => css(SLOTS[p.slot % SLOTS.length]);
@@ -157,6 +164,15 @@ const MEDALS = ["🥇","🥈","🥉"];
     tr.appendChild(mk("td", last.day >= 0 ? "pos" : "neg", fmtPct(last.day)));
     tr.appendChild(mk("td", "", p.since || p.days[0].date));
   });
+}
+
+// ---- pendientes de clave (extracto subido pero no descifrable) ----
+if (DATA.pending && DATA.pending.length) {
+  const names = DATA.pending.map(p => p.name).join(", ");
+  document.getElementById("pending").textContent =
+    names + " — su extracto está subido pero no se ha podido descifrar. Seguramente la " +
+    "frase de paso no es la de la liga: que lo vuelva a subir con la frase correcta.";
+  document.getElementById("pending-card").style.display = "";
 }
 
 // ---- gráfica de líneas: % acumulado ----
