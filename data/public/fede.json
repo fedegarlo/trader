@@ -6,13 +6,13 @@
   "days": [
     {
       "date": "2026-07-14",
-      "daily_return_pct": 2.604,
-      "cumulative_return_pct": 2.604
+      "daily_return_pct": 1.7708,
+      "cumulative_return_pct": 1.7708
     },
     {
       "date": "2026-07-15",
-      "daily_return_pct": -5.213,
-      "cumulative_return_pct": -2.7448
+      "daily_return_pct": -5.6749,
+      "cumulative_return_pct": -4.0046
     }
   ]
 }
