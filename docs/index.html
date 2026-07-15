@@ -53,7 +53,16 @@
     --aura-1: #3a2c55; --aura-2: #232c4d; --aura-3: #4a2740; --aura-base: #0e0d13;
   }
   * { box-sizing: border-box; margin: 0; }
-  html { -webkit-text-size-adjust: 100%; }
+  html {
+    -webkit-text-size-adjust: 100%;
+    min-height: 100%;
+    background:
+      radial-gradient(120% 78% at 2% -4%, var(--aura-1) 0%, transparent 52%),
+      radial-gradient(120% 82% at 100% -2%, var(--aura-2) 0%, transparent 54%),
+      radial-gradient(150% 90% at 50% 108%, var(--aura-3) 0%, transparent 60%),
+      var(--aura-base);
+    background-attachment: fixed;
+  }
   body {
     color: var(--ink);
     font: 15px/1.5 -apple-system, BlinkMacSystemFont, "SF Pro Display",
@@ -66,12 +75,7 @@
       calc(14px + env(safe-area-inset-left));
     min-height: 100vh;
     min-height: 100dvh;
-    background:
-      radial-gradient(120% 78% at 2% -4%, var(--aura-1) 0%, transparent 52%),
-      radial-gradient(120% 82% at 100% -2%, var(--aura-2) 0%, transparent 54%),
-      radial-gradient(150% 90% at 50% 108%, var(--aura-3) 0%, transparent 60%),
-      var(--aura-base);
-    background-attachment: fixed;
+    background: transparent;
   }
   main { max-width: 760px; margin: 0 auto; display: grid; gap: 12px; }
   main > * { min-width: 0; }
