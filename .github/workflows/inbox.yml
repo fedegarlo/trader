@@ -1,0 +1,88 @@
+name: Ingesta por email
+
+# Cada jugador envía su extracto CSV como adjunto a un buzón de la liga. Este
+# workflow lo lee por IMAP, verifica el remitente por DMARC, cifra el CSV con
+# la frase de la liga y lo commitea en players/<id>/. El jugador no necesita
+# token de GitHub, ni ser colaborador, ni cifrar nada: solo enviar un email.
+#
+# Configuración (una sola vez):
+#   Secrets  (Settings -> Secrets and variables -> Actions -> Secrets):
+#     TRADER_KEY   frase de paso compartida de la liga (ya existía)
+#     IMAP_USER    dirección del buzón receptor (p.ej. liga.trader@gmail.com)
+#     IMAP_PASS    contraseña de aplicación del buzón (Gmail: App Password)
+#   Variables (... -> Variables):
+#     PLAYER_EMAILS  JSON id -> {email, name, currency, show_amounts}, p.ej.:
+#       { "fede": {"email":"fede@icloud.com","name":"Fede 🚀","currency":"USD"},
+#         "ana":  {"email":"ana@gmail.com","name":"Ana","currency":"EUR","show_amounts":true} }
+#   Opcional:
+#     IMAP_HOST (secret/var, def. imap.gmail.com), IMAP_PORT (def. 993),
+#     IMAP_MAILBOX (def. INBOX),
+#     INBOX_TRUSTED_AUTHSERV (var, p.ej. mx.google.com): si se define, solo se
+#       confía en la cabecera Authentication-Results de ese servidor.
+
+on:
+  schedule:
+    # Cada 15 minutos (mínimo práctico de GitHub Actions).
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: inbox
+  cancel-in-progress: false
+
+jobs:
+  inbox:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Leer buzón e ingerir extractos
+        env:
+          TRADER_KEY: ${{ secrets.TRADER_KEY }}
+          IMAP_HOST: ${{ secrets.IMAP_HOST }}
+          IMAP_PORT: ${{ secrets.IMAP_PORT }}
+          IMAP_USER: ${{ secrets.IMAP_USER }}
+          IMAP_PASS: ${{ secrets.IMAP_PASS }}
+          IMAP_MAILBOX: ${{ vars.IMAP_MAILBOX }}
+          PLAYER_EMAILS: ${{ vars.PLAYER_EMAILS }}
+          INBOX_TRUSTED_AUTHSERV: ${{ vars.INBOX_TRUSTED_AUTHSERV }}
+        run: python -m trader inbox
+
+      - name: ¿Han llegado extractos nuevos?
+        id: changed
+        run: |
+          if [ -n "$(git status --porcelain players/)" ]; then
+            echo "yes=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Sin extractos nuevos."
+          fi
+
+      - name: Recalcular ranking
+        if: steps.changed.outputs.yes == 'true'
+        env:
+          TRADER_KEY: ${{ secrets.TRADER_KEY }}
+        run: python -m trader ranking --refresh
+
+      - name: Publicar
+        if: steps.changed.outputs.yes == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add players/ docs/ data/public/ data/prices/
+          if git diff --cached --quiet; then
+            echo "Sin cambios que publicar"
+          else
+            git commit -m "Ingesta de extractos por email $(date -u +%F\ %H:%M)"
+            git pull --rebase origin "${GITHUB_REF_NAME}"
+            git push
+          fi

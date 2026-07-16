@@ -34,7 +34,12 @@ Revolut no ofrece API pública de trading para cuentas personales, así que el
 flujo se basa en el extracto CSV que exporta la propia app:
 
 ```
-extracto CSV de Revolut ──cifrar──> players/<id>/trades.csv.enc  (público, ilegible)
+extracto CSV de Revolut ──email──> buzón de la liga (privado)
+                                            │
+                     GitHub Action (IMAP)   │ verifica el remitente por DMARC
+                                            │ y CIFRA con el secret TRADER_KEY
+                                            ▼
+                        players/<id>/trades.csv.enc  (público, ilegible)
                                             │
                      GitHub Action (diaria) │ descifra con el secret TRADER_KEY
                                             ▼
@@ -43,6 +48,11 @@ extracto CSV de Revolut ──cifrar──> players/<id>/trades.csv.enc  (públi
                                             ▼
                         docs/ranking.md  +  data/public/<id>.json
 ```
+
+La vía recomendada para subir el extracto es **por email** (el jugador solo
+adjunta su CSV y lo envía; ni token de GitHub ni frase ni cifrado manual). Se
+mantiene además la subida desde la web y por CLI como alternativas avanzadas
+(ver [`players/README.md`](players/README.md)).
 
 Para cada día natural se calcula:
 
@@ -72,17 +82,24 @@ Para cada día natural se calcula:
 > leerlos. Si quisieras privacidad también entre jugadores, se usaría una
 > frase por jugador (un secret `PLAYER_<ID>_KEY` cada uno).
 >
-> Con la subida desde la web (`docs/subir.html`) el commit va directo a la
-> rama por defecto con el token del jugador: el ranking se recalcula sin fork
-> ni PR, y **dar de alta a alguien nuevo no requiere crear ningún secret**
-> (basta con que sea colaborador con permiso Write, use la frase compartida y
-> quede registrado en la Variable `PLAYER_OWNERS`).
+> **Subida por email (recomendada):** el jugador envía su extracto CSV como
+> adjunto a un buzón de la liga. Un workflow (`.github/workflows/inbox.yml`)
+> lo lee por IMAP, **verifica el remitente por DMARC** (no por el `From:`, que
+> es falsificable: mira la cabecera `Authentication-Results` que estampa el
+> servidor receptor y exige `dmarc=pass`), lo **cifra él mismo** con
+> `TRADER_KEY` y lo commitea en `players/<id>/`. Así el jugador **no necesita
+> token de GitHub, ni ser colaborador, ni cifrar nada**: solo enviar un email.
+> Como es el bot quien decide en qué carpeta escribe según el remitente
+> verificado, un jugador no puede tocar la carpeta de otro **por
+> construcción**. Dar de alta a alguien nuevo solo requiere añadir su
+> `email ↔ id` a la Variable `PLAYER_EMAILS`.
 >
-> **Integridad:** como cada jugador escribe con su propio token (que da acceso
-> a todo el repo, no solo a su carpeta), un guardián de CI
-> (`.github/workflows/guard.yml`) revierte cualquier push que toque carpetas
-> ajenas o ficheros fuera de la del propio jugador, según ese mapa
-> `PLAYER_OWNERS`. Ver [`players/README.md`](players/README.md).
+> **Alternativa: subida por token (web/CLI).** Con `docs/subir.html` el commit
+> va directo con el token del jugador (cifrado en el navegador, sin PR). Aquí
+> el jugador escribe con un token que da acceso a todo el repo, así que un
+> guardián de CI (`.github/workflows/guard.yml`) revierte cualquier push que
+> toque carpetas ajenas, según el mapa `PLAYER_OWNERS`. Ver
+> [`players/README.md`](players/README.md).
 
 ## Empezar
 
@@ -97,11 +114,12 @@ python -m trader ranking --players-dir examples/players \
 
 ### Unirse a la competición
 
-Lo más fácil es la página **[⬆️ Subir tu extracto](https://fedegarlo.github.io/trader/subir.html)**
-(enlazada desde el ranking): cifra tu CSV en el propio navegador, lo valida y
-lo sube al repo con un commit directo usando tu token de GitHub —**sin pull
-request**. También puedes hacerlo por CLI + PR. Los detalles, en
-[`players/README.md`](players/README.md).
+Lo más fácil es **enviar tu extracto por email**: el administrador te dice a
+qué dirección y te registra; tú exportas el CSV de Revolut y lo adjuntas en un
+correo desde tu dirección registrada. Sin token, sin frase, sin cifrar nada.
+También puedes usar la web **[⬆️ Subir tu extracto](https://fedegarlo.github.io/trader/subir.html)**
+(cifra en el navegador y sube con tu token, sin PR) o la CLI + PR. Los
+detalles, en [`players/README.md`](players/README.md).
 
 ### Comandos
 
@@ -125,8 +143,9 @@ data/public/                series diarias públicas en JSON (para gráficas)
 docs/index.html             la web del ranking 🏆 (GitHub Pages)
 docs/subir.html             página para subir tu extracto (cifra en el navegador, sin PR)
 docs/ranking.md             el ranking en Markdown
+.github/workflows/inbox.yml     ingesta extractos recibidos por email (IMAP + DMARC)
 .github/workflows/ranking.yml   recalcula y publica el ranking
-.github/workflows/guard.yml     revierte pushes que toquen carpetas ajenas
+.github/workflows/guard.yml     revierte pushes que toquen carpetas ajenas (vía token)
 examples/                   jugador de ejemplo con precios ficticios para probar
 tests/                      pytest
 ```

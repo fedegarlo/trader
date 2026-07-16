@@ -5,6 +5,7 @@ Comandos:
   decrypt   Descifra un fichero .csv.enc (para comprobarlo en local).
   report    Calcula la serie diaria de un jugador y la muestra por pantalla.
   ranking   Calcula todos los jugadores y genera docs/ranking.md + data/public/.
+  inbox     Ingesta extractos recibidos por email (IMAP), verificando DMARC.
 """
 
 from __future__ import annotations
@@ -15,6 +16,7 @@ import json
 import os
 import sys
 
+from . import inbox as inbox_mod
 from . import players as players_mod
 from . import report as report_mod
 from . import secretbox, webpage
@@ -131,6 +133,14 @@ def cmd_ranking(args: argparse.Namespace) -> None:
     print(content)
 
 
+def cmd_inbox(args: argparse.Namespace) -> None:
+    passphrase = _passphrase(args.key)
+    summary = inbox_mod.run(passphrase, players_dir=args.players_dir,
+                            dry_run=args.dry_run)
+    print(f"\nInbox: {len(summary.ingested)} extracto(s) ingerido(s)"
+          f"{': ' + ', '.join(summary.ingested) if summary.ingested else ''}.")
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="trader", description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -168,6 +178,13 @@ def main(argv: list[str] | None = None) -> None:
     p_rank.add_argument("--refresh", action="store_true",
                         help="volver a descargar precios aunque haya caché")
     p_rank.set_defaults(func=cmd_ranking)
+
+    p_inbox = sub.add_parser("inbox", help="ingesta de extractos por email (IMAP)")
+    p_inbox.add_argument("--players-dir", default="players")
+    p_inbox.add_argument("--key", help="frase de la liga (o TRADER_KEY)")
+    p_inbox.add_argument("--dry-run", action="store_true",
+                         help="no marcar los correos como vistos")
+    p_inbox.set_defaults(func=cmd_inbox)
 
     args = parser.parse_args(argv)
     args.func(args)
