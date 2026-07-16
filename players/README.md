@@ -104,6 +104,16 @@ El workflow `.github/workflows/inbox.yml` usa este mapa para autorizar al
 remitente y, si el jugador es nuevo, crear su `player.json`. No hace falta que
 sea colaborador ni que tenga token. Dile la dirección del buzón y listo.
 
+**Latencia y procesamiento instantáneo (opcional).** Por defecto el workflow
+revisa el buzón con un cron cada 15 min (los cron de Actions son aproximados,
+cuenta ~15–30 min). Si quieres que los extractos se procesen **en segundos**,
+instala el timbre de Gmail: [`scripts/gmail-dispatch.gs`](../scripts/gmail-dispatch.gs)
+es un Google Apps Script que se asocia a la cuenta del buzón y, en cuanto llega
+un correo con adjunto, dispara el workflow al instante. Las instrucciones de
+instalación están en la cabecera del propio fichero (requiere un token de grano
+fino del admin con permiso *Contents*, que vive solo en el script — los
+jugadores siguen sin necesitar ninguno).
+
 > **Seguridad:** el workflow **no se fía del `From:`** (falsificable): exige
 > que el correo pase **DMARC** (o un DKIM alineado) según la cabecera
 > `Authentication-Results` que estampa el buzón receptor. Y como el bot solo
