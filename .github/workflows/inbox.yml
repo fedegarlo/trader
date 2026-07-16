@@ -87,8 +87,24 @@ jobs:
           git add players/ docs/ data/public/ data/prices/
           if git diff --cached --quiet; then
             echo "Sin cambios que publicar"
-          else
-            git commit -m "Ingesta de extractos por email $(date -u +%F\ %H:%M)"
-            git pull --rebase origin "${GITHUB_REF_NAME}"
-            git push
+            exit 0
           fi
+          git commit -m "Ingesta de extractos por email $(date -u +%F\ %H:%M)"
+          # Puede coincidir con el workflow de ranking, que regenera los mismos
+          # ficheros derivados (data/, docs/) y empuja a la vez. Reintentamos
+          # rebasando sobre main y resolviendo los conflictos de esos ficheros a
+          # favor de nuestra versión recién calculada (-X theirs, que en rebase
+          # se refiere a los commits que reaplicamos).
+          for attempt in 1 2 3 4 5; do
+            git fetch origin "${GITHUB_REF_NAME}"
+            if git rebase -X theirs "origin/${GITHUB_REF_NAME}" \
+               && git push origin "HEAD:${GITHUB_REF_NAME}"; then
+              echo "Publicado (intento $attempt)."
+              exit 0
+            fi
+            git rebase --abort 2>/dev/null || true
+            echo "Reintento de publicación $attempt…"
+            sleep 5
+          done
+          echo "No se pudo publicar tras varios intentos." >&2
+          exit 1
