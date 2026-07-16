@@ -46,10 +46,10 @@ _TEMPLATE = """<!doctype html>
     --grid: rgba(11,10,16,0.08); --baseline: rgba(11,10,16,0.20);
     --ring: rgba(11,10,16,0.07); --hair: rgba(11,10,16,0.06);
     --accent: #1f6bff;
-    --up: #12864c; --down: #e0483d;
-    --up-soft: rgba(18,134,76,0.14); --down-soft: rgba(224,72,61,0.14);
+    --up: #1667e0; --down: #d61f8f;
+    --up-soft: rgba(22,103,224,0.14); --down-soft: rgba(214,31,143,0.14);
     --s1: #2a78d6; --s2: #1baf7a; --s3: #eda100; --s4: #008300;
-    --s5: #4a3aa7; --s6: #e34948; --s7: #e87ba4; --s8: #eb6834;
+    --s5: #4a3aa7; --s6: #e34948; --s7: #8a44cc; --s8: #eb6834;
     --aura-1: #ffe4c2; --aura-2: #dcd4ff; --aura-3: #ffd6ea; --aura-base: #efeaf8;
   }
   @media (prefers-color-scheme: dark) {
@@ -62,10 +62,10 @@ _TEMPLATE = """<!doctype html>
       --grid: rgba(255,255,255,0.09); --baseline: rgba(255,255,255,0.22);
       --ring: rgba(255,255,255,0.10); --hair: rgba(255,255,255,0.07);
       --accent: #5b9bff;
-      --up: #1fbf6b; --down: #ff6d63;
-      --up-soft: rgba(31,191,107,0.18); --down-soft: rgba(255,109,99,0.18);
+      --up: #4d94ff; --down: #ff5cbf;
+      --up-soft: rgba(77,148,255,0.18); --down-soft: rgba(255,92,191,0.18);
       --s1: #3987e5; --s2: #199e70; --s3: #c98500; --s4: #008300;
-      --s5: #9085e9; --s6: #e66767; --s7: #d55181; --s8: #d95926;
+      --s5: #9085e9; --s6: #e66767; --s7: #a86fe0; --s8: #d95926;
       --aura-1: #3a2c55; --aura-2: #232c4d; --aura-3: #4a2740; --aura-base: #0e0d13;
     }
   }
@@ -78,10 +78,10 @@ _TEMPLATE = """<!doctype html>
     --grid: rgba(255,255,255,0.09); --baseline: rgba(255,255,255,0.22);
     --ring: rgba(255,255,255,0.10); --hair: rgba(255,255,255,0.07);
     --accent: #5b9bff;
-    --up: #1fbf6b; --down: #ff6d63;
-    --up-soft: rgba(31,191,107,0.18); --down-soft: rgba(255,109,99,0.18);
+    --up: #4d94ff; --down: #ff5cbf;
+    --up-soft: rgba(77,148,255,0.18); --down-soft: rgba(255,92,191,0.18);
     --s1: #3987e5; --s2: #199e70; --s3: #c98500; --s4: #008300;
-    --s5: #9085e9; --s6: #e66767; --s7: #d55181; --s8: #d95926;
+    --s5: #9085e9; --s6: #e66767; --s7: #a86fe0; --s8: #d95926;
     --aura-1: #3a2c55; --aura-2: #232c4d; --aura-3: #4a2740; --aura-base: #0e0d13;
   }
   * { box-sizing: border-box; margin: 0; }
