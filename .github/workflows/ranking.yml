@@ -57,11 +57,25 @@ jobs:
           git add docs/ data/public/ data/prices/
           if git diff --cached --quiet; then
             echo "Sin cambios que publicar"
-          else
-            git commit -m "Actualizar ranking $(date -u +%F)"
-            git pull --rebase origin main
-            git push
+            exit 0
           fi
+          git commit -m "Actualizar ranking $(date -u +%F)"
+          # Puede coincidir con la ingesta por email, que regenera los mismos
+          # ficheros derivados y empuja a la vez. Reintentamos rebasando y
+          # resolviendo esos conflictos a favor de nuestra versión (-X theirs,
+          # que en rebase se refiere a los commits que reaplicamos).
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main
+            if git rebase -X theirs origin/main && git push origin HEAD:main; then
+              echo "Publicado (intento $attempt)."
+              exit 0
+            fi
+            git rebase --abort 2>/dev/null || true
+            echo "Reintento de publicación $attempt…"
+            sleep 5
+          done
+          echo "No se pudo publicar tras varios intentos." >&2
+          exit 1
 
       - name: Avisar de extractos sin descifrar
         if: always()
