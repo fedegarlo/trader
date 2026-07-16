@@ -38,6 +38,13 @@ from email.utils import parseaddr
 from . import revolut, secretbox
 
 # Cabecera que estampa el servidor receptor con el veredicto de autenticación.
+def _env(name: str) -> str | None:
+    """Valor de una variable de entorno, tratando la cadena vacía como ausente
+    (GitHub Actions inyecta los secrets/variables sin definir como ``""``)."""
+    value = os.environ.get(name)
+    return value if value else None
+
+
 _AUTH_HEADER = "Authentication-Results"
 _METHOD_RE = re.compile(r"\b(dmarc|dkim|spf)\s*=\s*(\w+)", re.IGNORECASE)
 _HEADER_D_RE = re.compile(r"header\.(?:d|i|from)\s*=\s*@?([^\s;()]+)", re.IGNORECASE)
@@ -238,12 +245,14 @@ def run(passphrase: str, players_dir: str = "players", *, dry_run: bool = False,
     ``PLAYER_EMAILS``. Si falta configuración esencial, no hace nada (para que
     el CI sin secrets no falle).
     """
-    host = host or os.environ.get("IMAP_HOST", "imap.gmail.com")
-    user = user or os.environ.get("IMAP_USER")
-    password = password or os.environ.get("IMAP_PASS")
-    port = int(os.environ.get("IMAP_PORT", port))
-    mailbox = os.environ.get("IMAP_MAILBOX", mailbox)
-    trusted_authserv = trusted_authserv or os.environ.get("INBOX_TRUSTED_AUTHSERV")
+    # En GitHub Actions, un secret/variable no definido llega como cadena
+    # vacía (no ausente), así que hay que tratar "" como "no configurado".
+    host = host or _env("IMAP_HOST") or "imap.gmail.com"
+    user = user or _env("IMAP_USER")
+    password = password or _env("IMAP_PASS")
+    port = int(_env("IMAP_PORT") or port)
+    mailbox = _env("IMAP_MAILBOX") or mailbox
+    trusted_authserv = trusted_authserv or _env("INBOX_TRUSTED_AUTHSERV")
     emails = parse_player_emails(emails_raw if emails_raw is not None
                                  else os.environ.get("PLAYER_EMAILS"))
 
