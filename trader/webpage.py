@@ -35,7 +35,7 @@ _TEMPLATE = """<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#efeaf8" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0e0d13" media="(prefers-color-scheme: dark)">
-<title>🏆 Ranking de rentabilidad</title>
+<title>🏆 Liga Trader</title>
 <style>
   :root {
     color-scheme: light;
@@ -240,8 +240,8 @@ _TEMPLATE = """<!doctype html>
   <header>
     <div class="eyebrow">🏆 Competición · Revolut · actualizado __UPDATED__</div>
     <div class="hrow">
-      <h1>Rentabilidad</h1>
-      <a class="upload" href="subir.html" aria-label="Subir extracto" title="Subir extracto">
+      <h1>Liga Trader</h1>
+      <a class="upload" id="upload-mail" href="mailto:ligatrader26@gmail.com" aria-label="Enviar posiciones" title="Enviar posiciones">
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
              stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M5 20h14"/>
@@ -337,6 +337,22 @@ _TEMPLATE = """<!doctype html>
 </footer>
 <script>
 const DATA = __DATA__;
+// ---- enlace de envío de posiciones por correo ----
+(() => {
+  const link = document.getElementById("upload-mail");
+  if (!link) return;
+  const setHref = () => {
+    const now = new Date();
+    const p = n => String(n).padStart(2, "0");
+    const fecha = p(now.getDate()) + "/" + p(now.getMonth() + 1) + "/" + now.getFullYear()
+      + " " + p(now.getHours()) + ":" + p(now.getMinutes());
+    const subject = encodeURIComponent(fecha);
+    const body = encodeURIComponent("adjunto mis posiciones en formato csv");
+    link.href = "mailto:ligatrader26@gmail.com?subject=" + subject + "&body=" + body;
+  };
+  setHref();
+  link.addEventListener("click", setHref);
+})();
 const SLOTS = ["--s1","--s2","--s3","--s4","--s5","--s6","--s7","--s8"];
 const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 const colorOf = p => css(SLOTS[p.slot % SLOTS.length]);
