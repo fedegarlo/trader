@@ -46,10 +46,10 @@ _TEMPLATE = """<!doctype html>
     --grid: rgba(11,10,16,0.08); --baseline: rgba(11,10,16,0.20);
     --ring: rgba(11,10,16,0.07); --hair: rgba(11,10,16,0.06);
     --accent: #1f6bff;
-    --up: #12864c; --down: #e0483d;
-    --up-soft: rgba(18,134,76,0.14); --down-soft: rgba(224,72,61,0.14);
+    --up: #1667e0; --down: #d61f8f;
+    --up-soft: rgba(22,103,224,0.14); --down-soft: rgba(214,31,143,0.14);
     --s1: #2a78d6; --s2: #1baf7a; --s3: #eda100; --s4: #008300;
-    --s5: #4a3aa7; --s6: #e34948; --s7: #e87ba4; --s8: #eb6834;
+    --s5: #4a3aa7; --s6: #e34948; --s7: #8a44cc; --s8: #eb6834;
     --aura-1: #ffe4c2; --aura-2: #dcd4ff; --aura-3: #ffd6ea; --aura-base: #efeaf8;
   }
   @media (prefers-color-scheme: dark) {
@@ -62,10 +62,10 @@ _TEMPLATE = """<!doctype html>
       --grid: rgba(255,255,255,0.09); --baseline: rgba(255,255,255,0.22);
       --ring: rgba(255,255,255,0.10); --hair: rgba(255,255,255,0.07);
       --accent: #5b9bff;
-      --up: #1fbf6b; --down: #ff6d63;
-      --up-soft: rgba(31,191,107,0.18); --down-soft: rgba(255,109,99,0.18);
+      --up: #4d94ff; --down: #ff5cbf;
+      --up-soft: rgba(77,148,255,0.18); --down-soft: rgba(255,92,191,0.18);
       --s1: #3987e5; --s2: #199e70; --s3: #c98500; --s4: #008300;
-      --s5: #9085e9; --s6: #e66767; --s7: #d55181; --s8: #d95926;
+      --s5: #9085e9; --s6: #e66767; --s7: #a86fe0; --s8: #d95926;
       --aura-1: #3a2c55; --aura-2: #232c4d; --aura-3: #4a2740; --aura-base: #0e0d13;
     }
   }
@@ -78,10 +78,10 @@ _TEMPLATE = """<!doctype html>
     --grid: rgba(255,255,255,0.09); --baseline: rgba(255,255,255,0.22);
     --ring: rgba(255,255,255,0.10); --hair: rgba(255,255,255,0.07);
     --accent: #5b9bff;
-    --up: #1fbf6b; --down: #ff6d63;
-    --up-soft: rgba(31,191,107,0.18); --down-soft: rgba(255,109,99,0.18);
+    --up: #4d94ff; --down: #ff5cbf;
+    --up-soft: rgba(77,148,255,0.18); --down-soft: rgba(255,92,191,0.18);
     --s1: #3987e5; --s2: #199e70; --s3: #c98500; --s4: #008300;
-    --s5: #9085e9; --s6: #e66767; --s7: #d55181; --s8: #d95926;
+    --s5: #9085e9; --s6: #e66767; --s7: #a86fe0; --s8: #d95926;
     --aura-1: #3a2c55; --aura-2: #232c4d; --aura-3: #4a2740; --aura-base: #0e0d13;
   }
   * { box-sizing: border-box; margin: 0; }
@@ -153,6 +153,8 @@ _TEMPLATE = """<!doctype html>
     100% { box-shadow: 0 0 0 0 transparent; }
   }
   .wsub { color: var(--ink-2); font-size: 13.5px; font-weight: 600; margin-top: 4px; }
+  .bestname { color: var(--ink); font-size: 18px; font-weight: 700; margin-top: 8px; display: flex; align-items: center; gap: 6px; }
+  .bestname .medal { font-size: 20px; line-height: 1; }
   .wsub.muted { color: var(--muted); font-weight: 500; }
   .sparkwrap { margin: 12px -18px 0; height: 116px; }
   .sparkwrap.sm { height: 58px; margin-top: 10px; }
@@ -268,8 +270,7 @@ _TEMPLATE = """<!doctype html>
       <section class="card widget" id="best-card">
         <div class="wlabel">Mejor del día</div>
         <div class="wbig"><span class="num" id="best-val"></span></div>
-        <div class="wsub" id="best-name"></div>
-        <div class="sparkwrap sm" id="best-spark"></div>
+        <div class="bestname" id="best-name"></div>
       </section>
       <section class="card" id="gap-card">
         <div class="wlabel">Diferencia 1º–último</div>
@@ -402,24 +403,6 @@ function sparkSVG(values, color, id, opts) {
     'vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/>' +
     '</svg>';
 }
-// Mini gráfico de barras con línea base en 0: retornos diarios, verde hacia
-// arriba y rojo hacia abajo. Un día positivo se ve literalmente subiendo.
-function barsSVG(values, upC, downC) {
-  const n = values.length || 1, unit = 4, gap = 1.3, W = n * unit, H = 40;
-  let mn = Math.min(0, ...values), mx = Math.max(0, ...values);
-  if (mx === mn) { mx += 1; mn -= 1; }
-  const y = v => H - ((v - mn) / (mx - mn)) * H;
-  const yZero = y(0);
-  const bw = Math.max(0.8, unit - gap);
-  const bars = values.map((v, i) => {
-    const yv = y(v), top = Math.min(yv, yZero), h = Math.max(1.2, Math.abs(yv - yZero));
-    return '<rect x="' + (i * unit + gap / 2).toFixed(2) + '" y="' + top.toFixed(2) +
-      '" width="' + bw.toFixed(2) + '" height="' + h.toFixed(2) + '" rx="0.7" fill="' +
-      (v >= 0 ? upC : downC) + '"/>';
-  }).join("");
-  return '<svg class="spark" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-hidden="true">' +
-    bars + '</svg>';
-}
 function paintWidgets() {
   if (!DATA.players.length) { document.getElementById("widgets").style.display = "none"; return; }
   const upC = css("--up"), downC = css("--down");
@@ -448,9 +431,9 @@ function paintWidgets() {
   const bd = lastOf(best);
   const bv = document.getElementById("best-val");
   bv.textContent = fmtPct(bd.day); bv.className = "num " + (bd.day >= 0 ? "pos" : "neg");
-  document.getElementById("best-name").textContent = best.name;
-  document.getElementById("best-spark").innerHTML =
-    barsSVG(best.days.map(d => d.day), upC, downC);
+  const bn = document.getElementById("best-name");
+  bn.innerHTML = '<span class="medal">🥇</span>';
+  bn.appendChild(document.createTextNode(best.name));
 
   // diferencia 1º - último
   const gapCard = document.getElementById("gap-card");

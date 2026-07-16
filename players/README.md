@@ -15,15 +15,19 @@ players/
 
 ## Cómo unirte (recomendado: por email)
 
-La forma más simple es **enviar tu extracto por correo**. No necesitas token
-de GitHub, ni ser colaborador, ni cifrar nada:
+La forma más simple es **enviar tu extracto por correo** a la dirección del
+buzón de la liga:
 
-1. Pídele al administrador la **dirección del buzón de la liga** y que te
-   **registre** (tu id ↔ tu dirección de correo).
+> 📬 **`ligatrader26@gmail.com`**
+
+No necesitas token de GitHub, ni ser colaborador, ni cifrar nada:
+
+1. Pídele al administrador que te **registre** (tu id ↔ tu dirección de
+   correo).
 2. Exporta tu extracto desde la app de Revolut
    (**Inversiones → ⋯ → Extractos → CSV**).
-3. **Envía un email a esa dirección, con el CSV adjunto, desde tu dirección
-   registrada.** Eso es todo.
+3. **Envía un email a `ligatrader26@gmail.com`, con el CSV adjunto, desde tu
+   dirección registrada.** Eso es todo.
 
 Un workflow lee el buzón cada pocos minutos, **verifica que el correo pasa
 DMARC** (que de verdad viene de tu dirección, no de alguien que la suplanta),
