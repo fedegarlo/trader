@@ -187,6 +187,31 @@ _TEMPLATE = """<!doctype html>
 
   .pos { color: var(--up); } .neg { color: var(--down); }
 
+  /* insights generados por IA */
+  .ai-head { display: flex; align-items: center; gap: 9px; }
+  .ai-badge {
+    font-size: 11px; font-weight: 800; letter-spacing: 0.06em; color: #fff;
+    padding: 3px 8px; border-radius: 999px;
+    background: linear-gradient(120deg, var(--s7), var(--accent));
+    box-shadow: 0 5px 14px -6px color-mix(in srgb, var(--accent) 70%, transparent);
+  }
+  .ai-title { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; }
+  .ai-live { margin-left: auto; display: inline-flex; align-items: center; gap: 6px;
+             color: var(--muted); font-size: 11.5px; font-weight: 600; }
+  .ai-live .dot { width: 6px; height: 6px; border-radius: 999px; background: var(--s2);
+                  animation: pulse 1.8s ease-out infinite; }
+  .insights { display: grid; gap: 10px; margin-top: 14px; }
+  .insight {
+    display: flex; gap: 11px; align-items: flex-start;
+    font-size: 14.5px; font-weight: 600; color: var(--ink);
+    padding: 12px 13px; border-radius: 16px;
+    background: var(--surface-2); border: 1px solid var(--hair);
+    transition: opacity 0.45s ease;
+  }
+  .insight .ic { flex: none; font-size: 17px; line-height: 1.35; }
+  .insight .tx { min-width: 0; }
+  .insight b { font-weight: 800; letter-spacing: -0.01em; }
+
   /* tabla ranking */
   table { border-collapse: collapse; width: 100%; }
   th, td { padding: 9px 10px; text-align: right; font-variant-numeric: tabular-nums; }
@@ -296,6 +321,15 @@ _TEMPLATE = """<!doctype html>
       </section>
     </div>
   </div>
+
+  <section class="card" id="insights-card" style="display:none">
+    <div class="ai-head">
+      <span class="ai-badge">IA</span>
+      <span class="ai-title">Insights de la liga</span>
+      <span class="ai-live"><span class="dot"></span>análisis automático</span>
+    </div>
+    <div class="insights" id="insights"></div>
+  </section>
 
   <section class="card">
     <h2>Clasificación</h2>
@@ -595,6 +629,155 @@ function paintWallets() {
 }
 paintWallets();
 
+// ---- insights «IA»: 30+ plantillas con hueco para el/los jugador(es) ----
+// Cada plantilla lleva su condición y solo se muestra «según corresponda»
+// (ranking, % del día/acumulado, rachas, carteras). De todas las aplicables se
+// pintan tres y van rotando, para que la lectura parezca un análisis vivo.
+function computeInsights() {
+  const ps = DATA.players.filter(p => p.days && p.days.length);
+  if (!ps.length) return [];
+  const NBSP = String.fromCharCode(160);
+  const lastp = p => p.days[p.days.length - 1];
+  const ranked = [...ps].sort((a, b) => lastp(b).cum - lastp(a).cum);
+  const byDay = [...ps].sort((a, b) => lastp(b).day - lastp(a).day);
+  const n = ps.length;
+  const leader = ranked[0], second = ranked[1], tail = ranked[n - 1];
+  const bestDay = byDay[0], worstDay = byDay[n - 1];
+  const who = p => '<b style="color:' + colorOf(p) + '">' + p.name + '</b>';
+  const pts = v => Math.abs(v).toFixed(2) + NBSP + "puntos";
+  const streak = (p, positive) => { let c = 0; for (let i = p.days.length - 1; i >= 0; i--) {
+    const d = p.days[i].day; if (positive ? d > 0 : d < 0) c++; else break; } return c; };
+  const greenCount = (p, k) => p.days.slice(-k).filter(d => d.day > 0).length;
+  const windowDelta = p => lastp(p).cum - p.days[0].cum;
+  const range = p => { const c = p.days.map(d => d.cum); return Math.max(...c) - Math.min(...c); };
+  const recovered = p => p.days.length >= 2 &&
+    lastp(p).day > 0 && p.days[p.days.length - 2].day < 0;
+  const allNeg = ps.every(p => lastp(p).day < 0);
+  const allPos = ps.every(p => lastp(p).day > 0);
+
+  const out = [];
+  const add = (prio, icon, html) => out.push({ prio, icon, html });
+
+  // ---- líder y cabeza de la tabla ----
+  if (n >= 2) {
+    const g = lastp(leader).cum - lastp(second).cum;
+    if (g > 0.05)
+      add(9.5, "🔥", who(leader) + " está que se sale. Le saca " + pts(g) + " a " + who(second) + ".");
+    if (g > 3)
+      add(6.7, "🧱", who(leader) + " pone tierra de por medio en lo más alto.");
+  }
+  add(6.0, lastp(leader).cum >= 0 ? "👑" : "🏳️",
+    who(leader) + " lidera la liga con " + fmtPct(lastp(leader).cum) + " acumulado.");
+  add(4.6, "🧭", who(leader) + " manda y no piensa soltar el timón.");
+  if (lastp(leader).day > 0)
+    add(6.9, "🛰️", "Nadie frena hoy a " + who(leader) + ": suma " + fmtPct(lastp(leader).day) + " en la jornada.");
+  if (leader === bestDay && lastp(leader).day > 0)
+    add(8.5, "🚀", "Día redondo para " + who(leader) + ": también firma la mejor jornada (" + fmtPct(lastp(leader).day) + ").");
+  { const s = streak(leader, true); if (s >= 2)
+    add(7.0, "📈", who(leader) + " enlaza " + s + " días seguidos en verde."); }
+  if (n >= 2) {
+    const g = lastp(leader).cum - lastp(tail).cum;
+    if (g > 5)
+      add(6.5, "🏁", "Si esto fuera una carrera, " + who(leader) + " ya vería la meta: " + pts(g) + " sobre " + who(tail) + ".");
+    add(4.8, "📐", "De " + who(leader) + " a " + who(tail) + " hay " + pts(g) + " de diferencia en la general.");
+    add(4.4, "🛡️", who(leader) + " defiende el liderato mientras " + who(tail) + " aprieta por detrás.");
+    add(4.2, "🎙️", "El pulso entre " + who(leader) + " y " + who(second) + " mantiene viva la liga.");
+  }
+
+  // ---- movimientos del día ----
+  if (bestDay && lastp(bestDay).day > 0)
+    add(7.5, "⚡", who(bestDay) + " firma la mejor jornada de la liga: " + fmtPct(lastp(bestDay).day) + ".");
+  if (n >= 2 && lastp(worstDay).day < 0)
+    add(6.5, "🧊", who(worstDay) + " sufre la mayor caída del día: " + fmtPct(lastp(worstDay).day) + ".");
+  if (n >= 2 && allNeg)
+    add(7.2, "📉", "Jornada para olvidar: toda la liga cierra hoy en rojo.");
+  if (n >= 2 && allPos)
+    add(7.2, "🟢", "Viento a favor: toda la liga cierra hoy en verde.");
+  ps.forEach(p => { if (p !== leader && lastp(p).day >= 2)
+    add(6.6, "✨", who(p) + " es la sorpresa del día: se dispara " + fmtPct(lastp(p).day) + "."); });
+  ps.forEach(p => { if (p !== worstDay && lastp(p).day <= -2)
+    add(5.6, "🪂", who(p) + " se desinfla hoy: " + fmtPct(lastp(p).day) + " en la jornada."); });
+  ps.forEach(p => { if (recovered(p))
+    add(5.7, "🌤️", who(p) + " recupera el verde tras un mal tramo: " + fmtPct(lastp(p).day) + "."); });
+
+  // ---- duelos y adelantamientos ----
+  if (n >= 2) { const g = lastp(ranked[0]).cum - lastp(ranked[1]).cum;
+    if (g >= 0 && g < 1.5)
+      add(8.0, "🥊", "Duelo en la cima: " + who(ranked[0]) + " y " + who(ranked[1]) + " separados por apenas " + pts(g) + "."); }
+  for (let i = 0; i < n - 1; i++) { const g = lastp(ranked[i]).cum - lastp(ranked[i + 1]).cum;
+    if (g >= 0 && g < 0.3)
+      add(7.0, "📸", "Photo-finish entre " + who(ranked[i]) + " y " + who(ranked[i + 1]) + ": los separan " + pts(g) + "."); }
+  for (let i = 0; i < n - 1; i++) { const up = ranked[i], lo = ranked[i + 1];
+    const g = lastp(up).cum - lastp(lo).cum, diff = lastp(lo).day - lastp(up).day;
+    if (diff > 0.5 && g < 6)
+      add(6.8, "🔀", who(lo) + " le recorta terreno a " + who(up) + ": hoy le gana " + pts(diff) + "."); }
+
+  // ---- rachas, remontadas y momentum ----
+  ps.forEach(p => { const s = streak(p, false); if (s >= 2)
+    add(6.0 + s * 0.2, "🌧️", who(p) + " encadena " + s + " días en rojo. Toca remontar."); });
+  ps.forEach(p => { if (p === leader) return; const s = streak(p, true); if (s >= 3)
+    add(6.4, "🔋", who(p) + " aguanta el tirón: " + s + " días seguidos en positivo."); });
+  ps.forEach(p => { const d = windowDelta(p); if (d > 3)
+    add(6.0 + Math.min(d, 10) / 10, "🛫", who(p) + " está de dulce: suma " + pts(d) + " desde el arranque de la ventana."); });
+  ps.forEach(p => { const k = Math.min(5, p.days.length); if (k >= 4 && greenCount(p, k) >= 4)
+    add(5.8, "✅", who(p) + " está fino: " + greenCount(p, k) + " de los últimos " + k + " días en verde."); });
+  ps.forEach(p => { if (lastp(p).cum <= -2)
+    add(5.2, "🧯", who(p) + " necesita reaccionar: " + fmtPct(lastp(p).cum) + " acumulado."); });
+  if (n >= 2 && lastp(tail).day > 0)
+    add(5.5, "🌱", who(tail) + " da señales de vida: hoy suma " + fmtPct(lastp(tail).day) + " desde el fondo de la tabla.");
+  if (n >= 2)
+    add(4.0, "⏳", who(tail) + " cierra la tabla, pero la liga no ha hecho más que empezar.");
+  ps.forEach(p => { if (p.days.length >= 3 && range(p) >= 6)
+    add(5.2, "🎢", who(p) + " monta en la montaña rusa: " + pts(range(p)) + " de recorrido en la ventana."); });
+
+  // ---- carteras (solo pesos, sin importes) ----
+  ps.forEach(p => { const h = p.holdings; if (!h || !h.length) return;
+    if (h.length === 1)
+      add(6.2, "🎯", who(p) + " lo fía todo a " + h[0].ticker + ": el 100% de su cartera.");
+    else if (h[0].w >= 40)
+      add(6.0, "⚠️", who(p) + " concentra el riesgo: " + fmtW(h[0].w) + " en " + h[0].ticker + "."); });
+  { const withH = ps.filter(p => p.holdings && p.holdings.length);
+    if (withH.length) {
+      const div = withH.slice().sort((a, b) => b.holdings.length - a.holdings.length)[0];
+      if (div.holdings.length >= 4)
+        add(5.4, "🧩", who(div) + " es quien más reparte: " + div.holdings.length + " valores en cartera."); } }
+  if (DATA.allocation && DATA.allocation.length) { const top = DATA.allocation[0];
+    if (top.w >= 20)
+      add(5.0, "📊", "La liga entera va cargada de " + top.ticker + ": " + fmtW(top.w) + " del total agregado."); }
+
+  out.sort((a, b) => b.prio - a.prio);
+  return out;
+}
+
+let insightTimer = null, insightOff = 0;
+function paintInsights() {
+  const card = document.getElementById("insights-card");
+  const box = document.getElementById("insights");
+  const items = computeInsights();
+  if (!items.length) { card.style.display = "none"; return; }
+  card.style.display = "";
+  const show = Math.min(3, items.length);
+  if (insightOff >= items.length) insightOff = 0;
+  const render = () => {
+    box.innerHTML = "";
+    for (let k = 0; k < show; k++) {
+      const it = items[(insightOff + k) % items.length];
+      const row = document.createElement("div"); row.className = "insight";
+      row.innerHTML = '<span class="ic">' + it.icon + '</span><span class="tx">' + it.html + '</span>';
+      box.appendChild(row);
+    }
+  };
+  render();
+  clearInterval(insightTimer);
+  if (items.length > show) {
+    insightTimer = setInterval(() => {
+      [...box.children].forEach(c => c.style.opacity = "0");
+      setTimeout(() => { insightOff = (insightOff + show) % items.length; render(); }, 450);
+    }, 7000);
+  }
+}
+paintInsights();
+
 // ---- gráfica de líneas: % acumulado ----
 const svg = document.getElementById("chart");
 const wrap = document.querySelector(".chartwrap");
@@ -698,7 +881,7 @@ function draw() {
 }
 draw();
 const mq = window.matchMedia("(prefers-color-scheme: dark)");
-if (mq.addEventListener) mq.addEventListener("change", () => { draw(); paintWidgets(); paintMonthly(); paintAllocation(); paintWallets(); });
+if (mq.addEventListener) mq.addEventListener("change", () => { draw(); paintWidgets(); paintMonthly(); paintAllocation(); paintWallets(); paintInsights(); });
 let rafId;
 window.addEventListener("resize", () => {
   cancelAnimationFrame(rafId);
