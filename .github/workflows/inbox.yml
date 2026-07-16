@@ -21,8 +21,14 @@ name: Ingesta por email
 #       confía en la cabecera Authentication-Results de ese servidor.
 
 on:
+  # Disparo "instantáneo": el Apps Script de Gmail (scripts/gmail-dispatch.gs)
+  # lanza este evento en cuanto llega un correo con adjunto, así el extracto se
+  # procesa en segundos en vez de esperar al cron.
+  repository_dispatch:
+    types: [email-recibido]
+  # Red de seguridad por si el Apps Script falla o no está configurado: revisa
+  # el buzón cada 15 minutos igualmente (los cron de Actions son aproximados).
   schedule:
-    # Cada 15 minutos (mínimo práctico de GitHub Actions).
     - cron: "*/15 * * * *"
   workflow_dispatch: {}
 

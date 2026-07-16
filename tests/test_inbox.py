@@ -163,3 +163,15 @@ def test_process_rejects_invalid_csv(tmp_path):
                                 _emails_map(), "k", str(tmp_path))
     assert res.status == "invalid_csv"
     assert not (tmp_path / "fede").exists()
+
+
+# ----- run(): variables de entorno vacías (GitHub Actions) -----
+
+def test_run_empty_env_vars_do_not_crash(monkeypatch):
+    # GitHub inyecta secrets/variables sin definir como "" (no ausentes):
+    # IMAP_PORT="" no debe reventar con int(""), sino tratarse como no puesto.
+    for var in ("IMAP_HOST", "IMAP_PORT", "IMAP_MAILBOX", "IMAP_USER",
+                "IMAP_PASS", "INBOX_TRUSTED_AUTHSERV", "PLAYER_EMAILS"):
+        monkeypatch.setenv(var, "")
+    summary = inbox.run("clave")   # sin credenciales -> sale limpio, sin excepción
+    assert summary.ingested == []
