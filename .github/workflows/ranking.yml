@@ -2,7 +2,12 @@ name: Ranking diario
 
 on:
   schedule:
-    # Todos los días a las 22:30 UTC (tras el cierre de la bolsa de EE. UU.)
+    # Refresco intradía: cada hora en punto durante el horario de mercado de
+    # EE. UU. (13:00–21:00 UTC cubre el horario de verano e invierno), de lunes
+    # a viernes. Mantiene frescos los números «en vivo» sin intervención.
+    - cron: "0 13-21 * * 1-5"
+    # Cierre oficial: a las 22:30 UTC, tras el cierre de la bolsa de EE. UU.,
+    # ya con los cierres definitivos del día.
     - cron: "30 22 * * 1-5"
   workflow_dispatch: {}
   # La web (docs/subir.html) lanza este evento tras subir un extracto: los
