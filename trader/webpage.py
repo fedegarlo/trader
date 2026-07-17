@@ -119,6 +119,16 @@ _TEMPLATE = """<!doctype html>
   }
   .upload svg { display: block; }
   .upload:active { transform: translateY(1px); }
+  .hbtns { flex: none; display: flex; align-items: center; gap: 10px; }
+  .refresh {
+    flex: none; border: 0; cursor: pointer; color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    width: 46px; height: 46px; border-radius: 999px; display: grid; place-items: center;
+  }
+  .refresh svg { display: block; }
+  .refresh:active { transform: translateY(1px); }
+  .refresh.spin svg { animation: spin 0.6s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
   .hbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; }
   .chip { font-weight: 700; font-size: 15px; color: var(--ink); }
   .chip .caret { color: var(--muted); font-size: 12px; }
@@ -266,12 +276,20 @@ _TEMPLATE = """<!doctype html>
     <div class="eyebrow">🏆 Competición · Revolut · actualizado __UPDATED__</div>
     <div class="hrow">
       <h1>Liga Trader</h1>
-      <a class="upload" id="upload-mail" href="mailto:ligatrader26@gmail.com" aria-label="Enviar posiciones" title="Enviar posiciones">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
-             stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M5 20h14"/>
-        </svg>
-      </a>
+      <div class="hbtns">
+        <button class="refresh" id="refresh-btn" type="button" aria-label="Refrescar ranking" title="Refrescar ranking">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
+               stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/>
+          </svg>
+        </button>
+        <a class="upload" id="upload-mail" href="mailto:ligatrader26@gmail.com" aria-label="Enviar posiciones" title="Enviar posiciones">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
+               stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M5 20h14"/>
+          </svg>
+        </a>
+      </div>
     </div>
     <div class="hbar">
       <span class="chip" id="hchip">Todos los jugadores <span class="caret">▾</span></span>
@@ -386,6 +404,18 @@ const DATA = __DATA__;
   };
   setHref();
   link.addEventListener("click", setHref);
+})();
+// ---- refrescar el ranking (recarga los datos publicados) ----
+(() => {
+  const btn = document.getElementById("refresh-btn");
+  if (!btn) return;
+  btn.addEventListener("click", () => {
+    btn.classList.add("spin");
+    btn.disabled = true;
+    // evita la caché para traer la última publicación del ranking
+    const url = location.pathname + "?r=" + Date.now();
+    location.replace(url);
+  });
 })();
 const SLOTS = ["--s1","--s2","--s3","--s4","--s5","--s6","--s7","--s8"];
 const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
