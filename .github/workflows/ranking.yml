@@ -5,13 +5,11 @@ on:
     # Todos los días a las 22:30 UTC (tras el cierre de la bolsa de EE. UU.)
     - cron: "30 22 * * 1-5"
   workflow_dispatch: {}
-  # La web lanza estos eventos por `repository_dispatch` (los commits creados por
-  # la API de GitHub no disparan `push`):
-  #   · extracto-subido    → docs/subir.html, tras subir un extracto.
-  #   · recalcular-ranking  → botón «refrescar» de docs/index.html, para forzar
-  #                           un recálculo bajo demanda con los datos publicados.
+  # La web (docs/subir.html) lanza este evento tras subir un extracto: los
+  # commits creados por la API de GitHub no disparan el evento `push`, así que
+  # este `repository_dispatch` garantiza que el ranking se recalcule al subir.
   repository_dispatch:
-    types: [extracto-subido, recalcular-ranking]
+    types: [extracto-subido]
   push:
     branches: [main]
     paths:
