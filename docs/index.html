@@ -99,6 +99,17 @@
   .refresh:active { transform: translateY(1px); }
   .refresh.spin svg { animation: spin 0.6s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
+  .toast {
+    position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom));
+    transform: translate(-50%, 12px); z-index: 50; max-width: min(92vw, 460px);
+    padding: 12px 16px; border-radius: 14px; font-size: 14px; font-weight: 600;
+    line-height: 1.35; color: var(--ink); background: var(--card-solid);
+    border: 1px solid var(--ring); box-shadow: 0 14px 40px -12px rgba(0,0,0,0.45);
+    opacity: 0; pointer-events: none; transition: opacity .18s ease, transform .18s ease;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  .toast.ok  { border-color: color-mix(in srgb, var(--accent) 55%, var(--ring)); }
+  .toast.err { border-color: color-mix(in srgb, var(--s3, #e5484d) 60%, var(--ring)); }
   .hbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; }
   .chip { font-weight: 700; font-size: 15px; color: var(--ink); }
   .chip .caret { color: var(--muted); font-size: 12px; }
@@ -357,6 +368,7 @@
   El indicador «en vivo» valora hoy a precio actual y es provisional: no cuenta
   para la clasificación oficial.
 </footer>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
 <script>
 const DATA = {"players": [{"id": "ana", "name": "Ana", "slot": 0, "amounts": false, "since": "2026-07-14", "days": [{"date": "2026-07-14", "day": 1.5255, "cum": 1.5255}, {"date": "2026-07-15", "day": 0.0299, "cum": 1.5559}, {"date": "2026-07-16", "day": -2.6311, "cum": -1.1161}], "holdings": [{"ticker": "META", "w": 36.42}, {"ticker": "PLTR", "w": 33.15}, {"ticker": "SMCI", "w": 30.43}], "live": {"cum": -1.1161, "day": -2.6311}}, {"id": "fede", "name": "Fede", "slot": 1, "amounts": false, "since": "2026-07-14", "days": [{"date": "2026-07-14", "day": 1.7906, "cum": 1.7906}, {"date": "2026-07-15", "day": -4.8532, "cum": -3.1496}, {"date": "2026-07-16", "day": -4.961, "cum": -7.9543}], "holdings": [{"ticker": "MU", "w": 26.36}, {"ticker": "NVDA", "w": 25.33}, {"ticker": "TSM", "w": 24.53}, {"ticker": "WDC", "w": 23.78}], "live": {"cum": -7.9543, "day": -4.961}}], "pending": [], "allocation": [{"ticker": "META", "w": 23.68}, {"ticker": "PLTR", "w": 21.56}, {"ticker": "SMCI", "w": 19.79}, {"ticker": "MU", "w": 9.22}, {"ticker": "NVDA", "w": 8.86}, {"ticker": "TSM", "w": 8.58}, {"ticker": "WDC", "w": 8.32}], "monthly": {"current": {"name": "Ana", "value": -1.12, "slot": 0, "month_name": "julio", "month_year": 2026, "spark": [1.5255, 1.5559, -1.1161]}, "previous": null}};
 // ---- enlace de envío de posiciones por correo ----
@@ -375,16 +387,80 @@ const DATA = {"players": [{"id": "ana", "name": "Ana", "slot": 0, "amounts": fal
   setHref();
   link.addEventListener("click", setHref);
 })();
-// ---- refrescar el ranking (recarga los datos publicados) ----
+// ---- refrescar el ranking (lanza el recálculo en GitHub Actions) ----
 (() => {
   const btn = document.getElementById("refresh-btn");
   if (!btn) return;
-  btn.addEventListener("click", () => {
+  const toastEl = document.getElementById("toast");
+  let toastTimer = null;
+  const toast = (msg, kind, ms) => {
+    if (!toastEl) return;
+    toastEl.className = "toast show" + (kind ? " " + kind : "");
+    toastEl.innerHTML = msg;
+    clearTimeout(toastTimer);
+    if (ms) toastTimer = setTimeout(() => { toastEl.className = "toast"; }, ms);
+  };
+
+  // owner/repo se deducen del propio dominio (GitHub Pages: owner.github.io/repo)
+  const detectRepo = () => {
+    let owner = "fedegarlo", repo = "trader";
+    const h = location.hostname;
+    if (h.endsWith(".github.io")) {
+      owner = h.split(".")[0];
+      const seg = location.pathname.split("/").filter(Boolean);
+      repo = seg.length ? seg[0] : owner + ".github.io";
+    }
+    return { owner, repo };
+  };
+
+  const reset = () => { btn.classList.remove("spin"); btn.disabled = false; };
+
+  let busy = false;
+  btn.addEventListener("click", async () => {
+    if (busy) return;
+    let token = localStorage.getItem("trader_token");
+    if (!token) {
+      token = window.prompt(
+        "Para recalcular el ranking hace falta tu token de GitHub " +
+        "(fine-grained, con permiso Contents sobre el repo). " +
+        "Es el mismo que usas en la página de subir extractos:");
+      if (!token) return;
+      token = token.trim();
+      if (!token) return;
+    }
+    busy = true;
     btn.classList.add("spin");
     btn.disabled = true;
-    // evita la caché para traer la última publicación del ranking
-    const url = location.pathname + "?r=" + Date.now();
-    location.replace(url);
+    toast("Lanzando el recálculo del ranking…", "");
+    const { owner, repo } = detectRepo();
+    try {
+      const res = await fetch(
+        "https://api.github.com/repos/" + owner + "/" + repo + "/dispatches", {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer " + token,
+          "Accept": "application/vnd.github+json",
+          "X-GitHub-Api-Version": "2022-11-28",
+        },
+        body: JSON.stringify({ event_type: "recalcular-ranking" }),
+      });
+      if (res.status === 204) {
+        toast("Recálculo en marcha ✓ · la clasificación se actualizará en 1–2 min. " +
+          "Recargaré sola cuando esté.", "ok");
+        // el workflow tarda ~1–2 min; recargamos pasado ese margen (sin caché)
+        setTimeout(() => location.replace(location.pathname + "?r=" + Date.now()), 120000);
+      } else if (res.status === 401 || res.status === 403) {
+        toast("Token inválido o sin permiso <b>Contents</b> sobre el repo. " +
+          "Revísalo en la página de subir extractos.", "err", 8000);
+        reset(); busy = false;
+      } else {
+        toast("No se pudo lanzar el recálculo (HTTP " + res.status + ").", "err", 8000);
+        reset(); busy = false;
+      }
+    } catch (e) {
+      toast("Error de red al lanzar el recálculo. Inténtalo de nuevo.", "err", 8000);
+      reset(); busy = false;
+    }
   });
 })();
 const SLOTS = ["--s1","--s2","--s3","--s4","--s5","--s6","--s7","--s8"];
