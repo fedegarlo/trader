@@ -51,6 +51,56 @@ def test_custom_window():
     assert len(payload["players"][0]["days"]) == 7
 
 
+def _july(pid, name, rows):
+    player = Player(player_id=pid, display_name=name)
+    series = [DayResult(
+        day=d, start_value=100.0, end_value=100.0, external_flow=0.0,
+        pnl=0.0, daily_return=ret, cumulative_return=ret,
+    ) for d, ret in rows]
+    return (player, series)
+
+
+def test_daily_winners_picks_best_each_day():
+    computed = [
+        _july("fede", "Fede", [
+            (date(2026, 7, 14), 0.0179),
+            (date(2026, 7, 15), -0.0485),
+            (date(2026, 7, 16), -0.0496),
+        ]),
+        _july("ana", "Ana", [
+            (date(2026, 7, 14), 0.0153),
+            (date(2026, 7, 15), 0.0003),
+            (date(2026, 7, 16), -0.0263),
+        ]),
+    ]
+    dw = webpage.build_payload(computed, today=date(2026, 7, 16))["dailyWinners"]
+    assert dw["month_name"] == "julio" and dw["month_year"] == 2026
+    # Ordenados de más reciente a más antiguo.
+    assert [(r["date"], r["names"]) for r in dw["rows"]] == [
+        ("2026-07-16", ["Ana"]),
+        ("2026-07-15", ["Ana"]),
+        ("2026-07-14", ["Fede"]),
+    ]
+
+
+def test_daily_winners_ignore_days_before_competition_start():
+    computed = [_july("fede", "Fede", [
+        (date(2026, 7, 13), 0.9),   # anterior al inicio de la competición
+        (date(2026, 7, 14), 0.1),
+    ])]
+    rows = webpage.build_payload(computed, today=date(2026, 7, 14))["dailyWinners"]["rows"]
+    assert [r["date"] for r in rows] == ["2026-07-14"]
+
+
+def test_daily_winners_tie_lists_both_and_no_slot():
+    computed = [
+        _july("fede", "Fede", [(date(2026, 7, 14), 0.02)]),
+        _july("ana", "Ana", [(date(2026, 7, 14), 0.02)]),
+    ]
+    row = webpage.build_payload(computed, today=date(2026, 7, 14))["dailyWinners"]["rows"][0]
+    assert row["names"] == ["Ana", "Fede"] and row["slot"] is None
+
+
 def test_pending_in_payload():
     player = Player(player_id="fede", display_name="Fede")
     pending = [{"id": "ana", "name": "Ana"}]

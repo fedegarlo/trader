@@ -354,6 +354,11 @@ _TEMPLATE = """<!doctype html>
     <div class="overx" style="margin-top:6px"><table id="ranking"></table></div>
   </section>
 
+  <section class="card" id="daily-card" style="display:none">
+    <h2>🏅 Campeón de cada día · <span id="daily-month"></span></h2>
+    <div class="overx" style="margin-top:6px"><table id="daily"></table></div>
+  </section>
+
   <section class="card" id="alloc-card" style="display:none">
     <div class="wlabel">Cartera de la liga</div>
     <div id="alloc-bars"></div>
@@ -557,6 +562,42 @@ function paintMonthly() {
   row.style.gridTemplateColumns = (hasCur && hasPrev) ? "1fr 1fr" : "1fr";
 }
 paintMonthly();
+
+// ---- campeón de cada día del mes actual (mayor % del día) ----
+function paintDaily() {
+  const dw = DATA.dailyWinners || {};
+  const rows = dw.rows || [];
+  const card = document.getElementById("daily-card");
+  if (!rows.length) { card.style.display = "none"; return; }
+  card.style.display = "";
+  const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+  document.getElementById("daily-month").textContent =
+    cap(dw.month_name) + " " + dw.month_year;
+  const t = document.getElementById("daily");
+  t.innerHTML = "";
+  const head = t.insertRow();
+  ["Fecha","Campeón","% del día"].forEach((h, i) => {
+    const th = document.createElement("th");
+    th.textContent = h; if (i === 1) th.className = "name"; head.appendChild(th);
+  });
+  const slotColor = s => css(SLOTS[s % SLOTS.length]);
+  rows.forEach(r => {
+    const tr = t.insertRow();
+    const fecha = tr.insertCell(); fecha.textContent = fmtDate(r.date);
+    const name = tr.insertCell(); name.className = "name";
+    name.appendChild(document.createTextNode("🏅 "));
+    if (r.slot !== null && r.slot !== undefined) {
+      const key = document.createElement("span");
+      key.className = "key"; key.style.background = slotColor(r.slot);
+      name.appendChild(key);
+    }
+    name.appendChild(document.createTextNode(r.names.join(", ")));
+    const val = tr.insertCell();
+    val.className = r.value >= 0 ? "pos" : "neg";
+    val.textContent = fmtPct(r.value);
+  });
+}
+paintDaily();
 
 // ---- widgets de cartera: asignación por ticker (solo pesos, sin importes) ----
 function badgeColor(t) {
@@ -1080,6 +1121,35 @@ def _monthly_bests(computed: list[tuple[Player, list[DayResult]]],
     }
 
 
+def _daily_winners(computed: list[tuple[Player, list[DayResult]]],
+                   year: int, month: int, order: dict[str, int]) -> list[dict]:
+    """Ganador de cada día del mes: mayor rentabilidad diaria (con empates).
+
+    Solo cuentan los días de la competición (``day >= COMPETITION_START``). La
+    lista sale ordenada de más reciente a más antigua para que el día de hoy
+    quede arriba en la tabla.
+    """
+    by_day: dict[date, list[tuple[str, int, float]]] = {}
+    for player, series in computed:
+        for r in series:
+            if (r.day.year == year and r.day.month == month
+                    and r.day >= COMPETITION_START):
+                by_day.setdefault(r.day, []).append(
+                    (player.display_name, order[player.player_id], r.daily_return))
+
+    out = []
+    for day in sorted(by_day, reverse=True):
+        best = max(ret for _n, _s, ret in by_day[day])
+        winners = sorted((n, s) for n, s, ret in by_day[day] if ret == best)
+        out.append({
+            "date": day.isoformat(),
+            "names": [n for n, _s in winners],
+            "slot": winners[0][1] if len(winners) == 1 else None,
+            "value": round(best * 100, 2),
+        })
+    return out
+
+
 def build_payload(computed: list[tuple[Player, list[DayResult]]],
                   last_days: int = 30,
                   pending: list[dict] | None = None,
@@ -1145,7 +1215,12 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
         players.append(entry)
     return {"players": players, "pending": pending or [],
             "allocation": _allocation_weights(allocation),
-            "monthly": _monthly_bests(computed, today, order)}
+            "monthly": _monthly_bests(computed, today, order),
+            "dailyWinners": {
+                "month_name": _MONTHS_ES[today.month - 1],
+                "month_year": today.year,
+                "rows": _daily_winners(computed, today.year, today.month, order),
+            }}
 
 
 def write_index(

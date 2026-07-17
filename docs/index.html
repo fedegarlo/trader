@@ -324,6 +324,11 @@
     <div class="overx" style="margin-top:6px"><table id="ranking"></table></div>
   </section>
 
+  <section class="card" id="daily-card" style="display:none">
+    <h2>🏅 Campeón de cada día · <span id="daily-month"></span></h2>
+    <div class="overx" style="margin-top:6px"><table id="daily"></table></div>
+  </section>
+
   <section class="card" id="alloc-card" style="display:none">
     <div class="wlabel">Cartera de la liga</div>
     <div id="alloc-bars"></div>
@@ -358,7 +363,7 @@
   para la clasificación oficial.
 </footer>
 <script>
-const DATA = {"players": [{"id": "ana", "name": "Ana", "slot": 0, "amounts": false, "since": "2026-07-14", "days": [{"date": "2026-07-14", "day": 1.5255, "cum": 1.5255}, {"date": "2026-07-15", "day": 0.0299, "cum": 1.5559}, {"date": "2026-07-16", "day": -2.6311, "cum": -1.1161}, {"date": "2026-07-17", "day": -1.9994, "cum": -3.0932}], "holdings": [{"ticker": "META", "w": 36.15}, {"ticker": "PLTR", "w": 33.35}, {"ticker": "SMCI", "w": 30.5}], "live": {"cum": -3.099, "day": -2.0053}}, {"id": "fede", "name": "Fede", "slot": 1, "amounts": false, "since": "2026-07-14", "days": [{"date": "2026-07-14", "day": 1.7906, "cum": 1.7906}, {"date": "2026-07-15", "day": -4.8532, "cum": -3.1496}, {"date": "2026-07-16", "day": -4.961, "cum": -7.9543}, {"date": "2026-07-17", "day": -0.7093, "cum": -8.6072}], "holdings": [{"ticker": "MU", "w": 26.57}, {"ticker": "NVDA", "w": 24.99}, {"ticker": "WDC", "w": 24.47}, {"ticker": "TSM", "w": 23.97}], "live": {"cum": -8.6042, "day": -0.706}}], "pending": [], "allocation": [{"ticker": "META", "w": 23.4}, {"ticker": "PLTR", "w": 21.59}, {"ticker": "SMCI", "w": 19.74}, {"ticker": "MU", "w": 9.38}, {"ticker": "NVDA", "w": 8.82}, {"ticker": "WDC", "w": 8.63}, {"ticker": "TSM", "w": 8.46}], "monthly": {"current": {"name": "Ana", "value": -3.09, "slot": 0, "month_name": "julio", "month_year": 2026, "spark": [1.5255, 1.5559, -1.1161, -3.0932]}, "previous": null}};
+const DATA = {"players": [{"id": "ana", "name": "Ana", "slot": 0, "amounts": false, "since": "2026-07-14", "days": [{"date": "2026-07-14", "day": 1.5255, "cum": 1.5255}, {"date": "2026-07-15", "day": 0.0299, "cum": 1.5559}, {"date": "2026-07-16", "day": -2.6311, "cum": -1.1161}, {"date": "2026-07-17", "day": -1.9994, "cum": -3.0932}], "holdings": [{"ticker": "META", "w": 36.15}, {"ticker": "PLTR", "w": 33.35}, {"ticker": "SMCI", "w": 30.5}], "live": {"cum": -3.099, "day": -2.0053}}, {"id": "fede", "name": "Fede", "slot": 1, "amounts": false, "since": "2026-07-14", "days": [{"date": "2026-07-14", "day": 1.7906, "cum": 1.7906}, {"date": "2026-07-15", "day": -4.8532, "cum": -3.1496}, {"date": "2026-07-16", "day": -4.961, "cum": -7.9543}, {"date": "2026-07-17", "day": -0.7093, "cum": -8.6072}], "holdings": [{"ticker": "MU", "w": 26.57}, {"ticker": "NVDA", "w": 24.99}, {"ticker": "WDC", "w": 24.47}, {"ticker": "TSM", "w": 23.97}], "live": {"cum": -8.6042, "day": -0.706}}], "pending": [], "allocation": [{"ticker": "META", "w": 23.4}, {"ticker": "PLTR", "w": 21.59}, {"ticker": "SMCI", "w": 19.74}, {"ticker": "MU", "w": 9.38}, {"ticker": "NVDA", "w": 8.82}, {"ticker": "WDC", "w": 8.63}, {"ticker": "TSM", "w": 8.46}], "monthly": {"current": {"name": "Ana", "value": -3.09, "slot": 0, "month_name": "julio", "month_year": 2026, "spark": [1.5255, 1.5559, -1.1161, -3.0932]}, "previous": null}, "dailyWinners": {"month_name": "julio", "month_year": 2026, "rows": [{"date": "2026-07-17", "names": ["Fede"], "slot": 1, "value": -0.71}, {"date": "2026-07-16", "names": ["Ana"], "slot": 0, "value": -2.63}, {"date": "2026-07-15", "names": ["Ana"], "slot": 0, "value": 0.03}, {"date": "2026-07-14", "names": ["Fede"], "slot": 1, "value": 1.79}]}};
 // ---- enlace de envío de posiciones por correo ----
 (() => {
   const link = document.getElementById("upload-mail");
@@ -527,6 +532,42 @@ function paintMonthly() {
   row.style.gridTemplateColumns = (hasCur && hasPrev) ? "1fr 1fr" : "1fr";
 }
 paintMonthly();
+
+// ---- campeón de cada día del mes actual (mayor % del día) ----
+function paintDaily() {
+  const dw = DATA.dailyWinners || {};
+  const rows = dw.rows || [];
+  const card = document.getElementById("daily-card");
+  if (!rows.length) { card.style.display = "none"; return; }
+  card.style.display = "";
+  const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+  document.getElementById("daily-month").textContent =
+    cap(dw.month_name) + " " + dw.month_year;
+  const t = document.getElementById("daily");
+  t.innerHTML = "";
+  const head = t.insertRow();
+  ["Fecha","Campeón","% del día"].forEach((h, i) => {
+    const th = document.createElement("th");
+    th.textContent = h; if (i === 1) th.className = "name"; head.appendChild(th);
+  });
+  const slotColor = s => css(SLOTS[s % SLOTS.length]);
+  rows.forEach(r => {
+    const tr = t.insertRow();
+    const fecha = tr.insertCell(); fecha.textContent = fmtDate(r.date);
+    const name = tr.insertCell(); name.className = "name";
+    name.appendChild(document.createTextNode("🏅 "));
+    if (r.slot !== null && r.slot !== undefined) {
+      const key = document.createElement("span");
+      key.className = "key"; key.style.background = slotColor(r.slot);
+      name.appendChild(key);
+    }
+    name.appendChild(document.createTextNode(r.names.join(", ")));
+    const val = tr.insertCell();
+    val.className = r.value >= 0 ? "pos" : "neg";
+    val.textContent = fmtPct(r.value);
+  });
+}
+paintDaily();
 
 // ---- widgets de cartera: asignación por ticker (solo pesos, sin importes) ----
 function badgeColor(t) {
