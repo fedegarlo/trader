@@ -78,6 +78,54 @@ def player_daily_table(player: Player, series: list[DayResult], last_n: int = 14
     return "\n".join(lines)
 
 
+def daily_winners(
+    computed: list[tuple[Player, list[DayResult]]],
+    year: int,
+    month: int,
+) -> list[tuple[date, list[str], float]]:
+    """Ganador de cada día del mes indicado.
+
+    Para cada fecha con datos dentro de ``year``/``month`` devuelve el jugador
+    (o jugadores, en caso de empate) con mayor rentabilidad del día, junto con
+    ese porcentaje. La lista sale ordenada por fecha ascendente.
+    """
+    by_day: dict[date, list[tuple[str, float]]] = {}
+    for player, series in computed:
+        for row in series:
+            if row.day.year == year and row.day.month == month:
+                by_day.setdefault(row.day, []).append(
+                    (player.display_name, row.daily_return)
+                )
+
+    winners = []
+    for day in sorted(by_day):
+        best = max(ret for _name, ret in by_day[day])
+        names = [name for name, ret in by_day[day] if ret == best]
+        winners.append((day, names, best))
+    return winners
+
+
+def daily_winners_table(
+    computed: list[tuple[Player, list[DayResult]]],
+    year: int,
+    month: int,
+) -> str:
+    """Tabla Markdown con el ganador de cada día del mes indicado."""
+    lines = [
+        "| Fecha | Ganador | % del día |",
+        "|---|---|---:|",
+    ]
+    winners = daily_winners(computed, year, month)
+    if not winners:
+        lines.append("| — | _todavía no hay datos este mes_ | |")
+        return "\n".join(lines)
+    for day, names, best in winners:
+        lines.append(
+            f"| {day.isoformat()} | 🏅 {', '.join(names)} | {_pct(best)} |"
+        )
+    return "\n".join(lines)
+
+
 def write_ranking(
     computed: list[tuple[Player, list[DayResult]]],
     out_path: str = "docs/ranking.md",
@@ -111,6 +159,17 @@ def write_ranking(
 
     if not scored:
         lines.append("| — | _todavía no hay jugadores con datos_ | | | |")
+
+    meses = [
+        "", "enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",
+        "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+    ]
+    lines += [
+        "",
+        f"## 🏅 Ganador de cada día ({meses[today.month]} {today.year})",
+        "",
+        daily_winners_table(computed, today.year, today.month),
+    ]
 
     for player, series, _last in scored:
         lines += [
