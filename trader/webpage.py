@@ -356,6 +356,20 @@ _TEMPLATE = """<!doctype html>
   }
   .news a:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--hair)); color: var(--accent); }
   .news a .ext { color: var(--muted); font-size: 11px; }
+  /* operar en Revolut: botones comprar/vender que abren la app en el detalle del valor */
+  .revolut { display: flex; gap: 10px; }
+  .rev-btn {
+    flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    text-decoration: none; font-size: 14px; font-weight: 800; letter-spacing: -0.01em;
+    padding: 12px 14px; border-radius: 14px; border: 1px solid transparent;
+    transition: filter .12s ease, transform .12s ease;
+  }
+  .rev-btn:active { transform: translateY(1px); }
+  .rev-btn:hover { filter: brightness(1.05); }
+  .rev-btn .ic { font-size: 11px; opacity: .9; }
+  .rev-btn.buy { background: #16a34a; color: #fff; }
+  .rev-btn.sell { background: #e11d48; color: #fff; }
+  .rev-note { color: var(--muted); font-size: 11.5px; margin-top: 8px; }
   .mnote { color: var(--muted); font-size: 11.5px; margin-top: 14px; }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; }
   .chip-tk { display: inline-flex; align-items: center; gap: 7px; cursor: pointer;
@@ -1260,6 +1274,21 @@ function newsRow(sym) {
   });
   return box;
 }
+// Botones «Comprar»/«Vender» que abren la app de Revolut en el detalle del
+// valor (universal link por ticker: abre la app si está instalada, si no la web).
+// Ambos llevan al mismo detalle; desde ahí se elige comprar o vender.
+function revolutRow(sym) {
+  const href = "https://revolut.com/app/trading/" + encodeURIComponent(sym);
+  const box = h("div", "revolut");
+  [["Comprar", "buy", "▲"], ["Vender", "sell", "▼"]].forEach(([label, cls, ico]) => {
+    const a = document.createElement("a");
+    a.href = href; a.target = "_blank"; a.rel = "noopener noreferrer";
+    a.className = "rev-btn " + cls;
+    a.innerHTML = '<span class="ic">' + ico + "</span>" + label;
+    box.appendChild(a);
+  });
+  return box;
+}
 function sectionEl(title, node) {
   const s = h("div", "msec");
   s.appendChild(h("div", "h", title));
@@ -1420,6 +1449,11 @@ function openTicker(sym) {
   tiles.appendChild(tileEl("Variación", t.ret == null ? "—" : fmtPct(t.ret),
     t.ret == null ? "" : (t.ret >= 0 ? "pos" : "neg")));
   root.appendChild(tiles);
+
+  const revSec = sectionEl("Operar en Revolut", revolutRow(t.ticker));
+  revSec.appendChild(h("div", "rev-note",
+    "Abre el detalle de " + t.ticker + " en la app de Revolut para comprar o vender."));
+  root.appendChild(revSec);
 
   if (t.analyst) root.appendChild(analystSectionEl(t.analyst));
 
