@@ -15,6 +15,7 @@ from datetime import date
 
 from .players import Player
 from .portfolio import DayResult
+from .tickers import ticker_meta
 
 # La competición oficial empezó este día: los días anteriores (pruebas o
 # histórico previo) no cuentan. Todos los jugadores se comparan desde esta
@@ -268,10 +269,116 @@ _TEMPLATE = """<!doctype html>
   .overx table { white-space: nowrap; }
   footer { color: var(--muted); font-size: 12.5px; max-width: 760px; margin: 20px auto 0; padding: 0 6px; }
 
+  /* elementos abribles (ticker / jugador) */
+  .clk { cursor: pointer; }
+  .dl.clk:hover .tk, tr.clk:hover .nm, tr.clk:hover td.name { color: var(--accent); }
+  .legend span.clk:hover { color: var(--accent); }
+
+  /* logo / monograma */
+  .logo, .mono {
+    flex: none; border-radius: 9px; display: grid; place-items: center;
+    object-fit: cover; background: var(--surface-2); overflow: hidden;
+  }
+  .mono { color: #fff; font-weight: 800; letter-spacing: -0.02em; line-height: 1;
+          border-radius: 999px; }
+  .logo { border: 1px solid var(--hair); }
+
+  /* overlay de detalle */
+  .modal {
+    position: fixed; inset: 0; z-index: 50; display: none;
+    align-items: flex-end; justify-content: center;
+    background: color-mix(in srgb, #05040a 52%, transparent);
+    -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+    padding: 0;
+  }
+  .modal.open { display: flex; }
+  .sheet {
+    position: relative;
+    width: 100%; max-width: 620px; max-height: 92vh; max-height: 92dvh;
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain; touch-action: pan-y; will-change: transform;
+    background: var(--card-solid);
+    border: 1px solid var(--ring); border-bottom: none;
+    border-radius: 22px 22px 0 0;
+    padding: calc(6px + env(safe-area-inset-top)) 18px
+             calc(24px + env(safe-area-inset-bottom));
+    box-shadow: 0 -18px 50px -20px rgba(5,4,10,0.6);
+    animation: sheetin 0.30s cubic-bezier(0.2,0.85,0.25,1);
+  }
+  @keyframes sheetin { from { transform: translateY(100%); } to { transform: none; } }
+  .sheet.closing { animation: sheetout 0.22s ease-in forwards; }
+  @keyframes sheetout { from { transform: translateY(0); } to { transform: translateY(100%); } }
+  /* zona de agarre: ocupa el ancho para poder arrastrar y cerrar de un toque */
+  .grab { position: sticky; top: 0; z-index: 2; margin: 0 -18px 8px; padding: 9px 0 7px;
+          background: var(--card-solid); cursor: grab; touch-action: none; }
+  .grab::before { content: ""; display: block; width: 40px; height: 5px; border-radius: 999px;
+                  background: var(--baseline); opacity: 0.5; margin: 0 auto; }
+  .mhead { display: flex; align-items: center; gap: 13px; padding-right: 42px; }
+  .mhead .mtitle { min-width: 0; }
+  .mhead .mtitle .t1 { font-size: 20px; font-weight: 800; letter-spacing: -0.02em;
+                       display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .mhead .mtitle .t2 { color: var(--ink-2); font-size: 13.5px; font-weight: 600; margin-top: 2px; }
+  .mclose {
+    position: absolute; z-index: 4;
+    top: calc(14px + env(safe-area-inset-top)); right: 16px;
+    flex: none; border: 0; cursor: pointer; color: var(--ink-2);
+    background: var(--surface-2); width: 34px; height: 34px; border-radius: 999px;
+    font-size: 18px; line-height: 1; display: grid; place-items: center;
+  }
+  .mbadge { font-size: 12px; font-weight: 800; padding: 2px 9px; border-radius: 999px;
+            background: var(--up-soft); color: var(--up); }
+  .mbadge.neg { background: var(--down-soft); color: var(--down); }
+  .mbadge.rank { background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--accent); }
+
+  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; margin-top: 16px; }
+  .tile { background: var(--surface-2); border: 1px solid var(--hair); border-radius: 15px;
+          padding: 11px 12px; min-width: 0; }
+  .tile .k { color: var(--muted); font-size: 11.5px; font-weight: 600; }
+  .tile .v { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; margin-top: 3px;
+             font-variant-numeric: tabular-nums; }
+  .msec { margin-top: 18px; }
+  .msec > .h { font-size: 13px; font-weight: 700; color: var(--ink-2); margin-bottom: 9px;
+               display: flex; align-items: center; gap: 7px; }
+  .mspark { height: 120px; margin: 0 -4px; }
+  .holder-row, .mini-row { display: flex; align-items: center; gap: 10px; padding: 9px 4px;
+                           border-top: 1px solid var(--hair); font-size: 14px; }
+  .holder-row:first-child, .mini-row:first-child { border-top: none; }
+  .holder-row .nm { font-weight: 700; display: inline-flex; align-items: center; gap: 8px; }
+  .holder-row .w, .mini-row .v { margin-left: auto; font-weight: 700;
+                                 font-variant-numeric: tabular-nums; }
+  .mini-row .dt { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+  .news { display: flex; flex-wrap: wrap; gap: 8px; }
+  .news a {
+    display: inline-flex; align-items: center; gap: 6px; text-decoration: none;
+    font-size: 13px; font-weight: 700; color: var(--ink);
+    background: var(--surface-2); border: 1px solid var(--hair);
+    padding: 8px 12px; border-radius: 12px;
+  }
+  .news a:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--hair)); color: var(--accent); }
+  .news a .ext { color: var(--muted); font-size: 11px; }
+  .mnote { color: var(--muted); font-size: 11.5px; margin-top: 14px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip-tk { display: inline-flex; align-items: center; gap: 7px; cursor: pointer;
+             background: var(--surface-2); border: 1px solid var(--hair);
+             padding: 6px 11px 6px 6px; border-radius: 999px; font-weight: 700; font-size: 13px; }
+  .chip-tk:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--hair)); }
+  .chip-tk .w { color: var(--muted); font-weight: 600; }
+
   @media (min-width: 620px) {
     main { gap: 14px; }
     .card { padding: 22px; }
     .sparkwrap { margin: 14px -22px 0; }
+    .modal { align-items: center; padding: 20px; }
+    .sheet { border-radius: 24px; border-bottom: 1px solid var(--ring);
+             padding-top: 18px; touch-action: auto;
+             animation: popin 0.22s cubic-bezier(0.2,0.85,0.25,1); }
+    .sheet.closing { animation: none; opacity: 0; }
+    .mclose { top: 18px; }
+    .grab { display: none; }
+  }
+  @keyframes popin { from { transform: translateY(14px); opacity: 0.4; } to { transform: none; opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) {
+    .sheet, .sheet.closing { animation: none; }
   }
 </style>
 </head>
@@ -391,6 +498,12 @@ _TEMPLATE = """<!doctype html>
     <div id="detail" style="margin-top:4px"></div>
   </section>
 </main>
+<div class="modal" id="modal" aria-hidden="true">
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Detalle">
+    <div class="grab"></div>
+    <div id="modal-body"></div>
+  </div>
+</div>
 <footer>
   Rentabilidad diaria con Dietz simple (ingresos y retiradas no cuentan como
   ganancia); acumulado por composición geométrica (time-weighted return).
@@ -435,6 +548,10 @@ const fmtPct = v => (v > 0 ? "+" : "") + v.toFixed(2) + "%";
 const fmtDate = iso => { const [y,m,d] = iso.split("-"); return d + "/" + m + "/" + y.slice(2); };
 const lastOf = p => p.days[p.days.length - 1];
 
+// ---- índices para las vistas de detalle (ticker / jugador) ----
+const TICKERS = {}; (DATA.tickers || []).forEach(t => TICKERS[t.ticker] = t);
+const PLAYERS = {}; DATA.players.forEach(p => PLAYERS[p.id] = p);
+
 // ---- clasificación (ordenada por acumulado; el color sigue al jugador) ----
 const ranked = [...DATA.players].sort((a, b) => lastOf(b).cum - lastOf(a).cum);
 const MEDALS = ["🥇","🥈","🥉"];
@@ -450,6 +567,7 @@ const MEDALS = ["🥇","🥈","🥉"];
   ranked.forEach((p, i) => {
     const last = lastOf(p);
     const tr = t.insertRow();
+    tr.classList.add("clk"); tr.dataset.player = p.id;
     tr.appendChild(mk("td", "rank", MEDALS[i] || String(i + 1)));
     const name = mk("td", "name");
     const key = mk("span", "key"); key.style.background = colorOf(p);
@@ -661,7 +779,9 @@ function donutSVG(items, count, size) {
 function donutLegendHTML(items) {
   return '<ul class="donut-legend">' + items.map(x => {
     const col = x.other ? css("--muted") : badgeColor(x.ticker);
-    return '<li class="dl"><span class="dot" style="background:' + col + '"></span>' +
+    const openable = !x.other && TICKERS[x.ticker];
+    const attrs = openable ? ' class="dl clk" data-ticker="' + x.ticker + '"' : ' class="dl"';
+    return '<li' + attrs + '><span class="dot" style="background:' + col + '"></span>' +
       '<span class="tk">' + x.ticker + '</span><span class="w">' + fmtW(x.w) + '</span></li>';
   }).join("") + '</ul>';
 }
@@ -696,7 +816,8 @@ function paintWallets() {
   box.innerHTML = "";
   withHoldings.forEach(p => {
     const wrap = document.createElement("div"); wrap.className = "wallet";
-    const head = document.createElement("div"); head.className = "whead";
+    const head = document.createElement("div"); head.className = "whead clk";
+    head.dataset.player = p.id;
     const key = document.createElement("span"); key.className = "key";
     key.style.background = colorOf(p);
     head.appendChild(key); head.appendChild(document.createTextNode(p.name));
@@ -975,6 +1096,7 @@ window.addEventListener("resize", () => {
   const lg = document.getElementById("legend");
   if (DATA.players.length >= 2) DATA.players.forEach(p => {
     const s = document.createElement("span");
+    s.className = "clk"; s.dataset.player = p.id;
     const key = document.createElement("span");
     key.className = "key"; key.style.background = colorOf(p);
     s.appendChild(key); s.appendChild(document.createTextNode(p.name));
@@ -1056,6 +1178,300 @@ svg.addEventListener("pointerleave", () => {
   });
   if (!ranked.length) box.textContent = "Todavía no hay jugadores con datos.";
 }
+
+// ==== vistas de detalle: ticker y jugador ==============================
+// Overlay que se rellena en cliente desde los datos ya embebidos. Los logos se
+// piden a Clearbit por dominio con respaldo a un monograma de color (si el
+// servicio no responde), y las noticias son enlaces de búsqueda por símbolo:
+// la página sigue siendo estática y no expone importes ni operaciones.
+const modal = document.getElementById("modal");
+const modalBody = document.getElementById("modal-body");
+const sheet = document.getElementById("sheet");
+const h = (tag, cls, html) => { const e = document.createElement(tag);
+  if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+
+function monoEl(text, size, bg) {
+  const m = document.createElement("span");
+  m.className = "mono";
+  m.style.width = m.style.height = size + "px";
+  m.style.fontSize = Math.round(size * 0.4) + "px";
+  m.style.background = bg;
+  m.textContent = (text || "?").slice(0, 2).toUpperCase();
+  return m;
+}
+// Logo de empresa (por dominio) con respaldo a monograma si la imagen falla.
+function tickerLogoEl(t, size) {
+  const bg = badgeColor(t.ticker);
+  if (!t.domain) return monoEl(t.ticker, size, bg);
+  const img = document.createElement("img");
+  img.className = "logo"; img.width = img.height = size; img.alt = "";
+  img.loading = "lazy"; img.referrerPolicy = "no-referrer";
+  img.src = "https://logo.clearbit.com/" + t.domain + "?size=" + (size * 2);
+  img.onerror = () => img.replaceWith(monoEl(t.ticker, size, bg));
+  return img;
+}
+function newsRow(sym) {
+  const q = encodeURIComponent(sym + " stock");
+  const links = [
+    ["Yahoo Finance", "https://finance.yahoo.com/quote/" + encodeURIComponent(sym)],
+    ["Google News", "https://news.google.com/search?q=" + q],
+    ["Finviz", "https://finviz.com/quote.ashx?t=" + encodeURIComponent(sym)],
+  ];
+  const box = h("div", "news");
+  links.forEach(([label, href]) => {
+    const a = document.createElement("a");
+    a.href = href; a.target = "_blank"; a.rel = "noopener noreferrer";
+    a.innerHTML = label + ' <span class="ext">↗</span>';
+    box.appendChild(a);
+  });
+  return box;
+}
+function sectionEl(title, node) {
+  const s = h("div", "msec");
+  s.appendChild(h("div", "h", title));
+  s.appendChild(node);
+  return s;
+}
+function tileEl(k, v, cls) {
+  const t = h("div", "tile");
+  t.appendChild(h("div", "k", k));
+  t.appendChild(h("div", "v" + (cls ? " " + cls : ""), v));
+  return t;
+}
+
+let closingTimer = null;
+function hideModal() {
+  clearTimeout(closingTimer);
+  modal.classList.remove("open");
+  sheet.classList.remove("closing");
+  sheet.style.transform = ""; sheet.style.transition = ""; sheet.style.opacity = "";
+  modal.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+}
+function closeModal() {
+  if (!modal.classList.contains("open")) return;
+  sheet.classList.add("closing");        // desliza la hoja hacia abajo y oculta
+  clearTimeout(closingTimer);
+  closingTimer = setTimeout(hideModal, 240);
+}
+function showModal(node) {
+  clearTimeout(closingTimer);
+  sheet.classList.remove("closing");
+  sheet.style.transform = ""; sheet.style.transition = ""; sheet.style.opacity = "";
+  modalBody.innerHTML = "";
+  const close = h("button", "mclose", "✕");
+  close.setAttribute("aria-label", "Cerrar");
+  close.addEventListener("click", closeModal);
+  node.appendChild(close);               // ✕ fijado arriba a la derecha (absolute)
+  modalBody.appendChild(node);
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+  sheet.scrollTop = 0;
+}
+
+// ---- detalle de ticker ----
+function openTicker(sym) {
+  const t = TICKERS[sym];
+  if (!t) return;
+  const upC = css("--up"), downC = css("--down");
+  const root = document.createElement("div");
+
+  const head = h("div", "mhead");
+  head.appendChild(tickerLogoEl(t, 46));
+  const title = h("div", "mtitle");
+  const t1 = h("div", "t1");
+  t1.appendChild(document.createTextNode(t.ticker));
+  if (t.ret != null) {
+    const b = h("span", "mbadge" + (t.ret >= 0 ? "" : " neg"), fmtPct(t.ret));
+    t1.appendChild(b);
+  }
+  title.appendChild(t1);
+  title.appendChild(h("div", "t2", t.name));
+  head.appendChild(title);
+  root.appendChild(head);
+
+  const tiles = h("div", "tiles");
+  tiles.appendChild(tileEl("Peso en la liga", fmtW(t.w)));
+  tiles.appendChild(tileEl("Lo tienen", t.holders.length + (t.holders.length === 1 ? " jugador" : " jugadores")));
+  tiles.appendChild(tileEl("Variación", t.ret == null ? "—" : fmtPct(t.ret),
+    t.ret == null ? "" : (t.ret >= 0 ? "pos" : "neg")));
+  root.appendChild(tiles);
+
+  if (t.prices && t.prices.length >= 2) {
+    const vals = t.prices.map(p => p.close);
+    const spark = h("div", "mspark", sparkSVG(vals, t.ret >= 0 ? upC : downC, "tk"));
+    const from = t.prices[0].date, to = t.prices[t.prices.length - 1].date;
+    const sec = sectionEl("Precio · " + fmtDate(from) + " → " + fmtDate(to), spark);
+    root.appendChild(sec);
+  }
+
+  if (t.holders.length) {
+    const list = document.createElement("div");
+    t.holders.forEach(hd => {
+      const row = h("div", "holder-row clk");
+      row.dataset.player = playerIdByName(hd.name) || "";
+      const nm = h("span", "nm");
+      const key = h("span", "key"); key.style.background = css(SLOTS[hd.slot % SLOTS.length]);
+      nm.appendChild(key); nm.appendChild(document.createTextNode(hd.name));
+      row.appendChild(nm);
+      row.appendChild(h("span", "w", fmtW(hd.w) + " de su cartera"));
+      list.appendChild(row);
+    });
+    root.appendChild(sectionEl("Quién lo tiene", list));
+  }
+
+  root.appendChild(sectionEl("Noticias", newsRow(t.ticker)));
+  root.appendChild(h("div", "mnote",
+    "Logo: Clearbit · precios de cierre de Yahoo Finance · noticias, búsqueda por símbolo."));
+  showModal(root);
+}
+
+function playerIdByName(name) {
+  const p = DATA.players.find(x => x.name === name);
+  return p ? p.id : null;
+}
+
+// ---- detalle de jugador ----
+function openPlayer(pid) {
+  const p = PLAYERS[pid];
+  if (!p) return;
+  const upC = css("--up"), downC = css("--down");
+  const days = p.days || [];
+  const last = days[days.length - 1] || {cum: 0, day: 0};
+  const rankIdx = ranked.findIndex(x => x.id === pid);
+  const bestDay = days.reduce((a, d) => d.day > a.day ? d : a, days[0] || {day: 0});
+  const worstDay = days.reduce((a, d) => d.day < a.day ? d : a, days[0] || {day: 0});
+  let streak = 0, sign = 0;
+  for (let i = days.length - 1; i >= 0; i--) {
+    const s = Math.sign(days[i].day);
+    if (i === days.length - 1) { sign = s; streak = s !== 0 ? 1 : 0; }
+    else if (s === sign && s !== 0) streak++;
+    else break;
+  }
+  const root = document.createElement("div");
+
+  const head = h("div", "mhead");
+  head.appendChild(monoEl(p.name, 46, colorOf(p)));
+  const title = h("div", "mtitle");
+  const t1 = h("div", "t1");
+  t1.appendChild(document.createTextNode(p.name));
+  if (rankIdx >= 0)
+    t1.appendChild(h("span", "mbadge rank", (MEDALS[rankIdx] || "#" + (rankIdx + 1))));
+  title.appendChild(t1);
+  title.appendChild(h("div", "t2", "Desde " + (p.since ? fmtDate(p.since) : (days[0] || {}).date || "")));
+  head.appendChild(title);
+  root.appendChild(head);
+
+  const tiles = h("div", "tiles");
+  tiles.appendChild(tileEl("% acumulado", fmtPct(last.cum), last.cum >= 0 ? "pos" : "neg"));
+  tiles.appendChild(tileEl("Mejor día", fmtPct(bestDay.day), "pos"));
+  tiles.appendChild(tileEl("Peor día", fmtPct(worstDay.day), worstDay.day < 0 ? "neg" : ""));
+  root.appendChild(tiles);
+
+  const tiles2 = h("div", "tiles");
+  tiles2.appendChild(tileEl("% último día", fmtPct(last.day), last.day >= 0 ? "pos" : "neg"));
+  const rlabel = sign > 0 ? "días en verde" : (sign < 0 ? "días en rojo" : "racha");
+  tiles2.appendChild(tileEl("Racha", String(streak), sign > 0 ? "pos" : (sign < 0 ? "neg" : "")));
+  tiles2.children[1].querySelector(".k").textContent = streak === 1 ? rlabel.replace("días", "día") : rlabel;
+  tiles2.appendChild(tileEl("Jornadas", String(days.length)));
+  root.appendChild(tiles2);
+
+  if (days.length >= 2) {
+    const spark = h("div", "mspark",
+      sparkSVG(days.map(d => d.cum), last.cum >= 0 ? upC : downC, "pl", {baseline0: true}));
+    root.appendChild(sectionEl("Rentabilidad acumulada · últimos " + days.length + " días", spark));
+  }
+
+  if (p.live) {
+    const lv = h("div", "news");
+    const tag = h("a", null,
+      "En vivo (provisional) " + fmtPct(p.live.cum) + " · " + fmtPct(p.live.day) + " hoy");
+    tag.style.cursor = "default"; tag.removeAttribute("href");
+    tag.style.color = p.live.cum >= 0 ? upC : downC;
+    lv.appendChild(tag);
+    root.appendChild(sectionEl("Valoración de hoy", lv));
+  }
+
+  if (p.holdings && p.holdings.length) {
+    const chips = h("div", "chips");
+    p.holdings.forEach(hh => {
+      const meta = TICKERS[hh.ticker] || {ticker: hh.ticker, domain: "", name: hh.ticker};
+      const chip = h("div", "chip-tk" + (TICKERS[hh.ticker] ? " clk" : ""));
+      if (TICKERS[hh.ticker]) chip.dataset.ticker = hh.ticker;
+      chip.appendChild(tickerLogoEl(meta, 22));
+      chip.appendChild(document.createTextNode(hh.ticker));
+      chip.appendChild(h("span", "w", fmtW(hh.w)));
+      chips.appendChild(chip);
+    });
+    root.appendChild(sectionEl("Cartera (" + p.holdings.length +
+      (p.holdings.length === 1 ? " valor)" : " valores)"), chips));
+  }
+
+  const recent = days.slice(-6).reverse();
+  if (recent.length) {
+    const list = document.createElement("div");
+    recent.forEach(d => {
+      const row = h("div", "mini-row");
+      row.appendChild(h("span", "dt", fmtDate(d.date)));
+      row.appendChild(h("span", "v " + (d.day >= 0 ? "pos" : "neg"), fmtPct(d.day)));
+      list.appendChild(row);
+    });
+    root.appendChild(sectionEl("Últimas jornadas", list));
+  }
+
+  if (p.holdings && p.holdings.length) {
+    root.appendChild(sectionEl("Noticias de su cartera", newsRow(p.holdings[0].ticker)));
+  }
+  showModal(root);
+}
+
+// ---- apertura por delegación + cierre (backdrop / ✕ / Esc) ----
+document.addEventListener("click", ev => {
+  const tk = ev.target.closest("[data-ticker]");
+  if (tk && tk.dataset.ticker) { openTicker(tk.dataset.ticker); return; }
+  const pl = ev.target.closest("[data-player]");
+  if (pl && pl.dataset.player) { openPlayer(pl.dataset.player); return; }
+});
+modal.addEventListener("click", ev => { if (ev.target === modal) closeModal(); });
+document.addEventListener("keydown", ev => {
+  if (ev.key === "Escape" && modal.classList.contains("open")) closeModal();
+});
+
+// ---- arrastrar hacia abajo para cerrar (bottom sheet nativo en móvil) ----
+(function () {
+  let startY = 0, dy = 0, dragging = false;
+  const start = e => {
+    if (sheet.scrollTop > 0) { dragging = false; return; }  // deja hacer scroll interno
+    startY = e.touches[0].clientY; dy = 0; dragging = true;
+    sheet.style.transition = "none";
+  };
+  const move = e => {
+    if (!dragging) return;
+    dy = e.touches[0].clientY - startY;
+    if (dy <= 0 || sheet.scrollTop > 0) { sheet.style.transform = ""; sheet.style.opacity = ""; return; }
+    if (e.cancelable) e.preventDefault();       // captura el gesto, no hace scroll
+    sheet.style.transform = "translateY(" + dy + "px)";
+    sheet.style.opacity = String(Math.max(0.5, 1 - dy / 640));
+  };
+  const end = () => {
+    if (!dragging) return;
+    dragging = false;
+    sheet.style.transition = "";
+    if (dy > 110) {                             // umbral: continúa el gesto y cierra
+      sheet.style.transition = "transform .2s ease-in, opacity .2s ease-in";
+      sheet.style.transform = "translateY(100%)"; sheet.style.opacity = "0";
+      clearTimeout(closingTimer);
+      closingTimer = setTimeout(hideModal, 200);
+    } else { sheet.style.transform = ""; sheet.style.opacity = ""; }  // vuelve a su sitio
+  };
+  sheet.addEventListener("touchstart", start, {passive: true});
+  sheet.addEventListener("touchmove", move, {passive: false});
+  sheet.addEventListener("touchend", end);
+  sheet.addEventListener("touchcancel", end);
+  // un toque en la barra de agarre también cierra
+  document.querySelector(".grab").addEventListener("click", closeModal);
+})();
 </script>
 </body>
 </html>
@@ -1078,6 +1494,62 @@ def _allocation_weights(allocation: dict[str, float] | None) -> list[dict]:
     out = [{"ticker": t, "w": round(v / total * 100, 2)}
            for t, v in allocation.items() if v > 0]
     out.sort(key=lambda d: d["w"], reverse=True)
+    return out
+
+
+def _ticker_details(
+    allocation: dict[str, float] | None,
+    holdings: dict[str, dict[str, float]],
+    order: dict[str, int],
+    names: dict[str, str],
+    prices: dict[str, list[tuple]] | None,
+    last_days: int,
+) -> list[dict]:
+    """Detalle público por ticker para la vista de detalle de la web.
+
+    Para cada valor de la cartera agregada de la liga reúne: nombre y dominio
+    (para el logo), peso agregado (%), qué jugadores lo tienen con su peso
+    dentro de *su propia* cartera (solo %), y una mini-serie de precio de cierre
+    de la ventana visible con su variación. Nada de esto expone importes ni
+    operaciones: pesos y precios públicos de mercado.
+    """
+    weights = _allocation_weights(allocation)
+    if not weights:
+        return []
+    prices = prices or {}
+    out = []
+    for item in weights:
+        ticker = item["ticker"]
+        meta = ticker_meta(ticker)
+        holders = []
+        for pid, hv in holdings.items():
+            for x in _allocation_weights(hv):
+                if x["ticker"] == ticker:
+                    holders.append({
+                        "name": names.get(pid, pid),
+                        "slot": order.get(pid, 0),
+                        "w": x["w"],
+                    })
+                    break
+        holders.sort(key=lambda h: h["w"], reverse=True)
+
+        raw = prices.get(ticker) or []
+        window = raw[-last_days:] if last_days else raw
+        series = [{"date": d.isoformat() if hasattr(d, "isoformat") else str(d),
+                   "close": round(float(c), 4)} for d, c in window]
+        ret = None
+        if len(series) >= 2 and series[0]["close"]:
+            ret = round((series[-1]["close"] / series[0]["close"] - 1.0) * 100, 2)
+
+        out.append({
+            "ticker": ticker,
+            "name": meta["name"],
+            "domain": meta["domain"],
+            "w": item["w"],
+            "holders": holders,
+            "prices": series,
+            "ret": ret,
+        })
     return out
 
 
@@ -1182,6 +1654,7 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
                   allocation: dict[str, float] | None = None,
                   holdings: dict[str, dict[str, float]] | None = None,
                   live: dict[str, dict] | None = None,
+                  prices: dict[str, list[tuple]] | None = None,
                   today: date | None = None) -> dict:
     """Datos embebidos en la página. Respeta show_amounts por jugador.
 
@@ -1209,6 +1682,7 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
     # Slot de color por orden alfabético de id: estable aunque cambie el ranking
     order = {p.player_id: i for i, p in enumerate(
         sorted((p for p, _ in computed), key=lambda p: p.player_id))}
+    names = {p.player_id: p.display_name for p, _ in computed}
     for player, series in computed:
         if not series:
             continue
@@ -1242,6 +1716,8 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
         players.append(entry)
     return {"players": players, "pending": pending or [],
             "allocation": _allocation_weights(allocation),
+            "tickers": _ticker_details(allocation, holdings, order, names,
+                                       prices, last_days),
             "monthly": _monthly_bests(computed, today, order),
             "dailyWinners": {
                 "month_name": _MONTHS_ES[today.month - 1],
@@ -1259,11 +1735,12 @@ def write_index(
     allocation: dict[str, float] | None = None,
     holdings: dict[str, dict[str, float]] | None = None,
     live: dict[str, dict] | None = None,
+    prices: dict[str, list[tuple]] | None = None,
 ) -> str:
     payload = json.dumps(
         build_payload(computed, last_days=last_days, pending=pending,
                       allocation=allocation, holdings=holdings, live=live,
-                      today=today or date.today()),
+                      prices=prices, today=today or date.today()),
         ensure_ascii=False)
     payload = payload.replace("</", "<\\/")  # nunca cerrar el <script> desde los datos
     html = (_TEMPLATE

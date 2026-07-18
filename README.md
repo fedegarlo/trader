@@ -16,8 +16,26 @@ cada día de mercado por una GitHub Action:
 ## Ver en web
 
 La página es estática y autocontenida (tabla de clasificación + gráfica de
-rentabilidad acumulada por jugador + detalle diario). Para activarla, una
-sola vez:
+rentabilidad acumulada por jugador + detalle diario). Además, al **tocar un
+jugador** (fila del ranking, leyenda o su cartera) o un **ticker** (leyenda de
+cualquier tarta de cartera) se abre una **ficha de detalle**:
+
+- **Detalle del jugador**: estadísticas (acumulado, mejor y peor día, racha,
+  jornadas), rentabilidad acumulada, su cartera con los logos de cada valor y
+  enlaces a noticias.
+- **Detalle del ticker**: logo y nombre de la empresa, peso en la liga, quién
+  lo tiene, la variación de precio de la ventana con su mini-gráfica y enlaces
+  a noticias (Yahoo Finance, Google News, Finviz).
+
+En móvil la ficha aparece como una **hoja inferior** (bottom sheet) a lo ancho
+de la pantalla, con barra de agarre: se cierra deslizándola hacia abajo, tocando
+la barra, con la ✕ o pulsando fuera. En pantallas anchas se centra como diálogo.
+
+Los logos se piden en tiempo de vista a Clearbit (por dominio) con respaldo a
+un monograma de color si el servicio no responde, y las noticias son enlaces de
+búsqueda por símbolo: la página sigue sin exponer importes ni operaciones.
+
+Para activarla, una sola vez:
 
 1. Ve a **Settings → Pages** del repositorio.
 2. En *Build and deployment*, elige **Deploy from a branch**,
@@ -136,7 +154,7 @@ La frase de paso se pide por prompt, o se toma de `TRADER_KEY` /
 ## Estructura
 
 ```
-trader/                     código (parser Revolut, cartera, precios, cifrado, informes)
+trader/                     código (parser Revolut, cartera, precios, cifrado, informes, metadatos de tickers)
 players/<id>/               configuración pública + extracto cifrado de cada jugador
 data/prices/                caché de precios de cierre (se versiona; reproducible)
 data/public/                series diarias públicas en JSON (para gráficas)

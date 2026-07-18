@@ -15,6 +15,7 @@ import getpass
 import json
 import os
 import sys
+from datetime import date, timedelta
 
 from . import inbox as inbox_mod
 from . import players as players_mod
@@ -125,9 +126,21 @@ def cmd_ranking(args: argparse.Namespace) -> None:
             if prov is not None:
                 live[player.player_id] = prov
 
+    # Mini-serie de precio por ticker (solo caché, sin descargar) para la
+    # gráfica del detalle del ticker en la web. Son cierres públicos de mercado.
+    price_history: dict[str, list] = {}
+    if allocation:
+        end = date.today()
+        start = end - timedelta(days=60)
+        for ticker in allocation:
+            hist = prices.history(ticker, start, end)
+            if hist:
+                price_history[ticker] = hist
+
     content = report_mod.write_ranking(computed, out_path=args.out)
     webpage.write_index(computed, out_path=args.html_out, pending=pending,
-                        allocation=allocation, holdings=holdings, live=live)
+                        allocation=allocation, holdings=holdings, live=live,
+                        prices=price_history)
     with open(args.pending_out, "w", encoding="utf-8") as fh:
         json.dump(pending, fh, ensure_ascii=False)
     print(content)
