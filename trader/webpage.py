@@ -516,7 +516,7 @@ function paintWidgets() {
   const best = [...DATA.players].sort((a, b) =>
     (lastOf(b).day - lastOf(a).day) || (lastOf(b).cum - lastOf(a).cum))[0];
   const bd = lastOf(best);
-  document.getElementById("best-date").textContent = fmtDate(bd.date);
+  document.getElementById("best-date").textContent = bd.date.slice(5).split("-").reverse().join("/");
   const bv = document.getElementById("best-val");
   bv.textContent = fmtPct(bd.day); bv.className = "num " + (bd.day >= 0 ? "pos" : "neg");
   const bn = document.getElementById("best-name");
