@@ -165,7 +165,12 @@ _TEMPLATE = """<!doctype html>
   .wsub { color: var(--ink-2); font-size: 13.5px; font-weight: 600; margin-top: 4px; }
   .bestname { color: var(--ink); font-size: 18px; font-weight: 700; margin-top: 8px; display: flex; align-items: center; gap: 6px; }
   .bestname .medal { font-size: 20px; line-height: 1; }
+  .winnername { color: var(--ink); font-size: clamp(20px, 5.5vw, 24px); font-weight: 800;
+                letter-spacing: -0.02em; line-height: 1.15; margin-top: 6px;
+                display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .winnername .trophy { font-size: 22px; line-height: 1; }
   .wsub.muted { color: var(--muted); font-weight: 500; }
+  .wsub.treat { color: var(--ink-2); font-weight: 700; margin-top: 6px; }
   .sparkwrap { margin: 12px -18px 0; height: 116px; }
   .sparkwrap.sm { height: 58px; margin-top: 10px; }
   svg.spark { display: block; width: 100%; height: 100%; }
@@ -326,15 +331,16 @@ _TEMPLATE = """<!doctype html>
     </div>
     <div class="wrow" id="month-row" style="display:none">
       <section class="card widget" id="month-cur-card">
-        <div class="wlabel">Mejor de este mes · <span id="month-cur-name"></span></div>
+        <div class="wlabel">Ganador de <span id="month-cur-name"></span></div>
+        <div class="winnername"><span id="month-cur-player"></span><span class="trophy">🏆</span></div>
         <div class="wbig sm"><span class="num" id="month-cur-val"></span></div>
-        <div class="wsub" id="month-cur-player"></div>
+        <div class="wsub treat" id="month-cur-note"></div>
         <div class="sparkwrap sm" id="month-cur-spark"></div>
       </section>
       <section class="card widget" id="month-prev-card">
-        <div class="wlabel">Mejor del mes pasado · <span id="month-prev-name"></span></div>
+        <div class="wlabel">Ganador de <span id="month-prev-name"></span></div>
+        <div class="winnername"><span id="month-prev-player"></span><span class="trophy">🏆</span></div>
         <div class="wbig sm"><span class="num" id="month-prev-val"></span></div>
-        <div class="wsub" id="month-prev-player"></div>
         <div class="sparkwrap sm" id="month-prev-spark"></div>
       </section>
     </div>
@@ -553,6 +559,8 @@ function paintMonthly() {
     val.textContent = fmtPct(info.value);
     val.className = "num " + (info.value >= 0 ? "pos" : "neg");
     document.getElementById(key + "-player").textContent = info.name;
+    const note = document.getElementById(key + "-note");
+    if (note) note.textContent = "🍽️ Le toca invitar a comer";
     document.getElementById(key + "-spark").innerHTML =
       sparkSVG(info.spark, info.value >= 0 ? upC : downC, spark0, {baseline0: true});
     return true;
