@@ -554,7 +554,8 @@ _TEMPLATE = """<!doctype html>
 <footer>
   Rentabilidad diaria con Dietz simple (ingresos y retiradas no cuentan como
   ganancia); acumulado por composición geométrica (time-weighted return).
-  Datos: extractos de Revolut cifrados · precios de cierre de Yahoo Finance.
+  Datos: extractos de Revolut cifrados · precios de cierre de Yahoo Finance ·
+  logos de <a href="https://logo.dev" target="_blank" rel="noopener noreferrer">Logo.dev</a>.
   El indicador «en vivo» valora hoy a precio actual y es provisional: no cuenta
   para la clasificación oficial.
 </footer>
@@ -1249,15 +1250,15 @@ function monoEl(text, size, bg) {
 }
 // Token publicable de logo.dev (pensado para el frontend; puede ir en el HTML).
 const LOGO_TOKEN = "pk_cgMPtdfzT5GGEORKN4rMDA";
-// Logo de empresa (por dominio) con respaldo a monograma si la imagen falla.
+// Logo de empresa (por ticker) con respaldo a monograma si la imagen falla.
 function tickerLogoEl(t, size) {
   const bg = badgeColor(t.ticker);
-  if (!t.domain) return monoEl(t.ticker, size, bg);
+  if (!t.ticker) return monoEl(t.ticker, size, bg);
   const img = document.createElement("img");
   img.className = "logo"; img.width = img.height = size; img.alt = "";
   img.loading = "lazy"; img.referrerPolicy = "no-referrer";
-  img.src = "https://img.logo.dev/" + t.domain + "?token=" + LOGO_TOKEN +
-    "&size=" + (size * 2) + "&format=png";
+  img.src = "https://img.logo.dev/ticker/" + encodeURIComponent(t.ticker) +
+    "?token=" + LOGO_TOKEN + "&size=" + size + "&retina=true&format=png";
   img.onerror = () => img.replaceWith(monoEl(t.ticker, size, bg));
   return img;
 }
@@ -1486,7 +1487,8 @@ function openTicker(sym) {
 
   root.appendChild(sectionEl("Noticias", newsRow(t.ticker)));
   root.appendChild(h("div", "mnote",
-    "Logo: logo.dev · precios y consenso de analistas: Yahoo Finance · " +
+    'Logo: <a href="https://logo.dev" target="_blank" rel="noopener noreferrer">logo.dev</a> · ' +
+    "precios y consenso de analistas: Yahoo Finance · " +
     "informativo, no es una recomendación de inversión."));
   showModal(root);
 }
