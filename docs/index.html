@@ -281,7 +281,7 @@
     </section>
     <div class="wrow">
       <section class="card widget" id="best-card">
-        <div class="wlabel">Mejor del día</div>
+        <div class="wlabel">Mejor del día · <span id="best-date"></span></div>
         <div class="wbig"><span class="num" id="best-val"></span></div>
         <div class="bestname" id="best-name"></div>
       </section>
@@ -363,7 +363,7 @@
   para la clasificación oficial.
 </footer>
 <script>
-const DATA = {"players": [{"id": "ana", "name": "Ana", "slot": 0, "amounts": false, "since": "2026-07-14", "days": [{"date": "2026-07-14", "day": 1.5255, "cum": 1.5255}, {"date": "2026-07-15", "day": 0.0299, "cum": 1.5559}, {"date": "2026-07-16", "day": -2.6311, "cum": -1.1161}, {"date": "2026-07-17", "day": -2.1399, "cum": -3.2322}, {"date": "2026-07-18", "day": 0.0, "cum": -3.2322}], "holdings": [{"ticker": "META", "w": 36.18}, {"ticker": "PLTR", "w": 33.36}, {"ticker": "SMCI", "w": 30.47}], "live": {"cum": -3.2322, "day": -0.0}}, {"id": "fede", "name": "Fede", "slot": 1, "amounts": false, "since": "2026-07-14", "days": [{"date": "2026-07-14", "day": 1.7906, "cum": 1.7906}, {"date": "2026-07-15", "day": -4.8532, "cum": -3.1496}, {"date": "2026-07-16", "day": -4.961, "cum": -7.9543}, {"date": "2026-07-17", "day": -0.2142, "cum": -8.1514}, {"date": "2026-07-18", "day": 0.0, "cum": -8.1514}], "holdings": [{"ticker": "TSM", "w": 41.06}, {"ticker": "MU", "w": 20.53}, {"ticker": "NVDA", "w": 19.38}, {"ticker": "WDC", "w": 19.03}], "live": {"cum": -8.1514, "day": 0.0}}], "pending": [], "allocation": [{"ticker": "META", "w": 21.25}, {"ticker": "PLTR", "w": 19.59}, {"ticker": "SMCI", "w": 17.9}, {"ticker": "TSM", "w": 16.94}, {"ticker": "MU", "w": 8.47}, {"ticker": "NVDA", "w": 8.0}, {"ticker": "WDC", "w": 7.85}], "monthly": {"current": {"name": "Ana", "value": -3.23, "slot": 0, "month_name": "julio", "month_year": 2026, "spark": [1.5255, 1.5559, -1.1161, -3.2322, -3.2322]}, "previous": null}, "dailyWinners": {"month_name": "julio", "month_year": 2026, "rows": [{"date": "2026-07-18", "names": ["Ana", "Fede"], "slot": null, "value": 0.0}, {"date": "2026-07-17", "names": ["Fede"], "slot": 1, "value": -0.21}, {"date": "2026-07-16", "names": ["Ana"], "slot": 0, "value": -2.63}, {"date": "2026-07-15", "names": ["Ana"], "slot": 0, "value": 0.03}, {"date": "2026-07-14", "names": ["Fede"], "slot": 1, "value": 1.79}]}};
+const DATA = {"players": [{"id": "ana", "name": "Ana", "slot": 0, "amounts": false, "since": "2026-07-14", "days": [{"date": "2026-07-14", "day": 1.5255, "cum": 1.5255}, {"date": "2026-07-15", "day": 0.0299, "cum": 1.5559}, {"date": "2026-07-16", "day": -2.6311, "cum": -1.1161}, {"date": "2026-07-17", "day": -2.1399, "cum": -3.2322}], "holdings": [{"ticker": "META", "w": 36.18}, {"ticker": "PLTR", "w": 33.36}, {"ticker": "SMCI", "w": 30.47}], "live": {"cum": -3.2322, "day": -0.0}}, {"id": "fede", "name": "Fede", "slot": 1, "amounts": false, "since": "2026-07-14", "days": [{"date": "2026-07-14", "day": 1.7906, "cum": 1.7906}, {"date": "2026-07-15", "day": -4.8532, "cum": -3.1496}, {"date": "2026-07-16", "day": -4.961, "cum": -7.9543}, {"date": "2026-07-17", "day": -0.2142, "cum": -8.1514}], "holdings": [{"ticker": "TSM", "w": 41.06}, {"ticker": "MU", "w": 20.53}, {"ticker": "NVDA", "w": 19.38}, {"ticker": "WDC", "w": 19.03}], "live": {"cum": -8.1514, "day": 0.0}}], "pending": [], "allocation": [{"ticker": "META", "w": 21.25}, {"ticker": "PLTR", "w": 19.59}, {"ticker": "SMCI", "w": 17.9}, {"ticker": "TSM", "w": 16.94}, {"ticker": "MU", "w": 8.47}, {"ticker": "NVDA", "w": 8.0}, {"ticker": "WDC", "w": 7.85}], "monthly": {"current": {"name": "Ana", "value": -3.23, "slot": 0, "month_name": "julio", "month_year": 2026, "spark": [1.5255, 1.5559, -1.1161, -3.2322]}, "previous": null}, "dailyWinners": {"month_name": "julio", "month_year": 2026, "rows": [{"date": "2026-07-17", "names": ["Fede"], "slot": 1, "value": -0.21}, {"date": "2026-07-16", "names": ["Ana"], "slot": 0, "value": -2.63}, {"date": "2026-07-15", "names": ["Ana"], "slot": 0, "value": 0.03}, {"date": "2026-07-14", "names": ["Fede"], "slot": 1, "value": 1.79}]}};
 // ---- enlace de envío de posiciones por correo ----
 (() => {
   const link = document.getElementById("upload-mail");
@@ -481,9 +481,12 @@ function paintWidgets() {
   document.getElementById("hero-spark").innerHTML =
     sparkSVG(leader.days.map(d => d.cum), lc.cum >= 0 ? upC : downC, "hero", {baseline0: true});
 
-  // mejor del día
-  const best = [...DATA.players].sort((a, b) => lastOf(b).day - lastOf(a).day)[0];
+  // mejor del día (los fines de semana la última jornada ya es la del viernes;
+  // si hay empate en el % del día, desempata la rentabilidad acumulada)
+  const best = [...DATA.players].sort((a, b) =>
+    (lastOf(b).day - lastOf(a).day) || (lastOf(b).cum - lastOf(a).cum))[0];
   const bd = lastOf(best);
+  document.getElementById("best-date").textContent = bd.date.slice(5).split("-").reverse().join("/");
   const bv = document.getElementById("best-val");
   bv.textContent = fmtPct(bd.day); bv.className = "num " + (bd.day >= 0 ? "pos" : "neg");
   const bn = document.getElementById("best-name");
