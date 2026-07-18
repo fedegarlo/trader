@@ -238,10 +238,116 @@
   .overx table { white-space: nowrap; }
   footer { color: var(--muted); font-size: 12.5px; max-width: 760px; margin: 20px auto 0; padding: 0 6px; }
 
+  /* elementos abribles (ticker / jugador) */
+  .clk { cursor: pointer; }
+  .dl.clk:hover .tk, tr.clk:hover .nm, tr.clk:hover td.name { color: var(--accent); }
+  .legend span.clk:hover { color: var(--accent); }
+
+  /* logo / monograma */
+  .logo, .mono {
+    flex: none; border-radius: 9px; display: grid; place-items: center;
+    object-fit: cover; background: var(--surface-2); overflow: hidden;
+  }
+  .mono { color: #fff; font-weight: 800; letter-spacing: -0.02em; line-height: 1;
+          border-radius: 999px; }
+  .logo { border: 1px solid var(--hair); }
+
+  /* overlay de detalle */
+  .modal {
+    position: fixed; inset: 0; z-index: 50; display: none;
+    align-items: flex-end; justify-content: center;
+    background: color-mix(in srgb, #05040a 52%, transparent);
+    -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+    padding: 0;
+  }
+  .modal.open { display: flex; }
+  .sheet {
+    position: relative;
+    width: 100%; max-width: 620px; max-height: 92vh; max-height: 92dvh;
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain; touch-action: pan-y; will-change: transform;
+    background: var(--card-solid);
+    border: 1px solid var(--ring); border-bottom: none;
+    border-radius: 22px 22px 0 0;
+    padding: calc(6px + env(safe-area-inset-top)) 18px
+             calc(24px + env(safe-area-inset-bottom));
+    box-shadow: 0 -18px 50px -20px rgba(5,4,10,0.6);
+    animation: sheetin 0.30s cubic-bezier(0.2,0.85,0.25,1);
+  }
+  @keyframes sheetin { from { transform: translateY(100%); } to { transform: none; } }
+  .sheet.closing { animation: sheetout 0.22s ease-in forwards; }
+  @keyframes sheetout { from { transform: translateY(0); } to { transform: translateY(100%); } }
+  /* zona de agarre: ocupa el ancho para poder arrastrar y cerrar de un toque */
+  .grab { position: sticky; top: 0; z-index: 2; margin: 0 -18px 8px; padding: 9px 0 7px;
+          background: var(--card-solid); cursor: grab; touch-action: none; }
+  .grab::before { content: ""; display: block; width: 40px; height: 5px; border-radius: 999px;
+                  background: var(--baseline); opacity: 0.5; margin: 0 auto; }
+  .mhead { display: flex; align-items: center; gap: 13px; padding-right: 42px; }
+  .mhead .mtitle { min-width: 0; }
+  .mhead .mtitle .t1 { font-size: 20px; font-weight: 800; letter-spacing: -0.02em;
+                       display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .mhead .mtitle .t2 { color: var(--ink-2); font-size: 13.5px; font-weight: 600; margin-top: 2px; }
+  .mclose {
+    position: absolute; z-index: 4;
+    top: calc(14px + env(safe-area-inset-top)); right: 16px;
+    flex: none; border: 0; cursor: pointer; color: var(--ink-2);
+    background: var(--surface-2); width: 34px; height: 34px; border-radius: 999px;
+    font-size: 18px; line-height: 1; display: grid; place-items: center;
+  }
+  .mbadge { font-size: 12px; font-weight: 800; padding: 2px 9px; border-radius: 999px;
+            background: var(--up-soft); color: var(--up); }
+  .mbadge.neg { background: var(--down-soft); color: var(--down); }
+  .mbadge.rank { background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--accent); }
+
+  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; margin-top: 16px; }
+  .tile { background: var(--surface-2); border: 1px solid var(--hair); border-radius: 15px;
+          padding: 11px 12px; min-width: 0; }
+  .tile .k { color: var(--muted); font-size: 11.5px; font-weight: 600; }
+  .tile .v { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; margin-top: 3px;
+             font-variant-numeric: tabular-nums; }
+  .msec { margin-top: 18px; }
+  .msec > .h { font-size: 13px; font-weight: 700; color: var(--ink-2); margin-bottom: 9px;
+               display: flex; align-items: center; gap: 7px; }
+  .mspark { height: 120px; margin: 0 -4px; }
+  .holder-row, .mini-row { display: flex; align-items: center; gap: 10px; padding: 9px 4px;
+                           border-top: 1px solid var(--hair); font-size: 14px; }
+  .holder-row:first-child, .mini-row:first-child { border-top: none; }
+  .holder-row .nm { font-weight: 700; display: inline-flex; align-items: center; gap: 8px; }
+  .holder-row .w, .mini-row .v { margin-left: auto; font-weight: 700;
+                                 font-variant-numeric: tabular-nums; }
+  .mini-row .dt { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+  .news { display: flex; flex-wrap: wrap; gap: 8px; }
+  .news a {
+    display: inline-flex; align-items: center; gap: 6px; text-decoration: none;
+    font-size: 13px; font-weight: 700; color: var(--ink);
+    background: var(--surface-2); border: 1px solid var(--hair);
+    padding: 8px 12px; border-radius: 12px;
+  }
+  .news a:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--hair)); color: var(--accent); }
+  .news a .ext { color: var(--muted); font-size: 11px; }
+  .mnote { color: var(--muted); font-size: 11.5px; margin-top: 14px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip-tk { display: inline-flex; align-items: center; gap: 7px; cursor: pointer;
+             background: var(--surface-2); border: 1px solid var(--hair);
+             padding: 6px 11px 6px 6px; border-radius: 999px; font-weight: 700; font-size: 13px; }
+  .chip-tk:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--hair)); }
+  .chip-tk .w { color: var(--muted); font-weight: 600; }
+
   @media (min-width: 620px) {
     main { gap: 14px; }
     .card { padding: 22px; }
     .sparkwrap { margin: 14px -22px 0; }
+    .modal { align-items: center; padding: 20px; }
+    .sheet { border-radius: 24px; border-bottom: 1px solid var(--ring);
+             padding-top: 18px; touch-action: auto;
+             animation: popin 0.22s cubic-bezier(0.2,0.85,0.25,1); }
+    .sheet.closing { animation: none; opacity: 0; }
+    .mclose { top: 18px; }
+    .grab { display: none; }
+  }
+  @keyframes popin { from { transform: translateY(14px); opacity: 0.4; } to { transform: none; opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) {
+    .sheet, .sheet.closing { animation: none; }
   }
 </style>
 </head>
@@ -361,6 +467,12 @@
     <div id="detail" style="margin-top:4px"></div>
   </section>
 </main>
+<div class="modal" id="modal" aria-hidden="true">
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Detalle">
+    <div class="grab"></div>
+    <div id="modal-body"></div>
+  </div>
+</div>
 <footer>
   Rentabilidad diaria con Dietz simple (ingresos y retiradas no cuentan como
   ganancia); acumulado por composición geométrica (time-weighted return).
@@ -369,7 +481,7 @@
   para la clasificación oficial.
 </footer>
 <script>
-const DATA = {"players": [{"id": "ana", "name": "Ana", "slot": 0, "amounts": false, "since": "2026-07-14", "days": [{"date": "2026-07-14", "day": 1.5255, "cum": 1.5255}, {"date": "2026-07-15", "day": 0.0299, "cum": 1.5559}, {"date": "2026-07-16", "day": -2.6311, "cum": -1.1161}, {"date": "2026-07-17", "day": -2.1399, "cum": -3.2322}], "holdings": [{"ticker": "META", "w": 36.18}, {"ticker": "PLTR", "w": 33.36}, {"ticker": "SMCI", "w": 30.47}], "live": {"cum": -3.2322, "day": -0.0}}, {"id": "fede", "name": "Fede", "slot": 1, "amounts": false, "since": "2026-07-14", "days": [{"date": "2026-07-14", "day": 1.7906, "cum": 1.7906}, {"date": "2026-07-15", "day": -4.8532, "cum": -3.1496}, {"date": "2026-07-16", "day": -4.961, "cum": -7.9543}, {"date": "2026-07-17", "day": -0.2142, "cum": -8.1514}], "holdings": [{"ticker": "TSM", "w": 41.06}, {"ticker": "MU", "w": 20.53}, {"ticker": "NVDA", "w": 19.38}, {"ticker": "WDC", "w": 19.03}], "live": {"cum": -8.1514, "day": 0.0}}], "pending": [], "allocation": [{"ticker": "META", "w": 21.25}, {"ticker": "PLTR", "w": 19.59}, {"ticker": "SMCI", "w": 17.9}, {"ticker": "TSM", "w": 16.94}, {"ticker": "MU", "w": 8.47}, {"ticker": "NVDA", "w": 8.0}, {"ticker": "WDC", "w": 7.85}], "monthly": {"current": {"name": "Ana", "value": -3.23, "slot": 0, "month_name": "julio", "month_year": 2026, "spark": [1.5255, 1.5559, -1.1161, -3.2322]}, "previous": null}, "dailyWinners": {"month_name": "julio", "month_year": 2026, "rows": [{"date": "2026-07-17", "names": ["Fede"], "slot": 1, "value": -0.21}, {"date": "2026-07-16", "names": ["Ana"], "slot": 0, "value": -2.63}, {"date": "2026-07-15", "names": ["Ana"], "slot": 0, "value": 0.03}, {"date": "2026-07-14", "names": ["Fede"], "slot": 1, "value": 1.79}]}};
+const DATA = {"players": [{"id": "ana", "name": "Ana", "slot": 0, "amounts": false, "since": "2026-07-14", "days": [{"date": "2026-07-14", "day": 1.5255, "cum": 1.5255}, {"date": "2026-07-15", "day": 0.0299, "cum": 1.5559}, {"date": "2026-07-16", "day": -2.6311, "cum": -1.1161}, {"date": "2026-07-17", "day": -2.1399, "cum": -3.2322}], "holdings": [{"ticker": "META", "w": 36.18}, {"ticker": "PLTR", "w": 33.36}, {"ticker": "SMCI", "w": 30.47}], "live": {"cum": -3.2322, "day": -0.0}}, {"id": "fede", "name": "Fede", "slot": 1, "amounts": false, "since": "2026-07-14", "days": [{"date": "2026-07-14", "day": 1.7906, "cum": 1.7906}, {"date": "2026-07-15", "day": -4.8532, "cum": -3.1496}, {"date": "2026-07-16", "day": -4.961, "cum": -7.9543}, {"date": "2026-07-17", "day": -0.2142, "cum": -8.1514}], "holdings": [{"ticker": "TSM", "w": 41.06}, {"ticker": "MU", "w": 20.53}, {"ticker": "NVDA", "w": 19.38}, {"ticker": "WDC", "w": 19.03}], "live": {"cum": -8.1514, "day": 0.0}}], "pending": [], "allocation": [{"ticker": "META", "w": 21.25}, {"ticker": "PLTR", "w": 19.59}, {"ticker": "SMCI", "w": 17.9}, {"ticker": "TSM", "w": 16.94}, {"ticker": "MU", "w": 8.47}, {"ticker": "NVDA", "w": 8.0}, {"ticker": "WDC", "w": 7.85}], "tickers": [{"ticker": "META", "name": "Meta Platforms", "domain": "meta.com", "w": 21.25, "holders": [{"name": "Ana", "slot": 0, "w": 36.18}], "prices": [{"date": "2026-07-07", "close": 615.58}, {"date": "2026-07-08", "close": 603.12}, {"date": "2026-07-09", "close": 631.48}, {"date": "2026-07-10", "close": 669.21}, {"date": "2026-07-13", "close": 656.73}, {"date": "2026-07-14", "close": 661.04}, {"date": "2026-07-15", "close": 681.31}, {"date": "2026-07-16", "close": 664.54}, {"date": "2026-07-17", "close": 646.01}], "ret": 4.94}, {"ticker": "PLTR", "name": "Palantir", "domain": "palantir.com", "w": 19.59, "holders": [{"name": "Ana", "slot": 0, "w": 33.36}], "prices": [{"date": "2026-07-07", "close": 134.37}, {"date": "2026-07-08", "close": 132.22}, {"date": "2026-07-09", "close": 129.04}, {"date": "2026-07-10", "close": 126.79}, {"date": "2026-07-13", "close": 130.04}, {"date": "2026-07-14", "close": 133.72}, {"date": "2026-07-15", "close": 133.76}, {"date": "2026-07-16", "close": 134.44}, {"date": "2026-07-17", "close": 132.38}], "ret": -1.48}, {"ticker": "SMCI", "name": "Super Micro Computer", "domain": "supermicro.com", "w": 17.9, "holders": [{"name": "Ana", "slot": 0, "w": 30.47}], "prices": [{"date": "2026-07-07", "close": 26.25}, {"date": "2026-07-08", "close": 28.17}, {"date": "2026-07-09", "close": 28.24}, {"date": "2026-07-10", "close": 28.31}, {"date": "2026-07-13", "close": 27.66}, {"date": "2026-07-14", "close": 27.65}, {"date": "2026-07-15", "close": 26.89}, {"date": "2026-07-16", "close": 24.68}, {"date": "2026-07-17", "close": 24.18}], "ret": -7.89}, {"ticker": "TSM", "name": "Taiwan Semiconductor", "domain": "tsmc.com", "w": 16.94, "holders": [{"name": "Fede", "slot": 1, "w": 41.06}], "prices": [{"date": "2026-06-24", "close": 440.83}, {"date": "2026-06-25", "close": 434.99}, {"date": "2026-06-26", "close": 432.35}, {"date": "2026-06-29", "close": 455.1}, {"date": "2026-06-30", "close": 477.57}, {"date": "2026-07-01", "close": 444.23}, {"date": "2026-07-02", "close": 434.16}, {"date": "2026-07-06", "close": 451.79}, {"date": "2026-07-07", "close": 432.57}, {"date": "2026-07-08", "close": 436.98}, {"date": "2026-07-09", "close": 436.96}, {"date": "2026-07-10", "close": 434.11}, {"date": "2026-07-13", "close": 421.58}, {"date": "2026-07-14", "close": 420.39}, {"date": "2026-07-15", "close": 419.48}, {"date": "2026-07-16", "close": 409.74}, {"date": "2026-07-17", "close": 398.37}], "ret": -9.63}, {"ticker": "MU", "name": "Micron Technology", "domain": "micron.com", "w": 8.47, "holders": [{"name": "Fede", "slot": 1, "w": 20.53}], "prices": [{"date": "2026-06-24", "close": 1048.51}, {"date": "2026-06-25", "close": 1213.5601}, {"date": "2026-06-26", "close": 1132.33}, {"date": "2026-06-29", "close": 1145.28}, {"date": "2026-06-30", "close": 1154.29}, {"date": "2026-07-01", "close": 1032.28}, {"date": "2026-07-02", "close": 975.56}, {"date": "2026-07-06", "close": 984.75}, {"date": "2026-07-07", "close": 938.38}, {"date": "2026-07-08", "close": 948.8}, {"date": "2026-07-09", "close": 991.64}, {"date": "2026-07-10", "close": 979.3}, {"date": "2026-07-13", "close": 937.0}, {"date": "2026-07-14", "close": 983.12}, {"date": "2026-07-15", "close": 904.28}, {"date": "2026-07-16", "close": 853.2}, {"date": "2026-07-17", "close": 848.95}], "ret": -19.03}, {"ticker": "NVDA", "name": "NVIDIA", "domain": "nvidia.com", "w": 8.0, "holders": [{"name": "Fede", "slot": 1, "w": 19.38}], "prices": [{"date": "2026-06-04", "close": 218.66}, {"date": "2026-06-05", "close": 205.1}, {"date": "2026-06-08", "close": 208.64}, {"date": "2026-06-09", "close": 208.19}, {"date": "2026-06-10", "close": 200.42}, {"date": "2026-06-11", "close": 204.87}, {"date": "2026-06-12", "close": 205.19}, {"date": "2026-06-15", "close": 212.45}, {"date": "2026-06-16", "close": 207.41}, {"date": "2026-06-17", "close": 204.65}, {"date": "2026-06-18", "close": 210.69}, {"date": "2026-06-22", "close": 208.65}, {"date": "2026-06-23", "close": 200.04}, {"date": "2026-06-24", "close": 199.0}, {"date": "2026-06-25", "close": 195.74}, {"date": "2026-06-26", "close": 192.53}, {"date": "2026-06-29", "close": 194.97}, {"date": "2026-06-30", "close": 200.09}, {"date": "2026-07-01", "close": 197.58}, {"date": "2026-07-02", "close": 194.83}, {"date": "2026-07-06", "close": 195.55}, {"date": "2026-07-07", "close": 196.93}, {"date": "2026-07-08", "close": 204.12}, {"date": "2026-07-09", "close": 202.78}, {"date": "2026-07-10", "close": 210.96}, {"date": "2026-07-13", "close": 203.53}, {"date": "2026-07-14", "close": 211.8}, {"date": "2026-07-15", "close": 212.5}, {"date": "2026-07-16", "close": 207.4}, {"date": "2026-07-17", "close": 202.81}], "ret": -7.25}, {"ticker": "WDC", "name": "Western Digital", "domain": "westerndigital.com", "w": 7.85, "holders": [{"name": "Fede", "slot": 1, "w": 19.03}], "prices": [{"date": "2026-06-04", "close": 575.5}, {"date": "2026-06-05", "close": 511.72}, {"date": "2026-06-08", "close": 526.93}, {"date": "2026-06-09", "close": 517.72}, {"date": "2026-06-10", "close": 490.09}, {"date": "2026-06-11", "close": 529.29}, {"date": "2026-06-12", "close": 562.93}, {"date": "2026-06-15", "close": 653.53}, {"date": "2026-06-16", "close": 681.08}, {"date": "2026-06-17", "close": 712.13}, {"date": "2026-06-18", "close": 746.23}, {"date": "2026-06-22", "close": 732.62}, {"date": "2026-06-23", "close": 670.75}, {"date": "2026-06-24", "close": 643.83}, {"date": "2026-06-25", "close": 675.39}, {"date": "2026-06-26", "close": 586.45}, {"date": "2026-06-29", "close": 651.88}, {"date": "2026-06-30", "close": 638.72}, {"date": "2026-07-01", "close": 598.37}, {"date": "2026-07-02", "close": 539.0}, {"date": "2026-07-06", "close": 577.46}, {"date": "2026-07-07", "close": 532.1}, {"date": "2026-07-08", "close": 550.3}, {"date": "2026-07-09", "close": 578.05}, {"date": "2026-07-10", "close": 582.59}, {"date": "2026-07-13", "close": 555.55}, {"date": "2026-07-14", "close": 563.32}, {"date": "2026-07-15", "close": 513.84}, {"date": "2026-07-16", "close": 466.81}, {"date": "2026-07-17", "close": 477.22}], "ret": -17.08}], "monthly": {"current": {"name": "Ana", "value": -3.23, "slot": 0, "month_name": "julio", "month_year": 2026, "spark": [1.5255, 1.5559, -1.1161, -3.2322]}, "previous": null}, "dailyWinners": {"month_name": "julio", "month_year": 2026, "rows": [{"date": "2026-07-17", "names": ["Fede"], "slot": 1, "value": -0.21}, {"date": "2026-07-16", "names": ["Ana"], "slot": 0, "value": -2.63}, {"date": "2026-07-15", "names": ["Ana"], "slot": 0, "value": 0.03}, {"date": "2026-07-14", "names": ["Fede"], "slot": 1, "value": 1.79}]}};
 // ---- enlace de envío de posiciones por correo ----
 (() => {
   const link = document.getElementById("upload-mail");
@@ -405,6 +517,10 @@ const fmtPct = v => (v > 0 ? "+" : "") + v.toFixed(2) + "%";
 const fmtDate = iso => { const [y,m,d] = iso.split("-"); return d + "/" + m + "/" + y.slice(2); };
 const lastOf = p => p.days[p.days.length - 1];
 
+// ---- índices para las vistas de detalle (ticker / jugador) ----
+const TICKERS = {}; (DATA.tickers || []).forEach(t => TICKERS[t.ticker] = t);
+const PLAYERS = {}; DATA.players.forEach(p => PLAYERS[p.id] = p);
+
 // ---- clasificación (ordenada por acumulado; el color sigue al jugador) ----
 const ranked = [...DATA.players].sort((a, b) => lastOf(b).cum - lastOf(a).cum);
 const MEDALS = ["🥇","🥈","🥉"];
@@ -420,6 +536,7 @@ const MEDALS = ["🥇","🥈","🥉"];
   ranked.forEach((p, i) => {
     const last = lastOf(p);
     const tr = t.insertRow();
+    tr.classList.add("clk"); tr.dataset.player = p.id;
     tr.appendChild(mk("td", "rank", MEDALS[i] || String(i + 1)));
     const name = mk("td", "name");
     const key = mk("span", "key"); key.style.background = colorOf(p);
@@ -631,7 +748,9 @@ function donutSVG(items, count, size) {
 function donutLegendHTML(items) {
   return '<ul class="donut-legend">' + items.map(x => {
     const col = x.other ? css("--muted") : badgeColor(x.ticker);
-    return '<li class="dl"><span class="dot" style="background:' + col + '"></span>' +
+    const openable = !x.other && TICKERS[x.ticker];
+    const attrs = openable ? ' class="dl clk" data-ticker="' + x.ticker + '"' : ' class="dl"';
+    return '<li' + attrs + '><span class="dot" style="background:' + col + '"></span>' +
       '<span class="tk">' + x.ticker + '</span><span class="w">' + fmtW(x.w) + '</span></li>';
   }).join("") + '</ul>';
 }
@@ -666,7 +785,8 @@ function paintWallets() {
   box.innerHTML = "";
   withHoldings.forEach(p => {
     const wrap = document.createElement("div"); wrap.className = "wallet";
-    const head = document.createElement("div"); head.className = "whead";
+    const head = document.createElement("div"); head.className = "whead clk";
+    head.dataset.player = p.id;
     const key = document.createElement("span"); key.className = "key";
     key.style.background = colorOf(p);
     head.appendChild(key); head.appendChild(document.createTextNode(p.name));
@@ -945,6 +1065,7 @@ window.addEventListener("resize", () => {
   const lg = document.getElementById("legend");
   if (DATA.players.length >= 2) DATA.players.forEach(p => {
     const s = document.createElement("span");
+    s.className = "clk"; s.dataset.player = p.id;
     const key = document.createElement("span");
     key.className = "key"; key.style.background = colorOf(p);
     s.appendChild(key); s.appendChild(document.createTextNode(p.name));
@@ -1026,6 +1147,300 @@ svg.addEventListener("pointerleave", () => {
   });
   if (!ranked.length) box.textContent = "Todavía no hay jugadores con datos.";
 }
+
+// ==== vistas de detalle: ticker y jugador ==============================
+// Overlay que se rellena en cliente desde los datos ya embebidos. Los logos se
+// piden a Clearbit por dominio con respaldo a un monograma de color (si el
+// servicio no responde), y las noticias son enlaces de búsqueda por símbolo:
+// la página sigue siendo estática y no expone importes ni operaciones.
+const modal = document.getElementById("modal");
+const modalBody = document.getElementById("modal-body");
+const sheet = document.getElementById("sheet");
+const h = (tag, cls, html) => { const e = document.createElement(tag);
+  if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+
+function monoEl(text, size, bg) {
+  const m = document.createElement("span");
+  m.className = "mono";
+  m.style.width = m.style.height = size + "px";
+  m.style.fontSize = Math.round(size * 0.4) + "px";
+  m.style.background = bg;
+  m.textContent = (text || "?").slice(0, 2).toUpperCase();
+  return m;
+}
+// Logo de empresa (por dominio) con respaldo a monograma si la imagen falla.
+function tickerLogoEl(t, size) {
+  const bg = badgeColor(t.ticker);
+  if (!t.domain) return monoEl(t.ticker, size, bg);
+  const img = document.createElement("img");
+  img.className = "logo"; img.width = img.height = size; img.alt = "";
+  img.loading = "lazy"; img.referrerPolicy = "no-referrer";
+  img.src = "https://logo.clearbit.com/" + t.domain + "?size=" + (size * 2);
+  img.onerror = () => img.replaceWith(monoEl(t.ticker, size, bg));
+  return img;
+}
+function newsRow(sym) {
+  const q = encodeURIComponent(sym + " stock");
+  const links = [
+    ["Yahoo Finance", "https://finance.yahoo.com/quote/" + encodeURIComponent(sym)],
+    ["Google News", "https://news.google.com/search?q=" + q],
+    ["Finviz", "https://finviz.com/quote.ashx?t=" + encodeURIComponent(sym)],
+  ];
+  const box = h("div", "news");
+  links.forEach(([label, href]) => {
+    const a = document.createElement("a");
+    a.href = href; a.target = "_blank"; a.rel = "noopener noreferrer";
+    a.innerHTML = label + ' <span class="ext">↗</span>';
+    box.appendChild(a);
+  });
+  return box;
+}
+function sectionEl(title, node) {
+  const s = h("div", "msec");
+  s.appendChild(h("div", "h", title));
+  s.appendChild(node);
+  return s;
+}
+function tileEl(k, v, cls) {
+  const t = h("div", "tile");
+  t.appendChild(h("div", "k", k));
+  t.appendChild(h("div", "v" + (cls ? " " + cls : ""), v));
+  return t;
+}
+
+let closingTimer = null;
+function hideModal() {
+  clearTimeout(closingTimer);
+  modal.classList.remove("open");
+  sheet.classList.remove("closing");
+  sheet.style.transform = ""; sheet.style.transition = ""; sheet.style.opacity = "";
+  modal.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+}
+function closeModal() {
+  if (!modal.classList.contains("open")) return;
+  sheet.classList.add("closing");        // desliza la hoja hacia abajo y oculta
+  clearTimeout(closingTimer);
+  closingTimer = setTimeout(hideModal, 240);
+}
+function showModal(node) {
+  clearTimeout(closingTimer);
+  sheet.classList.remove("closing");
+  sheet.style.transform = ""; sheet.style.transition = ""; sheet.style.opacity = "";
+  modalBody.innerHTML = "";
+  const close = h("button", "mclose", "✕");
+  close.setAttribute("aria-label", "Cerrar");
+  close.addEventListener("click", closeModal);
+  node.appendChild(close);               // ✕ fijado arriba a la derecha (absolute)
+  modalBody.appendChild(node);
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+  sheet.scrollTop = 0;
+}
+
+// ---- detalle de ticker ----
+function openTicker(sym) {
+  const t = TICKERS[sym];
+  if (!t) return;
+  const upC = css("--up"), downC = css("--down");
+  const root = document.createElement("div");
+
+  const head = h("div", "mhead");
+  head.appendChild(tickerLogoEl(t, 46));
+  const title = h("div", "mtitle");
+  const t1 = h("div", "t1");
+  t1.appendChild(document.createTextNode(t.ticker));
+  if (t.ret != null) {
+    const b = h("span", "mbadge" + (t.ret >= 0 ? "" : " neg"), fmtPct(t.ret));
+    t1.appendChild(b);
+  }
+  title.appendChild(t1);
+  title.appendChild(h("div", "t2", t.name));
+  head.appendChild(title);
+  root.appendChild(head);
+
+  const tiles = h("div", "tiles");
+  tiles.appendChild(tileEl("Peso en la liga", fmtW(t.w)));
+  tiles.appendChild(tileEl("Lo tienen", t.holders.length + (t.holders.length === 1 ? " jugador" : " jugadores")));
+  tiles.appendChild(tileEl("Variación", t.ret == null ? "—" : fmtPct(t.ret),
+    t.ret == null ? "" : (t.ret >= 0 ? "pos" : "neg")));
+  root.appendChild(tiles);
+
+  if (t.prices && t.prices.length >= 2) {
+    const vals = t.prices.map(p => p.close);
+    const spark = h("div", "mspark", sparkSVG(vals, t.ret >= 0 ? upC : downC, "tk"));
+    const from = t.prices[0].date, to = t.prices[t.prices.length - 1].date;
+    const sec = sectionEl("Precio · " + fmtDate(from) + " → " + fmtDate(to), spark);
+    root.appendChild(sec);
+  }
+
+  if (t.holders.length) {
+    const list = document.createElement("div");
+    t.holders.forEach(hd => {
+      const row = h("div", "holder-row clk");
+      row.dataset.player = playerIdByName(hd.name) || "";
+      const nm = h("span", "nm");
+      const key = h("span", "key"); key.style.background = css(SLOTS[hd.slot % SLOTS.length]);
+      nm.appendChild(key); nm.appendChild(document.createTextNode(hd.name));
+      row.appendChild(nm);
+      row.appendChild(h("span", "w", fmtW(hd.w) + " de su cartera"));
+      list.appendChild(row);
+    });
+    root.appendChild(sectionEl("Quién lo tiene", list));
+  }
+
+  root.appendChild(sectionEl("Noticias", newsRow(t.ticker)));
+  root.appendChild(h("div", "mnote",
+    "Logo: Clearbit · precios de cierre de Yahoo Finance · noticias, búsqueda por símbolo."));
+  showModal(root);
+}
+
+function playerIdByName(name) {
+  const p = DATA.players.find(x => x.name === name);
+  return p ? p.id : null;
+}
+
+// ---- detalle de jugador ----
+function openPlayer(pid) {
+  const p = PLAYERS[pid];
+  if (!p) return;
+  const upC = css("--up"), downC = css("--down");
+  const days = p.days || [];
+  const last = days[days.length - 1] || {cum: 0, day: 0};
+  const rankIdx = ranked.findIndex(x => x.id === pid);
+  const bestDay = days.reduce((a, d) => d.day > a.day ? d : a, days[0] || {day: 0});
+  const worstDay = days.reduce((a, d) => d.day < a.day ? d : a, days[0] || {day: 0});
+  let streak = 0, sign = 0;
+  for (let i = days.length - 1; i >= 0; i--) {
+    const s = Math.sign(days[i].day);
+    if (i === days.length - 1) { sign = s; streak = s !== 0 ? 1 : 0; }
+    else if (s === sign && s !== 0) streak++;
+    else break;
+  }
+  const root = document.createElement("div");
+
+  const head = h("div", "mhead");
+  head.appendChild(monoEl(p.name, 46, colorOf(p)));
+  const title = h("div", "mtitle");
+  const t1 = h("div", "t1");
+  t1.appendChild(document.createTextNode(p.name));
+  if (rankIdx >= 0)
+    t1.appendChild(h("span", "mbadge rank", (MEDALS[rankIdx] || "#" + (rankIdx + 1))));
+  title.appendChild(t1);
+  title.appendChild(h("div", "t2", "Desde " + (p.since ? fmtDate(p.since) : (days[0] || {}).date || "")));
+  head.appendChild(title);
+  root.appendChild(head);
+
+  const tiles = h("div", "tiles");
+  tiles.appendChild(tileEl("% acumulado", fmtPct(last.cum), last.cum >= 0 ? "pos" : "neg"));
+  tiles.appendChild(tileEl("Mejor día", fmtPct(bestDay.day), "pos"));
+  tiles.appendChild(tileEl("Peor día", fmtPct(worstDay.day), worstDay.day < 0 ? "neg" : ""));
+  root.appendChild(tiles);
+
+  const tiles2 = h("div", "tiles");
+  tiles2.appendChild(tileEl("% último día", fmtPct(last.day), last.day >= 0 ? "pos" : "neg"));
+  const rlabel = sign > 0 ? "días en verde" : (sign < 0 ? "días en rojo" : "racha");
+  tiles2.appendChild(tileEl("Racha", String(streak), sign > 0 ? "pos" : (sign < 0 ? "neg" : "")));
+  tiles2.children[1].querySelector(".k").textContent = streak === 1 ? rlabel.replace("días", "día") : rlabel;
+  tiles2.appendChild(tileEl("Jornadas", String(days.length)));
+  root.appendChild(tiles2);
+
+  if (days.length >= 2) {
+    const spark = h("div", "mspark",
+      sparkSVG(days.map(d => d.cum), last.cum >= 0 ? upC : downC, "pl", {baseline0: true}));
+    root.appendChild(sectionEl("Rentabilidad acumulada · últimos " + days.length + " días", spark));
+  }
+
+  if (p.live) {
+    const lv = h("div", "news");
+    const tag = h("a", null,
+      "En vivo (provisional) " + fmtPct(p.live.cum) + " · " + fmtPct(p.live.day) + " hoy");
+    tag.style.cursor = "default"; tag.removeAttribute("href");
+    tag.style.color = p.live.cum >= 0 ? upC : downC;
+    lv.appendChild(tag);
+    root.appendChild(sectionEl("Valoración de hoy", lv));
+  }
+
+  if (p.holdings && p.holdings.length) {
+    const chips = h("div", "chips");
+    p.holdings.forEach(hh => {
+      const meta = TICKERS[hh.ticker] || {ticker: hh.ticker, domain: "", name: hh.ticker};
+      const chip = h("div", "chip-tk" + (TICKERS[hh.ticker] ? " clk" : ""));
+      if (TICKERS[hh.ticker]) chip.dataset.ticker = hh.ticker;
+      chip.appendChild(tickerLogoEl(meta, 22));
+      chip.appendChild(document.createTextNode(hh.ticker));
+      chip.appendChild(h("span", "w", fmtW(hh.w)));
+      chips.appendChild(chip);
+    });
+    root.appendChild(sectionEl("Cartera (" + p.holdings.length +
+      (p.holdings.length === 1 ? " valor)" : " valores)"), chips));
+  }
+
+  const recent = days.slice(-6).reverse();
+  if (recent.length) {
+    const list = document.createElement("div");
+    recent.forEach(d => {
+      const row = h("div", "mini-row");
+      row.appendChild(h("span", "dt", fmtDate(d.date)));
+      row.appendChild(h("span", "v " + (d.day >= 0 ? "pos" : "neg"), fmtPct(d.day)));
+      list.appendChild(row);
+    });
+    root.appendChild(sectionEl("Últimas jornadas", list));
+  }
+
+  if (p.holdings && p.holdings.length) {
+    root.appendChild(sectionEl("Noticias de su cartera", newsRow(p.holdings[0].ticker)));
+  }
+  showModal(root);
+}
+
+// ---- apertura por delegación + cierre (backdrop / ✕ / Esc) ----
+document.addEventListener("click", ev => {
+  const tk = ev.target.closest("[data-ticker]");
+  if (tk && tk.dataset.ticker) { openTicker(tk.dataset.ticker); return; }
+  const pl = ev.target.closest("[data-player]");
+  if (pl && pl.dataset.player) { openPlayer(pl.dataset.player); return; }
+});
+modal.addEventListener("click", ev => { if (ev.target === modal) closeModal(); });
+document.addEventListener("keydown", ev => {
+  if (ev.key === "Escape" && modal.classList.contains("open")) closeModal();
+});
+
+// ---- arrastrar hacia abajo para cerrar (bottom sheet nativo en móvil) ----
+(function () {
+  let startY = 0, dy = 0, dragging = false;
+  const start = e => {
+    if (sheet.scrollTop > 0) { dragging = false; return; }  // deja hacer scroll interno
+    startY = e.touches[0].clientY; dy = 0; dragging = true;
+    sheet.style.transition = "none";
+  };
+  const move = e => {
+    if (!dragging) return;
+    dy = e.touches[0].clientY - startY;
+    if (dy <= 0 || sheet.scrollTop > 0) { sheet.style.transform = ""; sheet.style.opacity = ""; return; }
+    if (e.cancelable) e.preventDefault();       // captura el gesto, no hace scroll
+    sheet.style.transform = "translateY(" + dy + "px)";
+    sheet.style.opacity = String(Math.max(0.5, 1 - dy / 640));
+  };
+  const end = () => {
+    if (!dragging) return;
+    dragging = false;
+    sheet.style.transition = "";
+    if (dy > 110) {                             // umbral: continúa el gesto y cierra
+      sheet.style.transition = "transform .2s ease-in, opacity .2s ease-in";
+      sheet.style.transform = "translateY(100%)"; sheet.style.opacity = "0";
+      clearTimeout(closingTimer);
+      closingTimer = setTimeout(hideModal, 200);
+    } else { sheet.style.transform = ""; sheet.style.opacity = ""; }  // vuelve a su sitio
+  };
+  sheet.addEventListener("touchstart", start, {passive: true});
+  sheet.addEventListener("touchmove", move, {passive: false});
+  sheet.addEventListener("touchend", end);
+  sheet.addEventListener("touchcancel", end);
+  // un toque en la barra de agarre también cierra
+  document.querySelector(".grab").addEventListener("click", closeModal);
+})();
 </script>
 </body>
 </html>
