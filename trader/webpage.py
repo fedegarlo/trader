@@ -311,7 +311,7 @@ _TEMPLATE = """<!doctype html>
     </section>
     <div class="wrow">
       <section class="card widget" id="best-card">
-        <div class="wlabel">Mejor del día</div>
+        <div class="wlabel">Mejor del día · <span id="best-date"></span></div>
         <div class="wbig"><span class="num" id="best-val"></span></div>
         <div class="bestname" id="best-name"></div>
       </section>
@@ -511,9 +511,12 @@ function paintWidgets() {
   document.getElementById("hero-spark").innerHTML =
     sparkSVG(leader.days.map(d => d.cum), lc.cum >= 0 ? upC : downC, "hero", {baseline0: true});
 
-  // mejor del día
-  const best = [...DATA.players].sort((a, b) => lastOf(b).day - lastOf(a).day)[0];
+  // mejor del día (los fines de semana la última jornada ya es la del viernes;
+  // si hay empate en el % del día, desempata la rentabilidad acumulada)
+  const best = [...DATA.players].sort((a, b) =>
+    (lastOf(b).day - lastOf(a).day) || (lastOf(b).cum - lastOf(a).cum))[0];
   const bd = lastOf(best);
+  document.getElementById("best-date").textContent = bd.date.slice(5).split("-").reverse().join("/");
   const bv = document.getElementById("best-val");
   bv.textContent = fmtPct(bd.day); bv.className = "num " + (bd.day >= 0 ? "pos" : "neg");
   const bn = document.getElementById("best-name");
@@ -1150,6 +1153,21 @@ def _daily_winners(computed: list[tuple[Player, list[DayResult]]],
     return out
 
 
+def _drop_weekends(
+    computed: list[tuple[Player, list[DayResult]]],
+) -> list[tuple[Player, list[DayResult]]]:
+    """Elimina sábados y domingos de cada serie.
+
+    Los mercados cierran el fin de semana: no hay competición esos días (la
+    rentabilidad diaria sería ~0), así que no deben mostrarse en ninguna vista
+    (gráfica, tablas, «mejor del día» ni «campeón de cada día»). El acumulado
+    de cada jornada hábil ya es correcto, así que basta con descartar las filas
+    del fin de semana sin recomponer nada.
+    """
+    return [(player, [r for r in series if r.day.weekday() < 5])
+            for player, series in computed]
+
+
 def build_payload(computed: list[tuple[Player, list[DayResult]]],
                   last_days: int = 30,
                   pending: list[dict] | None = None,
@@ -1178,6 +1196,7 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
     today = today or date.today()
     live = live or {}
     holdings = holdings or {}
+    computed = _drop_weekends(computed)
     players = []
     # Slot de color por orden alfabético de id: estable aunque cambie el ranking
     order = {p.player_id: i for i, p in enumerate(

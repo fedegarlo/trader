@@ -8,16 +8,19 @@ from trader.portfolio import DayResult
 
 
 def _series(n_days: int) -> list[DayResult]:
-    start = date(2026, 1, 1)
+    """``n_days`` jornadas hábiles consecutivas (sin sábados ni domingos)."""
     out = []
     cum = 0.0
-    for i in range(n_days):
-        cum += 0.01  # +1% cada día, acumulado desde el inicio
-        out.append(DayResult(
-            day=start + timedelta(days=i),
-            start_value=100.0, end_value=101.0, external_flow=0.0, pnl=1.0,
-            daily_return=0.01, cumulative_return=cum,
-        ))
+    day = date(2026, 1, 1)
+    while len(out) < n_days:
+        if day.weekday() < 5:  # los fines de semana no hay competición
+            cum += 0.01  # +1% cada jornada, acumulado desde el inicio
+            out.append(DayResult(
+                day=day,
+                start_value=100.0, end_value=101.0, external_flow=0.0, pnl=1.0,
+                daily_return=0.01, cumulative_return=cum,
+            ))
+        day += timedelta(days=1)
     return out
 
 
@@ -27,13 +30,13 @@ def test_payload_limits_to_last_30_days():
     payload = webpage.build_payload([(player, series)])
     p = payload["players"][0]
 
-    # Solo los últimos 30 días en la ventana visible.
+    # Solo las últimas 30 jornadas hábiles en la ventana visible.
     assert len(p["days"]) == 30
-    assert p["days"][0]["date"] == "2026-01-16"   # día 45-30+1
-    assert p["days"][-1]["date"] == "2026-02-14"  # día 45
+    assert p["days"][0]["date"] == series[-30].day.isoformat()   # jornada 45-30+1
+    assert p["days"][-1]["date"] == series[-1].day.isoformat()   # jornada 45
 
     # Pero la fecha de inicio real y el acumulado se conservan.
-    assert p["since"] == "2026-01-01"
+    assert p["since"] == series[0].day.isoformat()
     assert p["days"][-1]["cum"] == round(45 * 1.0, 4)  # 45% acumulado desde el inicio
 
 
@@ -99,6 +102,22 @@ def test_daily_winners_tie_lists_both_and_no_slot():
     ]
     row = webpage.build_payload(computed, today=date(2026, 7, 14))["dailyWinners"]["rows"][0]
     assert row["names"] == ["Ana", "Fede"] and row["slot"] is None
+
+
+def test_weekends_are_dropped_from_payload():
+    # 17 jul = viernes, 18/19 = fin de semana, 20 = lunes.
+    computed = [_july("fede", "Fede", [
+        (date(2026, 7, 17), 0.01),
+        (date(2026, 7, 18), 0.05),   # sábado: no hay competición
+        (date(2026, 7, 19), 0.05),   # domingo: no hay competición
+        (date(2026, 7, 20), 0.02),
+    ])]
+    payload = webpage.build_payload(computed, today=date(2026, 7, 20))
+    dates = [d["date"] for d in payload["players"][0]["days"]]
+    assert dates == ["2026-07-17", "2026-07-20"]
+    # El «campeón de cada día» tampoco lista el fin de semana.
+    winner_dates = [r["date"] for r in payload["dailyWinners"]["rows"]]
+    assert winner_dates == ["2026-07-20", "2026-07-17"]
 
 
 def test_pending_in_payload():
@@ -193,7 +212,7 @@ def test_monthly_ignores_pre_competition_days():
 
 def test_monthly_previous_month_when_data():
     fede = Player(player_id="fede", display_name="Fede")
-    series = [_day(date(2026, 7, 20), 0.03), _day(date(2026, 8, 2), 0.02)]
+    series = [_day(date(2026, 7, 20), 0.03), _day(date(2026, 8, 3), 0.02)]
     payload = webpage.build_payload([(fede, series)], today=date(2026, 8, 5))
     assert payload["monthly"]["current"]["month_name"] == "agosto"
     assert payload["monthly"]["current"]["value"] == 2.0
