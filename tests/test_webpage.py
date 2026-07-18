@@ -301,6 +301,13 @@ def test_ticker_details_attach_analyst_consensus():
     assert payload["tickers"][0]["analyst"] == analysts["AAPL"]
 
 
+def test_revolut_buttons_use_same_tab_universal_link():
+    assert 'https://revolut.com/app/trading/" + encodeURIComponent(sym)' in webpage._TEMPLATE
+    snippet = webpage._TEMPLATE.split("function revolutRow(sym)", 1)[1].split(
+        "function sectionEl", 1)[0]
+    assert 'a.target = "_blank"' not in snippet
+
+
 def test_ticker_details_no_analyst_key_without_data():
     player = Player(player_id="fede", display_name="Fede")
     payload = webpage.build_payload([(player, _series(5))], allocation={"AAPL": 100.0})

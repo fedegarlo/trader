@@ -1251,7 +1251,7 @@ function revolutRow(sym) {
   const box = h("div", "revolut");
   [["Comprar", "buy", "▲"], ["Vender", "sell", "▼"]].forEach(([label, cls, ico]) => {
     const a = document.createElement("a");
-    a.href = href; a.target = "_blank"; a.rel = "noopener noreferrer";
+    a.href = href;
     a.className = "rev-btn " + cls;
     a.innerHTML = '<span class="ic">' + ico + "</span>" + label;
     box.appendChild(a);
