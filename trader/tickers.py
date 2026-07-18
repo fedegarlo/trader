@@ -2,11 +2,14 @@
 
 La página del ranking es estática y autocontenida, pero el detalle de un
 ticker enseña el logo de la empresa y enlaces a noticias. Los logos se piden
-en tiempo de vista al servicio gratuito de Clearbit por **dominio**
-(``https://logo.clearbit.com/<dominio>``); por eso aquí solo mapeamos
-``ticker -> {nombre, dominio}``. Si un ticker no está en el mapa, la web usa un
-monograma de color como respaldo (nunca falla) y las noticias se buscan por el
-propio símbolo. Ampliar la lista es solo añadir una fila.
+en tiempo de vista al servicio de logo.dev por **ticker**
+(``https://img.logo.dev/ticker/<TICKER>``), con respaldo a un monograma de
+color si la imagen falla (nunca se rompe). Aquí mapeamos
+``ticker -> {nombre, dominio}``: el **nombre** se muestra en el detalle y el
+**dominio** se conserva como metadato de la empresa. Si un ticker no está en el
+mapa, se muestra el propio símbolo como nombre (el logo se sigue intentando por
+ticker) y las noticias se buscan por el símbolo. Ampliar la lista es solo
+añadir una fila.
 
 Nada de esto expone operaciones ni importes: el símbolo del ticker ya es
 público (aparece en el reparto de la cartera), y el nombre/dominio/logo son
@@ -15,7 +18,7 @@ datos públicos de la empresa.
 
 from __future__ import annotations
 
-# ticker -> (nombre a mostrar, dominio para el logo de Clearbit)
+# ticker -> (nombre a mostrar, dominio para el logo de logo.dev)
 _META: dict[str, tuple[str, str]] = {
     # presentes en el repo / la liga
     "AAPL": ("Apple", "apple.com"),
