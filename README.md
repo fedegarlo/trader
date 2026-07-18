@@ -24,8 +24,13 @@ cualquier tarta de cartera) se abre una **ficha de detalle**:
   jornadas), rentabilidad acumulada, su cartera con los logos de cada valor y
   enlaces a noticias.
 - **Detalle del ticker**: logo y nombre de la empresa, peso en la liga, quién
-  lo tiene, la variación de precio de la ventana con su mini-gráfica y enlaces
-  a noticias (Yahoo Finance, Google News, Finviz).
+  lo tiene, la variación de precio de la ventana con su mini-gráfica, la
+  **recomendación de analistas** (consenso comprar/mantener/vender, reparto de
+  opiniones, nº de analistas y precio objetivo con su recorrido), **valores
+  relacionados** y enlaces a noticias (Yahoo Finance, Google News, Finviz).
+- **Próximo paso del jugador**: en su ficha, una sugerencia orientativa de
+  compra/venta sobre una de sus posiciones, elegida por la señal más marcada del
+  consenso de analistas. Es informativa (no es una recomendación de inversión).
 
 En móvil la ficha aparece como una **hoja inferior** (bottom sheet) a lo ancho
 de la pantalla, con barra de agarre: se cierra deslizándola hacia abajo, tocando
@@ -33,7 +38,12 @@ la barra, con la ✕ o pulsando fuera. En pantallas anchas se centra como diálo
 
 Los logos se piden en tiempo de vista a Clearbit (por dominio) con respaldo a
 un monograma de color si el servicio no responde, y las noticias son enlaces de
-búsqueda por símbolo: la página sigue sin exponer importes ni operaciones.
+búsqueda por símbolo: la página sigue sin exponer importes ni operaciones. El
+**consenso de analistas** se descarga en el build del ranking (Yahoo Finance,
+módulo `quoteSummary`) y se cachea en `data/analysts/<TICKER>.json` (versionado,
+igual que los precios); si Yahoo no responde, la sección simplemente no aparece
+(nunca se inventan cifras). Los valores relacionados están curados en
+`trader/tickers.py`.
 
 Para activarla, una sola vez:
 
@@ -157,6 +167,7 @@ La frase de paso se pide por prompt, o se toma de `TRADER_KEY` /
 trader/                     código (parser Revolut, cartera, precios, cifrado, informes, metadatos de tickers)
 players/<id>/               configuración pública + extracto cifrado de cada jugador
 data/prices/                caché de precios de cierre (se versiona; reproducible)
+data/analysts/              caché del consenso de analistas por ticker (Yahoo quoteSummary)
 data/public/                series diarias públicas en JSON (para gráficas)
 docs/index.html             la web del ranking 🏆 (GitHub Pages)
 docs/subir.html             página para subir tu extracto (cifra en el navegador, sin PR)

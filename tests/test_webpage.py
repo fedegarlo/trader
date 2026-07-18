@@ -283,3 +283,56 @@ def test_ticker_details_empty_without_allocation():
     player = Player(player_id="fede", display_name="Fede")
     payload = webpage.build_payload([(player, _series(5))])
     assert payload["tickers"] == []
+
+
+def test_ticker_details_include_peers():
+    player = Player(player_id="fede", display_name="Fede")
+    payload = webpage.build_payload([(player, _series(5))], allocation={"AAPL": 100.0})
+    peers = payload["tickers"][0]["peers"]
+    assert [p["ticker"] for p in peers] == ["MSFT", "GOOGL", "AMZN"]
+    assert peers[0]["name"] == "Microsoft" and peers[0]["domain"] == "microsoft.com"
+
+
+def test_ticker_details_attach_analyst_consensus():
+    player = Player(player_id="fede", display_name="Fede")
+    analysts = {"AAPL": {"label": "Comprar", "tone": "pos", "upside": 12.0}}
+    payload = webpage.build_payload(
+        [(player, _series(5))], allocation={"AAPL": 100.0}, analysts=analysts)
+    assert payload["tickers"][0]["analyst"] == analysts["AAPL"]
+
+
+def test_ticker_details_no_analyst_key_without_data():
+    player = Player(player_id="fede", display_name="Fede")
+    payload = webpage.build_payload([(player, _series(5))], allocation={"AAPL": 100.0})
+    assert "analyst" not in payload["tickers"][0]
+
+
+def test_player_suggestion_prefers_highest_upside_buy():
+    fede = Player(player_id="fede", display_name="Fede")
+    holdings = {"fede": {"AAPL": 60.0, "MSFT": 40.0}}
+    analysts = {
+        "AAPL": {"label": "Comprar", "tone": "pos", "upside": 8.0, "count": 30},
+        "MSFT": {"label": "Compra fuerte", "tone": "pos", "upside": 22.0, "count": 45},
+    }
+    payload = webpage.build_payload(
+        [(fede, _series(5))], holdings=holdings, analysts=analysts)
+    s = payload["players"][0]["suggestion"]
+    assert s["ticker"] == "MSFT" and s["action"] == "buy"
+    assert s["upside"] == 22.0 and s["w"] == 40.0
+
+
+def test_player_suggestion_trims_negative_tone():
+    fede = Player(player_id="fede", display_name="Fede")
+    holdings = {"fede": {"AAPL": 100.0}}
+    analysts = {"AAPL": {"label": "Vender", "tone": "neg", "upside": -15.0, "count": 20}}
+    payload = webpage.build_payload(
+        [(fede, _series(5))], holdings=holdings, analysts=analysts)
+    s = payload["players"][0]["suggestion"]
+    assert s["ticker"] == "AAPL" and s["action"] == "trim"
+
+
+def test_player_suggestion_absent_without_analyst_data():
+    fede = Player(player_id="fede", display_name="Fede")
+    holdings = {"fede": {"AAPL": 100.0}}
+    payload = webpage.build_payload([(fede, _series(5))], holdings=holdings)
+    assert "suggestion" not in payload["players"][0]

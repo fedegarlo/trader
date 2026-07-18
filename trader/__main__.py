@@ -17,6 +17,7 @@ import os
 import sys
 from datetime import date, timedelta
 
+from . import analysts as analysts_mod
 from . import inbox as inbox_mod
 from . import players as players_mod
 from . import report as report_mod
@@ -137,10 +138,22 @@ def cmd_ranking(args: argparse.Namespace) -> None:
             if hist:
                 price_history[ticker] = hist
 
+    # Consenso de analistas por ticker (best-effort, cacheado y versionado).
+    # Se descarga en el build (Yahoo quoteSummary); si el entorno no llega al
+    # host, se usa la caché y, si no hay, la sección simplemente no aparece.
+    analyst_cache = analysts_mod.AnalystCache(
+        cache_dir=args.analysts_dir, offline=args.offline,
+        refresh=getattr(args, "refresh", False))
+    analysts: dict[str, dict] = {}
+    for ticker in allocation:
+        consensus = analyst_cache.get(ticker)
+        if consensus:
+            analysts[ticker] = consensus
+
     content = report_mod.write_ranking(computed, out_path=args.out)
     webpage.write_index(computed, out_path=args.html_out, pending=pending,
                         allocation=allocation, holdings=holdings, live=live,
-                        prices=price_history)
+                        prices=price_history, analysts=analysts)
     with open(args.pending_out, "w", encoding="utf-8") as fh:
         json.dump(pending, fh, ensure_ascii=False)
     print(content)
@@ -182,6 +195,8 @@ def main(argv: list[str] | None = None) -> None:
     p_rank = sub.add_parser("ranking", help="ranking de todos los jugadores")
     p_rank.add_argument("--players-dir", default="players")
     p_rank.add_argument("--prices-dir", default="data/prices")
+    p_rank.add_argument("--analysts-dir", default="data/analysts",
+                        help="caché del consenso de analistas (Yahoo quoteSummary)")
     p_rank.add_argument("--public-dir", default="data/public")
     p_rank.add_argument("--out", default="docs/ranking.md")
     p_rank.add_argument("--html-out", default="docs/index.html")
