@@ -152,6 +152,16 @@ class PriceCache:
         except Exception:
             return None
 
+    def history(self, ticker: str, start: date, end: date) -> list[tuple[date, float]]:
+        """Cierres cacheados de ``[start, end]`` como ``[(date, close)]`` ordenado.
+
+        Solo lee de la caché (no descarga): alimenta la mini-gráfica de precio
+        del detalle del ticker en la web. Son precios de mercado públicos, así
+        que no revelan nada del jugador.
+        """
+        series = self._load(ticker)
+        return [(day, series[day]) for day in sorted(series) if start <= day <= end]
+
     # ------------------------------------------------------------ lookup
     def close_on(self, ticker: str, day: date) -> float:
         """Cierre del día, o el último cierre anterior (fines de semana, festivos)."""

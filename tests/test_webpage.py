@@ -239,3 +239,47 @@ def test_live_absent_by_default():
     player = Player(player_id="fede", display_name="Fede")
     payload = webpage.build_payload([(player, _series(5))])
     assert "live" not in payload["players"][0]
+
+
+def test_ticker_details_meta_weight_and_holders():
+    fede = Player(player_id="fede", display_name="Fede")
+    ana = Player(player_id="ana", display_name="Ana")
+    allocation = {"AAPL": 300.0, "ZZZZ": 100.0}
+    holdings = {"fede": {"AAPL": 300.0}, "ana": {"AAPL": 0.0, "ZZZZ": 100.0}}
+    payload = webpage.build_payload(
+        [(fede, _series(5)), (ana, _series(5))],
+        allocation=allocation, holdings=holdings)
+    tickers = {t["ticker"]: t for t in payload["tickers"]}
+
+    # Ordenado por peso agregado (AAPL 75% antes que ZZZZ 25%).
+    assert [t["ticker"] for t in payload["tickers"]] == ["AAPL", "ZZZZ"]
+    # Ticker conocido: nombre y dominio para el logo.
+    assert tickers["AAPL"]["name"] == "Apple"
+    assert tickers["AAPL"]["domain"] == "apple.com"
+    assert tickers["AAPL"]["w"] == 75.0
+    # Solo lo tiene Fede (Ana lo tiene a peso 0 → no cuenta como holder).
+    assert [h["name"] for h in tickers["AAPL"]["holders"]] == ["Fede"]
+    # Ticker desconocido: nombre = símbolo, sin dominio (la web usa monograma).
+    assert tickers["ZZZZ"]["name"] == "ZZZZ"
+    assert tickers["ZZZZ"]["domain"] == ""
+    assert [h["name"] for h in tickers["ZZZZ"]["holders"]] == ["Ana"]
+
+
+def test_ticker_details_price_series_and_return():
+    from datetime import date as _date
+    player = Player(player_id="fede", display_name="Fede")
+    prices = {"AAPL": [(_date(2026, 7, 14), 100.0), (_date(2026, 7, 15), 110.0)]}
+    payload = webpage.build_payload(
+        [(player, _series(5))], allocation={"AAPL": 100.0}, prices=prices)
+    aapl = payload["tickers"][0]
+    assert aapl["prices"] == [
+        {"date": "2026-07-14", "close": 100.0},
+        {"date": "2026-07-15", "close": 110.0},
+    ]
+    assert aapl["ret"] == 10.0  # de 100 a 110 → +10%
+
+
+def test_ticker_details_empty_without_allocation():
+    player = Player(player_id="fede", display_name="Fede")
+    payload = webpage.build_payload([(player, _series(5))])
+    assert payload["tickers"] == []
