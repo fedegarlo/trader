@@ -1359,7 +1359,7 @@ function peersSectionEl(peers) {
     if (known) { chip = h("div", "chip-tk clk"); chip.dataset.ticker = p.ticker; }
     else {
       chip = document.createElement("a"); chip.className = "chip-tk";
-      chip.href = "https://finance.yahoo.com/quote/" + encodeURIComponent(p.ticker);
+      chip.href = "https://revolut.com/app/trading/stocks/" + encodeURIComponent(p.ticker);
       chip.target = "_blank"; chip.rel = "noopener noreferrer";
       chip.style.textDecoration = "none"; chip.style.color = "inherit";
     }
