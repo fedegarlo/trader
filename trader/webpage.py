@@ -1274,11 +1274,11 @@ function newsRow(sym) {
   });
   return box;
 }
-// Botones «Comprar»/«Vender» que abren la app de Revolut en el detalle del
-// valor (universal link por ticker: abre la app si está instalada, si no la web).
-// Ambos llevan al mismo detalle; desde ahí se elige comprar o vender.
+// Botones «Comprar»/«Vender» que llevan a la página de Revolut del valor
+// (precio, gráfica y acceso a comprar/vender en la app). Ambos llevan al mismo
+// detalle; desde ahí se elige comprar o vender.
 function revolutRow(sym) {
-  const href = "https://revolut.com/app/trading/" + encodeURIComponent(sym);
+  const href = "https://www.revolut.com/en-US/stocks/" + encodeURIComponent(sym.toLowerCase()) + "/";
   const box = h("div", "revolut");
   [["Comprar", "buy", "▲"], ["Vender", "sell", "▼"]].forEach(([label, cls, ico]) => {
     const a = document.createElement("a");
