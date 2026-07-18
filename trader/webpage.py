@@ -364,6 +364,39 @@ _TEMPLATE = """<!doctype html>
   .chip-tk:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--hair)); }
   .chip-tk .w { color: var(--muted); font-weight: 600; }
 
+  /* consenso de analistas */
+  .consensus { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .cbadge { font-size: 14px; font-weight: 800; letter-spacing: -0.01em;
+            padding: 5px 12px; border-radius: 999px;
+            background: var(--up-soft); color: var(--up); }
+  .cbadge.neg { background: var(--down-soft); color: var(--down); }
+  .cbadge.neutral { background: var(--surface-2); color: var(--ink-2); }
+  .cmeta { color: var(--ink-2); font-size: 13px; font-weight: 600; }
+  .distbar { display: flex; height: 12px; border-radius: 999px; overflow: hidden;
+             margin-top: 13px; background: var(--surface-2); }
+  .distbar > span { min-width: 2px; }
+  .distlegend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 10px;
+                font-size: 12px; font-weight: 600; color: var(--ink-2); }
+  .distlegend .k { display: inline-flex; align-items: center; gap: 6px; }
+  .distlegend .sw { width: 9px; height: 9px; border-radius: 3px; flex: none; }
+  .target { margin-top: 13px; font-size: 14px; font-weight: 700; }
+  .target .up { font-variant-numeric: tabular-nums; }
+  .target .rng { color: var(--muted); font-weight: 600; font-size: 12.5px; }
+
+  /* próximo paso (sugerencia sobre la cartera del jugador) */
+  .nextstep { border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--hair));
+              background: color-mix(in srgb, var(--accent) 8%, var(--surface-2));
+              border-radius: 16px; padding: 13px 14px; }
+  .nextstep.clk { cursor: pointer; }
+  .nextstep.clk:hover { border-color: color-mix(in srgb, var(--accent) 55%, var(--hair)); }
+  .nextstep .top { display: flex; align-items: center; gap: 9px; }
+  .nextstep .act { font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase;
+                   padding: 3px 8px; border-radius: 999px; background: var(--up-soft); color: var(--up); }
+  .nextstep .act.neg { background: var(--down-soft); color: var(--down); }
+  .nextstep .ttl { font-weight: 800; font-size: 15px; letter-spacing: -0.01em; }
+  .nextstep .body { font-size: 13.5px; color: var(--ink-2); font-weight: 600; margin-top: 7px; }
+  .nextstep .dis { color: var(--muted); font-size: 11px; margin-top: 8px; line-height: 1.4; }
+
   @media (min-width: 620px) {
     main { gap: 14px; }
     .card { padding: 22px; }
@@ -546,6 +579,7 @@ const css = name => getComputedStyle(document.documentElement).getPropertyValue(
 const colorOf = p => css(SLOTS[p.slot % SLOTS.length]);
 const fmtPct = v => (v > 0 ? "+" : "") + v.toFixed(2) + "%";
 const fmtDate = iso => { const [y,m,d] = iso.split("-"); return d + "/" + m + "/" + y.slice(2); };
+const money = v => "$" + Number(v).toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2});
 const lastOf = p => p.days[p.days.length - 1];
 
 // ---- índices para las vistas de detalle (ticker / jugador) ----
@@ -1239,6 +1273,95 @@ function tileEl(k, v, cls) {
   return t;
 }
 
+// Reparto de opiniones: buckets de compra→venta con color propio (verde→rojo),
+// independiente del azul/rosa de subida/bajada de la liga.
+const REC_BUCKETS = [
+  ["strongBuy", "Compra fuerte", "#15a34a"],
+  ["buy", "Comprar", "#22c55e"],
+  ["hold", "Mantener", "#9aa0ac"],
+  ["sell", "Vender", "#f59e0b"],
+  ["strongSell", "Venta fuerte", "#ef4444"],
+];
+function analystSectionEl(a) {
+  const wrap = h("div", "msec");
+  wrap.appendChild(h("div", "h", "Recomendación de analistas" +
+    (a.asOf ? ' <span style="color:var(--muted);font-weight:600">· ' + fmtDate(a.asOf) + "</span>" : "")));
+  const cons = h("div", "consensus");
+  if (a.label) cons.appendChild(h("span", "cbadge " + (a.tone || "neutral"), a.label));
+  const meta = [];
+  if (a.count) meta.push(a.count + (a.count === 1 ? " analista" : " analistas"));
+  if (a.mean != null) meta.push("media " + a.mean.toFixed(1) + "/5");
+  if (meta.length) cons.appendChild(h("span", "cmeta", meta.join(" · ")));
+  wrap.appendChild(cons);
+  if (a.dist) {
+    const total = REC_BUCKETS.reduce((s, [k]) => s + (a.dist[k] || 0), 0);
+    if (total > 0) {
+      const bar = h("div", "distbar");
+      const leg = h("div", "distlegend");
+      REC_BUCKETS.forEach(([k, lbl, col]) => {
+        const n = a.dist[k] || 0; if (!n) return;
+        const seg = document.createElement("span");
+        seg.style.background = col; seg.style.width = (n / total * 100) + "%";
+        seg.title = lbl + ": " + n; bar.appendChild(seg);
+        const item = h("span", "k");
+        const sw = document.createElement("span"); sw.className = "sw"; sw.style.background = col;
+        item.appendChild(sw); item.appendChild(document.createTextNode(lbl + " " + n));
+        leg.appendChild(item);
+      });
+      wrap.appendChild(bar); wrap.appendChild(leg);
+    }
+  }
+  if (a.target != null) {
+    const t = h("div", "target");
+    let html = "🎯 Precio objetivo " + money(a.target);
+    if (a.upside != null)
+      html += ' <span class="up ' + (a.upside >= 0 ? "pos" : "neg") + '">(' + fmtPct(a.upside) + ")</span>";
+    if (a.targetLow != null && a.targetHigh != null)
+      html += ' <span class="rng">· rango ' + money(a.targetLow) + "–" + money(a.targetHigh) + "</span>";
+    t.innerHTML = html;
+    wrap.appendChild(t);
+  }
+  return wrap;
+}
+function peersSectionEl(peers) {
+  const chips = h("div", "chips");
+  peers.forEach(p => {
+    const known = !!TICKERS[p.ticker];
+    let chip;
+    if (known) { chip = h("div", "chip-tk clk"); chip.dataset.ticker = p.ticker; }
+    else {
+      chip = document.createElement("a"); chip.className = "chip-tk";
+      chip.href = "https://finance.yahoo.com/quote/" + encodeURIComponent(p.ticker);
+      chip.target = "_blank"; chip.rel = "noopener noreferrer";
+      chip.style.textDecoration = "none"; chip.style.color = "inherit";
+    }
+    chip.appendChild(tickerLogoEl(p, 22));
+    chip.appendChild(document.createTextNode(p.ticker));
+    if (!known) chip.appendChild(h("span", "w", "↗"));
+    chips.appendChild(chip);
+  });
+  return sectionEl("Valores relacionados", chips);
+}
+function nextStepEl(s) {
+  const card = h("div", "nextstep");
+  if (TICKERS[s.ticker]) { card.classList.add("clk"); card.dataset.ticker = s.ticker; }
+  const isBuy = s.action !== "trim";
+  const top = h("div", "top");
+  top.appendChild(tickerLogoEl(s, 26));
+  top.appendChild(h("span", "act" + (isBuy ? "" : " neg"), isBuy ? "Comprar" : "Reducir"));
+  top.appendChild(h("span", "ttl", (isBuy ? "Ampliar " : "Recortar ") + s.ticker));
+  card.appendChild(top);
+  const bits = [];
+  if (s.label) bits.push("consenso " + s.label.toLowerCase());
+  if (s.count) bits.push(s.count + (s.count === 1 ? " analista" : " analistas"));
+  if (s.upside != null) bits.push("objetivo " + fmtPct(s.upside));
+  bits.push(fmtW(s.w) + " de su cartera");
+  card.appendChild(h("div", "body", bits.join(" · ")));
+  card.appendChild(h("div", "dis",
+    "💡 Paso orientativo según el consenso de analistas (Yahoo Finance). No es una recomendación de inversión."));
+  return card;
+}
+
 let closingTimer = null;
 function hideModal() {
   clearTimeout(closingTimer);
@@ -1298,6 +1421,8 @@ function openTicker(sym) {
     t.ret == null ? "" : (t.ret >= 0 ? "pos" : "neg")));
   root.appendChild(tiles);
 
+  if (t.analyst) root.appendChild(analystSectionEl(t.analyst));
+
   if (t.prices && t.prices.length >= 2) {
     const vals = t.prices.map(p => p.close);
     const spark = h("div", "mspark", sparkSVG(vals, t.ret >= 0 ? upC : downC, "tk"));
@@ -1321,9 +1446,12 @@ function openTicker(sym) {
     root.appendChild(sectionEl("Quién lo tiene", list));
   }
 
+  if (t.peers && t.peers.length) root.appendChild(peersSectionEl(t.peers));
+
   root.appendChild(sectionEl("Noticias", newsRow(t.ticker)));
   root.appendChild(h("div", "mnote",
-    "Logo: Clearbit · precios de cierre de Yahoo Finance · noticias, búsqueda por símbolo."));
+    "Logo: Clearbit · precios y consenso de analistas: Yahoo Finance · " +
+    "informativo, no es una recomendación de inversión."));
   showModal(root);
 }
 
@@ -1362,6 +1490,8 @@ function openPlayer(pid) {
   title.appendChild(h("div", "t2", "Desde " + (p.since ? fmtDate(p.since) : (days[0] || {}).date || "")));
   head.appendChild(title);
   root.appendChild(head);
+
+  if (p.suggestion) root.appendChild(sectionEl("Próximo paso", nextStepEl(p.suggestion)));
 
   const tiles = h("div", "tiles");
   tiles.appendChild(tileEl("% acumulado", fmtPct(last.cum), last.cum >= 0 ? "pos" : "neg"));
@@ -1504,6 +1634,7 @@ def _ticker_details(
     names: dict[str, str],
     prices: dict[str, list[tuple]] | None,
     last_days: int,
+    analysts: dict[str, dict] | None = None,
 ) -> list[dict]:
     """Detalle público por ticker para la vista de detalle de la web.
 
@@ -1517,10 +1648,15 @@ def _ticker_details(
     if not weights:
         return []
     prices = prices or {}
+    analysts = analysts or {}
     out = []
     for item in weights:
         ticker = item["ticker"]
         meta = ticker_meta(ticker)
+        peers = []
+        for peer in meta.get("peers", []):
+            pm = ticker_meta(peer)
+            peers.append({"ticker": peer, "name": pm["name"], "domain": pm["domain"]})
         holders = []
         for pid, hv in holdings.items():
             for x in _allocation_weights(hv):
@@ -1541,7 +1677,7 @@ def _ticker_details(
         if len(series) >= 2 and series[0]["close"]:
             ret = round((series[-1]["close"] / series[0]["close"] - 1.0) * 100, 2)
 
-        out.append({
+        entry = {
             "ticker": ticker,
             "name": meta["name"],
             "domain": meta["domain"],
@@ -1549,8 +1685,64 @@ def _ticker_details(
             "holders": holders,
             "prices": series,
             "ret": ret,
-        })
+            "peers": peers,
+        }
+        consensus = analysts.get(ticker)
+        if consensus:
+            entry["analyst"] = consensus
+        out.append(entry)
     return out
+
+
+def _buy_sell_suggestion(holdings_weights: list[dict],
+                         analysts: dict[str, dict]) -> dict | None:
+    """Sugerencia de «próximo paso» sobre la cartera de un jugador.
+
+    De sus posiciones con consenso de analistas elige la de señal más marcada:
+    la de mayor recorrido al alza (comprar/ampliar) o mayor recorrido a la baja
+    (reducir/vender). Es solo informativo, a partir del consenso de Yahoo; no es
+    una recomendación de inversión. Devuelve ``None`` si ninguna posición tiene
+    datos de analistas.
+    """
+    if not holdings_weights or not analysts:
+        return None
+    best = None
+    best_score = -1.0
+    for h in holdings_weights:
+        a = analysts.get(h["ticker"])
+        if not a:
+            continue
+        upside = a.get("upside")
+        # saliencia: si hay precio objetivo, el recorrido; si no, la distancia a
+        # «mantener» según la media de recomendación (1=compra fuerte, 5=venta).
+        if upside is not None:
+            score = abs(upside)
+            action = "buy" if upside >= 0 else "trim"
+        elif a.get("mean") is not None:
+            score = abs(3.0 - a["mean"]) * 8.0
+            action = "buy" if a["mean"] < 3.0 else "trim"
+        else:
+            continue
+        if a.get("tone") == "neg":
+            action = "trim"
+        elif a.get("tone") == "pos":
+            action = "buy"
+        if score > best_score:
+            best_score = score
+            meta = ticker_meta(h["ticker"])
+            best = {
+                "ticker": h["ticker"],
+                "name": meta["name"],
+                "domain": meta["domain"],
+                "w": h["w"],
+                "action": action,
+                "label": a.get("label"),
+                "tone": a.get("tone"),
+                "upside": upside,
+                "count": a.get("count"),
+                "target": a.get("target"),
+            }
+    return best
 
 
 def _prev_month(year: int, month: int) -> tuple[int, int]:
@@ -1655,6 +1847,7 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
                   holdings: dict[str, dict[str, float]] | None = None,
                   live: dict[str, dict] | None = None,
                   prices: dict[str, list[tuple]] | None = None,
+                  analysts: dict[str, dict] | None = None,
                   today: date | None = None) -> dict:
     """Datos embebidos en la página. Respeta show_amounts por jugador.
 
@@ -1677,6 +1870,7 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
     today = today or date.today()
     live = live or {}
     holdings = holdings or {}
+    analysts = analysts or {}
     computed = _drop_weekends(computed)
     players = []
     # Slot de color por orden alfabético de id: estable aunque cambie el ranking
@@ -1702,6 +1896,7 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
                     "pnl": round(row.pnl, 2),
                 })
             days.append(day)
+        holdings_w = _allocation_weights(holdings.get(player.player_id))
         entry = {
             "id": player.player_id,
             "name": player.display_name,
@@ -1709,15 +1904,18 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
             "amounts": player.show_amounts,
             "since": series[0].day.isoformat(),
             "days": days,
-            "holdings": _allocation_weights(holdings.get(player.player_id)),
+            "holdings": holdings_w,
         }
         if player.player_id in live:
             entry["live"] = live[player.player_id]
+        suggestion = _buy_sell_suggestion(holdings_w, analysts)
+        if suggestion:
+            entry["suggestion"] = suggestion
         players.append(entry)
     return {"players": players, "pending": pending or [],
             "allocation": _allocation_weights(allocation),
             "tickers": _ticker_details(allocation, holdings, order, names,
-                                       prices, last_days),
+                                       prices, last_days, analysts),
             "monthly": _monthly_bests(computed, today, order),
             "dailyWinners": {
                 "month_name": _MONTHS_ES[today.month - 1],
@@ -1736,11 +1934,13 @@ def write_index(
     holdings: dict[str, dict[str, float]] | None = None,
     live: dict[str, dict] | None = None,
     prices: dict[str, list[tuple]] | None = None,
+    analysts: dict[str, dict] | None = None,
 ) -> str:
     payload = json.dumps(
         build_payload(computed, last_days=last_days, pending=pending,
                       allocation=allocation, holdings=holdings, live=live,
-                      prices=prices, today=today or date.today()),
+                      prices=prices, analysts=analysts,
+                      today=today or date.today()),
         ensure_ascii=False)
     payload = payload.replace("</", "<\\/")  # nunca cerrar el <script> desde los datos
     html = (_TEMPLATE

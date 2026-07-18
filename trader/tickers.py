@@ -63,11 +63,44 @@ _META: dict[str, tuple[str, str]] = {
 }
 
 
-def ticker_meta(ticker: str) -> dict:
-    """Nombre y dominio (para el logo) de un ticker.
+# Valores relacionados (mismo sector / competidores) para «Valores relacionados»
+# del detalle del ticker. Son relaciones estables y de dominio público (no son
+# métricas que se queden obsoletas); la web los muestra como chips que llevan al
+# detalle del valor si está en la liga, o a su ficha de Yahoo si no.
+_PEERS: dict[str, list[str]] = {
+    "AAPL": ["MSFT", "GOOGL", "AMZN"],
+    "MSFT": ["AAPL", "GOOGL", "ORCL"],
+    "NVDA": ["AMD", "TSM", "AVGO"],
+    "META": ["GOOGL", "AMZN", "NFLX"],
+    "PLTR": ["SNOW", "CRM", "MSFT"],
+    "SMCI": ["DELL", "HPE", "NVDA"],
+    "TSM": ["NVDA", "ASML", "MU"],
+    "MU": ["WDC", "TSM", "NVDA"],
+    "WDC": ["MU", "STX", "TSM"],
+    "GOOGL": ["MSFT", "META", "AMZN"],
+    "GOOG": ["MSFT", "META", "AMZN"],
+    "AMZN": ["MSFT", "GOOGL", "AAPL"],
+    "TSLA": ["GM", "F", "NVDA"],
+    "AMD": ["NVDA", "INTC", "TSM"],
+    "NFLX": ["DIS", "META", "AMZN"],
+    "INTC": ["AMD", "NVDA", "TSM"],
+    "AVGO": ["QCOM", "NVDA", "AMD"],
+    "QCOM": ["AVGO", "ARM", "MRVL"],
+    "ORCL": ["MSFT", "CRM", "SAP"],
+    "CRM": ["MSFT", "ORCL", "ADBE"],
+    "ADBE": ["CRM", "MSFT", "ORCL"],
+    "ASML": ["TSM", "AMAT", "LRCX"],
+    "ARM": ["QCOM", "NVDA", "AVGO"],
+    "MRVL": ["AVGO", "QCOM", "NVDA"],
+}
 
-    Si no está en el mapa devuelve el propio símbolo como nombre y ``domain``
-    vacío: la web usará entonces un monograma de color en vez del logo.
+
+def ticker_meta(ticker: str) -> dict:
+    """Nombre, dominio (para el logo) y valores relacionados de un ticker.
+
+    Si no está en el mapa devuelve el propio símbolo como nombre, ``domain``
+    vacío (la web usará un monograma de color) y sin relacionados.
     """
-    name, domain = _META.get(ticker.upper(), (ticker, ""))
-    return {"name": name, "domain": domain}
+    sym = ticker.upper()
+    name, domain = _META.get(sym, (ticker, ""))
+    return {"name": name, "domain": domain, "peers": _PEERS.get(sym, [])}
