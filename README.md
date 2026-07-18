@@ -36,7 +36,7 @@ En móvil la ficha aparece como una **hoja inferior** (bottom sheet) a lo ancho
 de la pantalla, con barra de agarre: se cierra deslizándola hacia abajo, tocando
 la barra, con la ✕ o pulsando fuera. En pantallas anchas se centra como diálogo.
 
-Los logos se piden en tiempo de vista a Clearbit (por dominio) con respaldo a
+Los logos se piden en tiempo de vista a logo.dev (por dominio) con respaldo a
 un monograma de color si el servicio no responde, y las noticias son enlaces de
 búsqueda por símbolo: la página sigue sin exponer importes ni operaciones. El
 **consenso de analistas** se descarga en el build del ranking (Yahoo Finance,

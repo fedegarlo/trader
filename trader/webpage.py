@@ -1229,7 +1229,7 @@ svg.addEventListener("pointerleave", () => {
 
 // ==== vistas de detalle: ticker y jugador ==============================
 // Overlay que se rellena en cliente desde los datos ya embebidos. Los logos se
-// piden a Clearbit por dominio con respaldo a un monograma de color (si el
+// piden a logo.dev por dominio con respaldo a un monograma de color (si el
 // servicio no responde), y las noticias son enlaces de búsqueda por símbolo:
 // la página sigue siendo estática y no expone importes ni operaciones.
 const modal = document.getElementById("modal");
@@ -1247,6 +1247,8 @@ function monoEl(text, size, bg) {
   m.textContent = (text || "?").slice(0, 2).toUpperCase();
   return m;
 }
+// Token publicable de logo.dev (pensado para el frontend; puede ir en el HTML).
+const LOGO_TOKEN = "pk_cgMPtdfzT5GGEORKN4rMDA";
 // Logo de empresa (por dominio) con respaldo a monograma si la imagen falla.
 function tickerLogoEl(t, size) {
   const bg = badgeColor(t.ticker);
@@ -1254,7 +1256,8 @@ function tickerLogoEl(t, size) {
   const img = document.createElement("img");
   img.className = "logo"; img.width = img.height = size; img.alt = "";
   img.loading = "lazy"; img.referrerPolicy = "no-referrer";
-  img.src = "https://logo.clearbit.com/" + t.domain + "?size=" + (size * 2);
+  img.src = "https://img.logo.dev/" + t.domain + "?token=" + LOGO_TOKEN +
+    "&size=" + (size * 2) + "&format=png";
   img.onerror = () => img.replaceWith(monoEl(t.ticker, size, bg));
   return img;
 }
@@ -1483,7 +1486,7 @@ function openTicker(sym) {
 
   root.appendChild(sectionEl("Noticias", newsRow(t.ticker)));
   root.appendChild(h("div", "mnote",
-    "Logo: Clearbit · precios y consenso de analistas: Yahoo Finance · " +
+    "Logo: logo.dev · precios y consenso de analistas: Yahoo Finance · " +
     "informativo, no es una recomendación de inversión."));
   showModal(root);
 }

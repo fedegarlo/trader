@@ -302,7 +302,7 @@ def test_ticker_details_attach_analyst_consensus():
 
 
 def test_revolut_buttons_use_same_tab_universal_link():
-    assert 'https://revolut.com/app/trading/" + encodeURIComponent(sym)' in webpage._TEMPLATE
+    assert 'https://revolut.com/app/trading/stocks/" + encodeURIComponent(sym)' in webpage._TEMPLATE
     snippet = webpage._TEMPLATE.split("function revolutRow(sym)", 1)[1].split(
         "function sectionEl", 1)[0]
     assert 'a.target = "_blank"' not in snippet
