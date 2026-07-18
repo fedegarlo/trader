@@ -36,6 +36,9 @@ _TEMPLATE = """<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#efeaf8" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0e0d13" media="(prefers-color-scheme: dark)">
+<link rel="apple-touch-icon" href="icon-ios.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-title" content="Liga Trader">
 <title>🏆 Liga Trader</title>
 <style>
   :root {
