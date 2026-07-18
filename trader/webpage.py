@@ -293,26 +293,35 @@ _TEMPLATE = """<!doctype html>
   }
   .modal.open { display: flex; }
   .sheet {
+    position: relative;
     width: 100%; max-width: 620px; max-height: 92vh; max-height: 92dvh;
     overflow-y: auto; -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain; touch-action: pan-y; will-change: transform;
     background: var(--card-solid);
     border: 1px solid var(--ring); border-bottom: none;
-    border-radius: 26px 26px 0 0;
-    padding: calc(10px + env(safe-area-inset-top)) 18px
+    border-radius: 22px 22px 0 0;
+    padding: calc(6px + env(safe-area-inset-top)) 18px
              calc(24px + env(safe-area-inset-bottom));
     box-shadow: 0 -18px 50px -20px rgba(5,4,10,0.6);
-    animation: sheetin 0.28s cubic-bezier(0.2,0.8,0.2,1);
+    animation: sheetin 0.30s cubic-bezier(0.2,0.85,0.25,1);
   }
-  @keyframes sheetin { from { transform: translateY(28px); opacity: 0.4; } to { transform: none; opacity: 1; } }
-  .grab { width: 40px; height: 4px; border-radius: 999px; background: var(--baseline);
-          margin: 4px auto 12px; opacity: 0.5; }
-  .mhead { display: flex; align-items: center; gap: 13px; }
+  @keyframes sheetin { from { transform: translateY(100%); } to { transform: none; } }
+  .sheet.closing { animation: sheetout 0.22s ease-in forwards; }
+  @keyframes sheetout { from { transform: translateY(0); } to { transform: translateY(100%); } }
+  /* zona de agarre: ocupa el ancho para poder arrastrar y cerrar de un toque */
+  .grab { position: sticky; top: 0; z-index: 2; margin: 0 -18px 8px; padding: 9px 0 7px;
+          background: var(--card-solid); cursor: grab; touch-action: none; }
+  .grab::before { content: ""; display: block; width: 40px; height: 5px; border-radius: 999px;
+                  background: var(--baseline); opacity: 0.5; margin: 0 auto; }
+  .mhead { display: flex; align-items: center; gap: 13px; padding-right: 42px; }
   .mhead .mtitle { min-width: 0; }
   .mhead .mtitle .t1 { font-size: 20px; font-weight: 800; letter-spacing: -0.02em;
                        display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .mhead .mtitle .t2 { color: var(--ink-2); font-size: 13.5px; font-weight: 600; margin-top: 2px; }
   .mclose {
-    margin-left: auto; flex: none; border: 0; cursor: pointer; color: var(--ink-2);
+    position: absolute; z-index: 4;
+    top: calc(14px + env(safe-area-inset-top)); right: 16px;
+    flex: none; border: 0; cursor: pointer; color: var(--ink-2);
     background: var(--surface-2); width: 34px; height: 34px; border-radius: 999px;
     font-size: 18px; line-height: 1; display: grid; place-items: center;
   }
@@ -359,10 +368,17 @@ _TEMPLATE = """<!doctype html>
     main { gap: 14px; }
     .card { padding: 22px; }
     .sparkwrap { margin: 14px -22px 0; }
-    .modal { align-items: center; }
-    .sheet { border-radius: 26px; border-bottom: 1px solid var(--ring);
-             padding-top: 18px; }
+    .modal { align-items: center; padding: 20px; }
+    .sheet { border-radius: 24px; border-bottom: 1px solid var(--ring);
+             padding-top: 18px; touch-action: auto;
+             animation: popin 0.22s cubic-bezier(0.2,0.85,0.25,1); }
+    .sheet.closing { animation: none; opacity: 0; }
+    .mclose { top: 18px; }
     .grab { display: none; }
+  }
+  @keyframes popin { from { transform: translateY(14px); opacity: 0.4; } to { transform: none; opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) {
+    .sheet, .sheet.closing { animation: none; }
   }
 </style>
 </head>
@@ -1170,6 +1186,7 @@ svg.addEventListener("pointerleave", () => {
 // la página sigue siendo estática y no expone importes ni operaciones.
 const modal = document.getElementById("modal");
 const modalBody = document.getElementById("modal-body");
+const sheet = document.getElementById("sheet");
 const h = (tag, cls, html) => { const e = document.createElement(tag);
   if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
 
@@ -1222,22 +1239,35 @@ function tileEl(k, v, cls) {
   return t;
 }
 
-function closeModal() {
+let closingTimer = null;
+function hideModal() {
+  clearTimeout(closingTimer);
   modal.classList.remove("open");
+  sheet.classList.remove("closing");
+  sheet.style.transform = ""; sheet.style.transition = ""; sheet.style.opacity = "";
   modal.setAttribute("aria-hidden", "true");
   document.body.style.overflow = "";
 }
+function closeModal() {
+  if (!modal.classList.contains("open")) return;
+  sheet.classList.add("closing");        // desliza la hoja hacia abajo y oculta
+  clearTimeout(closingTimer);
+  closingTimer = setTimeout(hideModal, 240);
+}
 function showModal(node) {
+  clearTimeout(closingTimer);
+  sheet.classList.remove("closing");
+  sheet.style.transform = ""; sheet.style.transition = ""; sheet.style.opacity = "";
   modalBody.innerHTML = "";
   const close = h("button", "mclose", "✕");
   close.setAttribute("aria-label", "Cerrar");
   close.addEventListener("click", closeModal);
-  node.querySelector(".mhead").appendChild(close);
+  node.appendChild(close);               // ✕ fijado arriba a la derecha (absolute)
   modalBody.appendChild(node);
   modal.classList.add("open");
   modal.setAttribute("aria-hidden", "false");
   document.body.style.overflow = "hidden";
-  document.getElementById("sheet").scrollTop = 0;
+  sheet.scrollTop = 0;
 }
 
 // ---- detalle de ticker ----
@@ -1407,6 +1437,41 @@ modal.addEventListener("click", ev => { if (ev.target === modal) closeModal(); }
 document.addEventListener("keydown", ev => {
   if (ev.key === "Escape" && modal.classList.contains("open")) closeModal();
 });
+
+// ---- arrastrar hacia abajo para cerrar (bottom sheet nativo en móvil) ----
+(function () {
+  let startY = 0, dy = 0, dragging = false;
+  const start = e => {
+    if (sheet.scrollTop > 0) { dragging = false; return; }  // deja hacer scroll interno
+    startY = e.touches[0].clientY; dy = 0; dragging = true;
+    sheet.style.transition = "none";
+  };
+  const move = e => {
+    if (!dragging) return;
+    dy = e.touches[0].clientY - startY;
+    if (dy <= 0 || sheet.scrollTop > 0) { sheet.style.transform = ""; sheet.style.opacity = ""; return; }
+    if (e.cancelable) e.preventDefault();       // captura el gesto, no hace scroll
+    sheet.style.transform = "translateY(" + dy + "px)";
+    sheet.style.opacity = String(Math.max(0.5, 1 - dy / 640));
+  };
+  const end = () => {
+    if (!dragging) return;
+    dragging = false;
+    sheet.style.transition = "";
+    if (dy > 110) {                             // umbral: continúa el gesto y cierra
+      sheet.style.transition = "transform .2s ease-in, opacity .2s ease-in";
+      sheet.style.transform = "translateY(100%)"; sheet.style.opacity = "0";
+      clearTimeout(closingTimer);
+      closingTimer = setTimeout(hideModal, 200);
+    } else { sheet.style.transform = ""; sheet.style.opacity = ""; }  // vuelve a su sitio
+  };
+  sheet.addEventListener("touchstart", start, {passive: true});
+  sheet.addEventListener("touchmove", move, {passive: false});
+  sheet.addEventListener("touchend", end);
+  sheet.addEventListener("touchcancel", end);
+  // un toque en la barra de agarre también cierra
+  document.querySelector(".grab").addEventListener("click", closeModal);
+})();
 </script>
 </body>
 </html>
