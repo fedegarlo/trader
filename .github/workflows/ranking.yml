@@ -2,13 +2,21 @@ name: Ranking diario
 
 on:
   schedule:
-    # Refresco intradía: cada hora en punto durante el horario de mercado de
+    # Refresco intradía: una vez por hora durante el horario de mercado de
     # EE. UU. (13:00–21:00 UTC cubre el horario de verano e invierno), de lunes
     # a viernes. Mantiene frescos los números «en vivo» sin intervención.
-    - cron: "0 13-21 * * 1-5"
-    # Cierre oficial: a las 22:30 UTC, tras el cierre de la bolsa de EE. UU.,
-    # ya con los cierres definitivos del día.
-    - cron: "30 22 * * 1-5"
+    #
+    # IMPORTANTE: NO usamos el minuto :00. Los cron de GitHub Actions corren en
+    # infraestructura compartida y en los minutos «redondos» (:00, :15, :30, :45)
+    # se acumula tantísima carga que GitHub los retrasa 40–60 min o directamente
+    # los descarta. Con "0 13-21" perdíamos casi todas las ejecuciones de la
+    # franja. Desplazarlas a un minuto poco concurrido (:17 y :43) hace que se
+    # disparen puntuales. Aun así, los cron son «best effort»: la frescura real
+    # la garantizan los disparos instantáneos (repository_dispatch) de abajo.
+    - cron: "17 13-21 * * 1-5"
+    # Cierre oficial: tras el cierre de la bolsa de EE. UU. (a las 22:00 UTC),
+    # ya con los cierres definitivos del día. También fuera del minuto en punto.
+    - cron: "43 22 * * 1-5"
   workflow_dispatch: {}
   # La web (docs/subir.html) lanza este evento tras subir un extracto: los
   # commits creados por la API de GitHub no disparan el evento `push`, así que

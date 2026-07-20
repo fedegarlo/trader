@@ -27,9 +27,14 @@ on:
   repository_dispatch:
     types: [email-recibido]
   # Red de seguridad por si el Apps Script falla o no está configurado: revisa
-  # el buzón cada 15 minutos igualmente (los cron de Actions son aproximados).
+  # el buzón cada ~15 minutos igualmente (los cron de Actions son aproximados).
+  #
+  # Evitamos "*/15", que dispara en :00/:15/:30/:45: son los minutos más
+  # congestionados de GitHub Actions y ahí muchas ejecuciones se retrasan o se
+  # descartan. Fijar minutos poco concurridos (:07/:22/:37/:52) mantiene la
+  # cadencia de ~15 min pero con muchas menos pérdidas.
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "7,22,37,52 * * * *"
   workflow_dispatch: {}
 
 permissions:
