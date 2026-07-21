@@ -24,13 +24,8 @@ from .tickers import ticker_meta
 # widgets de «mejor del mes».
 COMPETITION_START = date(2026, 7, 14)
 
-_MONTHS_ES = [
-    "enero", "febrero", "marzo", "abril", "mayo", "junio",
-    "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
-]
-
 _TEMPLATE = """<!doctype html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -124,15 +119,14 @@ _TEMPLATE = """<!doctype html>
   .upload svg { display: block; }
   .upload:active { transform: translateY(1px); }
   .hbtns { flex: none; display: flex; align-items: center; gap: 10px; }
-  .refresh {
+  .lang {
     flex: none; border: 0; cursor: pointer; color: var(--accent);
     background: color-mix(in srgb, var(--accent) 14%, transparent);
-    width: 46px; height: 46px; border-radius: 999px; display: grid; place-items: center;
+    min-width: 46px; height: 46px; padding: 0 13px; border-radius: 999px;
+    display: grid; place-items: center; font-family: inherit;
+    font-weight: 800; font-size: 15px; letter-spacing: 0.01em; line-height: 1;
   }
-  .refresh svg { display: block; }
-  .refresh:active { transform: translateY(1px); }
-  .refresh.spin svg { animation: spin 0.6s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
+  .lang:active { transform: translateY(1px); }
   .hbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; }
   .chip { font-weight: 700; font-size: 15px; color: var(--ink); }
   .chip .caret { color: var(--muted); font-size: 12px; }
@@ -435,17 +429,12 @@ _TEMPLATE = """<!doctype html>
 <body>
 <main>
   <header>
-    <div class="eyebrow">🏆 Competición · Revolut · actualizado __UPDATED__</div>
+    <div class="eyebrow" id="eyebrow"></div>
     <div class="hrow">
       <h1>Liga Trader</h1>
       <div class="hbtns">
-        <button class="refresh" id="refresh-btn" type="button" aria-label="Refrescar ranking" title="Refrescar ranking">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
-               stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/>
-          </svg>
-        </button>
-        <a class="upload" id="upload-mail" href="mailto:ligatrader26@gmail.com" aria-label="Enviar posiciones" title="Enviar posiciones">
+        <button class="lang" id="lang-btn" type="button"><span id="lang-label"></span></button>
+        <a class="upload" id="upload-mail" href="mailto:ligatrader26@gmail.com" data-i18n-title="sendPositions">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M5 20h14"/>
@@ -454,31 +443,31 @@ _TEMPLATE = """<!doctype html>
       </div>
     </div>
     <div class="hbar">
-      <span class="chip" id="hchip">Todos los jugadores <span class="caret">▾</span></span>
-      <span class="period">Últimos 30 días</span>
+      <span class="chip" id="hchip"><span data-i18n="allPlayers"></span> <span class="caret">▾</span></span>
+      <span class="period" data-i18n="period30"></span>
     </div>
   </header>
 
   <section class="card warn" id="pending-card" style="display:none">
-    <h2>⏳ Pendiente de clave</h2>
+    <h2 data-i18n="pendingTitle"></h2>
     <div class="wsub" id="pending" style="margin-top:6px"></div>
   </section>
 
   <div id="widgets" style="display:grid;gap:12px">
     <section class="card widget" id="hero-card">
-      <div class="wlabel">Líder · <span id="hero-name"></span></div>
+      <div class="wlabel"><span data-i18n="leader"></span> · <span id="hero-name"></span></div>
       <div class="wbig"><span class="num" id="hero-val"></span><span class="delta" id="hero-delta"></span></div>
       <div class="live" id="hero-live" style="display:none"></div>
       <div class="sparkwrap" id="hero-spark"></div>
     </section>
     <div class="wrow">
       <section class="card widget" id="best-card">
-        <div class="wlabel">Mejor del día · <span id="best-date"></span></div>
+        <div class="wlabel"><span data-i18n="bestOfDay"></span> · <span id="best-date"></span></div>
         <div class="wbig"><span class="num" id="best-val"></span></div>
         <div class="bestname" id="best-name"></div>
       </section>
       <section class="card" id="gap-card">
-        <div class="wlabel">Diferencia 1º–último</div>
+        <div class="wlabel" data-i18n="gapTitle"></div>
         <div class="wbig sm"><span class="num" id="gap-val"></span></div>
         <div style="margin-top:auto">
           <div class="wsub" id="gap-top"></div>
@@ -488,14 +477,14 @@ _TEMPLATE = """<!doctype html>
     </div>
     <div class="wrow" id="month-row" style="display:none">
       <section class="card widget" id="month-cur-card">
-        <div class="wlabel">Ganador de <span id="month-cur-name"></span></div>
+        <div class="wlabel" id="month-cur-label"></div>
         <div class="winnername"><span id="month-cur-player"></span><span class="trophy">🏆</span></div>
         <div class="wbig sm"><span class="num" id="month-cur-val"></span></div>
         <div class="wsub treat" id="month-cur-note"></div>
         <div class="sparkwrap sm" id="month-cur-spark"></div>
       </section>
       <section class="card widget" id="month-prev-card">
-        <div class="wlabel">Ganador de <span id="month-prev-name"></span></div>
+        <div class="wlabel" id="month-prev-label"></div>
         <div class="winnername"><span id="month-prev-player"></span><span class="trophy">🏆</span></div>
         <div class="wbig sm"><span class="num" id="month-prev-val"></span></div>
         <div class="sparkwrap sm" id="month-prev-spark"></div>
@@ -505,65 +494,369 @@ _TEMPLATE = """<!doctype html>
 
   <section class="card" id="insights-card" style="display:none">
     <div class="ai-head">
-      <span class="ai-badge">IA</span>
-      <span class="ai-title">Insights de la liga</span>
-      <span class="ai-live"><span class="dot"></span>análisis automático</span>
+      <span class="ai-badge" data-i18n="aiBadge"></span>
+      <span class="ai-title" data-i18n="insightsTitle"></span>
+      <span class="ai-live"><span class="dot"></span><span data-i18n="aiLive"></span></span>
     </div>
     <div class="insights" id="insights"></div>
   </section>
 
   <section class="card">
-    <h2>Clasificación</h2>
+    <h2 data-i18n="ranking"></h2>
     <div class="overx" style="margin-top:6px"><table id="ranking"></table></div>
   </section>
 
   <section class="card" id="daily-card" style="display:none">
-    <h2>🏅 Campeón de cada día · <span id="daily-month"></span></h2>
+    <h2 id="daily-title"></h2>
     <div class="overx" style="margin-top:6px"><table id="daily"></table></div>
   </section>
 
   <section class="card" id="alloc-card" style="display:none">
-    <div class="wlabel">Cartera de la liga</div>
+    <div class="wlabel" data-i18n="leagueWallet"></div>
     <div id="alloc-bars"></div>
     <div class="alloc-insight" id="alloc-insight"></div>
   </section>
 
   <section class="card" id="wallets-card" style="display:none">
-    <h2>Carteras por jugador</h2>
+    <h2 data-i18n="walletsTitle"></h2>
     <div id="wallets" style="margin-top:4px"></div>
   </section>
 
   <section class="card">
-    <h2>Rentabilidad acumulada · últimos 30 días</h2>
+    <h2 data-i18n="cumTitle"></h2>
     <div class="chartwrap">
-      <svg id="chart" viewBox="0 0 860 360" role="img"
-           aria-label="Evolución de la rentabilidad acumulada por jugador"></svg>
+      <svg id="chart" viewBox="0 0 860 360" role="img" data-i18n-aria="cumChartAria"></svg>
       <div class="tip" id="tip"></div>
     </div>
     <div class="legend" id="legend"></div>
   </section>
 
   <section class="card">
-    <h2>Detalle diario · últimos 30 días</h2>
+    <h2 data-i18n="dailyDetailTitle"></h2>
     <div id="detail" style="margin-top:4px"></div>
   </section>
 </main>
 <div class="modal" id="modal" aria-hidden="true">
-  <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Detalle">
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" data-i18n-aria="detailAria">
     <div class="grab"></div>
     <div id="modal-body"></div>
   </div>
 </div>
-<footer>
-  Rentabilidad diaria con Dietz simple (ingresos y retiradas no cuentan como
-  ganancia); acumulado por composición geométrica (time-weighted return).
-  Datos: extractos de Revolut cifrados · precios de cierre de Yahoo Finance ·
-  logos de <a href="https://logo.dev" target="_blank" rel="noopener noreferrer">Logo.dev</a>.
-  El indicador «en vivo» valora hoy a precio actual y es provisional: no cuenta
-  para la clasificación oficial.
-</footer>
+<footer data-i18n-html="footer"></footer>
 <script>
 const DATA = __DATA__;
+const UPDATED = "__UPDATED__";
+
+// ==== idioma: inglés por defecto, japonés opcional ====================
+// La selección se recuerda por dispositivo en localStorage. El toggle solo
+// guarda la preferencia y recarga: toda la interfaz se pinta según ``LANG``.
+const LANG = (() => {
+  try { const s = localStorage.getItem("lang"); if (s === "en" || s === "ja") return s; }
+  catch (e) {}
+  return "en";
+})();
+document.documentElement.lang = LANG;
+
+const NBSP = String.fromCharCode(160);
+const MONTHS = {
+  en: ["January","February","March","April","May","June","July","August",
+       "September","October","November","December"],
+  ja: ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"],
+};
+const monthLabel = (m, y) => LANG === "ja"
+  ? y + "年" + MONTHS.ja[m - 1]
+  : MONTHS.en[m - 1] + " " + y;
+
+const I18N = {
+  en: {
+    eyebrow: "🏆 League · Revolut · updated " + UPDATED,
+    sendPositions: "Send positions",
+    mailBody: "attached are my positions in csv format",
+    langBtnLabel: "日本語",
+    langBtnAria: "Switch to Japanese",
+    allPlayers: "All players",
+    period30: "Last 30 days",
+    pendingTitle: "⏳ Awaiting passphrase",
+    pendingText: n => n + " — the statement is uploaded but couldn't be decrypted. " +
+      "The passphrase is probably not the league's: please re-upload with the correct one.",
+    leader: "Leader",
+    bestOfDay: "Best of the day",
+    gapTitle: "1st–last gap",
+    winnerOf: ml => "Winner of " + ml,
+    lunchNote: "🍽️ Their turn to buy lunch",
+    aiBadge: "AI",
+    insightsTitle: "League insights",
+    aiLive: "automatic analysis",
+    ranking: "Standings",
+    rankCols: ["#", "Player", "Cumulative %", "Last day %", "Since"],
+    dailyTitle: ml => "🏅 Daily champion · " + ml,
+    dailyCols: ["Date", "Champion", "Day %"],
+    leagueWallet: "League portfolio",
+    walletsTitle: "Portfolios by player",
+    cumTitle: "Cumulative return · last 30 days",
+    cumChartAria: "Cumulative return over time by player",
+    dailyDetailTitle: "Daily detail · last 30 days",
+    detailAria: "Detail",
+    footer: "Daily return with simple Dietz (deposits and withdrawals don't count " +
+      "as gains); cumulative by geometric compounding (time-weighted return). " +
+      "Data: encrypted Revolut statements · closing prices from Yahoo Finance · " +
+      "logos by <a href=\\"https://logo.dev\\" target=\\"_blank\\" rel=\\"noopener noreferrer\\">Logo.dev</a>. " +
+      "The \\u201clive\\u201d indicator values today at the current price and is provisional: " +
+      "it doesn't count toward the official standings.",
+    heroLive: pct => '<span class="dot"></span>live ' + pct + ' <span class="tag">provisional</span>',
+    pp: "\\u00a0pp",
+    assets: n => n === 1 ? "asset" : "assets",
+    others: "Others",
+    donutAria: "Portfolio breakdown by weight",
+    allocInsight: (tk, w) => "📊 Largest position · " + tk +
+      ' <span class="muted">· ' + w + " of total</span>",
+    walletTop: (tk, w) => "Largest · " + tk + " " + w,
+    noPlayers: "No players with data yet",
+    noPlayersDot: "No players with data yet.",
+    detailColsFull: ["Date","Start","End","Ext. flow","Day P&L","Day %","Cumulative %"],
+    detailColsSimple: ["Date","Day %","Cumulative %"],
+    buy: "Buy", sell: "Sell",
+    recBuckets: ["Strong buy","Buy","Hold","Sell","Strong sell"],
+    analystRec: "Analyst recommendation",
+    analysts: n => n + (n === 1 ? " analyst" : " analysts"),
+    avg: v => "avg " + v + "/5",
+    priceTarget: m => "🎯 Price target " + m,
+    rangeLabel: (lo, hi) => "· range " + lo + "–" + hi,
+    relatedTickers: "Related tickers",
+    nextBuy: "Buy", nextTrim: "Trim",
+    nextTitle: (tk, buy) => buy ? "Add to " + tk : "Trim " + tk,
+    consensusBit: l => "consensus " + l.toLowerCase(),
+    targetBit: pct => "target " + pct,
+    ofPortfolio: w => w + " of their portfolio",
+    nextDisclaimer: "💡 Suggested step based on analyst consensus (Yahoo Finance). " +
+      "Not investment advice.",
+    close: "Close",
+    weightInLeague: "League weight",
+    heldBy: "Held by",
+    playersCount: n => n + (n === 1 ? " player" : " players"),
+    variation: "Change",
+    tradeOnRevolut: "Trade on Revolut",
+    revNote: tk => "Open " + tk + "'s page in the Revolut app to buy or sell.",
+    priceRange: (a, b) => "Price · " + a + " → " + b,
+    whoHasIt: "Who holds it",
+    news: "News",
+    tickerNote: 'Logo: <a href="https://logo.dev" target="_blank" rel="noopener noreferrer">logo.dev</a> · ' +
+      "prices and analyst consensus: Yahoo Finance · informational, not investment advice.",
+    since: d => "Since " + d,
+    nextStep: "Next step",
+    cumPct: "Cumulative %",
+    bestDayTile: "Best day",
+    worstDayTile: "Worst day",
+    lastDayPct: "Last day %",
+    streak: "Streak",
+    streakLabel: (sign, n) => sign > 0 ? (n === 1 ? "day green" : "days green")
+      : (sign < 0 ? (n === 1 ? "day red" : "days red") : "streak"),
+    sessions: "Sessions",
+    cumLastN: n => "Cumulative return · last " + n + " days",
+    liveTag: (c, d) => "Live (provisional) " + c + " · " + d + " today",
+    todayValuation: "Today's valuation",
+    portfolioCount: n => "Portfolio (" + n + (n === 1 ? " holding)" : " holdings)"),
+    recentSessions: "Recent sessions",
+    portfolioNews: "Portfolio news",
+    points: v => Math.abs(v).toFixed(2) + NBSP + "points",
+    ins: {
+      leaderFire: (a, g, b) => a + " is on fire — " + g + " ahead of " + b + ".",
+      leaderPullAway: a => a + " is pulling away at the top.",
+      leaderLeads: (a, p) => a + " leads the league with " + p + " cumulative.",
+      leaderHelm: a => a + " is in command and won't let go of the helm.",
+      leaderUnstoppable: (a, p) => "No one is stopping " + a + " today — " + p + " on the session.",
+      leaderPerfect: (a, p) => "A perfect day for " + a + ": also the best session (" + p + ").",
+      leaderGreenStreak: (a, s) => a + " strings together " + s + " straight days in the green.",
+      raceFinish: (a, g, b) => "If this were a race, " + a + " would already see the finish line: " + g + " over " + b + ".",
+      overallGap: (a, b, g) => "From " + a + " to " + b + " there are " + g + " in the overall standings.",
+      leaderDefends: (a, b) => a + " defends the lead while " + b + " pushes from behind.",
+      pulse: (a, b) => "The duel between " + a + " and " + b + " keeps the league alive.",
+      bestSession: (a, p) => a + " posts the league's best session: " + p + ".",
+      worstDrop: (a, p) => a + " takes the day's biggest hit: " + p + ".",
+      allRed: () => "A session to forget: the whole league closes in the red today.",
+      allGreen: () => "Tailwind: the whole league closes in the green today.",
+      surprise: (a, p) => a + " is the day's surprise, soaring " + p + ".",
+      deflate: (a, p) => a + " deflates today: " + p + " on the session.",
+      backToGreen: (a, p) => a + " returns to green after a rough patch: " + p + ".",
+      duelTop: (a, b, g) => "Duel at the top: " + a + " and " + b + " separated by just " + g + ".",
+      photoFinish: (a, b, g) => "Photo finish between " + a + " and " + b + ": " + g + " apart.",
+      cutsGround: (lo, up, g) => lo + " gains ground on " + up + ": " + g + " today.",
+      redStreak: (a, s) => a + " strings together " + s + " days in the red. Time to bounce back.",
+      holdsFirm: (a, s) => a + " holds firm: " + s + " straight days positive.",
+      onARoll: (a, g) => a + " is on a roll: " + g + " since the window opened.",
+      sharp: (a, g, k) => a + " is sharp: " + g + " of the last " + k + " days green.",
+      needsReact: (a, p) => a + " needs to react: " + p + " cumulative.",
+      signsOfLife: (a, p) => a + " shows signs of life: " + p + " today from the bottom.",
+      bottomEarly: a => a + " sits at the bottom, but the league has only just begun.",
+      rollercoaster: (a, g) => a + " is on a rollercoaster: " + g + " of swing in the window.",
+      allIn: (a, tk) => a + " is all in on " + tk + ": 100% of the portfolio.",
+      concentrates: (a, w, tk) => a + " concentrates risk: " + w + " in " + tk + ".",
+      mostDiversified: (a, n) => a + " is the most diversified: " + n + " holdings.",
+      leagueLoaded: (tk, w) => "The whole league is loaded on " + tk + ": " + w + " of the aggregate.",
+    },
+  },
+  ja: {
+    eyebrow: "🏆 リーグ · Revolut · 更新 " + UPDATED,
+    sendPositions: "ポジションを送信",
+    mailBody: "csv形式のポジションを添付します",
+    langBtnLabel: "EN",
+    langBtnAria: "英語に切り替え",
+    allPlayers: "全プレイヤー",
+    period30: "直近30日",
+    pendingTitle: "⏳ パスフレーズ待ち",
+    pendingText: n => n + " — 明細はアップロード済みですが復号できませんでした。" +
+      "パスフレーズがリーグのものと異なる可能性があります。正しいもので再アップロードしてください。",
+    leader: "首位",
+    bestOfDay: "本日のベスト",
+    gapTitle: "首位と最下位の差",
+    winnerOf: ml => ml + "の優勝者",
+    lunchNote: "🍽️ ランチをおごる番",
+    aiBadge: "AI",
+    insightsTitle: "リーグのインサイト",
+    aiLive: "自動分析",
+    ranking: "順位表",
+    rankCols: ["#", "プレイヤー", "累積%", "前日比%", "開始"],
+    dailyTitle: ml => "🏅 デイリー王者 · " + ml,
+    dailyCols: ["日付", "王者", "当日%"],
+    leagueWallet: "リーグのポートフォリオ",
+    walletsTitle: "プレイヤー別ポートフォリオ",
+    cumTitle: "累積リターン · 直近30日",
+    cumChartAria: "プレイヤー別の累積リターン推移",
+    dailyDetailTitle: "日次詳細 · 直近30日",
+    detailAria: "詳細",
+    footer: "日次リターンはシンプルDietz法（入出金は損益に含めない）、累積は幾何連鎖" +
+      "（時間加重収益率）。データ：暗号化されたRevolut明細 · Yahoo Financeの終値 · " +
+      "ロゴは <a href=\\"https://logo.dev\\" target=\\"_blank\\" rel=\\"noopener noreferrer\\">Logo.dev</a>。" +
+      "「ライブ」指標は本日を現在値で暫定評価するもので、公式順位には反映されません。",
+    heroLive: pct => '<span class="dot"></span>ライブ ' + pct + ' <span class="tag">暫定</span>',
+    pp: "\\u00a0pp",
+    assets: n => "銘柄",
+    others: "その他",
+    donutAria: "重み付けによるポートフォリオ内訳",
+    allocInsight: (tk, w) => "📊 最大保有 · " + tk +
+      ' <span class="muted">· 合計の' + w + "</span>",
+    walletTop: (tk, w) => "最大 · " + tk + " " + w,
+    noPlayers: "データのあるプレイヤーはまだいません",
+    noPlayersDot: "データのあるプレイヤーはまだいません。",
+    detailColsFull: ["日付","開始","終了","外部フロー","当日損益","当日%","累積%"],
+    detailColsSimple: ["日付","当日%","累積%"],
+    buy: "買う", sell: "売る",
+    recBuckets: ["強い買い","買い","中立","売り","強い売り"],
+    analystRec: "アナリスト評価",
+    analysts: n => n + "名のアナリスト",
+    avg: v => "平均 " + v + "/5",
+    priceTarget: m => "🎯 目標株価 " + m,
+    rangeLabel: (lo, hi) => "· レンジ " + lo + "–" + hi,
+    relatedTickers: "関連銘柄",
+    nextBuy: "買い", nextTrim: "削減",
+    nextTitle: (tk, buy) => buy ? tk + "を買い増し" : tk + "を削減",
+    consensusBit: l => "コンセンサス " + l,
+    targetBit: pct => "目標 " + pct,
+    ofPortfolio: w => "ポートフォリオの" + w,
+    nextDisclaimer: "💡 アナリストのコンセンサス（Yahoo Finance）に基づく参考ステップ。" +
+      "投資助言ではありません。",
+    close: "閉じる",
+    weightInLeague: "リーグ内比率",
+    heldBy: "保有者",
+    playersCount: n => n + "名",
+    variation: "変動",
+    tradeOnRevolut: "Revolutで取引",
+    revNote: tk => "Revolutアプリで" + tk + "の詳細を開いて売買。",
+    priceRange: (a, b) => "価格 · " + a + " → " + b,
+    whoHasIt: "保有者",
+    news: "ニュース",
+    tickerNote: 'ロゴ：<a href="https://logo.dev" target="_blank" rel="noopener noreferrer">logo.dev</a> · ' +
+      "株価とアナリスト評価：Yahoo Finance · 参考情報であり投資助言ではありません。",
+    since: d => d + "から",
+    nextStep: "次の一手",
+    cumPct: "累積%",
+    bestDayTile: "最高の日",
+    worstDayTile: "最悪の日",
+    lastDayPct: "前日比%",
+    streak: "連続",
+    streakLabel: (sign, n) => sign > 0 ? "連続プラス" : (sign < 0 ? "連続マイナス" : "連続"),
+    sessions: "取引日数",
+    cumLastN: n => "累積リターン · 直近" + n + "日",
+    liveTag: (c, d) => "ライブ（暫定）" + c + " · 本日" + d,
+    todayValuation: "本日の評価",
+    portfolioCount: n => "ポートフォリオ（" + n + "銘柄）",
+    recentSessions: "直近の取引日",
+    portfolioNews: "ポートフォリオのニュース",
+    points: v => Math.abs(v).toFixed(2) + NBSP + "ポイント",
+    ins: {
+      leaderFire: (a, g, b) => a + "が絶好調。" + b + "に" + g + "の差。",
+      leaderPullAway: a => a + "がトップで差を広げている。",
+      leaderLeads: (a, p) => a + "が累積" + p + "でリーグ首位。",
+      leaderHelm: a => a + "が主導権を握って離さない。",
+      leaderUnstoppable: (a, p) => "今日は" + a + "を止められない。当日" + p + "。",
+      leaderPerfect: (a, p) => a + "にとって完璧な一日。当日ベストも記録（" + p + "）。",
+      leaderGreenStreak: (a, s) => a + "が" + s + "日連続でプラス。",
+      raceFinish: (a, g, b) => "これがレースなら" + a + "はゴールが見えている。" + b + "に" + g + "。",
+      overallGap: (a, b, g) => a + "から" + b + "まで総合で" + g + "の差。",
+      leaderDefends: (a, b) => a + "がリードを守り、" + b + "が背後から追う。",
+      pulse: (a, b) => a + "と" + b + "の競り合いがリーグを盛り上げる。",
+      bestSession: (a, p) => a + "がリーグ最高の当日成績：" + p + "。",
+      worstDrop: (a, p) => a + "が当日最大の下げ：" + p + "。",
+      allRed: () => "忘れたい一日。リーグ全員が今日マイナスで終了。",
+      allGreen: () => "追い風。リーグ全員が今日プラスで終了。",
+      surprise: (a, p) => a + "が本日のサプライズ。" + p + "の急騰。",
+      deflate: (a, p) => a + "が本日失速：当日" + p + "。",
+      backToGreen: (a, p) => a + "が不調を脱してプラス回復：" + p + "。",
+      duelTop: (a, b, g) => "首位争い：" + a + "と" + b + "の差はわずか" + g + "。",
+      photoFinish: (a, b, g) => a + "と" + b + "の大接戦：差は" + g + "。",
+      cutsGround: (lo, up, g) => lo + "が" + up + "を追い上げ：本日" + g + "上回る。",
+      redStreak: (a, s) => a + "が" + s + "日連続でマイナス。巻き返しの時。",
+      holdsFirm: (a, s) => a + "が持ちこたえる：" + s + "日連続プラス。",
+      onARoll: (a, g) => a + "が好調：期間開始から" + g + "。",
+      sharp: (a, g, k) => a + "が絶好調：直近" + k + "日中" + g + "日プラス。",
+      needsReact: (a, p) => a + "は立て直しが必要：累積" + p + "。",
+      signsOfLife: (a, p) => a + "が最下位から反撃：本日" + p + "。",
+      bottomEarly: a => a + "が最下位だが、リーグは始まったばかり。",
+      rollercoaster: (a, g) => a + "はジェットコースター状態：期間中" + g + "の変動。",
+      allIn: (a, tk) => a + "は" + tk + "に全賭け：ポートフォリオの100%。",
+      concentrates: (a, w, tk) => a + "はリスク集中：" + tk + "に" + w + "。",
+      mostDiversified: (a, n) => a + "が最も分散：" + n + "銘柄保有。",
+      leagueLoaded: (tk, w) => "リーグ全体が" + tk + "を保有：合計の" + w + "。",
+    },
+  },
+};
+const T = I18N[LANG];
+
+// ---- textos estáticos: se aplican por atributos data-i18n ----
+(() => {
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const v = T[el.dataset.i18n]; if (v != null) el.textContent = v;
+  });
+  document.querySelectorAll("[data-i18n-html]").forEach(el => {
+    const v = T[el.dataset.i18nHtml]; if (v != null) el.innerHTML = v;
+  });
+  document.querySelectorAll("[data-i18n-aria]").forEach(el => {
+    const v = T[el.dataset.i18nAria]; if (v != null) el.setAttribute("aria-label", v);
+  });
+  document.querySelectorAll("[data-i18n-title]").forEach(el => {
+    const v = T[el.dataset.i18nTitle];
+    if (v != null) { el.title = v; el.setAttribute("aria-label", v); }
+  });
+  const eb = document.getElementById("eyebrow");
+  if (eb) eb.textContent = T.eyebrow;
+})();
+
+// ---- toggle de idioma (reemplaza al botón de refresco): guarda la ----
+// preferencia por dispositivo en localStorage y recarga para repintar todo.
+(() => {
+  const btn = document.getElementById("lang-btn");
+  if (!btn) return;
+  const label = document.getElementById("lang-label");
+  if (label) label.textContent = T.langBtnLabel;
+  btn.title = T.langBtnAria;
+  btn.setAttribute("aria-label", T.langBtnAria);
+  btn.addEventListener("click", () => {
+    const next = LANG === "ja" ? "en" : "ja";
+    try { localStorage.setItem("lang", next); } catch (e) {}
+    location.reload();
+  });
+})();
+
 // ---- enlace de envío de posiciones por correo ----
 (() => {
   const link = document.getElementById("upload-mail");
@@ -574,23 +867,11 @@ const DATA = __DATA__;
     const fecha = p(now.getDate()) + "/" + p(now.getMonth() + 1) + "/" + now.getFullYear()
       + " " + p(now.getHours()) + ":" + p(now.getMinutes());
     const subject = encodeURIComponent(fecha);
-    const body = encodeURIComponent("adjunto mis posiciones en formato csv");
+    const body = encodeURIComponent(T.mailBody);
     link.href = "mailto:ligatrader26@gmail.com?subject=" + subject + "&body=" + body;
   };
   setHref();
   link.addEventListener("click", setHref);
-})();
-// ---- refrescar el ranking (recarga la última clasificación publicada) ----
-// Actions recalcula solo (al subir un extracto y en el cron diario); aquí basta
-// con recargar sin caché para traer esa última versión. Sin token ni permisos.
-(() => {
-  const btn = document.getElementById("refresh-btn");
-  if (!btn) return;
-  btn.addEventListener("click", () => {
-    btn.classList.add("spin");
-    btn.disabled = true;
-    location.replace(location.pathname + "?r=" + Date.now());
-  });
 })();
 const SLOTS = ["--s1","--s2","--s3","--s4","--s5","--s6","--s7","--s8"];
 const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -612,7 +893,7 @@ const MEDALS = ["🥇","🥈","🥉"];
   const mk = (tag, cls, text) => { const el = document.createElement(tag);
     if (cls) el.className = cls; if (text !== undefined) el.textContent = text; return el; };
   const head = t.insertRow();
-  ["#","Jugador","% acumulado","% último día","Desde"].forEach((h, i) => {
+  T.rankCols.forEach((h, i) => {
     const th = document.createElement("th");
     th.textContent = h; if (i === 1) th.className = "name"; head.appendChild(th);
   });
@@ -634,9 +915,7 @@ const MEDALS = ["🥇","🥈","🥉"];
 // ---- pendientes de clave (extracto subido pero no descifrable) ----
 if (DATA.pending && DATA.pending.length) {
   const names = DATA.pending.map(p => p.name).join(", ");
-  document.getElementById("pending").textContent =
-    names + " — su extracto está subido pero no se ha podido descifrar. Seguramente la " +
-    "frase de paso no es la de la liga: que lo vuelva a subir con la frase correcta.";
+  document.getElementById("pending").textContent = T.pendingText(names);
   document.getElementById("pending-card").style.display = "";
 }
 
@@ -679,8 +958,7 @@ function paintWidgets() {
   if (leader.live) {
     hl.style.display = "inline-flex";
     hl.className = "live " + (leader.live.cum >= 0 ? "pos" : "neg");
-    hl.innerHTML = '<span class="dot"></span>en vivo ' + fmtPct(leader.live.cum) +
-      ' <span class="tag">provisional</span>';
+    hl.innerHTML = T.heroLive(fmtPct(leader.live.cum));
   } else {
     hl.style.display = "none";
   }
@@ -708,7 +986,7 @@ function paintWidgets() {
   }
   const last = ranked[ranked.length - 1];
   const gap = lastOf(ranked[0]).cum - lastOf(last).cum;
-  document.getElementById("gap-val").textContent = "+" + gap.toFixed(2) + "\\u00a0pp";
+  document.getElementById("gap-val").textContent = "+" + gap.toFixed(2) + T.pp;
   document.getElementById("gap-top").textContent = "🥇 " + ranked[0].name + " · " + fmtPct(lastOf(ranked[0]).cum);
   document.getElementById("gap-bot").textContent = last.name + " · " + fmtPct(lastOf(last).cum);
 }
@@ -718,19 +996,18 @@ paintWidgets();
 function paintMonthly() {
   const m = DATA.monthly || {};
   const upC = css("--up"), downC = css("--down");
-  const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
   const paint = (info, key, spark0) => {
     const card = document.getElementById(key + "-card");
     if (!info) { card.style.display = "none"; return false; }
     card.style.display = "";
-    document.getElementById(key + "-name").textContent =
-      cap(info.month_name) + " " + info.month_year;
+    document.getElementById(key + "-label").textContent =
+      T.winnerOf(monthLabel(info.month, info.month_year));
     const val = document.getElementById(key + "-val");
     val.textContent = fmtPct(info.value);
     val.className = "num " + (info.value >= 0 ? "pos" : "neg");
     document.getElementById(key + "-player").textContent = info.name;
     const note = document.getElementById(key + "-note");
-    if (note) note.textContent = "🍽️ Le toca invitar a comer";
+    if (note) note.textContent = T.lunchNote;
     document.getElementById(key + "-spark").innerHTML =
       sparkSVG(info.spark, info.value >= 0 ? upC : downC, spark0, {baseline0: true});
     return true;
@@ -751,13 +1028,12 @@ function paintDaily() {
   const card = document.getElementById("daily-card");
   if (!rows.length) { card.style.display = "none"; return; }
   card.style.display = "";
-  const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
-  document.getElementById("daily-month").textContent =
-    cap(dw.month_name) + " " + dw.month_year;
+  document.getElementById("daily-title").textContent =
+    T.dailyTitle(monthLabel(dw.month, dw.month_year));
   const t = document.getElementById("daily");
   t.innerHTML = "";
   const head = t.insertRow();
-  ["Fecha","Campeón","% del día"].forEach((h, i) => {
+  T.dailyCols.forEach((h, i) => {
     const th = document.createElement("th");
     th.textContent = h; if (i === 1) th.className = "name"; head.appendChild(th);
   });
@@ -791,7 +1067,7 @@ const fmtW = w => w.toFixed(w < 10 ? 1 : 0) + "%";
 function allocItems(all) {
   if (all.length <= 6) return all;
   const rest = all.slice(5).reduce((s, x) => s + x.w, 0);
-  return all.slice(0, 5).concat([{ticker: "Otros", w: Math.round(rest * 100) / 100, other: true}]);
+  return all.slice(0, 5).concat([{ticker: T.others, w: Math.round(rest * 100) / 100, other: true}]);
 }
 // Gráfico de tarta (donut): el ángulo de cada porción es su peso real en la
 // cartera, así que la superficie refleja el % verdadero (no relativo al mayor,
@@ -822,10 +1098,10 @@ function donutSVG(items, count, size) {
     ? '<text x="' + cx + '" y="' + (cy - 1) + '" text-anchor="middle" class="donut-center" ' +
         'font-size="' + big + '">' + count + '</text>' +
       '<text x="' + cx + '" y="' + (cy + 14) + '" text-anchor="middle" class="donut-sub" ' +
-        'font-size="10.5">' + (count === 1 ? "activo" : "activos") + '</text>'
+        'font-size="10.5">' + T.assets(count) + '</text>'
     : "";
   return '<svg class="donut" width="' + S + '" height="' + S + '" viewBox="0 0 ' + S + ' ' + S +
-    '" role="img" aria-label="Reparto de la cartera por peso">' +
+    '" role="img" aria-label="' + T.donutAria + '">' +
     '<g transform="rotate(-90 ' + cx + ' ' + cy + ')">' + segs + '</g>' + center + '</svg>';
 }
 function donutLegendHTML(items) {
@@ -853,8 +1129,7 @@ function paintAllocation() {
   document.getElementById("alloc-bars").innerHTML = donutHTML(all);
   const top = all[0];
   document.getElementById("alloc-insight").innerHTML =
-    "📊 Mayor posición · " + top.ticker +
-    ' <span class="muted">· ' + fmtW(top.w) + " del total</span>";
+    T.allocInsight(top.ticker, fmtW(top.w));
 }
 paintAllocation();
 
@@ -874,7 +1149,7 @@ function paintWallets() {
     key.style.background = colorOf(p);
     head.appendChild(key); head.appendChild(document.createTextNode(p.name));
     const top = document.createElement("span"); top.className = "top";
-    top.textContent = "Mayor · " + p.holdings[0].ticker + " " + fmtW(p.holdings[0].w);
+    top.textContent = T.walletTop(p.holdings[0].ticker, fmtW(p.holdings[0].w));
     head.appendChild(top);
     const chart = document.createElement("div");
     chart.innerHTML = donutHTML(p.holdings, 108);
@@ -891,7 +1166,6 @@ paintWallets();
 function computeInsights() {
   const ps = DATA.players.filter(p => p.days && p.days.length);
   if (!ps.length) return [];
-  const NBSP = String.fromCharCode(160);
   const lastp = p => p.days[p.days.length - 1];
   const ranked = [...ps].sort((a, b) => lastp(b).cum - lastp(a).cum);
   const byDay = [...ps].sort((a, b) => lastp(b).day - lastp(a).day);
@@ -899,7 +1173,8 @@ function computeInsights() {
   const leader = ranked[0], second = ranked[1], tail = ranked[n - 1];
   const bestDay = byDay[0], worstDay = byDay[n - 1];
   const who = p => '<b style="color:' + colorOf(p) + '">' + p.name + '</b>';
-  const pts = v => Math.abs(v).toFixed(2) + NBSP + "puntos";
+  const pts = v => T.points(v);
+  const I = T.ins;
   const streak = (p, positive) => { let c = 0; for (let i = p.days.length - 1; i >= 0; i--) {
     const d = p.days[i].day; if (positive ? d > 0 : d < 0) c++; else break; } return c; };
   const greenCount = (p, k) => p.days.slice(-k).filter(d => d.day > 0).length;
@@ -917,88 +1192,88 @@ function computeInsights() {
   if (n >= 2) {
     const g = lastp(leader).cum - lastp(second).cum;
     if (g > 0.05)
-      add(9.5, "🔥", who(leader) + " está que se sale. Le saca " + pts(g) + " a " + who(second) + ".");
+      add(9.5, "🔥", I.leaderFire(who(leader), pts(g), who(second)));
     if (g > 3)
-      add(6.7, "🧱", who(leader) + " pone tierra de por medio en lo más alto.");
+      add(6.7, "🧱", I.leaderPullAway(who(leader)));
   }
   add(6.0, lastp(leader).cum >= 0 ? "👑" : "🏳️",
-    who(leader) + " lidera la liga con " + fmtPct(lastp(leader).cum) + " acumulado.");
-  add(4.6, "🧭", who(leader) + " manda y no piensa soltar el timón.");
+    I.leaderLeads(who(leader), fmtPct(lastp(leader).cum)));
+  add(4.6, "🧭", I.leaderHelm(who(leader)));
   if (lastp(leader).day > 0)
-    add(6.9, "🛰️", "Nadie frena hoy a " + who(leader) + ": suma " + fmtPct(lastp(leader).day) + " en la jornada.");
+    add(6.9, "🛰️", I.leaderUnstoppable(who(leader), fmtPct(lastp(leader).day)));
   if (leader === bestDay && lastp(leader).day > 0)
-    add(8.5, "🚀", "Día redondo para " + who(leader) + ": también firma la mejor jornada (" + fmtPct(lastp(leader).day) + ").");
+    add(8.5, "🚀", I.leaderPerfect(who(leader), fmtPct(lastp(leader).day)));
   { const s = streak(leader, true); if (s >= 2)
-    add(7.0, "📈", who(leader) + " enlaza " + s + " días seguidos en verde."); }
+    add(7.0, "📈", I.leaderGreenStreak(who(leader), s)); }
   if (n >= 2) {
     const g = lastp(leader).cum - lastp(tail).cum;
     if (g > 5)
-      add(6.5, "🏁", "Si esto fuera una carrera, " + who(leader) + " ya vería la meta: " + pts(g) + " sobre " + who(tail) + ".");
-    add(4.8, "📐", "De " + who(leader) + " a " + who(tail) + " hay " + pts(g) + " de diferencia en la general.");
-    add(4.4, "🛡️", who(leader) + " defiende el liderato mientras " + who(tail) + " aprieta por detrás.");
-    add(4.2, "🎙️", "El pulso entre " + who(leader) + " y " + who(second) + " mantiene viva la liga.");
+      add(6.5, "🏁", I.raceFinish(who(leader), pts(g), who(tail)));
+    add(4.8, "📐", I.overallGap(who(leader), who(tail), pts(g)));
+    add(4.4, "🛡️", I.leaderDefends(who(leader), who(tail)));
+    add(4.2, "🎙️", I.pulse(who(leader), who(second)));
   }
 
   // ---- movimientos del día ----
   if (bestDay && lastp(bestDay).day > 0)
-    add(7.5, "⚡", who(bestDay) + " firma la mejor jornada de la liga: " + fmtPct(lastp(bestDay).day) + ".");
+    add(7.5, "⚡", I.bestSession(who(bestDay), fmtPct(lastp(bestDay).day)));
   if (n >= 2 && lastp(worstDay).day < 0)
-    add(6.5, "🧊", who(worstDay) + " sufre la mayor caída del día: " + fmtPct(lastp(worstDay).day) + ".");
+    add(6.5, "🧊", I.worstDrop(who(worstDay), fmtPct(lastp(worstDay).day)));
   if (n >= 2 && allNeg)
-    add(7.2, "📉", "Jornada para olvidar: toda la liga cierra hoy en rojo.");
+    add(7.2, "📉", I.allRed());
   if (n >= 2 && allPos)
-    add(7.2, "🟢", "Viento a favor: toda la liga cierra hoy en verde.");
+    add(7.2, "🟢", I.allGreen());
   ps.forEach(p => { if (p !== leader && lastp(p).day >= 2)
-    add(6.6, "✨", who(p) + " es la sorpresa del día: se dispara " + fmtPct(lastp(p).day) + "."); });
+    add(6.6, "✨", I.surprise(who(p), fmtPct(lastp(p).day))); });
   ps.forEach(p => { if (p !== worstDay && lastp(p).day <= -2)
-    add(5.6, "🪂", who(p) + " se desinfla hoy: " + fmtPct(lastp(p).day) + " en la jornada."); });
+    add(5.6, "🪂", I.deflate(who(p), fmtPct(lastp(p).day))); });
   ps.forEach(p => { if (recovered(p))
-    add(5.7, "🌤️", who(p) + " recupera el verde tras un mal tramo: " + fmtPct(lastp(p).day) + "."); });
+    add(5.7, "🌤️", I.backToGreen(who(p), fmtPct(lastp(p).day))); });
 
   // ---- duelos y adelantamientos ----
   if (n >= 2) { const g = lastp(ranked[0]).cum - lastp(ranked[1]).cum;
     if (g >= 0 && g < 1.5)
-      add(8.0, "🥊", "Duelo en la cima: " + who(ranked[0]) + " y " + who(ranked[1]) + " separados por apenas " + pts(g) + "."); }
+      add(8.0, "🥊", I.duelTop(who(ranked[0]), who(ranked[1]), pts(g))); }
   for (let i = 0; i < n - 1; i++) { const g = lastp(ranked[i]).cum - lastp(ranked[i + 1]).cum;
     if (g >= 0 && g < 0.3)
-      add(7.0, "📸", "Photo-finish entre " + who(ranked[i]) + " y " + who(ranked[i + 1]) + ": los separan " + pts(g) + "."); }
+      add(7.0, "📸", I.photoFinish(who(ranked[i]), who(ranked[i + 1]), pts(g))); }
   for (let i = 0; i < n - 1; i++) { const up = ranked[i], lo = ranked[i + 1];
     const g = lastp(up).cum - lastp(lo).cum, diff = lastp(lo).day - lastp(up).day;
     if (diff > 0.5 && g < 6)
-      add(6.8, "🔀", who(lo) + " le recorta terreno a " + who(up) + ": hoy le gana " + pts(diff) + "."); }
+      add(6.8, "🔀", I.cutsGround(who(lo), who(up), pts(diff))); }
 
   // ---- rachas, remontadas y momentum ----
   ps.forEach(p => { const s = streak(p, false); if (s >= 2)
-    add(6.0 + s * 0.2, "🌧️", who(p) + " encadena " + s + " días en rojo. Toca remontar."); });
+    add(6.0 + s * 0.2, "🌧️", I.redStreak(who(p), s)); });
   ps.forEach(p => { if (p === leader) return; const s = streak(p, true); if (s >= 3)
-    add(6.4, "🔋", who(p) + " aguanta el tirón: " + s + " días seguidos en positivo."); });
+    add(6.4, "🔋", I.holdsFirm(who(p), s)); });
   ps.forEach(p => { const d = windowDelta(p); if (d > 3)
-    add(6.0 + Math.min(d, 10) / 10, "🛫", who(p) + " está de dulce: suma " + pts(d) + " desde el arranque de la ventana."); });
+    add(6.0 + Math.min(d, 10) / 10, "🛫", I.onARoll(who(p), pts(d))); });
   ps.forEach(p => { const k = Math.min(5, p.days.length); if (k >= 4 && greenCount(p, k) >= 4)
-    add(5.8, "✅", who(p) + " está fino: " + greenCount(p, k) + " de los últimos " + k + " días en verde."); });
+    add(5.8, "✅", I.sharp(who(p), greenCount(p, k), k)); });
   ps.forEach(p => { if (lastp(p).cum <= -2)
-    add(5.2, "🧯", who(p) + " necesita reaccionar: " + fmtPct(lastp(p).cum) + " acumulado."); });
+    add(5.2, "🧯", I.needsReact(who(p), fmtPct(lastp(p).cum))); });
   if (n >= 2 && lastp(tail).day > 0)
-    add(5.5, "🌱", who(tail) + " da señales de vida: hoy suma " + fmtPct(lastp(tail).day) + " desde el fondo de la tabla.");
+    add(5.5, "🌱", I.signsOfLife(who(tail), fmtPct(lastp(tail).day)));
   if (n >= 2)
-    add(4.0, "⏳", who(tail) + " cierra la tabla, pero la liga no ha hecho más que empezar.");
+    add(4.0, "⏳", I.bottomEarly(who(tail)));
   ps.forEach(p => { if (p.days.length >= 3 && range(p) >= 6)
-    add(5.2, "🎢", who(p) + " monta en la montaña rusa: " + pts(range(p)) + " de recorrido en la ventana."); });
+    add(5.2, "🎢", I.rollercoaster(who(p), pts(range(p)))); });
 
   // ---- carteras (solo pesos, sin importes) ----
   ps.forEach(p => { const h = p.holdings; if (!h || !h.length) return;
     if (h.length === 1)
-      add(6.2, "🎯", who(p) + " lo fía todo a " + h[0].ticker + ": el 100% de su cartera.");
+      add(6.2, "🎯", I.allIn(who(p), h[0].ticker));
     else if (h[0].w >= 40)
-      add(6.0, "⚠️", who(p) + " concentra el riesgo: " + fmtW(h[0].w) + " en " + h[0].ticker + "."); });
+      add(6.0, "⚠️", I.concentrates(who(p), fmtW(h[0].w), h[0].ticker)); });
   { const withH = ps.filter(p => p.holdings && p.holdings.length);
     if (withH.length) {
       const div = withH.slice().sort((a, b) => b.holdings.length - a.holdings.length)[0];
       if (div.holdings.length >= 4)
-        add(5.4, "🧩", who(div) + " es quien más reparte: " + div.holdings.length + " valores en cartera."); } }
+        add(5.4, "🧩", I.mostDiversified(who(div), div.holdings.length)); } }
   if (DATA.allocation && DATA.allocation.length) { const top = DATA.allocation[0];
     if (top.w >= 20)
-      add(5.0, "📊", "La liga entera va cargada de " + top.ticker + ": " + fmtW(top.w) + " del total agregado."); }
+      add(5.0, "📊", I.leagueLoaded(top.ticker, fmtW(top.w))); }
 
   out.sort((a, b) => b.prio - a.prio);
   return out;
@@ -1078,7 +1353,7 @@ function draw() {
   while (svg.firstChild) svg.removeChild(svg.firstChild);
   if (!DATA.players.length) {
     const t = el("text", {x: W/2, y: H/2, "text-anchor": "middle", fill: css("--muted"), "font-size": 14});
-    t.textContent = "Todavía no hay jugadores con datos";
+    t.textContent = T.noPlayers;
     svg.appendChild(t); return;
   }
   // rejilla + eje Y
@@ -1209,9 +1484,7 @@ svg.addEventListener("pointerleave", () => {
     det.appendChild(sum);
     const over = document.createElement("div"); over.className = "overx";
     const t = document.createElement("table");
-    const cols = p.amounts
-      ? ["Fecha","Inicio","Fin","Flujo ext.","P&L día","% día","% acumulado"]
-      : ["Fecha","% día","% acumulado"];
+    const cols = p.amounts ? T.detailColsFull : T.detailColsSimple;
     const head = t.insertRow();
     cols.forEach(c => { const th = document.createElement("th"); th.textContent = c; head.appendChild(th); });
     const money = v => "$" + v.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2});
@@ -1228,7 +1501,7 @@ svg.addEventListener("pointerleave", () => {
     });
     over.appendChild(t); det.appendChild(over); box.appendChild(det);
   });
-  if (!ranked.length) box.textContent = "Todavía no hay jugadores con datos.";
+  if (!ranked.length) box.textContent = T.noPlayersDot;
 }
 
 // ==== vistas de detalle: ticker y jugador ==============================
@@ -1286,7 +1559,7 @@ function newsRow(sym) {
 function revolutRow(sym) {
   const href = "https://revolut.com/app/trading/stocks/" + encodeURIComponent(sym);
   const box = h("div", "revolut");
-  [["Comprar", "buy", "▲"], ["Vender", "sell", "▼"]].forEach(([label, cls, ico]) => {
+  [[T.buy, "buy", "▲"], [T.sell, "sell", "▼"]].forEach(([label, cls, ico]) => {
     const a = document.createElement("a");
     a.href = href;
     a.className = "rev-btn " + cls;
@@ -1311,21 +1584,25 @@ function tileEl(k, v, cls) {
 // Reparto de opiniones: buckets de compra→venta con color propio (verde→rojo),
 // independiente del azul/rosa de subida/bajada de la liga.
 const REC_BUCKETS = [
-  ["strongBuy", "Compra fuerte", "#15a34a"],
-  ["buy", "Comprar", "#22c55e"],
-  ["hold", "Mantener", "#9aa0ac"],
-  ["sell", "Vender", "#f59e0b"],
-  ["strongSell", "Venta fuerte", "#ef4444"],
+  ["strongBuy", T.recBuckets[0], "#15a34a"],
+  ["buy", T.recBuckets[1], "#22c55e"],
+  ["hold", T.recBuckets[2], "#9aa0ac"],
+  ["sell", T.recBuckets[3], "#f59e0b"],
+  ["strongSell", T.recBuckets[4], "#ef4444"],
 ];
+// El análisis (label) llega en español desde el backend (derivado de la media
+// de recomendación); se traduce al idioma activo mapeando a los buckets.
+const REC_LABEL_MAP = {"Compra fuerte": 0, "Comprar": 1, "Mantener": 2, "Vender": 3, "Venta fuerte": 4};
+const recLabel = l => { const i = REC_LABEL_MAP[l]; return i == null ? l : T.recBuckets[i]; };
 function analystSectionEl(a) {
   const wrap = h("div", "msec");
-  wrap.appendChild(h("div", "h", "Recomendación de analistas" +
+  wrap.appendChild(h("div", "h", T.analystRec +
     (a.asOf ? ' <span style="color:var(--muted);font-weight:600">· ' + fmtDate(a.asOf) + "</span>" : "")));
   const cons = h("div", "consensus");
-  if (a.label) cons.appendChild(h("span", "cbadge " + (a.tone || "neutral"), a.label));
+  if (a.label) cons.appendChild(h("span", "cbadge " + (a.tone || "neutral"), recLabel(a.label)));
   const meta = [];
-  if (a.count) meta.push(a.count + (a.count === 1 ? " analista" : " analistas"));
-  if (a.mean != null) meta.push("media " + a.mean.toFixed(1) + "/5");
+  if (a.count) meta.push(T.analysts(a.count));
+  if (a.mean != null) meta.push(T.avg(a.mean.toFixed(1)));
   if (meta.length) cons.appendChild(h("span", "cmeta", meta.join(" · ")));
   wrap.appendChild(cons);
   if (a.dist) {
@@ -1348,11 +1625,11 @@ function analystSectionEl(a) {
   }
   if (a.target != null) {
     const t = h("div", "target");
-    let html = "🎯 Precio objetivo " + money(a.target);
+    let html = T.priceTarget(money(a.target));
     if (a.upside != null)
       html += ' <span class="up ' + (a.upside >= 0 ? "pos" : "neg") + '">(' + fmtPct(a.upside) + ")</span>";
     if (a.targetLow != null && a.targetHigh != null)
-      html += ' <span class="rng">· rango ' + money(a.targetLow) + "–" + money(a.targetHigh) + "</span>";
+      html += ' <span class="rng">' + T.rangeLabel(money(a.targetLow), money(a.targetHigh)) + "</span>";
     t.innerHTML = html;
     wrap.appendChild(t);
   }
@@ -1375,7 +1652,7 @@ function peersSectionEl(peers) {
     if (!known) chip.appendChild(h("span", "w", "↗"));
     chips.appendChild(chip);
   });
-  return sectionEl("Valores relacionados", chips);
+  return sectionEl(T.relatedTickers, chips);
 }
 function nextStepEl(s) {
   const card = h("div", "nextstep");
@@ -1383,17 +1660,16 @@ function nextStepEl(s) {
   const isBuy = s.action !== "trim";
   const top = h("div", "top");
   top.appendChild(tickerLogoEl(s, 26));
-  top.appendChild(h("span", "act" + (isBuy ? "" : " neg"), isBuy ? "Comprar" : "Reducir"));
-  top.appendChild(h("span", "ttl", (isBuy ? "Ampliar " : "Recortar ") + s.ticker));
+  top.appendChild(h("span", "act" + (isBuy ? "" : " neg"), isBuy ? T.nextBuy : T.nextTrim));
+  top.appendChild(h("span", "ttl", T.nextTitle(s.ticker, isBuy)));
   card.appendChild(top);
   const bits = [];
-  if (s.label) bits.push("consenso " + s.label.toLowerCase());
-  if (s.count) bits.push(s.count + (s.count === 1 ? " analista" : " analistas"));
-  if (s.upside != null) bits.push("objetivo " + fmtPct(s.upside));
-  bits.push(fmtW(s.w) + " de su cartera");
+  if (s.label) bits.push(T.consensusBit(recLabel(s.label)));
+  if (s.count) bits.push(T.analysts(s.count));
+  if (s.upside != null) bits.push(T.targetBit(fmtPct(s.upside)));
+  bits.push(T.ofPortfolio(fmtW(s.w)));
   card.appendChild(h("div", "body", bits.join(" · ")));
-  card.appendChild(h("div", "dis",
-    "💡 Paso orientativo según el consenso de analistas (Yahoo Finance). No es una recomendación de inversión."));
+  card.appendChild(h("div", "dis", T.nextDisclaimer));
   return card;
 }
 
@@ -1418,7 +1694,7 @@ function showModal(node) {
   sheet.style.transform = ""; sheet.style.transition = ""; sheet.style.opacity = "";
   modalBody.innerHTML = "";
   const close = h("button", "mclose", "✕");
-  close.setAttribute("aria-label", "Cerrar");
+  close.setAttribute("aria-label", T.close);
   close.addEventListener("click", closeModal);
   node.appendChild(close);               // ✕ fijado arriba a la derecha (absolute)
   modalBody.appendChild(node);
@@ -1450,15 +1726,14 @@ function openTicker(sym) {
   root.appendChild(head);
 
   const tiles = h("div", "tiles");
-  tiles.appendChild(tileEl("Peso en la liga", fmtW(t.w)));
-  tiles.appendChild(tileEl("Lo tienen", t.holders.length + (t.holders.length === 1 ? " jugador" : " jugadores")));
-  tiles.appendChild(tileEl("Variación", t.ret == null ? "—" : fmtPct(t.ret),
+  tiles.appendChild(tileEl(T.weightInLeague, fmtW(t.w)));
+  tiles.appendChild(tileEl(T.heldBy, T.playersCount(t.holders.length)));
+  tiles.appendChild(tileEl(T.variation, t.ret == null ? "—" : fmtPct(t.ret),
     t.ret == null ? "" : (t.ret >= 0 ? "pos" : "neg")));
   root.appendChild(tiles);
 
-  const revSec = sectionEl("Operar en Revolut", revolutRow(t.ticker));
-  revSec.appendChild(h("div", "rev-note",
-    "Abre el detalle de " + t.ticker + " en la app de Revolut para comprar o vender."));
+  const revSec = sectionEl(T.tradeOnRevolut, revolutRow(t.ticker));
+  revSec.appendChild(h("div", "rev-note", T.revNote(t.ticker)));
   root.appendChild(revSec);
 
   if (t.analyst) root.appendChild(analystSectionEl(t.analyst));
@@ -1467,7 +1742,7 @@ function openTicker(sym) {
     const vals = t.prices.map(p => p.close);
     const spark = h("div", "mspark", sparkSVG(vals, t.ret >= 0 ? upC : downC, "tk"));
     const from = t.prices[0].date, to = t.prices[t.prices.length - 1].date;
-    const sec = sectionEl("Precio · " + fmtDate(from) + " → " + fmtDate(to), spark);
+    const sec = sectionEl(T.priceRange(fmtDate(from), fmtDate(to)), spark);
     root.appendChild(sec);
   }
 
@@ -1480,19 +1755,16 @@ function openTicker(sym) {
       const key = h("span", "key"); key.style.background = css(SLOTS[hd.slot % SLOTS.length]);
       nm.appendChild(key); nm.appendChild(document.createTextNode(hd.name));
       row.appendChild(nm);
-      row.appendChild(h("span", "w", fmtW(hd.w) + " de su cartera"));
+      row.appendChild(h("span", "w", T.ofPortfolio(fmtW(hd.w))));
       list.appendChild(row);
     });
-    root.appendChild(sectionEl("Quién lo tiene", list));
+    root.appendChild(sectionEl(T.whoHasIt, list));
   }
 
   if (t.peers && t.peers.length) root.appendChild(peersSectionEl(t.peers));
 
-  root.appendChild(sectionEl("Noticias", newsRow(t.ticker)));
-  root.appendChild(h("div", "mnote",
-    'Logo: <a href="https://logo.dev" target="_blank" rel="noopener noreferrer">logo.dev</a> · ' +
-    "precios y consenso de analistas: Yahoo Finance · " +
-    "informativo, no es una recomendación de inversión."));
+  root.appendChild(sectionEl(T.news, newsRow(t.ticker)));
+  root.appendChild(h("div", "mnote", T.tickerNote));
   showModal(root);
 }
 
@@ -1528,40 +1800,38 @@ function openPlayer(pid) {
   if (rankIdx >= 0)
     t1.appendChild(h("span", "mbadge rank", (MEDALS[rankIdx] || "#" + (rankIdx + 1))));
   title.appendChild(t1);
-  title.appendChild(h("div", "t2", "Desde " + (p.since ? fmtDate(p.since) : (days[0] || {}).date || "")));
+  title.appendChild(h("div", "t2", T.since(p.since ? fmtDate(p.since) : (days[0] || {}).date || "")));
   head.appendChild(title);
   root.appendChild(head);
 
-  if (p.suggestion) root.appendChild(sectionEl("Próximo paso", nextStepEl(p.suggestion)));
+  if (p.suggestion) root.appendChild(sectionEl(T.nextStep, nextStepEl(p.suggestion)));
 
   const tiles = h("div", "tiles");
-  tiles.appendChild(tileEl("% acumulado", fmtPct(last.cum), last.cum >= 0 ? "pos" : "neg"));
-  tiles.appendChild(tileEl("Mejor día", fmtPct(bestDay.day), "pos"));
-  tiles.appendChild(tileEl("Peor día", fmtPct(worstDay.day), worstDay.day < 0 ? "neg" : ""));
+  tiles.appendChild(tileEl(T.cumPct, fmtPct(last.cum), last.cum >= 0 ? "pos" : "neg"));
+  tiles.appendChild(tileEl(T.bestDayTile, fmtPct(bestDay.day), "pos"));
+  tiles.appendChild(tileEl(T.worstDayTile, fmtPct(worstDay.day), worstDay.day < 0 ? "neg" : ""));
   root.appendChild(tiles);
 
   const tiles2 = h("div", "tiles");
-  tiles2.appendChild(tileEl("% último día", fmtPct(last.day), last.day >= 0 ? "pos" : "neg"));
-  const rlabel = sign > 0 ? "días en verde" : (sign < 0 ? "días en rojo" : "racha");
-  tiles2.appendChild(tileEl("Racha", String(streak), sign > 0 ? "pos" : (sign < 0 ? "neg" : "")));
-  tiles2.children[1].querySelector(".k").textContent = streak === 1 ? rlabel.replace("días", "día") : rlabel;
-  tiles2.appendChild(tileEl("Jornadas", String(days.length)));
+  tiles2.appendChild(tileEl(T.lastDayPct, fmtPct(last.day), last.day >= 0 ? "pos" : "neg"));
+  tiles2.appendChild(tileEl(T.streak, String(streak), sign > 0 ? "pos" : (sign < 0 ? "neg" : "")));
+  tiles2.children[1].querySelector(".k").textContent = T.streakLabel(sign, streak);
+  tiles2.appendChild(tileEl(T.sessions, String(days.length)));
   root.appendChild(tiles2);
 
   if (days.length >= 2) {
     const spark = h("div", "mspark",
       sparkSVG(days.map(d => d.cum), last.cum >= 0 ? upC : downC, "pl", {baseline0: true}));
-    root.appendChild(sectionEl("Rentabilidad acumulada · últimos " + days.length + " días", spark));
+    root.appendChild(sectionEl(T.cumLastN(days.length), spark));
   }
 
   if (p.live) {
     const lv = h("div", "news");
-    const tag = h("a", null,
-      "En vivo (provisional) " + fmtPct(p.live.cum) + " · " + fmtPct(p.live.day) + " hoy");
+    const tag = h("a", null, T.liveTag(fmtPct(p.live.cum), fmtPct(p.live.day)));
     tag.style.cursor = "default"; tag.removeAttribute("href");
     tag.style.color = p.live.cum >= 0 ? upC : downC;
     lv.appendChild(tag);
-    root.appendChild(sectionEl("Valoración de hoy", lv));
+    root.appendChild(sectionEl(T.todayValuation, lv));
   }
 
   if (p.holdings && p.holdings.length) {
@@ -1575,8 +1845,7 @@ function openPlayer(pid) {
       chip.appendChild(h("span", "w", fmtW(hh.w)));
       chips.appendChild(chip);
     });
-    root.appendChild(sectionEl("Cartera (" + p.holdings.length +
-      (p.holdings.length === 1 ? " valor)" : " valores)"), chips));
+    root.appendChild(sectionEl(T.portfolioCount(p.holdings.length), chips));
   }
 
   const recent = days.slice(-6).reverse();
@@ -1588,11 +1857,11 @@ function openPlayer(pid) {
       row.appendChild(h("span", "v " + (d.day >= 0 ? "pos" : "neg"), fmtPct(d.day)));
       list.appendChild(row);
     });
-    root.appendChild(sectionEl("Últimas jornadas", list));
+    root.appendChild(sectionEl(T.recentSessions, list));
   }
 
   if (p.holdings && p.holdings.length) {
-    root.appendChild(sectionEl("Noticias de su cartera", newsRow(p.holdings[0].ticker)));
+    root.appendChild(sectionEl(T.portfolioNews, newsRow(p.holdings[0].ticker)));
   }
   showModal(root);
 }
@@ -1820,7 +2089,7 @@ def _month_best(computed: list[tuple[Player, list[DayResult]]],
                 "name": player.display_name,
                 "value": round(ret, 2),
                 "slot": order[player.player_id],
-                "month_name": _MONTHS_ES[month - 1],
+                "month": month,
                 "month_year": year,
                 "spark": spark,
             }
@@ -1959,7 +2228,7 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
                                        prices, last_days, analysts),
             "monthly": _monthly_bests(computed, today, order),
             "dailyWinners": {
-                "month_name": _MONTHS_ES[today.month - 1],
+                "month": today.month,
                 "month_year": today.year,
                 "rows": _daily_winners(computed, today.year, today.month, order),
             }}
