@@ -15,6 +15,7 @@ from datetime import date, datetime, timezone
 
 from .players import Player
 from .portfolio import DayResult
+from .revolut import BUY, SELL
 from .tickers import ticker_meta
 
 # La competición oficial empezó este día: los días anteriores (pruebas o
@@ -196,6 +197,31 @@ _TEMPLATE = """<!doctype html>
   .wallet .donut-wrap { margin-top: 12px; }
 
   .pos { color: var(--up); } .neg { color: var(--down); }
+
+  /* widget de últimas operaciones (fecha · compra/venta · ticker · jugador) */
+  .op-row { display: flex; align-items: center; gap: 10px; padding: 11px 4px;
+            border-top: 1px solid var(--hair); }
+  .op-row:first-child { border-top: none; }
+  .op-tk { flex: none; display: inline-flex; align-items: center; gap: 9px;
+           font-weight: 700; letter-spacing: -0.01em; }
+  .op-tk .logo, .op-tk .mono { width: 30px; height: 30px; }
+  .op-tk .sym { white-space: nowrap; }
+  .op-act { flex: none; font-size: 11px; font-weight: 800; letter-spacing: 0.03em;
+            text-transform: uppercase; padding: 3px 9px; border-radius: 999px; }
+  .op-act.buy { background: rgba(22,163,74,0.15); color: #16a34a; }
+  .op-act.sell { background: rgba(225,29,72,0.15); color: #e11d48; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .op-act.buy { background: rgba(34,197,94,0.20); color: #4ade80; }
+    :root:not([data-theme="light"]) .op-act.sell { background: rgba(244,63,94,0.20); color: #fb7185; }
+  }
+  :root[data-theme="dark"] .op-act.buy { background: rgba(34,197,94,0.20); color: #4ade80; }
+  :root[data-theme="dark"] .op-act.sell { background: rgba(244,63,94,0.20); color: #fb7185; }
+  .op-name { display: inline-flex; align-items: center; margin-left: auto;
+             color: var(--ink-2); font-weight: 600; font-size: 13.5px; min-width: 0; }
+  .op-name .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .op-date { flex: none; color: var(--muted); font-weight: 600; font-size: 12.5px;
+             font-variant-numeric: tabular-nums; }
+  .op-tk.clk:hover .sym, .op-name.clk:hover .nm { color: var(--accent); }
 
   /* insights generados por IA */
   .ai-head { display: flex; align-items: center; gap: 9px; }
@@ -488,6 +514,11 @@ _TEMPLATE = """<!doctype html>
     </div>
   </div>
 
+  <section class="card" id="ops-card" style="display:none">
+    <div class="wlabel" data-i18n="recentOps"></div>
+    <div id="ops-list" style="margin-top:8px"></div>
+  </section>
+
   <section class="card" id="insights-card" style="display:none">
     <div class="ai-head">
       <span class="ai-badge" data-i18n="aiBadge"></span>
@@ -577,6 +608,8 @@ const I18N = {
       "The passphrase is probably not the league's: please re-upload with the correct one.",
     leader: "Leader",
     bestOfDay: "Best of the day",
+    recentOps: "Latest trades",
+    opBuy: "Buy", opSell: "Sell",
     marketClosed: "Market closed",
     gapTitle: "1st–last gap",
     winnerOf: ml => "Winner of " + ml,
@@ -700,6 +733,8 @@ const I18N = {
       "パスフレーズがリーグのものと異なる可能性があります。正しいもので再アップロードしてください。",
     leader: "首位",
     bestOfDay: "本日のベスト",
+    recentOps: "最新の取引",
+    opBuy: "買い", opSell: "売り",
     marketClosed: "市場は休場",
     gapTitle: "首位と最下位の差",
     winnerOf: ml => ml + "の優勝者",
@@ -1555,6 +1590,46 @@ function tickerLogoEl(t, size) {
   img.onerror = () => img.replaceWith(monoEl(t.ticker, size, bg));
   return img;
 }
+
+// ---- últimas operaciones de la liga (fecha · compra/venta · ticker · jugador) ----
+// Va aquí, tras definir ``h`` y ``tickerLogoEl``, porque los usa al pintar. No
+// expone importes: solo qué se compró/vendió, de qué valor y qué día. El ticker
+// abre su ficha y el jugador la suya (si son abribles).
+function paintOperations() {
+  const ops = DATA.operations || [];
+  const card = document.getElementById("ops-card");
+  if (!ops.length) { card.style.display = "none"; return; }
+  card.style.display = "";
+  const box = document.getElementById("ops-list");
+  box.innerHTML = "";
+  ops.forEach(o => {
+    const row = h("div", "op-row");
+
+    const tk = h("span", "op-tk");
+    if (TICKERS[o.ticker]) { tk.classList.add("clk"); tk.dataset.ticker = o.ticker; }
+    tk.appendChild(tickerLogoEl({ticker: o.ticker}, 30));
+    const sym = h("span", "sym"); sym.textContent = o.ticker;
+    tk.appendChild(sym);
+    row.appendChild(tk);
+
+    const act = h("span", "op-act " + (o.kind === "BUY" ? "buy" : "sell"));
+    act.textContent = o.kind === "BUY" ? T.opBuy : T.opSell;
+    row.appendChild(act);
+
+    const name = h("span", "op-name");
+    if (o.id && PLAYERS[o.id]) { name.classList.add("clk"); name.dataset.player = o.id; }
+    const key = h("span", "key"); key.style.background = css(SLOTS[o.slot % SLOTS.length]);
+    name.appendChild(key);
+    const nm = h("span", "nm"); nm.textContent = o.name;
+    name.appendChild(nm);
+    row.appendChild(name);
+
+    row.appendChild(h("span", "op-date", fmtDate(o.date)));
+    box.appendChild(row);
+  });
+}
+paintOperations();
+
 function newsRow(sym) {
   const q = encodeURIComponent(sym + " stock");
   const links = [
@@ -2158,6 +2233,34 @@ def _drop_weekends(
             for player, series in computed]
 
 
+def _recent_operations(computed: list[tuple[Player, list[DayResult]]],
+                       order: dict[str, int], limit: int = 3) -> list[dict]:
+    """Las últimas ``limit`` operaciones (compras/ventas) de toda la liga.
+
+    Solo compras y ventas de un valor concreto (los ingresos, retiradas,
+    dividendos, comisiones y splits no son «operaciones» que interesen al
+    widget). No expone importes ni cantidades: solo fecha, jugador, si fue
+    compra o venta y el ticker — el mismo nivel de detalle que ya publica la
+    web con las carteras por jugador.
+
+    El extracto de Revolut solo trae la fecha (sin hora), así que dentro de un
+    mismo día se respeta el orden del CSV (las filas más abajo son las más
+    recientes). Se ordena por (fecha, orden en el extracto) de forma
+    descendente y se toman las ``limit`` primeras.
+    """
+    ops: list[tuple[date, int, str, str, int, str, str]] = []
+    for player, _series in computed:
+        for seq, ev in enumerate(player.events):
+            if ev.kind in (BUY, SELL) and ev.ticker:
+                ops.append((ev.day, seq, player.player_id,
+                            player.display_name, order[player.player_id],
+                            ev.kind, ev.ticker))
+    ops.sort(key=lambda o: (o[0], o[1]), reverse=True)
+    return [{"date": day.isoformat(), "id": pid, "name": name,
+             "slot": slot, "kind": kind, "ticker": ticker}
+            for day, _seq, pid, name, slot, kind, ticker in ops[:limit]]
+
+
 def build_payload(computed: list[tuple[Player, list[DayResult]]],
                   last_days: int = 30,
                   pending: list[dict] | None = None,
@@ -2223,6 +2326,7 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
             entry["suggestion"] = suggestion
         players.append(entry)
     return {"players": players, "pending": pending or [],
+            "operations": _recent_operations(computed, order),
             "allocation": _allocation_weights(allocation),
             "tickers": _ticker_details(allocation, holdings, order, names,
                                        prices, last_days, analysts),
