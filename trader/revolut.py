@@ -6,9 +6,11 @@ Revolut exporta desde la app (Inversiones -> Extractos) un CSV con columnas:
 
 Los tipos de operación observados en los extractos de Revolut incluyen:
 BUY - MARKET, BUY - LIMIT, SELL - MARKET, SELL - LIMIT, SELL - STOP,
-CASH TOP-UP, CASH WITHDRAWAL, DIVIDEND, CUSTODY FEE, STOCK SPLIT,
-TRANSFER FROM/TO... El parser es tolerante: normaliza cada tipo a una de
-las categorías internas y avisa de las que no reconoce.
+CASH TOP-UP, CASH WITHDRAWAL, DIVIDEND, CUSTODY FEE, COMMISSION,
+STOCK SPLIT, TRANSFER FROM/TO... El parser es tolerante: normaliza cada
+tipo a una de las categorías internas y avisa de las que no reconoce. Las
+comisiones de operación (COMMISSION) se tratan como FEE: restan efectivo y
+penalizan la rentabilidad (no son un flujo externo neutralizado).
 """
 
 from __future__ import annotations
@@ -48,7 +50,7 @@ _TYPE_MAP = [
     (re.compile(r"^CASH TOP-?UP"), TOPUP),
     (re.compile(r"^(CASH WITHDRAWAL|WITHDRAWAL)"), WITHDRAWAL),
     (re.compile(r"^DIVIDEND"), DIVIDEND),
-    (re.compile(r"^(CUSTODY FEE|FEE|SERVICE FEE)"), FEE),
+    (re.compile(r"^(CUSTODY FEE|SERVICE FEE|COMMISSION|TRADING FEE|STAMP DUTY|FEE)"), FEE),
     (re.compile(r"^STOCK SPLIT"), SPLIT),
     (re.compile(r"^TRANSFER FROM"), TOPUP),
     (re.compile(r"^TRANSFER TO"), WITHDRAWAL),

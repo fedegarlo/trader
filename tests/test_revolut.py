@@ -40,6 +40,22 @@ def test_parse_money_formats():
     assert revolut._parse_money("") == 0.0
 
 
+def test_commission_classified_as_fee():
+    # La comisión de una operación (confirmación de Revolut) debe restar
+    # efectivo como FEE, no ignorarse: penaliza la rentabilidad.
+    for raw in ("COMMISSION", "TRADING FEE", "STAMP DUTY"):
+        assert revolut.classify(raw) == revolut.FEE
+    csv_text = (
+        "Date,Ticker,Type,Quantity,Price per share,Total Amount,Currency,FX Rate\n"
+        "2026-07-21T13:52:41.000000Z,,COMMISSION,,,USD 1.49,USD,1.15\n"
+    )
+    events, warnings = revolut.parse_csv(csv_text)
+    assert warnings == []
+    assert len(events) == 1
+    assert events[0].kind == revolut.FEE
+    assert events[0].total == 1.49
+
+
 def test_unknown_type_warns():
     csv_text = (
         "Date,Ticker,Type,Quantity,Price per share,Total Amount,Currency,FX Rate\n"
