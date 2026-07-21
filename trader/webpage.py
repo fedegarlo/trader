@@ -976,16 +976,24 @@ function paintWidgets() {
   const bDate = document.getElementById("best-date");
   const bv = document.getElementById("best-val");
   const bn = document.getElementById("best-name");
-  // Si es un día laborable y el mercado de EE. UU. aún no ha abierto (antes de
-  // ~13:30 UTC) y todavía no hay jornada de hoy, mostramos «mercado cerrado»
-  // en lugar de la jornada anterior. Los fines de semana y tras el cierre —
-  // cuando ya existe la jornada del día— sí se muestra el mejor del día.
-  const now = new Date();
-  const dow = now.getUTCDay();                        // 0=domingo … 6=sábado
-  const preOpen = now.getUTCHours() < 13 ||
-    (now.getUTCHours() === 13 && now.getUTCMinutes() < 30);
-  const marketClosed = dow >= 1 && dow <= 5 && preOpen &&
-    bd.date !== now.toISOString().slice(0, 10);
+  // El mejor del día perdura toda la tarde y noche hasta la medianoche de
+  // Madrid: solo se muestra «mercado cerrado» en la madrugada/mañana de un día
+  // laborable, antes de que abra el mercado de EE. UU. (~15:30 en Madrid) y
+  // mientras no haya jornada de hoy. Todo se calcula en hora de Madrid para que
+  // el corte sea exactamente la medianoche local (con DST correcto). Los fines
+  // de semana y tras el cierre —con la jornada del día ya publicada— se sigue
+  // mostrando el mejor.
+  const mp = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Madrid", weekday: "short",
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+  }).formatToParts(new Date());
+  const gp = t => (mp.find(x => x.type === t) || {}).value;
+  const madridDate = gp("year") + "-" + gp("month") + "-" + gp("day");
+  const isWeekday = gp("weekday") !== "Sat" && gp("weekday") !== "Sun";
+  const hh = +gp("hour"), mm = +gp("minute");
+  const preOpen = hh < 15 || (hh === 15 && mm < 30);
+  const marketClosed = isWeekday && preOpen && bd.date !== madridDate;
   if (marketClosed) {
     bDate.textContent = "";
     bv.textContent = "🚧"; bv.className = "num closed";
