@@ -77,7 +77,7 @@ def test_daily_winners_picks_best_each_day():
         ]),
     ]
     dw = webpage.build_payload(computed, today=date(2026, 7, 16))["dailyWinners"]
-    assert dw["month_name"] == "julio" and dw["month_year"] == 2026
+    assert dw["month"] == 7 and dw["month_year"] == 2026
     # Ordenados de más reciente a más antiguo.
     assert [(r["date"], r["names"]) for r in dw["rows"]] == [
         ("2026-07-16", ["Ana"]),
@@ -192,7 +192,7 @@ def test_monthly_best_current_month():
         [(fede, fede_series), (ana, ana_series)], today=date(2026, 7, 15))
 
     cur = payload["monthly"]["current"]
-    assert cur["month_name"] == "julio"
+    assert cur["month"] == 7
     assert cur["month_year"] == 2026
     # Ana: 1.05*0.99-1 = 3.95% > Fede: 1.02*1.01-1 = 3.02%
     assert cur["name"] == "Ana"
@@ -214,9 +214,9 @@ def test_monthly_previous_month_when_data():
     fede = Player(player_id="fede", display_name="Fede")
     series = [_day(date(2026, 7, 20), 0.03), _day(date(2026, 8, 3), 0.02)]
     payload = webpage.build_payload([(fede, series)], today=date(2026, 8, 5))
-    assert payload["monthly"]["current"]["month_name"] == "agosto"
+    assert payload["monthly"]["current"]["month"] == 8
     assert payload["monthly"]["current"]["value"] == 2.0
-    assert payload["monthly"]["previous"]["month_name"] == "julio"
+    assert payload["monthly"]["previous"]["month"] == 7
     assert payload["monthly"]["previous"]["value"] == 3.0
 
 
