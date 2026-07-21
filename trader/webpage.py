@@ -973,36 +973,47 @@ function paintWidgets() {
   const best = [...DATA.players].sort((a, b) =>
     (lastOf(b).day - lastOf(a).day) || (lastOf(b).cum - lastOf(a).cum))[0];
   const bd = lastOf(best);
+  const bestCard = document.getElementById("best-card");
   const bDate = document.getElementById("best-date");
   const bv = document.getElementById("best-val");
   const bn = document.getElementById("best-name");
-  // El mejor del día perdura toda la tarde y noche hasta la medianoche de
-  // Madrid: solo se muestra «mercado cerrado» en la madrugada/mañana de un día
-  // laborable, antes de que abra el mercado de EE. UU. (~15:30 en Madrid) y
-  // mientras no haya jornada de hoy. Todo se calcula en hora de Madrid para que
-  // el corte sea exactamente la medianoche local (con DST correcto). Los fines
-  // de semana y tras el cierre —con la jornada del día ya publicada— se sigue
-  // mostrando el mejor.
-  const mp = new Intl.DateTimeFormat("en-GB", {
-    timeZone: "Europe/Madrid", weekday: "short",
-    year: "numeric", month: "2-digit", day: "2-digit",
-    hour: "2-digit", minute: "2-digit", hourCycle: "h23",
-  }).formatToParts(new Date());
-  const gp = t => (mp.find(x => x.type === t) || {}).value;
-  const madridDate = gp("year") + "-" + gp("month") + "-" + gp("day");
-  const isWeekday = gp("weekday") !== "Sat" && gp("weekday") !== "Sun";
-  const hh = +gp("hour"), mm = +gp("minute");
-  const preOpen = hh < 15 || (hh === 15 && mm < 30);
-  const marketClosed = isWeekday && preOpen && bd.date !== madridDate;
-  if (marketClosed) {
-    bDate.textContent = "";
-    bv.textContent = "🚧"; bv.className = "num closed";
-    bn.textContent = T.marketClosed;
+  // Si todos los jugadores empatan a 0 en la jornada, el «mejor del día» no
+  // aporta nada (sería alguien con +0,00%): se oculta el widget y la diferencia
+  // 1º–último ocupa toda la fila.
+  const allZeroDay = DATA.players.every(p => Math.abs(lastOf(p).day) < 0.005);
+  if (allZeroDay) {
+    bestCard.style.display = "none";
+    document.querySelector(".wrow").style.gridTemplateColumns = "1fr";
   } else {
-    bDate.textContent = " · " + bd.date.slice(5).split("-").reverse().join("/");
-    bv.textContent = fmtPct(bd.day); bv.className = "num " + (bd.day >= 0 ? "pos" : "neg");
-    bn.innerHTML = '<span class="medal">🥇</span>';
-    bn.appendChild(document.createTextNode(best.name));
+    bestCard.style.display = "";
+    // El mejor del día perdura toda la tarde y noche hasta la medianoche de
+    // Madrid: solo se muestra «mercado cerrado» en la madrugada/mañana de un
+    // día laborable, antes de que abra el mercado de EE. UU. (~15:30 en Madrid)
+    // y mientras no haya jornada de hoy. Todo se calcula en hora de Madrid para
+    // que el corte sea exactamente la medianoche local (con DST correcto). Los
+    // fines de semana y tras el cierre —con la jornada del día ya publicada— se
+    // sigue mostrando el mejor.
+    const mp = new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Europe/Madrid", weekday: "short",
+      year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+    }).formatToParts(new Date());
+    const gp = t => (mp.find(x => x.type === t) || {}).value;
+    const madridDate = gp("year") + "-" + gp("month") + "-" + gp("day");
+    const isWeekday = gp("weekday") !== "Sat" && gp("weekday") !== "Sun";
+    const hh = +gp("hour"), mm = +gp("minute");
+    const preOpen = hh < 15 || (hh === 15 && mm < 30);
+    const marketClosed = isWeekday && preOpen && bd.date !== madridDate;
+    if (marketClosed) {
+      bDate.textContent = "";
+      bv.textContent = "🚧"; bv.className = "num closed";
+      bn.textContent = T.marketClosed;
+    } else {
+      bDate.textContent = " · " + bd.date.slice(5).split("-").reverse().join("/");
+      bv.textContent = fmtPct(bd.day); bv.className = "num " + (bd.day >= 0 ? "pos" : "neg");
+      bn.innerHTML = '<span class="medal">🥇</span>';
+      bn.appendChild(document.createTextNode(best.name));
+    }
   }
 
   // diferencia 1º - último
