@@ -5,6 +5,7 @@ from datetime import date, timedelta
 from trader import webpage
 from trader.players import Player
 from trader.portfolio import DayResult
+from trader.revolut import BUY, FEE, SELL, TOPUP, Event
 
 
 def _series(n_days: int) -> list[DayResult]:
@@ -323,6 +324,59 @@ def test_player_suggestion_trims_negative_tone():
         [(fede, _series(5))], holdings=holdings, analysts=analysts)
     s = payload["players"][0]["suggestion"]
     assert s["ticker"] == "AAPL" and s["action"] == "trim"
+
+
+def _ev(day, kind, ticker=None, qty=1.0, total=100.0):
+    return Event(day=day, kind=kind, ticker=ticker, quantity=qty,
+                 total=total, currency="USD")
+
+
+def test_recent_operations_last_three_across_players():
+    fede = Player(player_id="fede", display_name="Fede", events=[
+        _ev(date(2026, 7, 14), BUY, "AAPL"),
+        _ev(date(2026, 7, 16), SELL, "MSFT"),
+    ])
+    ana = Player(player_id="ana", display_name="Ana", events=[
+        _ev(date(2026, 7, 15), BUY, "NVDA"),
+        _ev(date(2026, 7, 17), BUY, "TSM"),
+    ])
+    ops = webpage.build_payload(
+        [(fede, _series(5)), (ana, _series(5))])["operations"]
+
+    # Las tres más recientes de toda la liga, de más nueva a más antigua.
+    assert [(o["date"], o["name"], o["kind"], o["ticker"]) for o in ops] == [
+        ("2026-07-17", "Ana", "BUY", "TSM"),
+        ("2026-07-16", "Fede", "SELL", "MSFT"),
+        ("2026-07-15", "Ana", "BUY", "NVDA"),
+    ]
+    # El slot de color acompaña al jugador (ana < fede por orden alfabético de id).
+    assert ops[0]["slot"] == 0 and ops[0]["id"] == "ana"
+    assert ops[1]["slot"] == 1 and ops[1]["id"] == "fede"
+
+
+def test_recent_operations_ignores_non_trades():
+    fede = Player(player_id="fede", display_name="Fede", events=[
+        _ev(date(2026, 7, 14), TOPUP, None),
+        _ev(date(2026, 7, 15), FEE, None),
+        _ev(date(2026, 7, 16), BUY, "AAPL"),
+    ])
+    ops = webpage.build_payload([(fede, _series(5))])["operations"]
+    assert [(o["kind"], o["ticker"]) for o in ops] == [("BUY", "AAPL")]
+
+
+def test_recent_operations_empty_without_events():
+    fede = Player(player_id="fede", display_name="Fede")
+    assert webpage.build_payload([(fede, _series(5))])["operations"] == []
+
+
+def test_recent_operations_same_day_uses_statement_order():
+    # Mismo día: la última fila del extracto es la operación más reciente.
+    fede = Player(player_id="fede", display_name="Fede", events=[
+        _ev(date(2026, 7, 16), BUY, "AAPL"),
+        _ev(date(2026, 7, 16), SELL, "MSFT"),
+    ])
+    ops = webpage.build_payload([(fede, _series(5))])["operations"]
+    assert [o["ticker"] for o in ops] == ["MSFT", "AAPL"]
 
 
 def test_player_suggestion_absent_without_analyst_data():
