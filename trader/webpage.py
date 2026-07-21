@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import json
 import os
-from datetime import date
+from datetime import date, datetime, timezone
 
 from .players import Player
 from .portfolio import DayResult
@@ -150,6 +150,7 @@ _TEMPLATE = """<!doctype html>
   .wbig { font-size: clamp(26px, 8vw, 34px); font-weight: 800; letter-spacing: -0.035em; line-height: 1.1; margin-top: 3px; display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; }
   .wbig.sm { font-size: clamp(22px, 6.6vw, 28px); white-space: nowrap; }
   .num { font-variant-numeric: tabular-nums; }
+  .num.closed { color: var(--ink-2); }
   .delta { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
   .live { align-items: center; gap: 6px; margin-top: 8px; font-size: 13px; font-weight: 700; }
   .live .dot { width: 7px; height: 7px; border-radius: 999px; background: currentColor;
@@ -462,7 +463,7 @@ _TEMPLATE = """<!doctype html>
     </section>
     <div class="wrow">
       <section class="card widget" id="best-card">
-        <div class="wlabel"><span data-i18n="bestOfDay"></span> · <span id="best-date"></span></div>
+        <div class="wlabel"><span data-i18n="bestOfDay"></span><span id="best-date"></span></div>
         <div class="wbig"><span class="num" id="best-val"></span></div>
         <div class="bestname" id="best-name"></div>
       </section>
@@ -581,6 +582,7 @@ const I18N = {
       "The passphrase is probably not the league's: please re-upload with the correct one.",
     leader: "Leader",
     bestOfDay: "Best of the day",
+    marketClosed: "Market closed",
     gapTitle: "1st–last gap",
     winnerOf: ml => "Winner of " + ml,
     lunchNote: "🍽️ Their turn to buy lunch",
@@ -708,6 +710,7 @@ const I18N = {
       "パスフレーズがリーグのものと異なる可能性があります。正しいもので再アップロードしてください。",
     leader: "首位",
     bestOfDay: "本日のベスト",
+    marketClosed: "市場は休場",
     gapTitle: "首位と最下位の差",
     winnerOf: ml => ml + "の優勝者",
     lunchNote: "🍽️ ランチをおごる番",
@@ -970,12 +973,37 @@ function paintWidgets() {
   const best = [...DATA.players].sort((a, b) =>
     (lastOf(b).day - lastOf(a).day) || (lastOf(b).cum - lastOf(a).cum))[0];
   const bd = lastOf(best);
-  document.getElementById("best-date").textContent = bd.date.slice(5).split("-").reverse().join("/");
+  const bDate = document.getElementById("best-date");
   const bv = document.getElementById("best-val");
-  bv.textContent = fmtPct(bd.day); bv.className = "num " + (bd.day >= 0 ? "pos" : "neg");
   const bn = document.getElementById("best-name");
-  bn.innerHTML = '<span class="medal">🥇</span>';
-  bn.appendChild(document.createTextNode(best.name));
+  // El mejor del día perdura toda la tarde y noche hasta la medianoche de
+  // Madrid: solo se muestra «mercado cerrado» en la madrugada/mañana de un día
+  // laborable, antes de que abra el mercado de EE. UU. (~15:30 en Madrid) y
+  // mientras no haya jornada de hoy. Todo se calcula en hora de Madrid para que
+  // el corte sea exactamente la medianoche local (con DST correcto). Los fines
+  // de semana y tras el cierre —con la jornada del día ya publicada— se sigue
+  // mostrando el mejor.
+  const mp = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Madrid", weekday: "short",
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+  }).formatToParts(new Date());
+  const gp = t => (mp.find(x => x.type === t) || {}).value;
+  const madridDate = gp("year") + "-" + gp("month") + "-" + gp("day");
+  const isWeekday = gp("weekday") !== "Sat" && gp("weekday") !== "Sun";
+  const hh = +gp("hour"), mm = +gp("minute");
+  const preOpen = hh < 15 || (hh === 15 && mm < 30);
+  const marketClosed = isWeekday && preOpen && bd.date !== madridDate;
+  if (marketClosed) {
+    bDate.textContent = "";
+    bv.textContent = "🚧"; bv.className = "num closed";
+    bn.textContent = T.marketClosed;
+  } else {
+    bDate.textContent = " · " + bd.date.slice(5).split("-").reverse().join("/");
+    bv.textContent = fmtPct(bd.day); bv.className = "num " + (bd.day >= 0 ? "pos" : "neg");
+    bn.innerHTML = '<span class="medal">🥇</span>';
+    bn.appendChild(document.createTextNode(best.name));
+  }
 
   // diferencia 1º - último
   const gapCard = document.getElementById("gap-card");
@@ -2234,6 +2262,25 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
             }}
 
 
+def _updated_stamp(today: date | None) -> str:
+    """Sello de «actualizado» con fecha y hora (zona de Madrid, si está).
+
+    El build corre en UTC (GitHub Actions); mostramos la hora de Madrid para
+    la liga, con respaldo a UTC si no hay base de datos de zonas horaria. Si se
+    pasa ``today`` (builds reproducibles) se respeta esa fecha y se le añade la
+    hora actual.
+    """
+    tz = None
+    try:  # zoneinfo necesita tzdata; si falta, caemos a UTC
+        from zoneinfo import ZoneInfo
+        tz = ZoneInfo("Europe/Madrid")
+    except Exception:
+        tz = timezone.utc
+    now = datetime.now(tz)
+    day = today or now.date()
+    return f"{day.isoformat()} {now:%H:%M}"
+
+
 def write_index(
     computed: list[tuple[Player, list[DayResult]]],
     out_path: str = "docs/index.html",
@@ -2254,7 +2301,7 @@ def write_index(
         ensure_ascii=False)
     payload = payload.replace("</", "<\\/")  # nunca cerrar el <script> desde los datos
     html = (_TEMPLATE
-            .replace("__UPDATED__", (today or date.today()).isoformat())
+            .replace("__UPDATED__", _updated_stamp(today))
             .replace("__DATA__", payload))
     os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)
     with open(out_path, "w", encoding="utf-8") as fh:

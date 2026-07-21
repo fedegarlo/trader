@@ -124,6 +124,7 @@
   .wbig { font-size: clamp(26px, 8vw, 34px); font-weight: 800; letter-spacing: -0.035em; line-height: 1.1; margin-top: 3px; display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; }
   .wbig.sm { font-size: clamp(22px, 6.6vw, 28px); white-space: nowrap; }
   .num { font-variant-numeric: tabular-nums; }
+  .num.closed { color: var(--ink-2); }
   .delta { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
   .live { align-items: center; gap: 6px; margin-top: 8px; font-size: 13px; font-weight: 700; }
   .live .dot { width: 7px; height: 7px; border-radius: 999px; background: currentColor;
@@ -436,7 +437,7 @@
     </section>
     <div class="wrow">
       <section class="card widget" id="best-card">
-        <div class="wlabel"><span data-i18n="bestOfDay"></span> · <span id="best-date"></span></div>
+        <div class="wlabel"><span data-i18n="bestOfDay"></span><span id="best-date"></span></div>
         <div class="wbig"><span class="num" id="best-val"></span></div>
         <div class="bestname" id="best-name"></div>
       </section>
@@ -519,7 +520,7 @@
 <footer data-i18n-html="footer"></footer>
 <script>
 const DATA = {"players": [{"id": "ana", "name": "Ana", "slot": 0, "amounts": false, "since": "2026-07-14", "days": [{"date": "2026-07-14", "day": 1.5255, "cum": 1.5255}, {"date": "2026-07-15", "day": 0.0299, "cum": 1.5559}, {"date": "2026-07-16", "day": -2.6311, "cum": -1.1161}, {"date": "2026-07-17", "day": -2.1399, "cum": -3.2322}, {"date": "2026-07-20", "day": 0.1725, "cum": -3.0653}, {"date": "2026-07-21", "day": 0.0, "cum": -3.0653}], "holdings": [{"ticker": "META", "w": 36.1}, {"ticker": "PLTR", "w": 33.92}, {"ticker": "SMCI", "w": 29.97}], "live": {"cum": -3.0653, "day": -0.0}}, {"id": "fede", "name": "Fede", "slot": 1, "amounts": false, "since": "2026-07-14", "days": [{"date": "2026-07-14", "day": 1.7906, "cum": 1.7906}, {"date": "2026-07-15", "day": -4.8532, "cum": -3.1496}, {"date": "2026-07-16", "day": -4.961, "cum": -7.9543}, {"date": "2026-07-17", "day": -0.2142, "cum": -8.1514}, {"date": "2026-07-20", "day": 1.2635, "cum": -6.9909}, {"date": "2026-07-21", "day": 0.0, "cum": -6.9909}], "holdings": [{"ticker": "TSM", "w": 40.95}, {"ticker": "MU", "w": 20.67}, {"ticker": "NVDA", "w": 19.19}, {"ticker": "WDC", "w": 19.19}], "live": {"cum": -6.9909, "day": 0.0}}], "pending": [], "allocation": [{"ticker": "META", "w": 21.11}, {"ticker": "PLTR", "w": 19.84}, {"ticker": "SMCI", "w": 17.53}, {"ticker": "TSM", "w": 17.0}, {"ticker": "MU", "w": 8.58}, {"ticker": "NVDA", "w": 7.97}, {"ticker": "WDC", "w": 7.97}], "tickers": [{"ticker": "META", "name": "Meta Platforms", "domain": "meta.com", "w": 21.11, "holders": [{"name": "Ana", "slot": 0, "w": 36.1}], "prices": [{"date": "2026-07-07", "close": 615.58}, {"date": "2026-07-08", "close": 603.12}, {"date": "2026-07-09", "close": 631.48}, {"date": "2026-07-10", "close": 669.21}, {"date": "2026-07-13", "close": 656.73}, {"date": "2026-07-14", "close": 661.04}, {"date": "2026-07-15", "close": 681.31}, {"date": "2026-07-16", "close": 664.54}, {"date": "2026-07-17", "close": 646.01}, {"date": "2026-07-20", "close": 645.85}], "ret": 4.92, "peers": [{"ticker": "GOOGL", "name": "Alphabet", "domain": "abc.xyz"}, {"ticker": "AMZN", "name": "Amazon", "domain": "amazon.com"}, {"ticker": "NFLX", "name": "Netflix", "domain": "netflix.com"}]}, {"ticker": "PLTR", "name": "Palantir", "domain": "palantir.com", "w": 19.84, "holders": [{"name": "Ana", "slot": 0, "w": 33.92}], "prices": [{"date": "2026-07-07", "close": 134.37}, {"date": "2026-07-08", "close": 132.22}, {"date": "2026-07-09", "close": 129.04}, {"date": "2026-07-10", "close": 126.79}, {"date": "2026-07-13", "close": 130.04}, {"date": "2026-07-14", "close": 133.72}, {"date": "2026-07-15", "close": 133.76}, {"date": "2026-07-16", "close": 134.44}, {"date": "2026-07-17", "close": 132.38}, {"date": "2026-07-20", "close": 134.85}], "ret": 0.36, "peers": [{"ticker": "SNOW", "name": "SNOW", "domain": ""}, {"ticker": "CRM", "name": "Salesforce", "domain": "salesforce.com"}, {"ticker": "MSFT", "name": "Microsoft", "domain": "microsoft.com"}]}, {"ticker": "SMCI", "name": "Super Micro Computer", "domain": "supermicro.com", "w": 17.53, "holders": [{"name": "Ana", "slot": 0, "w": 29.97}], "prices": [{"date": "2026-07-07", "close": 26.25}, {"date": "2026-07-08", "close": 28.17}, {"date": "2026-07-09", "close": 28.24}, {"date": "2026-07-10", "close": 28.31}, {"date": "2026-07-13", "close": 27.66}, {"date": "2026-07-14", "close": 27.65}, {"date": "2026-07-15", "close": 26.89}, {"date": "2026-07-16", "close": 24.68}, {"date": "2026-07-17", "close": 24.18}, {"date": "2026-07-20", "close": 23.83}], "ret": -9.22, "peers": [{"ticker": "DELL", "name": "DELL", "domain": ""}, {"ticker": "HPE", "name": "HPE", "domain": ""}, {"ticker": "NVDA", "name": "NVIDIA", "domain": "nvidia.com"}]}, {"ticker": "TSM", "name": "Taiwan Semiconductor", "domain": "tsmc.com", "w": 17.0, "holders": [{"name": "Fede", "slot": 1, "w": 40.95}], "prices": [{"date": "2026-06-24", "close": 440.83}, {"date": "2026-06-25", "close": 434.99}, {"date": "2026-06-26", "close": 432.35}, {"date": "2026-06-29", "close": 455.1}, {"date": "2026-06-30", "close": 477.57}, {"date": "2026-07-01", "close": 444.23}, {"date": "2026-07-02", "close": 434.16}, {"date": "2026-07-06", "close": 451.79}, {"date": "2026-07-07", "close": 432.57}, {"date": "2026-07-08", "close": 436.98}, {"date": "2026-07-09", "close": 436.96}, {"date": "2026-07-10", "close": 434.11}, {"date": "2026-07-13", "close": 421.58}, {"date": "2026-07-14", "close": 420.39}, {"date": "2026-07-15", "close": 419.48}, {"date": "2026-07-16", "close": 409.74}, {"date": "2026-07-17", "close": 398.37}, {"date": "2026-07-20", "close": 402.3}], "ret": -8.74, "peers": [{"ticker": "NVDA", "name": "NVIDIA", "domain": "nvidia.com"}, {"ticker": "ASML", "name": "ASML", "domain": "asml.com"}, {"ticker": "MU", "name": "Micron Technology", "domain": "micron.com"}]}, {"ticker": "MU", "name": "Micron Technology", "domain": "micron.com", "w": 8.58, "holders": [{"name": "Fede", "slot": 1, "w": 20.67}], "prices": [{"date": "2026-06-24", "close": 1048.51}, {"date": "2026-06-25", "close": 1213.5601}, {"date": "2026-06-26", "close": 1132.33}, {"date": "2026-06-29", "close": 1145.28}, {"date": "2026-06-30", "close": 1154.29}, {"date": "2026-07-01", "close": 1032.28}, {"date": "2026-07-02", "close": 975.56}, {"date": "2026-07-06", "close": 984.75}, {"date": "2026-07-07", "close": 938.38}, {"date": "2026-07-08", "close": 948.8}, {"date": "2026-07-09", "close": 991.64}, {"date": "2026-07-10", "close": 979.3}, {"date": "2026-07-13", "close": 937.0}, {"date": "2026-07-14", "close": 983.12}, {"date": "2026-07-15", "close": 904.28}, {"date": "2026-07-16", "close": 853.2}, {"date": "2026-07-17", "close": 848.95}, {"date": "2026-07-20", "close": 865.46}], "ret": -17.46, "peers": [{"ticker": "WDC", "name": "Western Digital", "domain": "westerndigital.com"}, {"ticker": "TSM", "name": "Taiwan Semiconductor", "domain": "tsmc.com"}, {"ticker": "NVDA", "name": "NVIDIA", "domain": "nvidia.com"}]}, {"ticker": "NVDA", "name": "NVIDIA", "domain": "nvidia.com", "w": 7.97, "holders": [{"name": "Fede", "slot": 1, "w": 19.19}], "prices": [{"date": "2026-06-05", "close": 205.1}, {"date": "2026-06-08", "close": 208.64}, {"date": "2026-06-09", "close": 208.19}, {"date": "2026-06-10", "close": 200.42}, {"date": "2026-06-11", "close": 204.87}, {"date": "2026-06-12", "close": 205.19}, {"date": "2026-06-15", "close": 212.45}, {"date": "2026-06-16", "close": 207.41}, {"date": "2026-06-17", "close": 204.65}, {"date": "2026-06-18", "close": 210.69}, {"date": "2026-06-22", "close": 208.65}, {"date": "2026-06-23", "close": 200.04}, {"date": "2026-06-24", "close": 199.0}, {"date": "2026-06-25", "close": 195.74}, {"date": "2026-06-26", "close": 192.53}, {"date": "2026-06-29", "close": 194.97}, {"date": "2026-06-30", "close": 200.09}, {"date": "2026-07-01", "close": 197.58}, {"date": "2026-07-02", "close": 194.83}, {"date": "2026-07-06", "close": 195.55}, {"date": "2026-07-07", "close": 196.93}, {"date": "2026-07-08", "close": 204.12}, {"date": "2026-07-09", "close": 202.78}, {"date": "2026-07-10", "close": 210.96}, {"date": "2026-07-13", "close": 203.53}, {"date": "2026-07-14", "close": 211.8}, {"date": "2026-07-15", "close": 212.5}, {"date": "2026-07-16", "close": 207.4}, {"date": "2026-07-17", "close": 202.81}, {"date": "2026-07-20", "close": 203.28}], "ret": -0.89, "peers": [{"ticker": "AMD", "name": "AMD", "domain": "amd.com"}, {"ticker": "TSM", "name": "Taiwan Semiconductor", "domain": "tsmc.com"}, {"ticker": "AVGO", "name": "Broadcom", "domain": "broadcom.com"}]}, {"ticker": "WDC", "name": "Western Digital", "domain": "westerndigital.com", "w": 7.97, "holders": [{"name": "Fede", "slot": 1, "w": 19.19}], "prices": [{"date": "2026-06-05", "close": 511.72}, {"date": "2026-06-08", "close": 526.93}, {"date": "2026-06-09", "close": 517.72}, {"date": "2026-06-10", "close": 490.09}, {"date": "2026-06-11", "close": 529.29}, {"date": "2026-06-12", "close": 562.93}, {"date": "2026-06-15", "close": 653.53}, {"date": "2026-06-16", "close": 681.08}, {"date": "2026-06-17", "close": 712.13}, {"date": "2026-06-18", "close": 746.23}, {"date": "2026-06-22", "close": 732.62}, {"date": "2026-06-23", "close": 670.75}, {"date": "2026-06-24", "close": 643.83}, {"date": "2026-06-25", "close": 675.39}, {"date": "2026-06-26", "close": 586.45}, {"date": "2026-06-29", "close": 651.88}, {"date": "2026-06-30", "close": 638.72}, {"date": "2026-07-01", "close": 598.37}, {"date": "2026-07-02", "close": 539.0}, {"date": "2026-07-06", "close": 577.46}, {"date": "2026-07-07", "close": 532.1}, {"date": "2026-07-08", "close": 550.3}, {"date": "2026-07-09", "close": 578.05}, {"date": "2026-07-10", "close": 582.59}, {"date": "2026-07-13", "close": 555.55}, {"date": "2026-07-14", "close": 563.32}, {"date": "2026-07-15", "close": 513.84}, {"date": "2026-07-16", "close": 466.81}, {"date": "2026-07-17", "close": 477.22}, {"date": "2026-07-20", "close": 487.42}], "ret": -4.75, "peers": [{"ticker": "MU", "name": "Micron Technology", "domain": "micron.com"}, {"ticker": "STX", "name": "STX", "domain": ""}, {"ticker": "TSM", "name": "Taiwan Semiconductor", "domain": "tsmc.com"}]}], "monthly": {"current": {"name": "Ana", "value": -3.07, "slot": 0, "month": 7, "month_year": 2026, "spark": [1.5255, 1.5559, -1.1161, -3.2322, -3.0653, -3.0653]}, "previous": null}, "dailyWinners": {"month": 7, "month_year": 2026, "rows": [{"date": "2026-07-21", "names": ["Ana", "Fede"], "slot": null, "value": 0.0}, {"date": "2026-07-20", "names": ["Fede"], "slot": 1, "value": 1.26}, {"date": "2026-07-17", "names": ["Fede"], "slot": 1, "value": -0.21}, {"date": "2026-07-16", "names": ["Ana"], "slot": 0, "value": -2.63}, {"date": "2026-07-15", "names": ["Ana"], "slot": 0, "value": 0.03}, {"date": "2026-07-14", "names": ["Fede"], "slot": 1, "value": 1.79}]}};
-const UPDATED = "2026-07-21";
+const UPDATED = "2026-07-21 03:37";
 
 // ==== idioma: inglés por defecto, japonés opcional ====================
 // La selección se recuerda por dispositivo en localStorage. El toggle solo
@@ -555,6 +556,7 @@ const I18N = {
       "The passphrase is probably not the league's: please re-upload with the correct one.",
     leader: "Leader",
     bestOfDay: "Best of the day",
+    marketClosed: "Market closed",
     gapTitle: "1st–last gap",
     winnerOf: ml => "Winner of " + ml,
     lunchNote: "🍽️ Their turn to buy lunch",
@@ -682,6 +684,7 @@ const I18N = {
       "パスフレーズがリーグのものと異なる可能性があります。正しいもので再アップロードしてください。",
     leader: "首位",
     bestOfDay: "本日のベスト",
+    marketClosed: "市場は休場",
     gapTitle: "首位と最下位の差",
     winnerOf: ml => ml + "の優勝者",
     lunchNote: "🍽️ ランチをおごる番",
@@ -944,12 +947,37 @@ function paintWidgets() {
   const best = [...DATA.players].sort((a, b) =>
     (lastOf(b).day - lastOf(a).day) || (lastOf(b).cum - lastOf(a).cum))[0];
   const bd = lastOf(best);
-  document.getElementById("best-date").textContent = bd.date.slice(5).split("-").reverse().join("/");
+  const bDate = document.getElementById("best-date");
   const bv = document.getElementById("best-val");
-  bv.textContent = fmtPct(bd.day); bv.className = "num " + (bd.day >= 0 ? "pos" : "neg");
   const bn = document.getElementById("best-name");
-  bn.innerHTML = '<span class="medal">🥇</span>';
-  bn.appendChild(document.createTextNode(best.name));
+  // El mejor del día perdura toda la tarde y noche hasta la medianoche de
+  // Madrid: solo se muestra «mercado cerrado» en la madrugada/mañana de un día
+  // laborable, antes de que abra el mercado de EE. UU. (~15:30 en Madrid) y
+  // mientras no haya jornada de hoy. Todo se calcula en hora de Madrid para que
+  // el corte sea exactamente la medianoche local (con DST correcto). Los fines
+  // de semana y tras el cierre —con la jornada del día ya publicada— se sigue
+  // mostrando el mejor.
+  const mp = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Madrid", weekday: "short",
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+  }).formatToParts(new Date());
+  const gp = t => (mp.find(x => x.type === t) || {}).value;
+  const madridDate = gp("year") + "-" + gp("month") + "-" + gp("day");
+  const isWeekday = gp("weekday") !== "Sat" && gp("weekday") !== "Sun";
+  const hh = +gp("hour"), mm = +gp("minute");
+  const preOpen = hh < 15 || (hh === 15 && mm < 30);
+  const marketClosed = isWeekday && preOpen && bd.date !== madridDate;
+  if (marketClosed) {
+    bDate.textContent = "";
+    bv.textContent = "🚧"; bv.className = "num closed";
+    bn.textContent = T.marketClosed;
+  } else {
+    bDate.textContent = " · " + bd.date.slice(5).split("-").reverse().join("/");
+    bv.textContent = fmtPct(bd.day); bv.className = "num " + (bd.day >= 0 ? "pos" : "neg");
+    bn.innerHTML = '<span class="medal">🥇</span>';
+    bn.appendChild(document.createTextNode(best.name));
+  }
 
   // diferencia 1º - último
   const gapCard = document.getElementById("gap-card");
