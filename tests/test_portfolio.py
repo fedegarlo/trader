@@ -7,7 +7,6 @@ from trader import revolut
 from trader.portfolio import (
     compute_daily_series,
     holdings_value,
-    provisional_today,
     rebase_from,
 )
 from trader.prices import PriceCache
@@ -24,6 +23,10 @@ class FakePrices(PriceCache):
 
     def ensure_range(self, ticker, start, end):
         pass
+
+    def has_close(self, ticker, day):
+        # En las pruebas todos los días son de mercado (precios fijos).
+        return True
 
     def close_on(self, ticker, day):
         return self.table[ticker]
@@ -116,26 +119,40 @@ def test_holdings_value_empty():
     assert holdings_value([], PRICES) == {}
 
 
-def test_provisional_today_uses_live_prices():
+class CalendarPrices(FakePrices):
+    """Precios fijos pero con un calendario de mercado explícito."""
+
+    def __init__(self, table, market_days):
+        super().__init__(table)
+        self.market = set(market_days)
+
+    def has_close(self, ticker, day):
+        return day in self.market
+
+
+def test_series_omits_days_without_market_data():
     events, _ = revolut.parse_file(os.path.join(DATA, "sample.csv"))
-    series = compute_daily_series(events, PRICES, until=date(2026, 7, 4))
-    # Cotización en vivo por encima del cierre cacheado (205/310) => mejor cum.
-    live = {"AAPL": 250.0, "MSFT": 400.0}
-    prov = provisional_today(events, series, PRICES, lambda t: live.get(t))
-    assert prov is not None
-    assert prov["cum"] > round(series[-1].cumulative_return * 100, 4)
+    # El 07-03 no tiene cierre real (festivo): no debe generar fila, aunque los
+    # eventos de ese día (venta y dividendo) sí se aplican y se reflejan al día
+    # de mercado siguiente.
+    prices = CalendarPrices(
+        {"AAPL": 205.0, "MSFT": 310.0},
+        {date(2026, 7, 1), date(2026, 7, 2), date(2026, 7, 4)},
+    )
+    series = compute_daily_series(events, prices, until=date(2026, 7, 4))
+    assert [r.day for r in series] == [
+        date(2026, 7, 1), date(2026, 7, 2), date(2026, 7, 4)]
 
 
-def test_provisional_none_without_live_quotes():
+def test_external_flow_of_closed_days_carries_to_next_market_day():
     events, _ = revolut.parse_file(os.path.join(DATA, "sample.csv"))
-    series = compute_daily_series(events, PRICES, until=date(2026, 7, 4))
-    # Sin ninguna cotización en vivo no hay indicador provisional.
-    assert provisional_today(events, series, PRICES, lambda t: None) is None
-
-
-def test_provisional_none_without_positions():
-    assert provisional_today([], [], PRICES, lambda t: 100.0) is None
-
-
-def test_live_price_offline_returns_none():
-    assert PRICES.live_price("AAPL") is None
+    # Mercado cerrado el 07-04 (sábado): el ingreso de 500 de ese día no se
+    # pierde, se acumula hasta la siguiente jornada de mercado (07-06).
+    prices = CalendarPrices(
+        {"AAPL": 205.0, "MSFT": 310.0},
+        {date(2026, 7, 1), date(2026, 7, 2), date(2026, 7, 3), date(2026, 7, 6)},
+    )
+    series = compute_daily_series(events, prices, until=date(2026, 7, 6))
+    by_day = {r.day: r for r in series}
+    assert date(2026, 7, 4) not in by_day and date(2026, 7, 5) not in by_day
+    assert by_day[date(2026, 7, 6)].external_flow == pytest.approx(500.0)

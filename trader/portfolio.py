@@ -99,54 +99,20 @@ def holdings_value(
     return {t: qty * prices.close_on(t, last) for t, qty in positions.items()}
 
 
-def provisional_today(
-    events: list[Event],
-    series: list[DayResult],
-    prices: PriceCache,
-    live_price,
-) -> dict[str, float] | None:
-    """Revalora *solo hoy* con precios en vivo, sin tocar la serie oficial.
-
-    Es un indicador provisional: la rentabilidad del día se recalcula usando
-    ``live_price(ticker)`` (que puede devolver ``None`` si no hay cotización) y
-    se compone sobre el acumulado hasta *ayer* de la serie oficial. No escribe
-    en la caché ni altera la clasificación. Devuelve ``{"cum", "day"}`` en % o
-    ``None`` si no hay posiciones abiertas o ninguna cotización en vivo.
-    """
-    if not events or not series:
-        return None
-    today = series[-1].day
-    positions, cash = _positions_at(events, today)
-    if not positions:
-        return None
-
-    prices_now: dict[str, float] = {}
-    any_live = False
-    for ticker in positions:
-        live = live_price(ticker)
-        if live is not None:
-            prices_now[ticker] = float(live)
-            any_live = True
-        else:
-            prices_now[ticker] = prices.close_on(ticker, today)
-    if not any_live:
-        return None
-
-    last = series[-1]
-    end_value = cash + sum(qty * prices_now[t] for t, qty in positions.items())
-    denom = last.start_value + last.external_flow / 2.0
-    daily = (end_value - last.start_value - last.external_flow) / denom if denom > 1e-9 else 0.0
-    base = 1.0 + (series[-2].cumulative_return if len(series) >= 2 else 0.0)
-    cumulative = base * (1.0 + daily) - 1.0
-    return {"cum": round(cumulative * 100, 4), "day": round(daily * 100, 4)}
-
-
 def compute_daily_series(
     events: list[Event],
     prices: PriceCache,
     until: date | None = None,
 ) -> list[DayResult]:
-    """Serie diaria de valor, P&L y rentabilidad a partir de los eventos."""
+    """Serie diaria de valor, P&L y rentabilidad a partir de los eventos.
+
+    Solo se genera una fila en los días con información de mercado (algún valor
+    de la cartera tiene cierre real ese día). Los días sin cotización —fines de
+    semana, festivos y la jornada en curso antes del cierre— no aportan
+    rentabilidad real (el precio se arrastraría del último cierre), así que se
+    omiten. Los flujos de efectivo de esos días se acumulan hasta la siguiente
+    jornada de mercado, para que no se pierdan ni cuenten como ganancia.
+    """
     if not events:
         return []
 
@@ -161,37 +127,48 @@ def compute_daily_series(
     for ticker in tickers:
         prices.ensure_range(ticker, first, last)
 
+    def is_market_day(day: date) -> bool:
+        # Hay información de mercado si algún valor de la cartera cotizó ese día
+        # (cierre real en la caché). Una cartera que nunca ha tenido valores
+        # (solo efectivo) no tiene con qué distinguir: se conservan todos los días.
+        if not tickers:
+            return True
+        return any(prices.has_close(t, day) for t in tickers)
+
     positions: dict[str, float] = {}
     cash = 0.0
     prev_value = 0.0
     cumulative = 1.0
+    pending_flow = 0.0
     results: list[DayResult] = []
 
     day = first
     while day <= last:
-        flow = 0.0
         for ev in by_day.get(day, ()):
             cash, ev_flow = _apply_event(ev, positions, cash)
-            flow += ev_flow
+            pending_flow += ev_flow
 
-        end_value = cash + sum(
-            qty * prices.close_on(ticker, day) for ticker, qty in positions.items()
-        )
-        pnl = end_value - prev_value - flow
-        denom = prev_value + flow / 2.0
-        daily_return = pnl / denom if denom > 1e-9 else 0.0
-        cumulative *= 1.0 + daily_return
+        if is_market_day(day):
+            flow = pending_flow
+            pending_flow = 0.0
+            end_value = cash + sum(
+                qty * prices.close_on(ticker, day) for ticker, qty in positions.items()
+            )
+            pnl = end_value - prev_value - flow
+            denom = prev_value + flow / 2.0
+            daily_return = pnl / denom if denom > 1e-9 else 0.0
+            cumulative *= 1.0 + daily_return
 
-        results.append(DayResult(
-            day=day,
-            start_value=prev_value,
-            end_value=end_value,
-            external_flow=flow,
-            pnl=pnl,
-            daily_return=daily_return,
-            cumulative_return=cumulative - 1.0,
-        ))
-        prev_value = end_value
+            results.append(DayResult(
+                day=day,
+                start_value=prev_value,
+                end_value=end_value,
+                external_flow=flow,
+                pnl=pnl,
+                daily_return=daily_return,
+                cumulative_return=cumulative - 1.0,
+            ))
+            prev_value = end_value
         day += timedelta(days=1)
 
     return results

@@ -152,10 +152,6 @@ _TEMPLATE = """<!doctype html>
   .num { font-variant-numeric: tabular-nums; }
   .num.closed { color: var(--ink-2); }
   .delta { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
-  .live { align-items: center; gap: 6px; margin-top: 8px; font-size: 13px; font-weight: 700; }
-  .live .dot { width: 7px; height: 7px; border-radius: 999px; background: currentColor;
-               animation: pulse 1.8s ease-out infinite; }
-  .live .tag { color: var(--muted); font-weight: 600; font-size: 11.5px; }
   @keyframes pulse {
     0% { box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 55%, transparent); }
     70% { box-shadow: 0 0 0 6px transparent; }
@@ -458,7 +454,6 @@ _TEMPLATE = """<!doctype html>
     <section class="card widget" id="hero-card">
       <div class="wlabel"><span data-i18n="leader"></span> · <span id="hero-name"></span></div>
       <div class="wbig"><span class="num" id="hero-val"></span><span class="delta" id="hero-delta"></span></div>
-      <div class="live" id="hero-live" style="display:none"></div>
       <div class="sparkwrap" id="hero-spark"></div>
     </section>
     <div class="wrow">
@@ -602,10 +597,7 @@ const I18N = {
     footer: "Daily return with simple Dietz (deposits and withdrawals don't count " +
       "as gains); cumulative by geometric compounding (time-weighted return). " +
       "Data: encrypted Revolut statements · closing prices from Yahoo Finance · " +
-      "logos by <a href=\\"https://logo.dev\\" target=\\"_blank\\" rel=\\"noopener noreferrer\\">Logo.dev</a>. " +
-      "The \\u201clive\\u201d indicator values today at the current price and is provisional: " +
-      "it doesn't count toward the official standings.",
-    heroLive: pct => '<span class="dot"></span>live ' + pct + ' <span class="tag">provisional</span>',
+      "logos by <a href=\\"https://logo.dev\\" target=\\"_blank\\" rel=\\"noopener noreferrer\\">Logo.dev</a>.",
     pp: "\\u00a0pp",
     assets: n => n === 1 ? "asset" : "assets",
     others: "Others",
@@ -655,8 +647,6 @@ const I18N = {
       : (sign < 0 ? (n === 1 ? "day red" : "days red") : "streak"),
     sessions: "Sessions",
     cumLastN: n => "Cumulative return · last " + n + " days",
-    liveTag: (c, d) => "Live (provisional) " + c + " · " + d + " today",
-    todayValuation: "Today's valuation",
     portfolioCount: n => "Portfolio (" + n + (n === 1 ? " holding)" : " holdings)"),
     recentSessions: "Recent sessions",
     portfolioNews: "Portfolio news",
@@ -729,9 +719,7 @@ const I18N = {
     detailAria: "詳細",
     footer: "日次リターンはシンプルDietz法（入出金は損益に含めない）、累積は幾何連鎖" +
       "（時間加重収益率）。データ：暗号化されたRevolut明細 · Yahoo Financeの終値 · " +
-      "ロゴは <a href=\\"https://logo.dev\\" target=\\"_blank\\" rel=\\"noopener noreferrer\\">Logo.dev</a>。" +
-      "「ライブ」指標は本日を現在値で暫定評価するもので、公式順位には反映されません。",
-    heroLive: pct => '<span class="dot"></span>ライブ ' + pct + ' <span class="tag">暫定</span>',
+      "ロゴは <a href=\\"https://logo.dev\\" target=\\"_blank\\" rel=\\"noopener noreferrer\\">Logo.dev</a>。",
     pp: "\\u00a0pp",
     assets: n => "銘柄",
     others: "その他",
@@ -780,8 +768,6 @@ const I18N = {
     streakLabel: (sign, n) => sign > 0 ? "連続プラス" : (sign < 0 ? "連続マイナス" : "連続"),
     sessions: "取引日数",
     cumLastN: n => "累積リターン · 直近" + n + "日",
-    liveTag: (c, d) => "ライブ（暫定）" + c + " · 本日" + d,
-    todayValuation: "本日の評価",
     portfolioCount: n => "ポートフォリオ（" + n + "銘柄）",
     recentSessions: "直近の取引日",
     portfolioNews: "ポートフォリオのニュース",
@@ -957,14 +943,6 @@ function paintWidgets() {
   const hd = document.getElementById("hero-delta");
   hd.textContent = (lc.day >= 0 ? "▲ " : "▼ ") + fmtPct(lc.day);
   hd.className = "delta " + (lc.day >= 0 ? "pos" : "neg");
-  const hl = document.getElementById("hero-live");
-  if (leader.live) {
-    hl.style.display = "inline-flex";
-    hl.className = "live " + (leader.live.cum >= 0 ? "pos" : "neg");
-    hl.innerHTML = T.heroLive(fmtPct(leader.live.cum));
-  } else {
-    hl.style.display = "none";
-  }
   document.getElementById("hero-spark").innerHTML =
     sparkSVG(leader.days.map(d => d.cum), lc.cum >= 0 ? upC : downC, "hero", {baseline0: true});
 
@@ -1864,15 +1842,6 @@ function openPlayer(pid) {
     root.appendChild(sectionEl(T.cumLastN(days.length), spark));
   }
 
-  if (p.live) {
-    const lv = h("div", "news");
-    const tag = h("a", null, T.liveTag(fmtPct(p.live.cum), fmtPct(p.live.day)));
-    tag.style.cursor = "default"; tag.removeAttribute("href");
-    tag.style.color = p.live.cum >= 0 ? upC : downC;
-    lv.appendChild(tag);
-    root.appendChild(sectionEl(T.todayValuation, lv));
-  }
-
   if (p.holdings && p.holdings.length) {
     const chips = h("div", "chips");
     p.holdings.forEach(hh => {
@@ -2194,7 +2163,6 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
                   pending: list[dict] | None = None,
                   allocation: dict[str, float] | None = None,
                   holdings: dict[str, dict[str, float]] | None = None,
-                  live: dict[str, dict] | None = None,
                   prices: dict[str, list[tuple]] | None = None,
                   analysts: dict[str, dict] | None = None,
                   today: date | None = None) -> dict:
@@ -2211,13 +2179,8 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
     desglosado por jugador (``{id: {ticker: valor}}``): se publica también solo
     como pesos (%) para la sección «Carteras», que muestra el reparto de cada
     jugador sin revelar importes.
-
-    ``live`` es un indicador provisional por jugador (``{id: {"cum","day"}}``)
-    con la valoración de hoy a precio en vivo. Es solo informativo: no altera
-    la serie oficial ni la clasificación.
     """
     today = today or date.today()
-    live = live or {}
     holdings = holdings or {}
     analysts = analysts or {}
     computed = _drop_weekends(computed)
@@ -2255,8 +2218,6 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
             "days": days,
             "holdings": holdings_w,
         }
-        if player.player_id in live:
-            entry["live"] = live[player.player_id]
         suggestion = _buy_sell_suggestion(holdings_w, analysts)
         if suggestion:
             entry["suggestion"] = suggestion
@@ -2300,13 +2261,12 @@ def write_index(
     pending: list[dict] | None = None,
     allocation: dict[str, float] | None = None,
     holdings: dict[str, dict[str, float]] | None = None,
-    live: dict[str, dict] | None = None,
     prices: dict[str, list[tuple]] | None = None,
     analysts: dict[str, dict] | None = None,
 ) -> str:
     payload = json.dumps(
         build_payload(computed, last_days=last_days, pending=pending,
-                      allocation=allocation, holdings=holdings, live=live,
+                      allocation=allocation, holdings=holdings,
                       prices=prices, analysts=analysts,
                       today=today or date.today()),
         ensure_ascii=False)
