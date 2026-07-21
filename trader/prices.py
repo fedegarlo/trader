@@ -127,30 +127,15 @@ class PriceCache:
             print(f"AVISO: no se pudo actualizar {ticker}, se usa la caché "
                   f"({exc})", file=sys.stderr)
 
-    # -------------------------------------------------------- precio en vivo
-    def live_price(self, ticker: str) -> float | None:
-        """Cotización actual (regularMarketPrice) de Yahoo, sin cachear.
+    def has_close(self, ticker: str, day: date) -> bool:
+        """¿Hay un cierre real (mercado abierto) de ``ticker`` ese día?
 
-        Best-effort: devuelve ``None`` en modo offline o ante cualquier fallo
-        de red/formato. Es un dato provisional, así que nunca se persiste en la
-        caché de cierres (que debe contener solo cierres finales).
+        A diferencia de ``close_on`` —que arrastra el último cierre en fines de
+        semana y festivos— esto solo es cierto si la caché tiene una cotización
+        para esa fecha exacta. Sirve para distinguir los días con información de
+        mercado de los que no la tienen.
         """
-        if self.offline:
-            return None
-        url = (
-            "https://query1.finance.yahoo.com/v8/finance/chart/"
-            f"{urllib.parse.quote(ticker)}?range=1d&interval=1d"
-        )
-        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-        try:
-            with urllib.request.urlopen(req, timeout=15) as resp:
-                payload = json.load(resp)
-            result = (payload.get("chart") or {}).get("result") or []
-            meta = (result[0].get("meta") or {}) if result else {}
-            price = meta.get("regularMarketPrice")
-            return float(price) if price is not None else None
-        except Exception:
-            return None
+        return day in self._load(ticker)
 
     def history(self, ticker: str, start: date, end: date) -> list[tuple[date, float]]:
         """Cierres cacheados de ``[start, end]`` como ``[(date, close)]`` ordenado.
