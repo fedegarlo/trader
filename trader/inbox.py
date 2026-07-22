@@ -26,12 +26,15 @@ verificado), un jugador no puede tocar la carpeta de otro por construcción.
 
 from __future__ import annotations
 
+import csv
 import email
 import imaplib
+import io
 import json
 import os
 import re
 from dataclasses import dataclass, field
+from datetime import date
 from email.message import Message
 from email.utils import parseaddr
 
@@ -180,6 +183,94 @@ def _decode_csv(payload: bytes) -> str:
     return payload.decode("utf-8", errors="replace")
 
 
+# ---- dos flujos de actualización: mensual (ligero) vs total (pesado) --------
+# El asunto del correo puede llevar una etiqueta que indica qué flujo usar:
+#   [MENSUAL] / [MONTHLY]  -> solo se reemplazan las operaciones del mes actual,
+#                            conservando el histórico ya subido (ligero).
+#   [TOTAL] / sin etiqueta -> se reprocesa todo: el extracto reemplaza al
+#                            anterior por completo (pesado, el de siempre).
+MODE_MONTHLY = "monthly"
+MODE_TOTAL = "total"
+_MONTHLY_RE = re.compile(r"\b(mensual|monthly|mes\s*actual|month)\b", re.IGNORECASE)
+
+
+def parse_update_mode(subject: str | None) -> str:
+    """Deduce el flujo de actualización del asunto del correo.
+
+    Devuelve ``MODE_MONTHLY`` si el asunto trae una etiqueta mensual
+    (``[MENSUAL]``, ``[MONTHLY]``…); en cualquier otro caso ``MODE_TOTAL`` (si
+    no viene etiqueta, se hace el total)."""
+    if subject and _MONTHLY_RE.search(subject):
+        return MODE_MONTHLY
+    return MODE_TOTAL
+
+
+def _date_column(header: list[str]) -> int:
+    for i, name in enumerate(header):
+        if name.strip().lower() == "date":
+            return i
+    return 0
+
+
+def merge_month(existing_csv: str, new_csv: str, month_start: date) -> str:
+    """Fusiona el extracto del mes actual sobre el histórico ya guardado.
+
+    Conserva las filas del extracto existente **anteriores** a ``month_start``
+    (el histórico) y añade todas las filas del extracto nuevo (las del mes
+    actual), realineando sus columnas al encabezado del histórico. Así el flujo
+    mensual solo toca el mes en curso sin perder lo anterior. Trabaja sobre las
+    filas en crudo (no sobre eventos), de modo que no se pierde ninguna columna
+    del CSV de Revolut.
+    """
+    ex_rows = list(csv.reader(io.StringIO(existing_csv)))
+    nw_rows = list(csv.reader(io.StringIO(new_csv)))
+    ex_rows = [r for r in ex_rows if any(c.strip() for c in r)]
+    nw_rows = [r for r in nw_rows if any(c.strip() for c in r)]
+    if not ex_rows:
+        return new_csv
+    if len(nw_rows) <= 1:
+        return existing_csv
+
+    ex_header = ex_rows[0]
+    ex_date = _date_column(ex_header)
+    kept = [ex_header]
+    for row in ex_rows[1:]:
+        cell = row[ex_date] if ex_date < len(row) else ""
+        try:
+            when = revolut._parse_date(cell)
+        except ValueError:
+            kept.append(row)          # fecha ilegible: no la perdemos
+            continue
+        if when < month_start:
+            kept.append(row)
+
+    nw_header = nw_rows[0]
+    nw_map = {name.strip().lower(): i for i, name in enumerate(nw_header)}
+    for row in nw_rows[1:]:
+        remapped = []
+        for name in ex_header:
+            j = nw_map.get(name.strip().lower())
+            remapped.append(row[j] if j is not None and j < len(row) else "")
+        kept.append(remapped)
+
+    out = io.StringIO()
+    writer = csv.writer(out)
+    writer.writerows(kept)
+    return out.getvalue()
+
+
+def _read_existing_extract(cfg: PlayerCfg, passphrase: str,
+                           players_dir: str) -> str | None:
+    """CSV en claro del extracto ya guardado, o ``None`` si no hay/no descifra."""
+    path = os.path.join(players_dir, cfg.player_id, "trades.csv.enc")
+    if not os.path.exists(path):
+        return None
+    try:
+        return secretbox.decrypt_file(path, passphrase).decode("utf-8-sig")
+    except (secretbox.DecryptError, OSError):
+        return None
+
+
 def write_extract(cfg: PlayerCfg, csv_text: str, passphrase: str,
                   players_dir: str) -> None:
     """Cifra el CSV y lo escribe en ``players/<id>/``; crea ``player.json``
@@ -203,8 +294,15 @@ def write_extract(cfg: PlayerCfg, csv_text: str, passphrase: str,
 
 
 def process_message(msg: Message, emails: dict[str, PlayerCfg], passphrase: str,
-                    players_dir: str, trusted_authserv: str | None = None) -> Result:
-    """Verifica, valida e ingesta un mensaje. No hace I/O de IMAP."""
+                    players_dir: str, trusted_authserv: str | None = None,
+                    today: date | None = None) -> Result:
+    """Verifica, valida e ingesta un mensaje. No hace I/O de IMAP.
+
+    El flujo (mensual o total) se deduce de la etiqueta del asunto: en el
+    mensual solo se reemplazan las operaciones del mes en curso conservando el
+    histórico; en el total (por defecto, sin etiqueta) el extracto reemplaza al
+    anterior por completo."""
+    today = today or date.today()
     sender = parseaddr(msg.get("From", ""))[1].strip().lower()
     if not sender:
         return Result("unauthorized", detail="sin remitente")
@@ -227,9 +325,17 @@ def process_message(msg: Message, emails: dict[str, PlayerCfg], passphrase: str,
         return Result("invalid_csv", cfg.player_id,
                       f"{sender}: el CSV no tiene operaciones reconocibles")
 
+    mode = parse_update_mode(msg.get("Subject", ""))
+    if mode == MODE_MONTHLY:
+        existing = _read_existing_extract(cfg, passphrase, players_dir)
+        if existing is not None:
+            month_start = date(today.year, today.month, 1)
+            csv_text = merge_month(existing, csv_text, month_start)
+
     write_extract(cfg, csv_text, passphrase, players_dir)
     return Result("ingested", cfg.player_id,
-                  f"{sender}: {len(events)} operaciones, cifrado en players/{cfg.player_id}/")
+                  f"{sender}: {len(events)} operaciones ({mode}), "
+                  f"cifrado en players/{cfg.player_id}/")
 
 
 def run(passphrase: str, players_dir: str = "players", *, dry_run: bool = False,

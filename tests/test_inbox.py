@@ -1,7 +1,8 @@
 import os
+from datetime import date
 from email.message import EmailMessage
 
-from trader import inbox, secretbox
+from trader import inbox, revolut, secretbox
 
 DATA = os.path.join(os.path.dirname(__file__), "data")
 with open(os.path.join(DATA, "sample.csv"), "rb") as _fh:
@@ -14,11 +15,12 @@ DMARC_PASS = ("mx.google.com; dkim=pass header.i=@icloud.com header.s=sig1; "
 
 
 def _make_email(sender="fede@icloud.com", *, auth=DMARC_PASS,
-                attach=SAMPLE_CSV, filename="extracto.csv", ctype="text/csv"):
+                attach=SAMPLE_CSV, filename="extracto.csv", ctype="text/csv",
+                subject="Mi extracto"):
     msg = EmailMessage()
     msg["From"] = f"Fede <{sender}>"
     msg["To"] = "liga.trader@gmail.com"
-    msg["Subject"] = "Mi extracto"
+    msg["Subject"] = subject
     if auth is not None:
         msg["Authentication-Results"] = auth
     msg.set_content("Adjunto mi extracto.")
@@ -163,6 +165,75 @@ def test_process_rejects_invalid_csv(tmp_path):
                                 _emails_map(), "k", str(tmp_path))
     assert res.status == "invalid_csv"
     assert not (tmp_path / "fede").exists()
+
+
+# ----- dos flujos de actualización: mensual vs total -----
+
+HEADER = "Date,Ticker,Type,Quantity,Price per share,Total Amount,Currency,FX Rate\n"
+EXISTING = (HEADER +
+            "2026-06-15T09:00:00.000000Z,,CASH TOP-UP,,,\"$1,000.00\",USD,1.00\n"
+            "2026-06-20T14:30:00.000000Z,AAPL,BUY - MARKET,2,$200.00,$400.00,USD,1.00\n"
+            "2026-07-05T14:30:00.000000Z,MSFT,BUY - MARKET,1,$300.00,$300.00,USD,1.00\n")
+# Extracto nuevo del mes en curso (julio): reemplaza julio, no toca junio.
+NEW_MONTH = (HEADER +
+             "2026-07-05T14:30:00.000000Z,MSFT,BUY - MARKET,1,$300.00,$300.00,USD,1.00\n"
+             "2026-07-18T15:00:00.000000Z,NVDA,BUY - MARKET,1,$120.00,$120.00,USD,1.00\n")
+
+
+def test_parse_update_mode():
+    assert inbox.parse_update_mode("[MENSUAL] 22/07/2026 14:30") == inbox.MODE_MONTHLY
+    assert inbox.parse_update_mode("Monthly update") == inbox.MODE_MONTHLY
+    assert inbox.parse_update_mode("[TOTAL] 22/07/2026") == inbox.MODE_TOTAL
+    assert inbox.parse_update_mode("22/07/2026 14:30") == inbox.MODE_TOTAL  # sin etiqueta
+    assert inbox.parse_update_mode("") == inbox.MODE_TOTAL
+    assert inbox.parse_update_mode(None) == inbox.MODE_TOTAL
+
+
+def test_merge_month_keeps_history_replaces_current():
+    merged = inbox.merge_month(EXISTING, NEW_MONTH, date(2026, 7, 1))
+    events, _ = revolut.parse_csv(merged)
+    days = sorted(e.day for e in events)
+    tickers = {e.ticker for e in events if e.ticker}
+    # Junio se conserva; julio pasa a ser el nuevo (NVDA entra, el MSFT viejo
+    # de julio se sustituye por el del extracto nuevo, sin duplicar).
+    assert days[0] == date(2026, 6, 15) and days[1] == date(2026, 6, 20)
+    assert "NVDA" in tickers and "AAPL" in tickers
+    assert sum(1 for e in events if e.ticker == "MSFT") == 1
+
+
+def test_merge_month_without_existing_returns_new():
+    assert inbox.merge_month("", NEW_MONTH, date(2026, 7, 1)) == NEW_MONTH
+
+
+def test_process_monthly_merges_with_existing(tmp_path):
+    cfg = _emails_map()["fede@icloud.com"]
+    inbox.write_extract(cfg, EXISTING, "clave-liga", str(tmp_path))
+    msg = _make_email(subject="[MENSUAL] 22/07/2026", attach=NEW_MONTH.encode())
+    res = inbox.process_message(msg, _emails_map(), "clave-liga", str(tmp_path),
+                                today=date(2026, 7, 22))
+    assert res.ingested and "monthly" in res.detail
+    enc = tmp_path / "fede" / "trades.csv.enc"
+    merged = secretbox.decrypt_file(str(enc), "clave-liga").decode("utf-8-sig")
+    events, _ = revolut.parse_csv(merged)
+    tickers = {e.ticker for e in events if e.ticker}
+    # El histórico de junio (AAPL) sobrevive y entra el nuevo NVDA de julio.
+    assert "AAPL" in tickers and "NVDA" in tickers
+
+
+def test_process_total_replaces_everything(tmp_path):
+    cfg = _emails_map()["fede@icloud.com"]
+    inbox.write_extract(cfg, EXISTING, "clave-liga", str(tmp_path))
+    # Sin etiqueta -> total: el extracto nuevo reemplaza por completo al anterior.
+    msg = _make_email(subject="22/07/2026", attach=NEW_MONTH.encode())
+    res = inbox.process_message(msg, _emails_map(), "clave-liga", str(tmp_path),
+                                today=date(2026, 7, 22))
+    assert res.ingested and "total" in res.detail
+    enc = tmp_path / "fede" / "trades.csv.enc"
+    stored = secretbox.decrypt_file(str(enc), "clave-liga").decode("utf-8-sig")
+    events, _ = revolut.parse_csv(stored)
+    tickers = {e.ticker for e in events if e.ticker}
+    # Junio (AAPL) desaparece; solo quedan las operaciones del extracto nuevo.
+    assert "AAPL" not in tickers and "NVDA" in tickers
 
 
 # ----- run(): variables de entorno vacías (GitHub Actions) -----

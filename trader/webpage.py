@@ -485,6 +485,23 @@ _TEMPLATE = """<!doctype html>
   .nextstep .body { font-size: 13.5px; color: var(--ink-2); font-weight: 600; margin-top: 7px; }
   .nextstep .dis { color: var(--muted); font-size: 11px; margin-top: 8px; line-height: 1.4; }
 
+  /* selector de flujo de subida (mensual / total) en el modal de envío */
+  .flows { display: grid; gap: 10px; }
+  .flow-card { display: block; text-decoration: none; color: inherit;
+               border: 1px solid var(--hair); border-radius: 16px; padding: 13px 14px;
+               background: var(--surface-2); transition: border-color .12s ease; }
+  .flow-card:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--hair)); }
+  .flow-card:active { transform: translateY(1px); }
+  .flow-top { display: flex; align-items: center; gap: 9px; }
+  .flow-ttl { font-weight: 800; font-size: 15px; letter-spacing: -0.01em; }
+  .flow-via { margin-left: auto; font-size: 11px; font-weight: 800; text-transform: uppercase;
+              letter-spacing: 0.03em; color: var(--accent);
+              background: color-mix(in srgb, var(--accent) 14%, transparent);
+              padding: 2px 8px; border-radius: 999px; }
+  .flow-desc { color: var(--ink-2); font-size: 13px; font-weight: 600; margin-top: 6px; }
+  .flow-web { display: inline-block; margin-top: 14px; font-size: 13px; font-weight: 700;
+              color: var(--accent); text-decoration: none; }
+
   @media (min-width: 620px) {
     main { gap: 14px; }
     .card { padding: 22px; }
@@ -663,6 +680,15 @@ const I18N = {
     pendingText: n => n + " — the statement is uploaded but couldn't be decrypted. " +
       "The passphrase is probably not the league's: please re-upload with the correct one.",
     leader: "Leader",
+    uploadTitle: "Send your statement",
+    uploadSubtitle: "Choose how to update the ranking",
+    chooseFlow: "Update type",
+    flowMonthly: "Monthly",
+    flowMonthlyDesc: "Only this month's trades — keeps the history you already uploaded.",
+    flowTotal: "Full",
+    flowTotalDesc: "Reprocess the whole statement from scratch.",
+    flowViaEmail: "email",
+    uploadWeb: "Upload on the web (token, no email) ↗",
     calcHelpAria: "How the ranking is calculated",
     calc: {
       title: "How the ranking is calculated",
@@ -814,6 +840,15 @@ const I18N = {
     pendingText: n => n + " — 明細はアップロード済みですが復号できませんでした。" +
       "パスフレーズがリーグのものと異なる可能性があります。正しいもので再アップロードしてください。",
     leader: "首位",
+    uploadTitle: "明細を送信",
+    uploadSubtitle: "順位の更新方法を選んでください",
+    chooseFlow: "更新の種類",
+    flowMonthly: "今月のみ",
+    flowMonthlyDesc: "今月の取引だけを更新し、これまでの履歴は保持します。",
+    flowTotal: "全体",
+    flowTotalDesc: "明細全体を最初から再処理します。",
+    flowViaEmail: "メール",
+    uploadWeb: "ウェブからアップロード（トークン、メール不要）↗",
     calcHelpAria: "順位の計算方法",
     calc: {
       title: "順位の計算方法",
@@ -2252,6 +2287,55 @@ function openDayDetail(pid, iso) {
 
   showModal(root);
 }
+
+// ---- envío de extracto: elegir flujo mensual o total ----
+// El asunto del correo incorpora una etiqueta ([MENSUAL]/[TOTAL]) que el
+// workflow de ingesta lee para decidir el flujo. Si no viniera etiqueta, el
+// backend hace el total.
+function mailtoFor(tag) {
+  const now = new Date();
+  const p = n => String(n).padStart(2, "0");
+  const fecha = p(now.getDate()) + "/" + p(now.getMonth() + 1) + "/" + now.getFullYear()
+    + " " + p(now.getHours()) + ":" + p(now.getMinutes());
+  const subject = encodeURIComponent((tag ? "[" + tag + "] " : "") + fecha);
+  const body = encodeURIComponent(T.mailBody);
+  return "mailto:ligatrader26@gmail.com?subject=" + subject + "&body=" + body;
+}
+function openUpload() {
+  const root = document.createElement("div");
+  const head = h("div", "mhead");
+  const title = h("div", "mtitle");
+  title.appendChild(h("div", "t1", T.uploadTitle));
+  title.appendChild(h("div", "t2", T.uploadSubtitle));
+  head.appendChild(title);
+  root.appendChild(head);
+
+  const mk = (tag, label, desc) => {
+    const a = document.createElement("a");
+    a.className = "flow-card";
+    a.href = mailtoFor(tag);
+    a.appendChild(h("div", "flow-top",
+      '<span class="flow-ttl">' + label + '</span>' +
+      '<span class="flow-via">' + T.flowViaEmail + '</span>'));
+    a.appendChild(h("div", "flow-desc", desc));
+    a.addEventListener("click", () => setTimeout(closeModal, 60));
+    return a;
+  };
+  const box = h("div", "flows");
+  box.appendChild(mk("MENSUAL", T.flowMonthly, T.flowMonthlyDesc));
+  box.appendChild(mk("TOTAL", T.flowTotal, T.flowTotalDesc));
+  root.appendChild(sectionEl(T.chooseFlow, box));
+
+  const web = document.createElement("a");
+  web.className = "flow-web"; web.href = "subir.html";
+  web.textContent = T.uploadWeb;
+  root.appendChild(web);
+  showModal(root);
+}
+(() => {
+  const link = document.getElementById("upload-mail");
+  if (link) link.addEventListener("click", ev => { ev.preventDefault(); openUpload(); });
+})();
 
 // ---- apertura por delegación + cierre (backdrop / ✕ / Esc) ----
 document.addEventListener("click", ev => {

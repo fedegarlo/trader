@@ -136,6 +136,13 @@
     <label for="csv">Extracto CSV de Revolut <span class="hint">Inversiones → ⋯ → Extractos → CSV</span></label>
     <input type="file" id="csv" accept=".csv,text/csv">
 
+    <label for="mode">Tipo de actualización</label>
+    <select id="mode">
+      <option value="total">Total — reprocesar todo (reemplaza el extracto)</option>
+      <option value="mensual">Mensual — solo el mes actual (conserva el histórico)</option>
+    </select>
+    <div class="hint">El <b>mensual</b> fusiona las operaciones del mes en curso con tu histórico ya subido (descifra tu extracto anterior en el navegador). El <b>total</b> lo reemplaza por completo.</div>
+
     <label for="pass">Frase de paso de la liga <span class="hint">la misma para todos — la que os habéis puesto entre vosotros</span></label>
     <input type="password" id="pass" placeholder="frase compartida de la liga" autocomplete="off">
 
@@ -187,6 +194,7 @@ const enc = new TextEncoder();
 // ---------- estado ----------
 let encryptedFile = null;   // { bytes, filename }
 let validation = null;      // resumen del CSV
+let newCsvText = null;      // CSV nuevo en claro (para fusionar en modo mensual)
 
 // ---------- utilidades de status ----------
 function statusBox(el) {
@@ -274,6 +282,73 @@ function bytesToBase64(bytes) {
     bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
   return btoa(bin);
 }
+function base64ToBytes(b64) {
+  const bin = atob(b64.replace(/\s+/g, ""));
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+function base64urlToBytes(s) {
+  s = s.trim().replace(/-/g, "+").replace(/_/g, "/");
+  while (s.length % 4) s += "=";
+  return base64ToBytes(s);
+}
+// Descifra el formato TRADERENC1 + Fernet (espejo de encryptTraderEnc), para el
+// flujo mensual: descifra el extracto anterior, se fusiona el mes en curso y se
+// vuelve a cifrar. Todo en el navegador, con la frase de la liga.
+async function decryptTraderEnc(blob, passphrase) {
+  const magic = enc.encode("TRADERENC1");
+  for (let i = 0; i < magic.length; i++)
+    if (blob[i] !== magic[i]) throw new Error("El extracto anterior no tiene el formato esperado.");
+  const salt = blob.slice(magic.length, magic.length + 16);
+  const tokenAscii = new TextDecoder("utf-8").decode(blob.slice(magic.length + 16));
+  const token = base64urlToBytes(tokenAscii);
+  const base = await crypto.subtle.importKey("raw", enc.encode(passphrase), "PBKDF2", false, ["deriveBits"]);
+  const rawBits = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", salt, iterations: 600000, hash: "SHA-256" }, base, 256);
+  const raw = new Uint8Array(rawBits);
+  const signKey = raw.slice(0, 16), encKey = raw.slice(16, 32);
+  if (token[0] !== 0x80) throw new Error("Token Fernet no reconocido.");
+  const hmac = token.slice(token.length - 32);
+  const signed = token.slice(0, token.length - 32);
+  const iv = token.slice(9, 25);
+  const ct = token.slice(25, token.length - 32);
+  const hk = await crypto.subtle.importKey("raw", signKey, { name: "HMAC", hash: "SHA-256" }, false, ["verify"]);
+  if (!(await crypto.subtle.verify("HMAC", hk, hmac, signed)))
+    throw new Error("Frase de paso incorrecta o extracto corrupto.");
+  const aesKey = await crypto.subtle.importKey("raw", encKey, { name: "AES-CBC" }, false, ["decrypt"]);
+  return new Uint8Array(await crypto.subtle.decrypt({ name: "AES-CBC", iv }, aesKey, ct));
+}
+// Fusiona el extracto del mes actual sobre el histórico (espejo de
+// inbox.merge_month): conserva las filas anteriores a ``monthStartIso`` y añade
+// todas las nuevas, realineando columnas al encabezado del histórico.
+function csvCell(cell) {
+  return /[",\n\r]/.test(cell) ? '"' + cell.replace(/"/g, '""') + '"' : cell;
+}
+function mergeMonthCsv(existingText, newText, monthStartIso) {
+  if (existingText.charCodeAt(0) === 0xFEFF) existingText = existingText.slice(1);
+  if (newText.charCodeAt(0) === 0xFEFF) newText = newText.slice(1);
+  const ex = parseCsv(existingText).filter(r => r.some(c => c.trim() !== ""));
+  const nw = parseCsv(newText).filter(r => r.some(c => c.trim() !== ""));
+  if (!ex.length) return newText;
+  if (nw.length <= 1) return existingText;
+  const dateIdx = hdr => { const i = hdr.findIndex(x => x.trim().toLowerCase() === "date"); return i < 0 ? 0 : i; };
+  const exHeader = ex[0], exDi = dateIdx(exHeader);
+  const kept = [exHeader];
+  for (let i = 1; i < ex.length; i++) {
+    const d = parseDate(ex[i][exDi] || "");
+    if (!d || d < monthStartIso) kept.push(ex[i]);  // histórico anterior al mes
+  }
+  const nwHeader = nw[0], nwMap = {};
+  nwHeader.forEach((x, i) => { nwMap[x.trim().toLowerCase()] = i; });
+  for (let i = 1; i < nw.length; i++) {
+    kept.push(exHeader.map(name => {
+      const j = nwMap[name.trim().toLowerCase()];
+      return (j != null && j < nw[i].length) ? nw[i][j] : "";
+    }));
+  }
+  return kept.map(r => r.map(csvCell).join(",")).join("\n") + "\n";
+}
 async function encryptTraderEnc(plaintextBytes, passphrase) {
   const salt = crypto.getRandomValues(new Uint8Array(16));
   // PBKDF2-HMAC-SHA256, 600k -> 32 bytes crudos
@@ -340,6 +415,28 @@ async function ghCommit({ owner, repo, branch, token, files, message }) {
   return { branch, commit };
 }
 
+// Descarga el contenido crudo de un fichero del repo (para el flujo mensual:
+// recupera el extracto cifrado anterior y lo fusiona). 404 -> aún no existe.
+async function ghGetFile({ owner, repo, branch, token, path }) {
+  const url = "https://api.github.com/repos/" + owner + "/" + repo +
+    "/contents/" + path + (branch ? "?ref=" + encodeURIComponent(branch) : "");
+  const res = await fetch(url, {
+    headers: {
+      "Authorization": "Bearer " + token,
+      "Accept": "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28",
+    },
+  });
+  if (res.status === 404) return null;
+  if (!res.ok) {
+    let msg = res.status + " " + res.statusText;
+    try { const j = await res.json(); if (j.message) msg += " — " + j.message; } catch (e) {}
+    throw new Error(msg);
+  }
+  const j = await res.json();
+  return base64ToBytes(j.content || "");
+}
+
 // Avisa al workflow del ranking para que recalcule ya. Los commits hechos por
 // la API no disparan el evento `push`, así que sin esto el dashboard no se
 // actualizaría hasta el siguiente cron. Usa el mismo permiso Contents.
@@ -389,6 +486,7 @@ $("btn-check").addEventListener("click", async () => {
     const v = validateCsv(text);
     if (!v.ok) return void st.line("err", "❌ " + v.error);
     validation = v;
+    newCsvText = text;   // se guarda para poder fusionarlo en modo mensual
     st.line("mut", "Cifrando (PBKDF2 600k, puede tardar 1–2 s)…");
     const bytes = await encryptTraderEnc(buf, pass);
     encryptedFile = { bytes, filename: "trades.csv.enc" };
@@ -439,17 +537,48 @@ $("btn-upload").addEventListener("click", async () => {
     currency: $("cur").value,
     show_amounts: $("amounts").checked,
   }, null, 2) + "\n";
+
+  const mode = $("mode").value;
+  $("btn-upload").disabled = true;
+  st.clear();
+
+  // Modo mensual: descarga el extracto anterior, lo descifra en el navegador y
+  // fusiona el mes en curso; si no hay histórico previo, sube el nuevo tal cual.
+  let encBytes = encryptedFile.bytes;
+  if (mode === "mensual") {
+    try {
+      st.line("mut", "Modo mensual: recuperando y fusionando tu histórico…");
+      const existing = await ghGetFile({ owner, repo, branch, token,
+        path: "players/" + pid + "/trades.csv.enc" });
+      if (existing) {
+        const existingText = new TextDecoder("utf-8").decode(
+          await decryptTraderEnc(existing, $("pass").value));
+        const now = new Date();
+        const monthStartIso = now.getFullYear() + "-" +
+          String(now.getMonth() + 1).padStart(2, "0") + "-01";
+        const merged = mergeMonthCsv(existingText, newCsvText, monthStartIso);
+        encBytes = await encryptTraderEnc(enc.encode(merged), $("pass").value);
+      } else {
+        st.line("mut", "No hay histórico previo: se sube como total.");
+      }
+    } catch (e) {
+      st.clear();
+      $("btn-upload").disabled = false;
+      return void st.box("err", "<b>❌ No se pudo fusionar el mes</b><br>" + e.message +
+        "<br><span class='mut'>Revisa que la frase de la liga es la correcta, o usa el modo Total.</span>");
+    }
+  }
+
   const files = [
     { path: "players/" + pid + "/player.json", base64: bytesToBase64(enc.encode(playerJson)) },
-    { path: "players/" + pid + "/trades.csv.enc", base64: bytesToBase64(encryptedFile.bytes) },
+    { path: "players/" + pid + "/trades.csv.enc", base64: bytesToBase64(encBytes) },
   ];
 
-  $("btn-upload").disabled = true;
-  st.clear(); st.line("mut", "Subiendo a " + owner + "/" + repo + "…");
+  st.line("mut", "Subiendo a " + owner + "/" + repo + "…");
   try {
     const res = await ghCommit({
       owner, repo, branch, token, files,
-      message: "Actualizar extracto de " + pid,
+      message: (mode === "mensual" ? "Actualizar extracto (mensual) de " : "Actualizar extracto de ") + pid,
     });
     const kicked = await ghDispatch({ owner, repo, token });
     st.clear();

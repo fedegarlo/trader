@@ -31,6 +31,11 @@ cualquier tarta de cartera) se abre una **ficha de detalle**:
 - **Próximo paso del jugador**: en su ficha, una sugerencia orientativa de
   compra/venta sobre una de sus posiciones, elegida por la señal más marcada del
   consenso de analistas. Es informativa (no es una recomendación de inversión).
+- **Detalle de una jornada**: al tocar un **campeón del día** (tabla del mes) o
+  cualquier fila del **detalle diario** se abre una ficha con la **rentabilidad
+  de cada valor** de ese jugador ese día (los porcentajes suman el % del día) y,
+  debajo, el % del día del **resto de jugadores**. Solo porcentajes, sin
+  importes. Las **últimas operaciones** también son filas clicables.
 
 En móvil la ficha aparece como una **hoja inferior** (bottom sheet) a lo ancho
 de la pantalla, con barra de agarre: se cierra deslizándola hacia abajo, tocando
@@ -148,6 +153,16 @@ correo desde tu dirección registrada. Sin token, sin frase, sin cifrar nada.
 También puedes usar la web **[⬆️ Subir tu extracto](https://fedegarlo.github.io/trader/subir.html)**
 (cifra en el navegador y sube con tu token, sin PR) o la CLI + PR. Los
 detalles, en [`players/README.md`](players/README.md).
+
+**Dos flujos de actualización.** Tanto por email (botón «Enviar extracto» de la
+página principal) como en la web de subida puedes elegir entre:
+
+- **Mensual** (ligero): solo se reemplazan las operaciones del **mes en curso**
+  y se conserva el histórico ya subido. Por email viaja como etiqueta
+  `[MENSUAL]` en el asunto; la web descifra tu extracto anterior en el navegador
+  y fusiona el mes actual antes de subir.
+- **Total** (pesado, por defecto): el extracto **reemplaza al anterior por
+  completo** y se reprocesa todo. Si el asunto no trae etiqueta, se hace el total.
 
 ### Comandos
 

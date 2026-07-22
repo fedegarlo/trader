@@ -5,6 +5,12 @@ name: Ingesta por email
 # la frase de la liga y lo commitea en players/<id>/. El jugador no necesita
 # token de GitHub, ni ser colaborador, ni cifrar nada: solo enviar un email.
 #
+# Dos flujos de actualización según una etiqueta en el ASUNTO del correo:
+#   [MENSUAL] / [MONTHLY] -> ligero: solo reemplaza las operaciones del mes en
+#                            curso, conservando el histórico ya subido.
+#   [TOTAL] / sin etiqueta -> pesado: el extracto reemplaza al anterior entero.
+# (La página principal compone estos asuntos al pulsar «Enviar extracto».)
+#
 # Configuración (una sola vez):
 #   Secrets  (Settings -> Secrets and variables -> Actions -> Secrets):
 #     TRADER_KEY   frase de paso compartida de la liga (ya existía)
