@@ -130,6 +130,26 @@ def test_day_breakdown_percentages_sum_to_day_return():
     assert round(sum(d["pct"] for d in bd), 4) == payload["players"][0]["days"][0]["day"]
 
 
+def test_day_breakdown_keeps_held_ticker_even_if_negligible():
+    # Un valor que apenas se movió (ASML el 22-jul: +0,02 %) aporta una fracción
+    # ínfima del día, pero sigue siendo una posición de la cartera y debe
+    # aparecer en el desglose. Solo el ruido de efectivo/comisiones se oculta.
+    player = Player(player_id="fede", display_name="Fede")
+    series = [DayResult(
+        day=date(2026, 7, 22), start_value=3500.0, end_value=3505.25,
+        external_flow=0.0, pnl=5.25, daily_return=0.0015, cumulative_return=0.0015,
+    )]
+    contributions = {"fede": {date(2026, 7, 22): {
+        "NVDA": 14.7, "ASML": 0.1162, "": 0.001,  # "" = efectivo/comisiones
+    }}}
+    payload = webpage.build_payload(
+        [(player, series)], contributions=contributions, today=date(2026, 7, 22))
+    bd = payload["players"][0]["days"][0]["bd"]
+    tickers = [d["ticker"] for d in bd]
+    assert "ASML" in tickers     # posición real: se conserva aunque ~0,00 %
+    assert "" not in tickers     # ruido de efectivo por debajo del umbral: oculto
+
+
 def test_day_breakdown_absent_without_contributions():
     player = Player(player_id="fede", display_name="Fede")
     payload = webpage.build_payload([(player, _series(3))])
