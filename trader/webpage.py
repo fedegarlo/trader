@@ -33,9 +33,9 @@ _TEMPLATE = """<!doctype html>
 <meta name="theme-color" content="#efeaf8" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0e0d13" media="(prefers-color-scheme: dark)">
 <link rel="apple-touch-icon" href="icon-ios.png">
-<link rel="manifest" href="manifest.webmanifest">
-<meta name="apple-mobile-web-app-title" content="Liga Trader">
-<title>🏆 Liga Trader</title>
+<link rel="manifest" href="manifest.webmanifest" id="manifest-link">
+<meta name="apple-mobile-web-app-title" content="Trader League" id="app-title-meta">
+<title>🏆 Trader League</title>
 <style>
   :root {
     color-scheme: light;
@@ -501,7 +501,7 @@ _TEMPLATE = """<!doctype html>
   <header>
     <div class="eyebrow" id="eyebrow"></div>
     <div class="hrow">
-      <h1>Liga Trader</h1>
+      <h1 data-i18n="appTitle">Trader League</h1>
       <div class="hbtns">
         <button class="lang" id="lang-btn" type="button"><span id="lang-label"></span></button>
         <a class="upload" id="upload-mail" href="mailto:ligatrader26@gmail.com" data-i18n-title="sendPositions">
@@ -644,6 +644,7 @@ const monthLabel = (m, y) => LANG === "ja"
 
 const I18N = {
   en: {
+    appTitle: "Trader League",
     eyebrow: "🏆 League · Revolut · updated " + UPDATED,
     sendPositions: "Send positions",
     mailBody: "attached are my positions in csv format",
@@ -790,6 +791,7 @@ const I18N = {
     },
   },
   ja: {
+    appTitle: "トレーダーリーグ",
     eyebrow: "🏆 リーグ · Revolut · 更新 " + UPDATED,
     sendPositions: "ポジションを送信",
     mailBody: "csv形式のポジションを添付します",
@@ -953,6 +955,16 @@ const T = I18N[LANG];
   });
   const eb = document.getElementById("eyebrow");
   if (eb) eb.textContent = T.eyebrow;
+  // título de la pestaña y de la app instalada según el idioma
+  document.title = "🏆 " + T.appTitle;
+  const titleMeta = document.getElementById("app-title-meta");
+  if (titleMeta) titleMeta.setAttribute("content", T.appTitle);
+  // el nombre de la app instalada (Android) sale del manifest: en japonés se
+  // apunta a un manifest propio con el nombre traducido
+  if (LANG === "ja") {
+    const ml = document.getElementById("manifest-link");
+    if (ml) ml.setAttribute("href", "manifest-ja.webmanifest");
+  }
 })();
 
 // ---- toggle de idioma (reemplaza al botón de refresco): guarda la ----
