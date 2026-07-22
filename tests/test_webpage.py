@@ -105,6 +105,37 @@ def test_daily_winners_tie_lists_both_and_no_slot():
     assert row["names"] == ["Ana", "Fede"] and row["slot"] is None
 
 
+def test_daily_winners_carry_player_ids():
+    computed = [
+        _july("fede", "Fede", [(date(2026, 7, 14), 0.03)]),
+        _july("ana", "Ana", [(date(2026, 7, 14), 0.01)]),
+    ]
+    row = webpage.build_payload(computed, today=date(2026, 7, 14))["dailyWinners"]["rows"][0]
+    # El id del campeón viaja para poder abrir su detalle del día en la web.
+    assert row["names"] == ["Fede"] and row["ids"] == ["fede"]
+
+
+def test_day_breakdown_percentages_sum_to_day_return():
+    player = Player(player_id="fede", display_name="Fede")
+    series = [DayResult(
+        day=date(2026, 7, 14), start_value=200.0, end_value=210.0,
+        external_flow=0.0, pnl=10.0, daily_return=0.05, cumulative_return=0.05,
+    )]
+    # AAPL aporta 6 y MSFT 4 (suman el P&L de 10 sobre base 200 => +5%).
+    contributions = {"fede": {date(2026, 7, 14): {"AAPL": 6.0, "MSFT": 4.0}}}
+    payload = webpage.build_payload(
+        [(player, series)], contributions=contributions, today=date(2026, 7, 14))
+    bd = payload["players"][0]["days"][0]["bd"]
+    assert [(d["ticker"], d["pct"]) for d in bd] == [("AAPL", 3.0), ("MSFT", 2.0)]
+    assert round(sum(d["pct"] for d in bd), 4) == payload["players"][0]["days"][0]["day"]
+
+
+def test_day_breakdown_absent_without_contributions():
+    player = Player(player_id="fede", display_name="Fede")
+    payload = webpage.build_payload([(player, _series(3))])
+    assert all("bd" not in d for d in payload["players"][0]["days"])
+
+
 def test_weekends_are_dropped_from_payload():
     # 17 jul = viernes, 18/19 = fin de semana, 20 = lunes.
     computed = [_july("fede", "Fede", [

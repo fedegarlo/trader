@@ -5,7 +5,9 @@ import pytest
 
 from trader import revolut
 from trader.portfolio import (
+    CASH_KEY,
     compute_daily_series,
+    daily_contributions,
     holdings_value,
     rebase_from,
 )
@@ -117,6 +119,30 @@ def test_holdings_value_prices_open_positions():
 
 def test_holdings_value_empty():
     assert holdings_value([], PRICES) == {}
+
+
+def test_daily_contributions_sum_to_pnl():
+    events, _ = revolut.parse_file(os.path.join(DATA, "sample.csv"))
+    series = compute_daily_series(events, PRICES, until=date(2026, 7, 4))
+    contrib = daily_contributions(events, PRICES, until=date(2026, 7, 4))
+    # Hay una descomposición por cada jornada de la serie…
+    assert set(contrib) == {r.day for r in series}
+    # …y para cada día la suma de contribuciones es exactamente el P&L.
+    for row in series:
+        assert sum(contrib[row.day].values()) == pytest.approx(row.pnl)
+
+
+def test_daily_contributions_attributes_to_tickers():
+    events, _ = revolut.parse_file(os.path.join(DATA, "sample.csv"))
+    contrib = daily_contributions(events, PRICES, until=date(2026, 7, 4))
+    # Día 2: compra de MSFT a 300 que cierra a 310 => +10 atribuidos a MSFT.
+    assert contrib[date(2026, 7, 2)]["MSFT"] == pytest.approx(10.0)
+    # Día 4: solo comisión (1) y un ingreso; el −1 va al residuo de efectivo.
+    assert contrib[date(2026, 7, 4)][CASH_KEY] == pytest.approx(-1.0)
+
+
+def test_daily_contributions_empty():
+    assert daily_contributions([], PRICES) == {}
 
 
 class CalendarPrices(FakePrices):

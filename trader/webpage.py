@@ -128,6 +128,9 @@ _TEMPLATE = """<!doctype html>
     font-weight: 800; font-size: 15px; letter-spacing: 0.01em; line-height: 1;
   }
   .lang:active { transform: translateY(1px); }
+  /* japonés: el título es más ancho (kana a cuerpo completo); se reduce y se
+     fuerza a una sola línea para que no se parta en dos renglones */
+  html[lang="ja"] h1 { font-size: clamp(22px, 6.4vw, 30px); white-space: nowrap; }
   .hbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; }
   .chip { font-weight: 700; font-size: 15px; color: var(--ink); }
   .chip .caret { color: var(--muted); font-size: 12px; }
@@ -236,8 +239,11 @@ _TEMPLATE = """<!doctype html>
 
   /* widget de últimas operaciones (fecha · compra/venta · ticker · jugador) */
   .op-row { display: flex; align-items: center; gap: 10px; padding: 11px 4px;
-            border-top: 1px solid var(--hair); }
+            border-top: 1px solid var(--hair); border-radius: 10px; }
   .op-row:first-child { border-top: none; }
+  .op-row.clk { cursor: pointer; }
+  .op-row.clk:hover { background: var(--surface-2); }
+  .op-row.clk:hover .op-tk .sym { color: var(--accent); }
   .op-tk { flex: none; display: inline-flex; align-items: center; gap: 9px;
            font-weight: 700; letter-spacing: -0.01em; }
   .op-tk .logo, .op-tk .mono { width: 30px; height: 30px; }
@@ -328,6 +334,7 @@ _TEMPLATE = """<!doctype html>
   /* elementos abribles (ticker / jugador) */
   .clk { cursor: pointer; }
   .dl.clk:hover .tk, tr.clk:hover .nm, tr.clk:hover td.name { color: var(--accent); }
+  tr.clk:hover td { background: var(--surface-2); }
   .legend span.clk:hover { color: var(--accent); }
 
   /* logo / monograma */
@@ -697,6 +704,10 @@ const I18N = {
     cumChartAria: "Cumulative return over time by player",
     dailyDetailTitle: "Daily detail · last 30 days",
     detailAria: "Detail",
+    dayByAsset: "Return by asset",
+    dayOthers: "Rest of players",
+    dayCash: "Cash · fees",
+    dayNoBreakdown: "No per-asset breakdown for this session.",
     footer: "Daily return with simple Dietz (deposits and withdrawals don't count " +
       "as gains); cumulative by geometric compounding (time-weighted return). " +
       "Data: encrypted Revolut statements · closing prices from Yahoo Finance · " +
@@ -844,6 +855,10 @@ const I18N = {
     cumChartAria: "プレイヤー別の累積リターン推移",
     dailyDetailTitle: "日次詳細 · 直近30日",
     detailAria: "詳細",
+    dayByAsset: "銘柄別リターン",
+    dayOthers: "他のプレイヤー",
+    dayCash: "現金・手数料",
+    dayNoBreakdown: "この取引日の銘柄別内訳はありません。",
     footer: "日次リターンはシンプルDietz法（入出金は損益に含めない）、累積は幾何連鎖" +
       "（時間加重収益率）。データ：暗号化されたRevolut明細 · Yahoo Financeの終値 · " +
       "ロゴは <a href=\\"https://logo.dev\\" target=\\"_blank\\" rel=\\"noopener noreferrer\\">Logo.dev</a>。",
@@ -1248,6 +1263,11 @@ function paintDaily() {
   const slotColor = s => css(SLOTS[s % SLOTS.length]);
   rows.forEach(r => {
     const tr = t.insertRow();
+    // toda la fila abre el detalle del día del campeón (rentabilidad por valor
+    // + el % del día del resto de jugadores)
+    tr.classList.add("clk");
+    tr.dataset.dayDate = r.date;
+    tr.dataset.dayPlayer = (r.ids && r.ids[0]) || "";
     const fecha = tr.insertCell(); fecha.textContent = fmtDate(r.date);
     const name = tr.insertCell(); name.className = "name";
     name.appendChild(document.createTextNode("🏅 "));
@@ -1698,6 +1718,11 @@ svg.addEventListener("pointerleave", () => {
     const money = v => "$" + v.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2});
     [...p.days].reverse().forEach(dy => {
       const tr = t.insertRow();
+      // cada jornada abre su detalle: rentabilidad por valor de este jugador
+      // ese día (+ el % del día del resto de jugadores)
+      tr.classList.add("clk");
+      tr.dataset.dayPlayer = p.id;
+      tr.dataset.dayDate = dy.date;
       const cells = p.amounts
         ? [dy.date, money(dy.start), money(dy.end), money(dy.flow), money(dy.pnl), fmtPct(dy.day), fmtPct(dy.cum)]
         : [dy.date, fmtPct(dy.day), fmtPct(dy.cum)];
@@ -1760,6 +1785,11 @@ function paintOperations() {
   box.innerHTML = "";
   ops.forEach(o => {
     const row = h("div", "op-row");
+    // Toda la fila es clicable: abre la ficha del valor (o la del jugador si el
+    // valor no es abrible). El nombre del jugador, anidado con su propio
+    // data-player, sigue abriendo su ficha por delegación (gana el más interno).
+    if (TICKERS[o.ticker]) { row.classList.add("clk"); row.dataset.ticker = o.ticker; }
+    else if (o.id && PLAYERS[o.id]) { row.classList.add("clk"); row.dataset.player = o.id; }
 
     const tk = h("span", "op-tk");
     if (TICKERS[o.ticker]) { tk.classList.add("clk"); tk.dataset.ticker = o.ticker; }
@@ -2141,11 +2171,106 @@ function openPlayer(pid) {
   showModal(root);
 }
 
+// ---- detalle de una jornada (campeón del día / fila del detalle diario) ----
+// Índice fecha -> { id de jugador -> su jornada }, para reunir en un vistazo la
+// rentabilidad de cada jugador ese día sin recorrer todo el dataset al abrir.
+const DAY_INDEX = {};
+DATA.players.forEach(p => (p.days || []).forEach(d => {
+  (DAY_INDEX[d.date] || (DAY_INDEX[d.date] = {}))[p.id] = d;
+}));
+
+// Muestra la rentabilidad de cada valor del jugador esa jornada (los % suman el
+// «% del día») y, debajo, el % del día del resto de jugadores. ``pid`` es el
+// jugador protagonista (el campeón, o el propio jugador en el detalle diario);
+// si falta o no tiene datos ese día, se toma el mejor de la jornada.
+function openDayDetail(pid, iso) {
+  const perPlayer = DAY_INDEX[iso] || {};
+  let subject = PLAYERS[pid];
+  if (!subject || !perPlayer[pid]) {
+    let bestId = null, bestVal = -Infinity;
+    Object.keys(perPlayer).forEach(id => {
+      if (perPlayer[id].day > bestVal) { bestVal = perPlayer[id].day; bestId = id; }
+    });
+    subject = PLAYERS[bestId]; pid = bestId;
+  }
+  if (!subject) return;
+  const sd = perPlayer[pid] || {day: 0, bd: []};
+  const root = document.createElement("div");
+
+  const head = h("div", "mhead");
+  head.appendChild(monoEl(subject.name, 46, colorOf(subject)));
+  const title = h("div", "mtitle");
+  const t1 = h("div", "t1");
+  t1.appendChild(document.createTextNode(fmtDate(iso)));
+  t1.appendChild(h("span", "mbadge" + (sd.day >= 0 ? "" : " neg"), fmtPct(sd.day)));
+  title.appendChild(t1);
+  title.appendChild(h("div", "t2", subject.name));
+  head.appendChild(title);
+  root.appendChild(head);
+
+  // rentabilidad por valor: cada porción suma el % del día
+  const bd = sd.bd || [];
+  if (bd.length) {
+    const list = document.createElement("div");
+    bd.forEach(x => {
+      const row = h("div", "holder-row");
+      if (x.ticker && TICKERS[x.ticker]) { row.classList.add("clk"); row.dataset.ticker = x.ticker; }
+      const nm = h("span", "nm");
+      if (x.ticker) {
+        nm.appendChild(tickerLogoEl({ticker: x.ticker}, 26));
+        nm.appendChild(document.createTextNode(x.ticker));
+      } else {
+        nm.appendChild(document.createTextNode("💵 " + T.dayCash));
+      }
+      row.appendChild(nm);
+      row.appendChild(h("span", "w " + (x.pct >= 0 ? "pos" : "neg"), fmtPct(x.pct)));
+      list.appendChild(row);
+    });
+    root.appendChild(sectionEl(T.dayByAsset, list));
+  } else {
+    root.appendChild(sectionEl(T.dayByAsset, h("div", "mnote", T.dayNoBreakdown)));
+  }
+
+  // resto de jugadores: su % del día (ordenado de mejor a peor)
+  const others = Object.keys(perPlayer)
+    .filter(id => id !== pid && PLAYERS[id])
+    .map(id => ({p: PLAYERS[id], d: perPlayer[id]}))
+    .sort((a, b) => b.d.day - a.d.day);
+  if (others.length) {
+    const list = document.createElement("div");
+    others.forEach(({p, d}) => {
+      const row = h("div", "holder-row clk"); row.dataset.player = p.id;
+      const nm = h("span", "nm");
+      const key = h("span", "key"); key.style.background = colorOf(p);
+      nm.appendChild(key); nm.appendChild(document.createTextNode(p.name));
+      row.appendChild(nm);
+      row.appendChild(h("span", "w " + (d.day >= 0 ? "pos" : "neg"), fmtPct(d.day)));
+      list.appendChild(row);
+    });
+    root.appendChild(sectionEl(T.dayOthers, list));
+  }
+
+  showModal(root);
+}
+
 // ---- apertura por delegación + cierre (backdrop / ✕ / Esc) ----
 document.addEventListener("click", ev => {
+  // detalle de una jornada (campeón del día / fila del detalle diario)
+  const dd = ev.target.closest("[data-day-date]");
+  if (dd && dd.dataset.dayDate) {
+    openDayDetail(dd.dataset.dayPlayer || "", dd.dataset.dayDate); return;
+  }
   const tk = ev.target.closest("[data-ticker]");
-  if (tk && tk.dataset.ticker) { openTicker(tk.dataset.ticker); return; }
   const pl = ev.target.closest("[data-player]");
+  // Cuando un elemento abrible está anidado dentro de otro (p. ej. el nombre
+  // del jugador dentro de una fila de operación que abre el valor), gana el más
+  // interno: el que el usuario ha tocado realmente.
+  if (tk && pl) {
+    if (tk.contains(pl)) openPlayer(pl.dataset.player);
+    else openTicker(tk.dataset.ticker);
+    return;
+  }
+  if (tk && tk.dataset.ticker) { openTicker(tk.dataset.ticker); return; }
   if (pl && pl.dataset.player) { openPlayer(pl.dataset.player); return; }
 });
 modal.addEventListener("click", ev => { if (ev.target === modal) closeModal(); });
@@ -2389,22 +2514,25 @@ def _daily_winners(computed: list[tuple[Player, list[DayResult]]],
     lista sale ordenada de más reciente a más antigua para que el día de hoy
     quede arriba en la tabla.
     """
-    by_day: dict[date, list[tuple[str, int, float]]] = {}
+    by_day: dict[date, list[tuple[str, str, int, float]]] = {}
     for player, series in computed:
         for r in series:
             if (r.day.year == year and r.day.month == month
                     and r.day >= COMPETITION_START):
                 by_day.setdefault(r.day, []).append(
-                    (player.display_name, order[player.player_id], r.daily_return))
+                    (player.player_id, player.display_name,
+                     order[player.player_id], r.daily_return))
 
     out = []
     for day in sorted(by_day, reverse=True):
-        best = max(ret for _n, _s, ret in by_day[day])
-        winners = sorted((n, s) for n, s, ret in by_day[day] if ret == best)
+        best = max(ret for _id, _n, _s, ret in by_day[day])
+        winners = sorted((name, pid, slot)
+                         for pid, name, slot, ret in by_day[day] if ret == best)
         out.append({
             "date": day.isoformat(),
-            "names": [n for n, _s in winners],
-            "slot": winners[0][1] if len(winners) == 1 else None,
+            "names": [n for n, _pid, _s in winners],
+            "ids": [pid for _n, pid, _s in winners],
+            "slot": winners[0][2] if len(winners) == 1 else None,
             "value": round(best * 100, 2),
         })
     return out
@@ -2453,6 +2581,24 @@ def _recent_operations(computed: list[tuple[Player, list[DayResult]]],
             for day, _seq, pid, name, slot, kind, ticker in ops[:limit]]
 
 
+def _day_breakdown(contrib: dict[str, float] | None, denom: float) -> list[dict]:
+    """Convierte la descomposición por ticker de una jornada a porcentajes.
+
+    Recibe ``{ticker: contribución}`` (en importe) y la base del día
+    (``inicio + flujo/2``, el mismo denominador de Dietz) y devuelve una lista
+    ``[{"ticker", "pct"}]`` ordenada por magnitud, donde la suma de los ``pct``
+    es el «% del día». No expone importes: solo el reparto porcentual de la
+    rentabilidad diaria por valor (``CASH_KEY`` -> efectivo/comisiones).
+    """
+    if not contrib or denom <= 1e-9:
+        return []
+    out = [{"ticker": ticker, "pct": round(value / denom * 100, 4)}
+           for ticker, value in contrib.items()]
+    out = [d for d in out if abs(d["pct"]) >= 0.005]
+    out.sort(key=lambda d: abs(d["pct"]), reverse=True)
+    return out
+
+
 def build_payload(computed: list[tuple[Player, list[DayResult]]],
                   last_days: int = 30,
                   pending: list[dict] | None = None,
@@ -2460,6 +2606,7 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
                   holdings: dict[str, dict[str, float]] | None = None,
                   prices: dict[str, list[tuple]] | None = None,
                   analysts: dict[str, dict] | None = None,
+                  contributions: dict[str, dict[date, dict[str, float]]] | None = None,
                   today: date | None = None) -> dict:
     """Datos embebidos en la página. Respeta show_amounts por jugador.
 
@@ -2478,6 +2625,7 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
     today = today or date.today()
     holdings = holdings or {}
     analysts = analysts or {}
+    contributions = contributions or {}
     computed = _drop_weekends(computed)
     players = []
     # Slot de color por orden alfabético de id: estable aunque cambie el ranking
@@ -2488,6 +2636,7 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
         if not series:
             continue
         window = series[-last_days:] if last_days else series
+        player_contrib = contributions.get(player.player_id, {})
         days = []
         for row in window:
             day = {
@@ -2495,6 +2644,10 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
                 "day": round(row.daily_return * 100, 4),
                 "cum": round(row.cumulative_return * 100, 4),
             }
+            breakdown = _day_breakdown(player_contrib.get(row.day),
+                                       row.start_value + row.external_flow / 2.0)
+            if breakdown:
+                day["bd"] = breakdown
             if player.show_amounts:
                 day.update({
                     "start": round(row.start_value, 2),
@@ -2559,11 +2712,13 @@ def write_index(
     holdings: dict[str, dict[str, float]] | None = None,
     prices: dict[str, list[tuple]] | None = None,
     analysts: dict[str, dict] | None = None,
+    contributions: dict[str, dict[date, dict[str, float]]] | None = None,
 ) -> str:
     payload = json.dumps(
         build_payload(computed, last_days=last_days, pending=pending,
                       allocation=allocation, holdings=holdings,
                       prices=prices, analysts=analysts,
+                      contributions=contributions,
                       today=today or date.today()),
         ensure_ascii=False)
     payload = payload.replace("</", "<\\/")  # nunca cerrar el <script> desde los datos
