@@ -120,6 +120,16 @@
 
   /* widgets */
   .widget { position: relative; overflow: hidden; padding-bottom: 0; }
+  /* interrogante: abre el modal que explica cómo se calcula la rentabilidad */
+  .whelp { position: absolute; z-index: 3; top: 12px; right: 12px;
+           width: 26px; height: 26px; border-radius: 999px; flex: none;
+           border: 1px solid var(--hair); background: var(--surface-2);
+           color: var(--ink-2); font-size: 15px; font-weight: 800; line-height: 1;
+           cursor: pointer; display: grid; place-items: center;
+           transition: color .12s ease, border-color .12s ease; }
+  .whelp:hover { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, var(--hair)); }
+  .whelp:active { transform: translateY(1px); }
+  #hero-card .wlabel { padding-right: 34px; }
   .wlabel { color: var(--ink-2); font-size: 14px; font-weight: 600; }
   .wbig { font-size: clamp(26px, 8vw, 34px); font-weight: 800; letter-spacing: -0.035em; line-height: 1.1; margin-top: 3px; display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; }
   .wbig.sm { font-size: clamp(22px, 6.6vw, 28px); white-space: nowrap; }
@@ -390,6 +400,17 @@
   .rev-btn.sell { background: #e11d48; color: #fff; }
   .rev-note { color: var(--muted); font-size: 11.5px; margin-top: 8px; }
   .mnote { color: var(--muted); font-size: 11.5px; margin-top: 14px; }
+  /* párrafo explicativo y fórmulas del modal «cómo se calcula» */
+  .mtext { color: var(--ink-2); font-size: 14px; font-weight: 500; line-height: 1.5; }
+  .mtext + .mtext { margin-top: 9px; }
+  .mtext b { color: var(--ink); font-weight: 700; }
+  .formula { font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+             font-size: 13.5px; font-weight: 600; color: var(--ink);
+             background: var(--surface-2); border: 1px solid var(--hair);
+             border-radius: 12px; padding: 11px 13px; overflow-x: auto;
+             white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .formula + .formula { margin-top: 8px; }
+  .formula .lbl { color: var(--muted); font-weight: 700; margin-right: 8px; }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; }
   .chip-tk { display: inline-flex; align-items: center; gap: 7px; cursor: pointer;
              background: var(--surface-2); border: 1px solid var(--hair);
@@ -477,6 +498,7 @@
 
   <div id="widgets" style="display:grid;gap:12px">
     <section class="card widget" id="hero-card">
+      <button class="whelp" id="hero-help" type="button" data-i18n-title="calcHelpAria">?</button>
       <div class="wlabel"><span data-i18n="leader"></span> · <span id="hero-name"></span></div>
       <div class="wbig"><span class="num" id="hero-val"></span><span class="delta" id="hero-delta"></span></div>
       <div class="sparkwrap" id="hero-spark"></div>
@@ -571,7 +593,7 @@
 <footer data-i18n-html="footer"></footer>
 <script>
 const DATA = {"players": [{"id": "ana", "name": "Ana", "slot": 0, "amounts": false, "since": "2026-07-14", "days": [{"date": "2026-07-14", "day": 1.5255, "cum": 1.5255}, {"date": "2026-07-15", "day": 0.0299, "cum": 1.5559}, {"date": "2026-07-16", "day": -2.6311, "cum": -1.1161}, {"date": "2026-07-17", "day": -2.1399, "cum": -3.2322}, {"date": "2026-07-20", "day": 0.322, "cum": -2.9206}, {"date": "2026-07-21", "day": 1.1677, "cum": -1.787}], "holdings": [{"ticker": "META", "w": 45.2}, {"ticker": "PLTR", "w": 27.94}, {"ticker": "SMCI", "w": 26.86}]}, {"id": "fede", "name": "Fede", "slot": 1, "amounts": false, "since": "2026-07-14", "days": [{"date": "2026-07-14", "day": 1.7906, "cum": 1.7906}, {"date": "2026-07-15", "day": -4.8532, "cum": -3.1496}, {"date": "2026-07-16", "day": -4.961, "cum": -7.9543}, {"date": "2026-07-17", "day": -0.2142, "cum": -8.1514}, {"date": "2026-07-20", "day": 1.2635, "cum": -6.9909}, {"date": "2026-07-21", "day": 7.544, "cum": 0.0256}], "holdings": [{"ticker": "TSM", "w": 32.96}, {"ticker": "ASML", "w": 17.96}, {"ticker": "MU", "w": 17.68}, {"ticker": "WDC", "w": 16.47}, {"ticker": "NVDA", "w": 14.92}]}], "pending": [], "operations": [{"date": "2026-07-21", "id": "fede", "name": "Fede", "slot": 1, "kind": "BUY", "ticker": "ASML"}, {"date": "2026-07-20", "id": "ana", "name": "Ana", "slot": 0, "kind": "BUY", "ticker": "META"}, {"date": "2026-07-17", "id": "fede", "name": "Fede", "slot": 1, "kind": "BUY", "ticker": "TSM"}], "allocation": [{"ticker": "META", "w": 25.4}, {"ticker": "PLTR", "w": 15.7}, {"ticker": "SMCI", "w": 15.09}, {"ticker": "TSM", "w": 14.44}, {"ticker": "ASML", "w": 7.87}, {"ticker": "MU", "w": 7.75}, {"ticker": "WDC", "w": 7.21}, {"ticker": "NVDA", "w": 6.54}], "tickers": [{"ticker": "META", "name": "Meta Platforms", "domain": "meta.com", "w": 25.4, "holders": [{"name": "Ana", "slot": 0, "w": 45.2}], "prices": [{"date": "2026-07-07", "close": 615.58}, {"date": "2026-07-08", "close": 603.12}, {"date": "2026-07-09", "close": 631.48}, {"date": "2026-07-10", "close": 669.21}, {"date": "2026-07-13", "close": 656.73}, {"date": "2026-07-14", "close": 661.04}, {"date": "2026-07-15", "close": 681.31}, {"date": "2026-07-16", "close": 664.54}, {"date": "2026-07-17", "close": 646.01}, {"date": "2026-07-20", "close": 645.85}, {"date": "2026-07-21", "close": 643.81}], "ret": 4.59, "peers": [{"ticker": "GOOGL", "name": "Alphabet", "domain": "abc.xyz"}, {"ticker": "AMZN", "name": "Amazon", "domain": "amazon.com"}, {"ticker": "NFLX", "name": "Netflix", "domain": "netflix.com"}]}, {"ticker": "PLTR", "name": "Palantir", "domain": "palantir.com", "w": 15.7, "holders": [{"name": "Ana", "slot": 0, "w": 27.94}], "prices": [{"date": "2026-07-07", "close": 134.37}, {"date": "2026-07-08", "close": 132.22}, {"date": "2026-07-09", "close": 129.04}, {"date": "2026-07-10", "close": 126.79}, {"date": "2026-07-13", "close": 130.04}, {"date": "2026-07-14", "close": 133.72}, {"date": "2026-07-15", "close": 133.76}, {"date": "2026-07-16", "close": 134.44}, {"date": "2026-07-17", "close": 132.38}, {"date": "2026-07-20", "close": 134.85}, {"date": "2026-07-21", "close": 132.66}], "ret": -1.27, "peers": [{"ticker": "SNOW", "name": "SNOW", "domain": ""}, {"ticker": "CRM", "name": "Salesforce", "domain": "salesforce.com"}, {"ticker": "MSFT", "name": "Microsoft", "domain": "microsoft.com"}]}, {"ticker": "SMCI", "name": "Super Micro Computer", "domain": "supermicro.com", "w": 15.09, "holders": [{"name": "Ana", "slot": 0, "w": 26.86}], "prices": [{"date": "2026-07-07", "close": 26.25}, {"date": "2026-07-08", "close": 28.17}, {"date": "2026-07-09", "close": 28.24}, {"date": "2026-07-10", "close": 28.31}, {"date": "2026-07-13", "close": 27.66}, {"date": "2026-07-14", "close": 27.65}, {"date": "2026-07-15", "close": 26.89}, {"date": "2026-07-16", "close": 24.68}, {"date": "2026-07-17", "close": 24.18}, {"date": "2026-07-20", "close": 23.83}, {"date": "2026-07-21", "close": 25.5}], "ret": -2.86, "peers": [{"ticker": "DELL", "name": "DELL", "domain": ""}, {"ticker": "HPE", "name": "HPE", "domain": ""}, {"ticker": "NVDA", "name": "NVIDIA", "domain": "nvidia.com"}]}, {"ticker": "TSM", "name": "Taiwan Semiconductor", "domain": "tsmc.com", "w": 14.44, "holders": [{"name": "Fede", "slot": 1, "w": 32.96}], "prices": [{"date": "2026-06-24", "close": 440.83}, {"date": "2026-06-25", "close": 434.99}, {"date": "2026-06-26", "close": 432.35}, {"date": "2026-06-29", "close": 455.1}, {"date": "2026-06-30", "close": 477.57}, {"date": "2026-07-01", "close": 444.23}, {"date": "2026-07-02", "close": 434.16}, {"date": "2026-07-06", "close": 451.79}, {"date": "2026-07-07", "close": 432.57}, {"date": "2026-07-08", "close": 436.98}, {"date": "2026-07-09", "close": 436.96}, {"date": "2026-07-10", "close": 434.11}, {"date": "2026-07-13", "close": 421.58}, {"date": "2026-07-14", "close": 420.39}, {"date": "2026-07-15", "close": 419.48}, {"date": "2026-07-16", "close": 409.74}, {"date": "2026-07-17", "close": 398.37}, {"date": "2026-07-20", "close": 402.3}, {"date": "2026-07-21", "close": 424.61}], "ret": -3.68, "peers": [{"ticker": "NVDA", "name": "NVIDIA", "domain": "nvidia.com"}, {"ticker": "ASML", "name": "ASML", "domain": "asml.com"}, {"ticker": "MU", "name": "Micron Technology", "domain": "micron.com"}]}, {"ticker": "ASML", "name": "ASML", "domain": "asml.com", "w": 7.87, "holders": [{"name": "Fede", "slot": 1, "w": 17.96}], "prices": [{"date": "2026-07-06", "close": 1825.0699}, {"date": "2026-07-07", "close": 1747.28}, {"date": "2026-07-08", "close": 1768.65}, {"date": "2026-07-09", "close": 1804.25}, {"date": "2026-07-10", "close": 1797.3199}, {"date": "2026-07-13", "close": 1726.04}, {"date": "2026-07-14", "close": 1775.64}, {"date": "2026-07-15", "close": 1815.27}, {"date": "2026-07-16", "close": 1784.87}, {"date": "2026-07-17", "close": 1747.58}, {"date": "2026-07-20", "close": 1739.02}, {"date": "2026-07-21", "close": 1801.51}], "ret": -1.29, "peers": [{"ticker": "TSM", "name": "Taiwan Semiconductor", "domain": "tsmc.com"}, {"ticker": "AMAT", "name": "AMAT", "domain": ""}, {"ticker": "LRCX", "name": "LRCX", "domain": ""}]}, {"ticker": "MU", "name": "Micron Technology", "domain": "micron.com", "w": 7.75, "holders": [{"name": "Fede", "slot": 1, "w": 17.68}], "prices": [{"date": "2026-06-24", "close": 1048.51}, {"date": "2026-06-25", "close": 1213.5601}, {"date": "2026-06-26", "close": 1132.33}, {"date": "2026-06-29", "close": 1145.28}, {"date": "2026-06-30", "close": 1154.29}, {"date": "2026-07-01", "close": 1032.28}, {"date": "2026-07-02", "close": 975.56}, {"date": "2026-07-06", "close": 984.75}, {"date": "2026-07-07", "close": 938.38}, {"date": "2026-07-08", "close": 948.8}, {"date": "2026-07-09", "close": 991.64}, {"date": "2026-07-10", "close": 979.3}, {"date": "2026-07-13", "close": 937.0}, {"date": "2026-07-14", "close": 983.12}, {"date": "2026-07-15", "close": 904.28}, {"date": "2026-07-16", "close": 853.2}, {"date": "2026-07-17", "close": 848.95}, {"date": "2026-07-20", "close": 865.46}, {"date": "2026-07-21", "close": 970.82}], "ret": -7.41, "peers": [{"ticker": "WDC", "name": "Western Digital", "domain": "westerndigital.com"}, {"ticker": "TSM", "name": "Taiwan Semiconductor", "domain": "tsmc.com"}, {"ticker": "NVDA", "name": "NVIDIA", "domain": "nvidia.com"}]}, {"ticker": "WDC", "name": "Western Digital", "domain": "westerndigital.com", "w": 7.21, "holders": [{"name": "Fede", "slot": 1, "w": 16.47}], "prices": [{"date": "2026-06-08", "close": 526.93}, {"date": "2026-06-09", "close": 517.72}, {"date": "2026-06-10", "close": 490.09}, {"date": "2026-06-11", "close": 529.29}, {"date": "2026-06-12", "close": 562.93}, {"date": "2026-06-15", "close": 653.53}, {"date": "2026-06-16", "close": 681.08}, {"date": "2026-06-17", "close": 712.13}, {"date": "2026-06-18", "close": 746.23}, {"date": "2026-06-22", "close": 732.62}, {"date": "2026-06-23", "close": 670.75}, {"date": "2026-06-24", "close": 643.83}, {"date": "2026-06-25", "close": 675.39}, {"date": "2026-06-26", "close": 586.45}, {"date": "2026-06-29", "close": 651.88}, {"date": "2026-06-30", "close": 638.72}, {"date": "2026-07-01", "close": 598.37}, {"date": "2026-07-02", "close": 539.0}, {"date": "2026-07-06", "close": 577.46}, {"date": "2026-07-07", "close": 532.1}, {"date": "2026-07-08", "close": 550.3}, {"date": "2026-07-09", "close": 578.05}, {"date": "2026-07-10", "close": 582.59}, {"date": "2026-07-13", "close": 555.55}, {"date": "2026-07-14", "close": 563.32}, {"date": "2026-07-15", "close": 513.84}, {"date": "2026-07-16", "close": 466.81}, {"date": "2026-07-17", "close": 477.22}, {"date": "2026-07-20", "close": 487.42}, {"date": "2026-07-21", "close": 548.39}], "ret": 4.07, "peers": [{"ticker": "MU", "name": "Micron Technology", "domain": "micron.com"}, {"ticker": "STX", "name": "STX", "domain": ""}, {"ticker": "TSM", "name": "Taiwan Semiconductor", "domain": "tsmc.com"}]}, {"ticker": "NVDA", "name": "NVIDIA", "domain": "nvidia.com", "w": 6.54, "holders": [{"name": "Fede", "slot": 1, "w": 14.92}], "prices": [{"date": "2026-06-08", "close": 208.64}, {"date": "2026-06-09", "close": 208.19}, {"date": "2026-06-10", "close": 200.42}, {"date": "2026-06-11", "close": 204.87}, {"date": "2026-06-12", "close": 205.19}, {"date": "2026-06-15", "close": 212.45}, {"date": "2026-06-16", "close": 207.41}, {"date": "2026-06-17", "close": 204.65}, {"date": "2026-06-18", "close": 210.69}, {"date": "2026-06-22", "close": 208.65}, {"date": "2026-06-23", "close": 200.04}, {"date": "2026-06-24", "close": 199.0}, {"date": "2026-06-25", "close": 195.74}, {"date": "2026-06-26", "close": 192.53}, {"date": "2026-06-29", "close": 194.97}, {"date": "2026-06-30", "close": 200.09}, {"date": "2026-07-01", "close": 197.58}, {"date": "2026-07-02", "close": 194.83}, {"date": "2026-07-06", "close": 195.55}, {"date": "2026-07-07", "close": 196.93}, {"date": "2026-07-08", "close": 204.12}, {"date": "2026-07-09", "close": 202.78}, {"date": "2026-07-10", "close": 210.96}, {"date": "2026-07-13", "close": 203.53}, {"date": "2026-07-14", "close": 211.8}, {"date": "2026-07-15", "close": 212.5}, {"date": "2026-07-16", "close": 207.4}, {"date": "2026-07-17", "close": 202.81}, {"date": "2026-07-20", "close": 203.28}, {"date": "2026-07-21", "close": 207.29}], "ret": -0.65, "peers": [{"ticker": "AMD", "name": "AMD", "domain": "amd.com"}, {"ticker": "TSM", "name": "Taiwan Semiconductor", "domain": "tsmc.com"}, {"ticker": "AVGO", "name": "Broadcom", "domain": "broadcom.com"}]}], "monthly": {"current": {"name": "Fede", "value": 0.03, "slot": 1, "month": 7, "month_year": 2026, "spark": [1.7906, -3.1496, -7.9543, -8.1514, -6.9909, 0.0256]}, "previous": null}, "dailyWinners": {"month": 7, "month_year": 2026, "rows": [{"date": "2026-07-21", "names": ["Fede"], "slot": 1, "value": 7.54}, {"date": "2026-07-20", "names": ["Fede"], "slot": 1, "value": 1.26}, {"date": "2026-07-17", "names": ["Fede"], "slot": 1, "value": -0.21}, {"date": "2026-07-16", "names": ["Ana"], "slot": 0, "value": -2.63}, {"date": "2026-07-15", "names": ["Ana"], "slot": 0, "value": 0.03}, {"date": "2026-07-14", "names": ["Fede"], "slot": 1, "value": 1.79}]}};
-const UPDATED = "2026-07-22 03:33";
+const UPDATED = "2026-07-22 07:10";
 
 // ==== idioma: inglés por defecto, japonés opcional ====================
 // La selección se recuerda por dispositivo en localStorage. El toggle solo
@@ -606,6 +628,27 @@ const I18N = {
     pendingText: n => n + " — the statement is uploaded but couldn't be decrypted. " +
       "The passphrase is probably not the league's: please re-upload with the correct one.",
     leader: "Leader",
+    calcHelpAria: "How the ranking is calculated",
+    calc: {
+      title: "How the ranking is calculated",
+      subtitle: "Time-weighted return — fair across different amounts",
+      qa: [
+        ["Are sales taken into account?",
+         "Yes — every buy and sell is processed — but a sale on its own doesn't change your return. Selling just turns shares into cash at their market price, so your portfolio is worth the same the instant before and after (bar fees). Whatever you had already earned stays locked in."],
+        ["If I sell, do I keep my profitability?",
+         "Yes. Your accumulated return is preserved: selling never resets it. From then on your cash simply stops moving — idle cash scores 0% per day — so you hold your position but stop climbing until you buy back in."],
+        ["What actually moves the score, then?",
+         "Only how your holdings change in value day to day: share prices and dividends. Buys and sells reshuffle money between cash and shares without adding or removing any gains."],
+        ["Do deposits or withdrawals help?",
+         "No. Paying in or taking out money is neutralised (simple Dietz), so adding cash never inflates your score. Everyone is compared on <b>percentage return</b>, not on how much they invested."],
+      ],
+      formulaLabel: "The formulas",
+      dailyLbl: "Day",
+      dailyFormula: "r = (end − start − flow) / (start + flow/2)",
+      cumLbl: "Total",
+      cumFormula: "∏ (1 + rₙ) − 1",
+      note: "That's why someone with €100 and someone with €10,000 compete on equal terms: what counts is the percentage, not the amount.",
+    },
     bestOfDay: "Best of the day",
     recentOps: "Latest trades",
     opBuy: "Buy", opSell: "Sell",
@@ -731,6 +774,27 @@ const I18N = {
     pendingText: n => n + " — 明細はアップロード済みですが復号できませんでした。" +
       "パスフレーズがリーグのものと異なる可能性があります。正しいもので再アップロードしてください。",
     leader: "首位",
+    calcHelpAria: "順位の計算方法",
+    calc: {
+      title: "順位の計算方法",
+      subtitle: "時間加重収益率 — 金額が違っても公平に比較",
+      qa: [
+        ["売却は反映されますか？",
+         "はい、売買はすべて処理されます。ただし売却そのものでは収益率は変わりません。売却は保有株を時価で現金に換えるだけなので、直前と直後でポートフォリオの価値は同じです（手数料を除く）。それまでに得た利益はそのまま確定されます。"],
+        ["売却したら、その収益率は維持されますか？",
+         "はい。積み上げた収益率は保たれ、売却でリセットされることはありません。以降は現金が動かなくなるだけです。遊んでいる現金の日次収益は0%なので、買い直すまでは順位を保ちつつ、それ以上は伸びなくなります。"],
+        ["では何がスコアを動かすのですか？",
+         "保有資産の価値が日々どう変わるかだけです。株価と配当です。売買は現金と株の間で資金を組み替えるだけで、利益を足したり引いたりはしません。"],
+        ["入金や出金は有利になりますか？",
+         "いいえ。入金・出金は中立化されます（シンプル・ディーツ法）。現金を足してもスコアは上がりません。全員が投資額ではなく<b>収益率（％）</b>で比較されます。"],
+      ],
+      formulaLabel: "計算式",
+      dailyLbl: "日次",
+      dailyFormula: "r = (終値 − 始値 − 資金流入) / (始値 + 資金流入/2)",
+      cumLbl: "累積",
+      cumFormula: "∏ (1 + rₙ) − 1",
+      note: "だからこそ100ユーロの人と1万ユーロの人が対等に競えます。重要なのは金額ではなく割合です。",
+    },
     bestOfDay: "本日のベスト",
     recentOps: "最新の取引",
     opBuy: "買い", opSell: "売り",
@@ -1848,6 +1912,42 @@ function showModal(node) {
   document.body.style.overflow = "hidden";
   sheet.scrollTop = 0;
 }
+
+// ---- cómo se calcula la rentabilidad (interrogante del widget líder) ----
+function openLeaderHelp() {
+  const c = T.calc;
+  const root = document.createElement("div");
+
+  const head = h("div", "mhead");
+  const title = h("div", "mtitle");
+  title.appendChild(h("div", "t1", c.title));
+  title.appendChild(h("div", "t2", c.subtitle));
+  head.appendChild(title);
+  root.appendChild(head);
+
+  // preguntas y respuestas (la venta, mantener la rentabilidad, los flujos…)
+  c.qa.forEach(([q, a]) => {
+    root.appendChild(sectionEl(q, h("div", "mtext", a)));
+  });
+
+  // fórmulas: rentabilidad diaria (Dietz simple) y acumulada (geométrica)
+  const fsec = h("div", "msec");
+  fsec.appendChild(h("div", "h", c.formulaLabel));
+  const f1 = h("div", "formula");
+  f1.appendChild(h("span", "lbl", c.dailyLbl));
+  f1.appendChild(document.createTextNode(c.dailyFormula));
+  fsec.appendChild(f1);
+  const f2 = h("div", "formula");
+  f2.appendChild(h("span", "lbl", c.cumLbl));
+  f2.appendChild(document.createTextNode(c.cumFormula));
+  fsec.appendChild(f2);
+  root.appendChild(fsec);
+
+  root.appendChild(h("div", "mnote", c.note));
+  showModal(root);
+}
+const heroHelp = document.getElementById("hero-help");
+if (heroHelp) heroHelp.addEventListener("click", openLeaderHelp);
 
 // ---- detalle de ticker ----
 function openTicker(sym) {
