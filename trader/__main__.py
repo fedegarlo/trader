@@ -22,7 +22,12 @@ from . import inbox as inbox_mod
 from . import players as players_mod
 from . import report as report_mod
 from . import secretbox, webpage
-from .portfolio import compute_daily_series, holdings_value, rebase_from
+from .portfolio import (
+    compute_daily_series,
+    daily_contributions,
+    holdings_value,
+    rebase_from,
+)
 from .prices import PriceCache
 
 
@@ -82,6 +87,10 @@ def cmd_ranking(args: argparse.Namespace) -> None:
     # El mismo valor de mercado por ticker, pero por jugador: alimenta la
     # sección «Carteras» (también solo pesos %, nunca importes).
     holdings: dict[str, dict[str, float]] = {}
+    # Descomposición del P&L de cada jornada por ticker, por jugador: alimenta
+    # el detalle diario (modal) con la rentabilidad de cada valor ese día. Se
+    # publica como porcentajes, sin importes.
+    contributions: dict[str, dict[date, dict[str, float]]] = {}
     for player_id in ids:
         player = players_mod.load_player(args.players_dir, player_id)
         for warning in player.warnings:
@@ -109,6 +118,7 @@ def cmd_ranking(args: argparse.Namespace) -> None:
             holdings[player_id] = player_holdings
         for ticker, value in player_holdings.items():
             allocation[ticker] = allocation.get(ticker, 0.0) + value
+        contributions[player_id] = daily_contributions(player.events, prices)
 
     # Mini-serie de precio por ticker (solo caché, sin descargar) para la
     # gráfica del detalle del ticker en la web. Son cierres públicos de mercado.
@@ -136,7 +146,8 @@ def cmd_ranking(args: argparse.Namespace) -> None:
     content = report_mod.write_ranking(computed, out_path=args.out)
     webpage.write_index(computed, out_path=args.html_out, pending=pending,
                         allocation=allocation, holdings=holdings,
-                        prices=price_history, analysts=analysts)
+                        prices=price_history, analysts=analysts,
+                        contributions=contributions)
     with open(args.pending_out, "w", encoding="utf-8") as fh:
         json.dump(pending, fh, ensure_ascii=False)
     print(content)

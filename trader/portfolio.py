@@ -174,6 +174,111 @@ def compute_daily_series(
     return results
 
 
+# Clave reservada para el «residuo» de una jornada: efectivo, dividendos sin
+# ticker y comisiones. No es un valor de la cartera, así que se agrupa aparte
+# para que la suma de contribuciones cuadre exactamente con el P&L del día.
+CASH_KEY = ""
+
+
+def daily_contributions(
+    events: list[Event],
+    prices: PriceCache,
+    until: date | None = None,
+) -> dict[date, dict[str, float]]:
+    """Descompone el P&L de cada jornada de mercado por ticker.
+
+    Para cada día de mercado (los mismos que ``compute_daily_series``) devuelve
+    ``{ticker: contribución, ...}`` en la divisa del extracto, de modo que la
+    **suma de las contribuciones es exactamente el P&L del día**. La
+    contribución de un valor es::
+
+        q_fin·cierre_hoy − q_ini·cierre_previo − compras + ventas + dividendos
+
+    donde ``q_ini`` es la cantidad al cierre de la jornada de mercado anterior y
+    las compras/ventas/dividendos son los del periodo entre ambas jornadas (así
+    las operaciones de fin de semana o festivo caen en la siguiente jornada,
+    igual que en ``compute_daily_series``). Las comisiones y los dividendos sin
+    ticker se agrupan bajo ``CASH_KEY``.
+
+    Como solo maneja diferencias de valor y flujos internos, se puede publicar
+    en la web como porcentajes (contribución / base del día) sin exponer
+    importes: es el mismo nivel de detalle que el «% del día» ya publicado,
+    repartido por valor.
+    """
+    if not events:
+        return {}
+
+    by_day: dict[date, list[Event]] = defaultdict(list)
+    for ev in events:
+        by_day[ev.day].append(ev)
+
+    first = min(by_day)
+    last = until or max(max(by_day), date.today())
+
+    tickers = {ev.ticker for ev in events if ev.ticker and ev.kind in (BUY, SELL, SPLIT)}
+    for ticker in tickers:
+        prices.ensure_range(ticker, first, last)
+
+    def is_market_day(day: date) -> bool:
+        if not tickers:
+            return True
+        return any(prices.has_close(t, day) for t in tickers)
+
+    positions: dict[str, float] = {}
+    cash = 0.0
+    prev_positions: dict[str, float] = {}
+    prev_day: date | None = None
+    # Flujos internos por ticker acumulados desde la última jornada de mercado.
+    pend_buy: dict[str, float] = defaultdict(float)
+    pend_sell: dict[str, float] = defaultdict(float)
+    pend_div: dict[str, float] = defaultdict(float)
+    pend_fee = 0.0
+    out: dict[date, dict[str, float]] = {}
+
+    day = first
+    while day <= last:
+        for ev in by_day.get(day, ()):
+            if ev.kind == BUY and ev.ticker:
+                pend_buy[ev.ticker] += ev.total
+            elif ev.kind == SELL and ev.ticker:
+                pend_sell[ev.ticker] += ev.total
+            elif ev.kind == DIVIDEND:
+                pend_div[ev.ticker or CASH_KEY] += ev.total
+            elif ev.kind == FEE:
+                pend_fee += ev.total
+            cash, _ = _apply_event(ev, positions, cash)
+
+        if is_market_day(day):
+            contrib: dict[str, float] = {}
+            names = (set(positions) | set(prev_positions)
+                     | set(pend_buy) | set(pend_sell)
+                     | {t for t in pend_div if t != CASH_KEY})
+            for ticker in names:
+                q_end = positions.get(ticker, 0.0)
+                q_start = prev_positions.get(ticker, 0.0)
+                close = prices.close_on(ticker, day)
+                prev_close = prices.close_on(ticker, prev_day) if prev_day else 0.0
+                value = (q_end * close - q_start * prev_close
+                         - pend_buy.get(ticker, 0.0) + pend_sell.get(ticker, 0.0)
+                         + pend_div.get(ticker, 0.0))
+                if abs(value) > 1e-9:
+                    contrib[ticker] = value
+            residual = pend_div.get(CASH_KEY, 0.0) - pend_fee
+            if abs(residual) > 1e-9:
+                contrib[CASH_KEY] = contrib.get(CASH_KEY, 0.0) + residual
+            out[day] = contrib
+
+            prev_positions = dict(positions)
+            prev_day = day
+            pend_buy.clear()
+            pend_sell.clear()
+            pend_div.clear()
+            pend_fee = 0.0
+        day += timedelta(days=1)
+
+    return out
+
+
 def rebase_from(series: list[DayResult], start: date) -> list[DayResult]:
     """Recorta la serie a los días ``>= start`` y recompone la rentabilidad
     acumulada desde ese día.
