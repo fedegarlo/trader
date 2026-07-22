@@ -1,6 +1,6 @@
 {
-  "name": "Trader League",
-  "short_name": "Trader League",
+  "name": "トレーダーリーグ",
+  "short_name": "トレーダーリーグ",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#0e0d13",

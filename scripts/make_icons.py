@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 """Genera los iconos de la app (pantalla de inicio) a partir de un logo SVG.
 
-Un mismo logo de trading en blanco sobre dos fondos:
+El logo es el kanji japones 株 (kabu, «accion / valor bursatil») en blanco
+sobre dos fondos:
   - iPhone (apple-touch-icon): azul de ganancias  -> docs/icon-ios.png
   - Android (manifest):        rosa de perdidas    -> docs/icon-android-*.png
 
 Ejecuta:  python3 scripts/make_icons.py
-Requiere: cairosvg
+Requiere: cairosvg y una fuente japonesa instalada (p. ej. IPAGothic,
+          paquete fonts-ipafont-gothic). El nombre de familia se puede
+          ajustar con la variable de entorno ICON_FONT.
 """
 from __future__ import annotations
 
@@ -20,26 +23,16 @@ DOCS = os.path.normpath(os.path.join(HERE, "..", "docs"))
 BLUE = "#1667e0"   # --up (ganancias)
 PINK = "#d61f8f"   # --down (perdidas)
 
-# Logo de trading en blanco: linea de tendencia ascendente con flecha,
-# velas (candlesticks) crecientes y una linea base. viewBox 512x512.
-# El contenido se mantiene dentro de la "safe zone" central (~80%) para
-# que la mascara circular de Android (iconos maskable) no lo recorte.
+# Kanji 株 (kabu = accion/valor). Fuente japonesa; se puede sobreescribir con
+# ICON_FONT si el sistema usa otra familia (Noto Sans CJK JP, etc.).
+FONT = os.environ.get("ICON_FONT", "IPAGothic")
+
+# El glifo se centra y se mantiene dentro de la «safe zone» central (~80%)
+# para que la mascara circular de Android (iconos maskable) no lo recorte.
 LOGO = """
-  <g fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round">
-    <!-- ejes -->
-    <path d="M140 128 L140 384 L400 384" stroke-width="22" opacity="0.5"/>
-    <!-- linea de tendencia ascendente -->
-    <path d="M172 332 L246 288 L306 314 L392 176" stroke-width="34"/>
-    <!-- flecha (chevron apuntando arriba-derecha) -->
-    <path d="M330 176 L392 176 L392 238" stroke-width="34"/>
-    <!-- marcadores en los vertices -->
-    <g fill="#ffffff" stroke="none">
-      <circle cx="172" cy="332" r="17"/>
-      <circle cx="246" cy="288" r="17"/>
-      <circle cx="306" cy="314" r="17"/>
-    </g>
-  </g>
-"""
+  <text x="256" y="272" fill="#ffffff" font-family="{font}" font-weight="bold"
+        font-size="300" text-anchor="middle" dominant-baseline="central">株</text>
+""".format(font=FONT)
 
 SVG = """<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
   <rect width="512" height="512" rx="0" ry="0" fill="{bg}"/>
