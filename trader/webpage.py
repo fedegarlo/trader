@@ -179,7 +179,7 @@ _TEMPLATE = """<!doctype html>
      enlace a webs reales de Japón. Colores propios del banner (fijos en
      claro/oscuro); la etiqueta «広告» deja claro que son anuncios. */
   .jp-banner { position: relative; display: flex; align-items: center; gap: 13px;
-               padding: 13px 15px; border-radius: 22px; text-decoration: none;
+               margin: 10px 0; padding: 14px 16px; border-radius: 22px; text-decoration: none;
                color: #1a1a1a; overflow: hidden;
                border: 1px solid rgba(11,10,16,0.06);
                box-shadow: 0 1px 1px rgba(11,10,16,0.05), 0 14px 30px -24px rgba(11,10,16,0.55); }
@@ -193,12 +193,12 @@ _TEMPLATE = """<!doctype html>
   .jp-banner .bmain { font-size: 19px; font-weight: 800; letter-spacing: 0.01em; line-height: 1.2;
                       margin-top: 1px; display: block; }
   .jp-banner .btag { display: inline-block; margin-top: 5px; font-size: 10px; font-weight: 800;
-                     background: rgba(255,255,255,0.9); color: #c81e1e; padding: 1px 7px; border-radius: 999px; }
+                     background: rgba(255,255,255,0.9); color: #1f6bff; padding: 1px 7px; border-radius: 999px; }
   .jp-banner .barrow { flex: none; font-size: 16px; font-weight: 800; opacity: 0.65; }
-  .jp-b1 { background: linear-gradient(180deg, #ffe873, #ffe04c); color: #333; }   /* estilo retail amarillo */
-  .jp-b1 .bhi { color: #e60012; }
-  .jp-b2 { background: linear-gradient(180deg, #ee3b34, #d5261d); color: #fff; }   /* estilo folleto rojo */
-  .jp-b3 { background: linear-gradient(180deg, #d0111b, #9d0c14); color: #fff; }   /* estilo broker granate */
+  .jp-b1 { background: linear-gradient(180deg, #ffe873, #ffe04c); color: #333; }   /* amarillo */
+  .jp-b1 .bhi { color: #0b63d6; }
+  .jp-b2 { background: linear-gradient(180deg, #cdecff, #8fd3f7); color: #0b3a5b; }   /* celeste */
+  .jp-b3 { background: linear-gradient(180deg, #3a9bff, #1f6bff); color: #fff; }   /* azul */
 
   /* widget de cartera: gráfico de tarta (cada porción = su peso real) */
   .donut-wrap { display: flex; align-items: center; gap: 18px; margin-top: 16px; }
@@ -936,21 +936,25 @@ const T = I18N[LANG];
   const after = (node, el) => {
     if (node && node.parentNode) node.parentNode.insertBefore(el, node.nextSibling);
   };
-  const heroCard = document.getElementById("hero-card");
-  const bestCard = document.getElementById("best-card");
-  const bestRow = bestCard ? bestCard.closest(".wrow") : null;
-  const monthRow = document.getElementById("month-row");
-  after(heroCard, mk({
+  // Repartidos hacia abajo y bien espaciados: debajo del bloque de
+  // widgets, tras el ranking y tras la gráfica acumulada.
+  const closestCard = (id) => {
+    const el = document.getElementById(id);
+    return el ? el.closest(".card") : null;
+  };
+  const rankingCard = closestCard("ranking");
+  const chartCard = closestCard("chart");
+  after(wrap, mk({
     cls: "jp-b1", icon: "🐧", top: "パート・アルバイト",
     main: '<span class="bhi">採用情報</span>', aria: "ドン・キホーテ 採用情報",
     href: "https://www.donki.com/",
   }));
-  after(bestRow, mk({
+  after(rankingCard, mk({
     cls: "jp-b2", icon: "🐸", top: "当店のお得情報をいち早くお届け！",
     main: "シュフーチラシアプリ", aria: "シュフー チラシアプリ",
     href: "https://www.shufoo.net/",
   }));
-  after(monthRow, mk({
+  after(chartCard, mk({
     cls: "jp-b3", icon: "📈", top: "日本株・米国株の取引はこちら",
     main: "楽天証券", aria: "楽天証券",
     href: "https://www.rakuten-sec.co.jp/",
