@@ -101,6 +101,9 @@
     font-weight: 800; font-size: 15px; letter-spacing: 0.01em; line-height: 1;
   }
   .lang:active { transform: translateY(1px); }
+  /* japonés: el título es más ancho (kana a cuerpo completo); se reduce y se
+     fuerza a una sola línea para que no se parta en dos renglones */
+  html[lang="ja"] h1 { font-size: clamp(22px, 6.4vw, 30px); white-space: nowrap; }
   .hbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; }
   .chip { font-weight: 700; font-size: 15px; color: var(--ink); }
   .chip .caret { color: var(--muted); font-size: 12px; }
@@ -209,8 +212,11 @@
 
   /* widget de últimas operaciones (fecha · compra/venta · ticker · jugador) */
   .op-row { display: flex; align-items: center; gap: 10px; padding: 11px 4px;
-            border-top: 1px solid var(--hair); }
+            border-top: 1px solid var(--hair); border-radius: 10px; }
   .op-row:first-child { border-top: none; }
+  .op-row.clk { cursor: pointer; }
+  .op-row.clk:hover { background: var(--surface-2); }
+  .op-row.clk:hover .op-tk .sym { color: var(--accent); }
   .op-tk { flex: none; display: inline-flex; align-items: center; gap: 9px;
            font-weight: 700; letter-spacing: -0.01em; }
   .op-tk .logo, .op-tk .mono { width: 30px; height: 30px; }
@@ -301,6 +307,7 @@
   /* elementos abribles (ticker / jugador) */
   .clk { cursor: pointer; }
   .dl.clk:hover .tk, tr.clk:hover .nm, tr.clk:hover td.name { color: var(--accent); }
+  tr.clk:hover td { background: var(--surface-2); }
   .legend span.clk:hover { color: var(--accent); }
 
   /* logo / monograma */
@@ -592,8 +599,8 @@
 </div>
 <footer data-i18n-html="footer"></footer>
 <script>
-const DATA = {"players": [{"id": "ana", "name": "Ana", "slot": 0, "amounts": false, "since": "2026-07-14", "days": [{"date": "2026-07-14", "day": 1.5255, "cum": 1.5255}, {"date": "2026-07-15", "day": 0.0299, "cum": 1.5559}, {"date": "2026-07-16", "day": -2.6311, "cum": -1.1161}, {"date": "2026-07-17", "day": -2.1399, "cum": -3.2322}, {"date": "2026-07-20", "day": 0.322, "cum": -2.9206}, {"date": "2026-07-21", "day": 1.1677, "cum": -1.787}], "holdings": [{"ticker": "META", "w": 45.2}, {"ticker": "PLTR", "w": 27.94}, {"ticker": "SMCI", "w": 26.86}]}, {"id": "fede", "name": "Fede", "slot": 1, "amounts": false, "since": "2026-07-14", "days": [{"date": "2026-07-14", "day": 1.7906, "cum": 1.7906}, {"date": "2026-07-15", "day": -4.8532, "cum": -3.1496}, {"date": "2026-07-16", "day": -4.961, "cum": -7.9543}, {"date": "2026-07-17", "day": -0.2142, "cum": -8.1514}, {"date": "2026-07-20", "day": 1.2635, "cum": -6.9909}, {"date": "2026-07-21", "day": 7.544, "cum": 0.0256}], "holdings": [{"ticker": "TSM", "w": 32.96}, {"ticker": "ASML", "w": 17.96}, {"ticker": "MU", "w": 17.68}, {"ticker": "WDC", "w": 16.47}, {"ticker": "NVDA", "w": 14.92}]}], "pending": [], "operations": [{"date": "2026-07-21", "id": "fede", "name": "Fede", "slot": 1, "kind": "BUY", "ticker": "ASML"}, {"date": "2026-07-20", "id": "ana", "name": "Ana", "slot": 0, "kind": "BUY", "ticker": "META"}, {"date": "2026-07-17", "id": "fede", "name": "Fede", "slot": 1, "kind": "BUY", "ticker": "TSM"}], "allocation": [{"ticker": "META", "w": 25.4}, {"ticker": "PLTR", "w": 15.7}, {"ticker": "SMCI", "w": 15.09}, {"ticker": "TSM", "w": 14.44}, {"ticker": "ASML", "w": 7.87}, {"ticker": "MU", "w": 7.75}, {"ticker": "WDC", "w": 7.21}, {"ticker": "NVDA", "w": 6.54}], "tickers": [{"ticker": "META", "name": "Meta Platforms", "domain": "meta.com", "w": 25.4, "holders": [{"name": "Ana", "slot": 0, "w": 45.2}], "prices": [{"date": "2026-07-07", "close": 615.58}, {"date": "2026-07-08", "close": 603.12}, {"date": "2026-07-09", "close": 631.48}, {"date": "2026-07-10", "close": 669.21}, {"date": "2026-07-13", "close": 656.73}, {"date": "2026-07-14", "close": 661.04}, {"date": "2026-07-15", "close": 681.31}, {"date": "2026-07-16", "close": 664.54}, {"date": "2026-07-17", "close": 646.01}, {"date": "2026-07-20", "close": 645.85}, {"date": "2026-07-21", "close": 643.81}], "ret": 4.59, "peers": [{"ticker": "GOOGL", "name": "Alphabet", "domain": "abc.xyz"}, {"ticker": "AMZN", "name": "Amazon", "domain": "amazon.com"}, {"ticker": "NFLX", "name": "Netflix", "domain": "netflix.com"}]}, {"ticker": "PLTR", "name": "Palantir", "domain": "palantir.com", "w": 15.7, "holders": [{"name": "Ana", "slot": 0, "w": 27.94}], "prices": [{"date": "2026-07-07", "close": 134.37}, {"date": "2026-07-08", "close": 132.22}, {"date": "2026-07-09", "close": 129.04}, {"date": "2026-07-10", "close": 126.79}, {"date": "2026-07-13", "close": 130.04}, {"date": "2026-07-14", "close": 133.72}, {"date": "2026-07-15", "close": 133.76}, {"date": "2026-07-16", "close": 134.44}, {"date": "2026-07-17", "close": 132.38}, {"date": "2026-07-20", "close": 134.85}, {"date": "2026-07-21", "close": 132.66}], "ret": -1.27, "peers": [{"ticker": "SNOW", "name": "SNOW", "domain": ""}, {"ticker": "CRM", "name": "Salesforce", "domain": "salesforce.com"}, {"ticker": "MSFT", "name": "Microsoft", "domain": "microsoft.com"}]}, {"ticker": "SMCI", "name": "Super Micro Computer", "domain": "supermicro.com", "w": 15.09, "holders": [{"name": "Ana", "slot": 0, "w": 26.86}], "prices": [{"date": "2026-07-07", "close": 26.25}, {"date": "2026-07-08", "close": 28.17}, {"date": "2026-07-09", "close": 28.24}, {"date": "2026-07-10", "close": 28.31}, {"date": "2026-07-13", "close": 27.66}, {"date": "2026-07-14", "close": 27.65}, {"date": "2026-07-15", "close": 26.89}, {"date": "2026-07-16", "close": 24.68}, {"date": "2026-07-17", "close": 24.18}, {"date": "2026-07-20", "close": 23.83}, {"date": "2026-07-21", "close": 25.5}], "ret": -2.86, "peers": [{"ticker": "DELL", "name": "DELL", "domain": ""}, {"ticker": "HPE", "name": "HPE", "domain": ""}, {"ticker": "NVDA", "name": "NVIDIA", "domain": "nvidia.com"}]}, {"ticker": "TSM", "name": "Taiwan Semiconductor", "domain": "tsmc.com", "w": 14.44, "holders": [{"name": "Fede", "slot": 1, "w": 32.96}], "prices": [{"date": "2026-06-24", "close": 440.83}, {"date": "2026-06-25", "close": 434.99}, {"date": "2026-06-26", "close": 432.35}, {"date": "2026-06-29", "close": 455.1}, {"date": "2026-06-30", "close": 477.57}, {"date": "2026-07-01", "close": 444.23}, {"date": "2026-07-02", "close": 434.16}, {"date": "2026-07-06", "close": 451.79}, {"date": "2026-07-07", "close": 432.57}, {"date": "2026-07-08", "close": 436.98}, {"date": "2026-07-09", "close": 436.96}, {"date": "2026-07-10", "close": 434.11}, {"date": "2026-07-13", "close": 421.58}, {"date": "2026-07-14", "close": 420.39}, {"date": "2026-07-15", "close": 419.48}, {"date": "2026-07-16", "close": 409.74}, {"date": "2026-07-17", "close": 398.37}, {"date": "2026-07-20", "close": 402.3}, {"date": "2026-07-21", "close": 424.61}], "ret": -3.68, "peers": [{"ticker": "NVDA", "name": "NVIDIA", "domain": "nvidia.com"}, {"ticker": "ASML", "name": "ASML", "domain": "asml.com"}, {"ticker": "MU", "name": "Micron Technology", "domain": "micron.com"}]}, {"ticker": "ASML", "name": "ASML", "domain": "asml.com", "w": 7.87, "holders": [{"name": "Fede", "slot": 1, "w": 17.96}], "prices": [{"date": "2026-07-06", "close": 1825.0699}, {"date": "2026-07-07", "close": 1747.28}, {"date": "2026-07-08", "close": 1768.65}, {"date": "2026-07-09", "close": 1804.25}, {"date": "2026-07-10", "close": 1797.3199}, {"date": "2026-07-13", "close": 1726.04}, {"date": "2026-07-14", "close": 1775.64}, {"date": "2026-07-15", "close": 1815.27}, {"date": "2026-07-16", "close": 1784.87}, {"date": "2026-07-17", "close": 1747.58}, {"date": "2026-07-20", "close": 1739.02}, {"date": "2026-07-21", "close": 1801.51}], "ret": -1.29, "peers": [{"ticker": "TSM", "name": "Taiwan Semiconductor", "domain": "tsmc.com"}, {"ticker": "AMAT", "name": "AMAT", "domain": ""}, {"ticker": "LRCX", "name": "LRCX", "domain": ""}]}, {"ticker": "MU", "name": "Micron Technology", "domain": "micron.com", "w": 7.75, "holders": [{"name": "Fede", "slot": 1, "w": 17.68}], "prices": [{"date": "2026-06-24", "close": 1048.51}, {"date": "2026-06-25", "close": 1213.5601}, {"date": "2026-06-26", "close": 1132.33}, {"date": "2026-06-29", "close": 1145.28}, {"date": "2026-06-30", "close": 1154.29}, {"date": "2026-07-01", "close": 1032.28}, {"date": "2026-07-02", "close": 975.56}, {"date": "2026-07-06", "close": 984.75}, {"date": "2026-07-07", "close": 938.38}, {"date": "2026-07-08", "close": 948.8}, {"date": "2026-07-09", "close": 991.64}, {"date": "2026-07-10", "close": 979.3}, {"date": "2026-07-13", "close": 937.0}, {"date": "2026-07-14", "close": 983.12}, {"date": "2026-07-15", "close": 904.28}, {"date": "2026-07-16", "close": 853.2}, {"date": "2026-07-17", "close": 848.95}, {"date": "2026-07-20", "close": 865.46}, {"date": "2026-07-21", "close": 970.82}], "ret": -7.41, "peers": [{"ticker": "WDC", "name": "Western Digital", "domain": "westerndigital.com"}, {"ticker": "TSM", "name": "Taiwan Semiconductor", "domain": "tsmc.com"}, {"ticker": "NVDA", "name": "NVIDIA", "domain": "nvidia.com"}]}, {"ticker": "WDC", "name": "Western Digital", "domain": "westerndigital.com", "w": 7.21, "holders": [{"name": "Fede", "slot": 1, "w": 16.47}], "prices": [{"date": "2026-06-08", "close": 526.93}, {"date": "2026-06-09", "close": 517.72}, {"date": "2026-06-10", "close": 490.09}, {"date": "2026-06-11", "close": 529.29}, {"date": "2026-06-12", "close": 562.93}, {"date": "2026-06-15", "close": 653.53}, {"date": "2026-06-16", "close": 681.08}, {"date": "2026-06-17", "close": 712.13}, {"date": "2026-06-18", "close": 746.23}, {"date": "2026-06-22", "close": 732.62}, {"date": "2026-06-23", "close": 670.75}, {"date": "2026-06-24", "close": 643.83}, {"date": "2026-06-25", "close": 675.39}, {"date": "2026-06-26", "close": 586.45}, {"date": "2026-06-29", "close": 651.88}, {"date": "2026-06-30", "close": 638.72}, {"date": "2026-07-01", "close": 598.37}, {"date": "2026-07-02", "close": 539.0}, {"date": "2026-07-06", "close": 577.46}, {"date": "2026-07-07", "close": 532.1}, {"date": "2026-07-08", "close": 550.3}, {"date": "2026-07-09", "close": 578.05}, {"date": "2026-07-10", "close": 582.59}, {"date": "2026-07-13", "close": 555.55}, {"date": "2026-07-14", "close": 563.32}, {"date": "2026-07-15", "close": 513.84}, {"date": "2026-07-16", "close": 466.81}, {"date": "2026-07-17", "close": 477.22}, {"date": "2026-07-20", "close": 487.42}, {"date": "2026-07-21", "close": 548.39}], "ret": 4.07, "peers": [{"ticker": "MU", "name": "Micron Technology", "domain": "micron.com"}, {"ticker": "STX", "name": "STX", "domain": ""}, {"ticker": "TSM", "name": "Taiwan Semiconductor", "domain": "tsmc.com"}]}, {"ticker": "NVDA", "name": "NVIDIA", "domain": "nvidia.com", "w": 6.54, "holders": [{"name": "Fede", "slot": 1, "w": 14.92}], "prices": [{"date": "2026-06-08", "close": 208.64}, {"date": "2026-06-09", "close": 208.19}, {"date": "2026-06-10", "close": 200.42}, {"date": "2026-06-11", "close": 204.87}, {"date": "2026-06-12", "close": 205.19}, {"date": "2026-06-15", "close": 212.45}, {"date": "2026-06-16", "close": 207.41}, {"date": "2026-06-17", "close": 204.65}, {"date": "2026-06-18", "close": 210.69}, {"date": "2026-06-22", "close": 208.65}, {"date": "2026-06-23", "close": 200.04}, {"date": "2026-06-24", "close": 199.0}, {"date": "2026-06-25", "close": 195.74}, {"date": "2026-06-26", "close": 192.53}, {"date": "2026-06-29", "close": 194.97}, {"date": "2026-06-30", "close": 200.09}, {"date": "2026-07-01", "close": 197.58}, {"date": "2026-07-02", "close": 194.83}, {"date": "2026-07-06", "close": 195.55}, {"date": "2026-07-07", "close": 196.93}, {"date": "2026-07-08", "close": 204.12}, {"date": "2026-07-09", "close": 202.78}, {"date": "2026-07-10", "close": 210.96}, {"date": "2026-07-13", "close": 203.53}, {"date": "2026-07-14", "close": 211.8}, {"date": "2026-07-15", "close": 212.5}, {"date": "2026-07-16", "close": 207.4}, {"date": "2026-07-17", "close": 202.81}, {"date": "2026-07-20", "close": 203.28}, {"date": "2026-07-21", "close": 207.29}], "ret": -0.65, "peers": [{"ticker": "AMD", "name": "AMD", "domain": "amd.com"}, {"ticker": "TSM", "name": "Taiwan Semiconductor", "domain": "tsmc.com"}, {"ticker": "AVGO", "name": "Broadcom", "domain": "broadcom.com"}]}], "monthly": {"current": {"name": "Fede", "value": 0.03, "slot": 1, "month": 7, "month_year": 2026, "spark": [1.7906, -3.1496, -7.9543, -8.1514, -6.9909, 0.0256]}, "previous": null}, "dailyWinners": {"month": 7, "month_year": 2026, "rows": [{"date": "2026-07-21", "names": ["Fede"], "slot": 1, "value": 7.54}, {"date": "2026-07-20", "names": ["Fede"], "slot": 1, "value": 1.26}, {"date": "2026-07-17", "names": ["Fede"], "slot": 1, "value": -0.21}, {"date": "2026-07-16", "names": ["Ana"], "slot": 0, "value": -2.63}, {"date": "2026-07-15", "names": ["Ana"], "slot": 0, "value": 0.03}, {"date": "2026-07-14", "names": ["Fede"], "slot": 1, "value": 1.79}]}};
-const UPDATED = "2026-07-22 08:08";
+const DATA = {"players": [{"id": "ana", "name": "Ana", "slot": 0, "amounts": false, "since": "2026-07-14", "days": [{"date": "2026-07-14", "day": 1.5255, "cum": 1.5255, "bd": [{"ticker": "PLTR", "pct": 1.5255}]}, {"date": "2026-07-15", "day": 0.0299, "cum": 1.5559, "bd": [{"ticker": "PLTR", "pct": 0.0299}]}, {"date": "2026-07-16", "day": -2.6311, "cum": -1.1161, "bd": [{"ticker": "SMCI", "pct": -1.8665}, {"ticker": "META", "pct": -1.0134}, {"ticker": "PLTR", "pct": 0.2489}]}, {"date": "2026-07-17", "day": -2.1399, "cum": -3.2322, "bd": [{"ticker": "META", "pct": -1.0154}, {"ticker": "SMCI", "pct": -0.6165}, {"ticker": "PLTR", "pct": -0.508}]}, {"date": "2026-07-20", "day": 0.322, "cum": -2.9206, "bd": [{"ticker": "PLTR", "pct": 0.5713}, {"ticker": "SMCI", "pct": -0.4048}, {"ticker": "META", "pct": 0.1555}]}, {"date": "2026-07-21", "day": 1.1677, "cum": -1.787, "bd": [{"ticker": "SMCI", "pct": 1.7793}, {"ticker": "PLTR", "pct": -0.4667}, {"ticker": "META", "pct": -0.1449}]}], "holdings": [{"ticker": "META", "w": 45.2}, {"ticker": "PLTR", "w": 27.94}, {"ticker": "SMCI", "w": 26.86}]}, {"id": "fede", "name": "Fede", "slot": 1, "amounts": false, "since": "2026-07-14", "days": [{"date": "2026-07-14", "day": 1.7906, "cum": 1.7906, "bd": [{"ticker": "NVDA", "pct": 1.4736}, {"ticker": "WDC", "pct": 0.5776}, {"ticker": "MU", "pct": -0.2606}]}, {"date": "2026-07-15", "day": -4.8532, "cum": -3.1496, "bd": [{"ticker": "WDC", "pct": -2.5959}, {"ticker": "MU", "pct": -2.5088}, {"ticker": "TSM", "pct": 0.1634}, {"ticker": "NVDA", "pct": 0.088}]}, {"date": "2026-07-16", "day": -4.961, "cum": -7.9543, "bd": [{"ticker": "WDC", "pct": -2.2945}, {"ticker": "MU", "pct": -1.5116}, {"ticker": "NVDA", "pct": -0.5965}, {"ticker": "TSM", "pct": -0.5584}]}, {"date": "2026-07-17", "day": -0.2142, "cum": -8.1514, "bd": [{"ticker": "NVDA", "pct": -0.495}, {"ticker": "WDC", "pct": 0.4683}, {"ticker": "MU", "pct": -0.116}, {"ticker": "TSM", "pct": -0.0715}]}, {"date": "2026-07-20", "day": 1.2635, "cum": -6.9909, "bd": [{"ticker": "WDC", "pct": 0.4091}, {"ticker": "TSM", "pct": 0.4075}, {"ticker": "MU", "pct": 0.4017}, {"ticker": "NVDA", "pct": 0.0452}]}, {"date": "2026-07-21", "day": 7.544, "cum": 0.0256, "bd": [{"ticker": "MU", "pct": 2.5313}, {"ticker": "WDC", "pct": 2.4151}, {"ticker": "TSM", "pct": 2.2843}, {"ticker": "NVDA", "pct": 0.3808}, {"ticker": "", "pct": -0.059}, {"ticker": "ASML", "pct": -0.0085}]}], "holdings": [{"ticker": "TSM", "w": 32.96}, {"ticker": "ASML", "w": 17.96}, {"ticker": "MU", "w": 17.68}, {"ticker": "WDC", "w": 16.47}, {"ticker": "NVDA", "w": 14.92}]}], "pending": [], "operations": [{"date": "2026-07-21", "id": "fede", "name": "Fede", "slot": 1, "kind": "BUY", "ticker": "ASML"}, {"date": "2026-07-20", "id": "ana", "name": "Ana", "slot": 0, "kind": "BUY", "ticker": "META"}, {"date": "2026-07-17", "id": "fede", "name": "Fede", "slot": 1, "kind": "BUY", "ticker": "TSM"}], "allocation": [{"ticker": "META", "w": 25.4}, {"ticker": "PLTR", "w": 15.7}, {"ticker": "SMCI", "w": 15.09}, {"ticker": "TSM", "w": 14.44}, {"ticker": "ASML", "w": 7.87}, {"ticker": "MU", "w": 7.75}, {"ticker": "WDC", "w": 7.21}, {"ticker": "NVDA", "w": 6.54}], "tickers": [{"ticker": "META", "name": "Meta Platforms", "domain": "meta.com", "w": 25.4, "holders": [{"name": "Ana", "slot": 0, "w": 45.2}], "prices": [{"date": "2026-07-07", "close": 615.58}, {"date": "2026-07-08", "close": 603.12}, {"date": "2026-07-09", "close": 631.48}, {"date": "2026-07-10", "close": 669.21}, {"date": "2026-07-13", "close": 656.73}, {"date": "2026-07-14", "close": 661.04}, {"date": "2026-07-15", "close": 681.31}, {"date": "2026-07-16", "close": 664.54}, {"date": "2026-07-17", "close": 646.01}, {"date": "2026-07-20", "close": 645.85}, {"date": "2026-07-21", "close": 643.81}], "ret": 4.59, "peers": [{"ticker": "GOOGL", "name": "Alphabet", "domain": "abc.xyz"}, {"ticker": "AMZN", "name": "Amazon", "domain": "amazon.com"}, {"ticker": "NFLX", "name": "Netflix", "domain": "netflix.com"}]}, {"ticker": "PLTR", "name": "Palantir", "domain": "palantir.com", "w": 15.7, "holders": [{"name": "Ana", "slot": 0, "w": 27.94}], "prices": [{"date": "2026-07-07", "close": 134.37}, {"date": "2026-07-08", "close": 132.22}, {"date": "2026-07-09", "close": 129.04}, {"date": "2026-07-10", "close": 126.79}, {"date": "2026-07-13", "close": 130.04}, {"date": "2026-07-14", "close": 133.72}, {"date": "2026-07-15", "close": 133.76}, {"date": "2026-07-16", "close": 134.44}, {"date": "2026-07-17", "close": 132.38}, {"date": "2026-07-20", "close": 134.85}, {"date": "2026-07-21", "close": 132.66}], "ret": -1.27, "peers": [{"ticker": "SNOW", "name": "SNOW", "domain": ""}, {"ticker": "CRM", "name": "Salesforce", "domain": "salesforce.com"}, {"ticker": "MSFT", "name": "Microsoft", "domain": "microsoft.com"}]}, {"ticker": "SMCI", "name": "Super Micro Computer", "domain": "supermicro.com", "w": 15.09, "holders": [{"name": "Ana", "slot": 0, "w": 26.86}], "prices": [{"date": "2026-07-07", "close": 26.25}, {"date": "2026-07-08", "close": 28.17}, {"date": "2026-07-09", "close": 28.24}, {"date": "2026-07-10", "close": 28.31}, {"date": "2026-07-13", "close": 27.66}, {"date": "2026-07-14", "close": 27.65}, {"date": "2026-07-15", "close": 26.89}, {"date": "2026-07-16", "close": 24.68}, {"date": "2026-07-17", "close": 24.18}, {"date": "2026-07-20", "close": 23.83}, {"date": "2026-07-21", "close": 25.5}], "ret": -2.86, "peers": [{"ticker": "DELL", "name": "DELL", "domain": ""}, {"ticker": "HPE", "name": "HPE", "domain": ""}, {"ticker": "NVDA", "name": "NVIDIA", "domain": "nvidia.com"}]}, {"ticker": "TSM", "name": "Taiwan Semiconductor", "domain": "tsmc.com", "w": 14.44, "holders": [{"name": "Fede", "slot": 1, "w": 32.96}], "prices": [{"date": "2026-06-24", "close": 440.83}, {"date": "2026-06-25", "close": 434.99}, {"date": "2026-06-26", "close": 432.35}, {"date": "2026-06-29", "close": 455.1}, {"date": "2026-06-30", "close": 477.57}, {"date": "2026-07-01", "close": 444.23}, {"date": "2026-07-02", "close": 434.16}, {"date": "2026-07-06", "close": 451.79}, {"date": "2026-07-07", "close": 432.57}, {"date": "2026-07-08", "close": 436.98}, {"date": "2026-07-09", "close": 436.96}, {"date": "2026-07-10", "close": 434.11}, {"date": "2026-07-13", "close": 421.58}, {"date": "2026-07-14", "close": 420.39}, {"date": "2026-07-15", "close": 419.48}, {"date": "2026-07-16", "close": 409.74}, {"date": "2026-07-17", "close": 398.37}, {"date": "2026-07-20", "close": 402.3}, {"date": "2026-07-21", "close": 424.61}], "ret": -3.68, "peers": [{"ticker": "NVDA", "name": "NVIDIA", "domain": "nvidia.com"}, {"ticker": "ASML", "name": "ASML", "domain": "asml.com"}, {"ticker": "MU", "name": "Micron Technology", "domain": "micron.com"}]}, {"ticker": "ASML", "name": "ASML", "domain": "asml.com", "w": 7.87, "holders": [{"name": "Fede", "slot": 1, "w": 17.96}], "prices": [{"date": "2026-07-06", "close": 1825.0699}, {"date": "2026-07-07", "close": 1747.28}, {"date": "2026-07-08", "close": 1768.65}, {"date": "2026-07-09", "close": 1804.25}, {"date": "2026-07-10", "close": 1797.3199}, {"date": "2026-07-13", "close": 1726.04}, {"date": "2026-07-14", "close": 1775.64}, {"date": "2026-07-15", "close": 1815.27}, {"date": "2026-07-16", "close": 1784.87}, {"date": "2026-07-17", "close": 1747.58}, {"date": "2026-07-20", "close": 1739.02}, {"date": "2026-07-21", "close": 1801.51}], "ret": -1.29, "peers": [{"ticker": "TSM", "name": "Taiwan Semiconductor", "domain": "tsmc.com"}, {"ticker": "AMAT", "name": "AMAT", "domain": ""}, {"ticker": "LRCX", "name": "LRCX", "domain": ""}]}, {"ticker": "MU", "name": "Micron Technology", "domain": "micron.com", "w": 7.75, "holders": [{"name": "Fede", "slot": 1, "w": 17.68}], "prices": [{"date": "2026-06-24", "close": 1048.51}, {"date": "2026-06-25", "close": 1213.5601}, {"date": "2026-06-26", "close": 1132.33}, {"date": "2026-06-29", "close": 1145.28}, {"date": "2026-06-30", "close": 1154.29}, {"date": "2026-07-01", "close": 1032.28}, {"date": "2026-07-02", "close": 975.56}, {"date": "2026-07-06", "close": 984.75}, {"date": "2026-07-07", "close": 938.38}, {"date": "2026-07-08", "close": 948.8}, {"date": "2026-07-09", "close": 991.64}, {"date": "2026-07-10", "close": 979.3}, {"date": "2026-07-13", "close": 937.0}, {"date": "2026-07-14", "close": 983.12}, {"date": "2026-07-15", "close": 904.28}, {"date": "2026-07-16", "close": 853.2}, {"date": "2026-07-17", "close": 848.95}, {"date": "2026-07-20", "close": 865.46}, {"date": "2026-07-21", "close": 970.82}], "ret": -7.41, "peers": [{"ticker": "WDC", "name": "Western Digital", "domain": "westerndigital.com"}, {"ticker": "TSM", "name": "Taiwan Semiconductor", "domain": "tsmc.com"}, {"ticker": "NVDA", "name": "NVIDIA", "domain": "nvidia.com"}]}, {"ticker": "WDC", "name": "Western Digital", "domain": "westerndigital.com", "w": 7.21, "holders": [{"name": "Fede", "slot": 1, "w": 16.47}], "prices": [{"date": "2026-06-08", "close": 526.93}, {"date": "2026-06-09", "close": 517.72}, {"date": "2026-06-10", "close": 490.09}, {"date": "2026-06-11", "close": 529.29}, {"date": "2026-06-12", "close": 562.93}, {"date": "2026-06-15", "close": 653.53}, {"date": "2026-06-16", "close": 681.08}, {"date": "2026-06-17", "close": 712.13}, {"date": "2026-06-18", "close": 746.23}, {"date": "2026-06-22", "close": 732.62}, {"date": "2026-06-23", "close": 670.75}, {"date": "2026-06-24", "close": 643.83}, {"date": "2026-06-25", "close": 675.39}, {"date": "2026-06-26", "close": 586.45}, {"date": "2026-06-29", "close": 651.88}, {"date": "2026-06-30", "close": 638.72}, {"date": "2026-07-01", "close": 598.37}, {"date": "2026-07-02", "close": 539.0}, {"date": "2026-07-06", "close": 577.46}, {"date": "2026-07-07", "close": 532.1}, {"date": "2026-07-08", "close": 550.3}, {"date": "2026-07-09", "close": 578.05}, {"date": "2026-07-10", "close": 582.59}, {"date": "2026-07-13", "close": 555.55}, {"date": "2026-07-14", "close": 563.32}, {"date": "2026-07-15", "close": 513.84}, {"date": "2026-07-16", "close": 466.81}, {"date": "2026-07-17", "close": 477.22}, {"date": "2026-07-20", "close": 487.42}, {"date": "2026-07-21", "close": 548.39}], "ret": 4.07, "peers": [{"ticker": "MU", "name": "Micron Technology", "domain": "micron.com"}, {"ticker": "STX", "name": "STX", "domain": ""}, {"ticker": "TSM", "name": "Taiwan Semiconductor", "domain": "tsmc.com"}]}, {"ticker": "NVDA", "name": "NVIDIA", "domain": "nvidia.com", "w": 6.54, "holders": [{"name": "Fede", "slot": 1, "w": 14.92}], "prices": [{"date": "2026-06-08", "close": 208.64}, {"date": "2026-06-09", "close": 208.19}, {"date": "2026-06-10", "close": 200.42}, {"date": "2026-06-11", "close": 204.87}, {"date": "2026-06-12", "close": 205.19}, {"date": "2026-06-15", "close": 212.45}, {"date": "2026-06-16", "close": 207.41}, {"date": "2026-06-17", "close": 204.65}, {"date": "2026-06-18", "close": 210.69}, {"date": "2026-06-22", "close": 208.65}, {"date": "2026-06-23", "close": 200.04}, {"date": "2026-06-24", "close": 199.0}, {"date": "2026-06-25", "close": 195.74}, {"date": "2026-06-26", "close": 192.53}, {"date": "2026-06-29", "close": 194.97}, {"date": "2026-06-30", "close": 200.09}, {"date": "2026-07-01", "close": 197.58}, {"date": "2026-07-02", "close": 194.83}, {"date": "2026-07-06", "close": 195.55}, {"date": "2026-07-07", "close": 196.93}, {"date": "2026-07-08", "close": 204.12}, {"date": "2026-07-09", "close": 202.78}, {"date": "2026-07-10", "close": 210.96}, {"date": "2026-07-13", "close": 203.53}, {"date": "2026-07-14", "close": 211.8}, {"date": "2026-07-15", "close": 212.5}, {"date": "2026-07-16", "close": 207.4}, {"date": "2026-07-17", "close": 202.81}, {"date": "2026-07-20", "close": 203.28}, {"date": "2026-07-21", "close": 207.29}], "ret": -0.65, "peers": [{"ticker": "AMD", "name": "AMD", "domain": "amd.com"}, {"ticker": "TSM", "name": "Taiwan Semiconductor", "domain": "tsmc.com"}, {"ticker": "AVGO", "name": "Broadcom", "domain": "broadcom.com"}]}], "monthly": {"current": {"name": "Fede", "value": 0.03, "slot": 1, "month": 7, "month_year": 2026, "spark": [1.7906, -3.1496, -7.9543, -8.1514, -6.9909, 0.0256]}, "previous": null}, "dailyWinners": {"month": 7, "month_year": 2026, "rows": [{"date": "2026-07-21", "names": ["Fede"], "ids": ["fede"], "slot": 1, "value": 7.54}, {"date": "2026-07-20", "names": ["Fede"], "ids": ["fede"], "slot": 1, "value": 1.26}, {"date": "2026-07-17", "names": ["Fede"], "ids": ["fede"], "slot": 1, "value": -0.21}, {"date": "2026-07-16", "names": ["Ana"], "ids": ["ana"], "slot": 0, "value": -2.63}, {"date": "2026-07-15", "names": ["Ana"], "ids": ["ana"], "slot": 0, "value": 0.03}, {"date": "2026-07-14", "names": ["Fede"], "ids": ["fede"], "slot": 1, "value": 1.79}]}};
+const UPDATED = "2026-07-22 09:26";
 
 // ==== idioma: inglés por defecto, japonés opcional ====================
 // La selección se recuerda por dispositivo en localStorage. El toggle solo
@@ -670,6 +677,10 @@ const I18N = {
     cumChartAria: "Cumulative return over time by player",
     dailyDetailTitle: "Daily detail · last 30 days",
     detailAria: "Detail",
+    dayByAsset: "Return by asset",
+    dayOthers: "Rest of players",
+    dayCash: "Cash · fees",
+    dayNoBreakdown: "No per-asset breakdown for this session.",
     footer: "Daily return with simple Dietz (deposits and withdrawals don't count " +
       "as gains); cumulative by geometric compounding (time-weighted return). " +
       "Data: encrypted Revolut statements · closing prices from Yahoo Finance · " +
@@ -817,6 +828,10 @@ const I18N = {
     cumChartAria: "プレイヤー別の累積リターン推移",
     dailyDetailTitle: "日次詳細 · 直近30日",
     detailAria: "詳細",
+    dayByAsset: "銘柄別リターン",
+    dayOthers: "他のプレイヤー",
+    dayCash: "現金・手数料",
+    dayNoBreakdown: "この取引日の銘柄別内訳はありません。",
     footer: "日次リターンはシンプルDietz法（入出金は損益に含めない）、累積は幾何連鎖" +
       "（時間加重収益率）。データ：暗号化されたRevolut明細 · Yahoo Financeの終値 · " +
       "ロゴは <a href=\"https://logo.dev\" target=\"_blank\" rel=\"noopener noreferrer\">Logo.dev</a>。",
@@ -1221,6 +1236,11 @@ function paintDaily() {
   const slotColor = s => css(SLOTS[s % SLOTS.length]);
   rows.forEach(r => {
     const tr = t.insertRow();
+    // toda la fila abre el detalle del día del campeón (rentabilidad por valor
+    // + el % del día del resto de jugadores)
+    tr.classList.add("clk");
+    tr.dataset.dayDate = r.date;
+    tr.dataset.dayPlayer = (r.ids && r.ids[0]) || "";
     const fecha = tr.insertCell(); fecha.textContent = fmtDate(r.date);
     const name = tr.insertCell(); name.className = "name";
     name.appendChild(document.createTextNode("🏅 "));
@@ -1671,6 +1691,11 @@ svg.addEventListener("pointerleave", () => {
     const money = v => "$" + v.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2});
     [...p.days].reverse().forEach(dy => {
       const tr = t.insertRow();
+      // cada jornada abre su detalle: rentabilidad por valor de este jugador
+      // ese día (+ el % del día del resto de jugadores)
+      tr.classList.add("clk");
+      tr.dataset.dayPlayer = p.id;
+      tr.dataset.dayDate = dy.date;
       const cells = p.amounts
         ? [dy.date, money(dy.start), money(dy.end), money(dy.flow), money(dy.pnl), fmtPct(dy.day), fmtPct(dy.cum)]
         : [dy.date, fmtPct(dy.day), fmtPct(dy.cum)];
@@ -1733,6 +1758,11 @@ function paintOperations() {
   box.innerHTML = "";
   ops.forEach(o => {
     const row = h("div", "op-row");
+    // Toda la fila es clicable: abre la ficha del valor (o la del jugador si el
+    // valor no es abrible). El nombre del jugador, anidado con su propio
+    // data-player, sigue abriendo su ficha por delegación (gana el más interno).
+    if (TICKERS[o.ticker]) { row.classList.add("clk"); row.dataset.ticker = o.ticker; }
+    else if (o.id && PLAYERS[o.id]) { row.classList.add("clk"); row.dataset.player = o.id; }
 
     const tk = h("span", "op-tk");
     if (TICKERS[o.ticker]) { tk.classList.add("clk"); tk.dataset.ticker = o.ticker; }
@@ -2114,11 +2144,106 @@ function openPlayer(pid) {
   showModal(root);
 }
 
+// ---- detalle de una jornada (campeón del día / fila del detalle diario) ----
+// Índice fecha -> { id de jugador -> su jornada }, para reunir en un vistazo la
+// rentabilidad de cada jugador ese día sin recorrer todo el dataset al abrir.
+const DAY_INDEX = {};
+DATA.players.forEach(p => (p.days || []).forEach(d => {
+  (DAY_INDEX[d.date] || (DAY_INDEX[d.date] = {}))[p.id] = d;
+}));
+
+// Muestra la rentabilidad de cada valor del jugador esa jornada (los % suman el
+// «% del día») y, debajo, el % del día del resto de jugadores. ``pid`` es el
+// jugador protagonista (el campeón, o el propio jugador en el detalle diario);
+// si falta o no tiene datos ese día, se toma el mejor de la jornada.
+function openDayDetail(pid, iso) {
+  const perPlayer = DAY_INDEX[iso] || {};
+  let subject = PLAYERS[pid];
+  if (!subject || !perPlayer[pid]) {
+    let bestId = null, bestVal = -Infinity;
+    Object.keys(perPlayer).forEach(id => {
+      if (perPlayer[id].day > bestVal) { bestVal = perPlayer[id].day; bestId = id; }
+    });
+    subject = PLAYERS[bestId]; pid = bestId;
+  }
+  if (!subject) return;
+  const sd = perPlayer[pid] || {day: 0, bd: []};
+  const root = document.createElement("div");
+
+  const head = h("div", "mhead");
+  head.appendChild(monoEl(subject.name, 46, colorOf(subject)));
+  const title = h("div", "mtitle");
+  const t1 = h("div", "t1");
+  t1.appendChild(document.createTextNode(fmtDate(iso)));
+  t1.appendChild(h("span", "mbadge" + (sd.day >= 0 ? "" : " neg"), fmtPct(sd.day)));
+  title.appendChild(t1);
+  title.appendChild(h("div", "t2", subject.name));
+  head.appendChild(title);
+  root.appendChild(head);
+
+  // rentabilidad por valor: cada porción suma el % del día
+  const bd = sd.bd || [];
+  if (bd.length) {
+    const list = document.createElement("div");
+    bd.forEach(x => {
+      const row = h("div", "holder-row");
+      if (x.ticker && TICKERS[x.ticker]) { row.classList.add("clk"); row.dataset.ticker = x.ticker; }
+      const nm = h("span", "nm");
+      if (x.ticker) {
+        nm.appendChild(tickerLogoEl({ticker: x.ticker}, 26));
+        nm.appendChild(document.createTextNode(x.ticker));
+      } else {
+        nm.appendChild(document.createTextNode("💵 " + T.dayCash));
+      }
+      row.appendChild(nm);
+      row.appendChild(h("span", "w " + (x.pct >= 0 ? "pos" : "neg"), fmtPct(x.pct)));
+      list.appendChild(row);
+    });
+    root.appendChild(sectionEl(T.dayByAsset, list));
+  } else {
+    root.appendChild(sectionEl(T.dayByAsset, h("div", "mnote", T.dayNoBreakdown)));
+  }
+
+  // resto de jugadores: su % del día (ordenado de mejor a peor)
+  const others = Object.keys(perPlayer)
+    .filter(id => id !== pid && PLAYERS[id])
+    .map(id => ({p: PLAYERS[id], d: perPlayer[id]}))
+    .sort((a, b) => b.d.day - a.d.day);
+  if (others.length) {
+    const list = document.createElement("div");
+    others.forEach(({p, d}) => {
+      const row = h("div", "holder-row clk"); row.dataset.player = p.id;
+      const nm = h("span", "nm");
+      const key = h("span", "key"); key.style.background = colorOf(p);
+      nm.appendChild(key); nm.appendChild(document.createTextNode(p.name));
+      row.appendChild(nm);
+      row.appendChild(h("span", "w " + (d.day >= 0 ? "pos" : "neg"), fmtPct(d.day)));
+      list.appendChild(row);
+    });
+    root.appendChild(sectionEl(T.dayOthers, list));
+  }
+
+  showModal(root);
+}
+
 // ---- apertura por delegación + cierre (backdrop / ✕ / Esc) ----
 document.addEventListener("click", ev => {
+  // detalle de una jornada (campeón del día / fila del detalle diario)
+  const dd = ev.target.closest("[data-day-date]");
+  if (dd && dd.dataset.dayDate) {
+    openDayDetail(dd.dataset.dayPlayer || "", dd.dataset.dayDate); return;
+  }
   const tk = ev.target.closest("[data-ticker]");
-  if (tk && tk.dataset.ticker) { openTicker(tk.dataset.ticker); return; }
   const pl = ev.target.closest("[data-player]");
+  // Cuando un elemento abrible está anidado dentro de otro (p. ej. el nombre
+  // del jugador dentro de una fila de operación que abre el valor), gana el más
+  // interno: el que el usuario ha tocado realmente.
+  if (tk && pl) {
+    if (tk.contains(pl)) openPlayer(pl.dataset.player);
+    else openTicker(tk.dataset.ticker);
+    return;
+  }
+  if (tk && tk.dataset.ticker) { openTicker(tk.dataset.ticker); return; }
   if (pl && pl.dataset.player) { openPlayer(pl.dataset.player); return; }
 });
 modal.addEventListener("click", ev => { if (ev.target === modal) closeModal(); });
