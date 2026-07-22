@@ -147,6 +147,16 @@ _TEMPLATE = """<!doctype html>
 
   /* widgets */
   .widget { position: relative; overflow: hidden; padding-bottom: 0; }
+  /* interrogante: abre el modal que explica cómo se calcula la rentabilidad */
+  .whelp { position: absolute; z-index: 3; top: 12px; right: 12px;
+           width: 26px; height: 26px; border-radius: 999px; flex: none;
+           border: 1px solid var(--hair); background: var(--surface-2);
+           color: var(--ink-2); font-size: 15px; font-weight: 800; line-height: 1;
+           cursor: pointer; display: grid; place-items: center;
+           transition: color .12s ease, border-color .12s ease; }
+  .whelp:hover { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, var(--hair)); }
+  .whelp:active { transform: translateY(1px); }
+  #hero-card .wlabel { padding-right: 34px; }
   .wlabel { color: var(--ink-2); font-size: 14px; font-weight: 600; }
   .wbig { font-size: clamp(26px, 8vw, 34px); font-weight: 800; letter-spacing: -0.035em; line-height: 1.1; margin-top: 3px; display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; }
   .wbig.sm { font-size: clamp(22px, 6.6vw, 28px); white-space: nowrap; }
@@ -417,6 +427,17 @@ _TEMPLATE = """<!doctype html>
   .rev-btn.sell { background: #e11d48; color: #fff; }
   .rev-note { color: var(--muted); font-size: 11.5px; margin-top: 8px; }
   .mnote { color: var(--muted); font-size: 11.5px; margin-top: 14px; }
+  /* párrafo explicativo y fórmulas del modal «cómo se calcula» */
+  .mtext { color: var(--ink-2); font-size: 14px; font-weight: 500; line-height: 1.5; }
+  .mtext + .mtext { margin-top: 9px; }
+  .mtext b { color: var(--ink); font-weight: 700; }
+  .formula { font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+             font-size: 13.5px; font-weight: 600; color: var(--ink);
+             background: var(--surface-2); border: 1px solid var(--hair);
+             border-radius: 12px; padding: 11px 13px; overflow-x: auto;
+             white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .formula + .formula { margin-top: 8px; }
+  .formula .lbl { color: var(--muted); font-weight: 700; margin-right: 8px; }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; }
   .chip-tk { display: inline-flex; align-items: center; gap: 7px; cursor: pointer;
              background: var(--surface-2); border: 1px solid var(--hair);
@@ -504,6 +525,7 @@ _TEMPLATE = """<!doctype html>
 
   <div id="widgets" style="display:grid;gap:12px">
     <section class="card widget" id="hero-card">
+      <button class="whelp" id="hero-help" type="button" data-i18n-title="calcHelpAria">?</button>
       <div class="wlabel"><span data-i18n="leader"></span> · <span id="hero-name"></span></div>
       <div class="wbig"><span class="num" id="hero-val"></span><span class="delta" id="hero-delta"></span></div>
       <div class="sparkwrap" id="hero-spark"></div>
@@ -633,6 +655,27 @@ const I18N = {
     pendingText: n => n + " — the statement is uploaded but couldn't be decrypted. " +
       "The passphrase is probably not the league's: please re-upload with the correct one.",
     leader: "Leader",
+    calcHelpAria: "How the ranking is calculated",
+    calc: {
+      title: "How the ranking is calculated",
+      subtitle: "Time-weighted return — fair across different amounts",
+      qa: [
+        ["Are sales taken into account?",
+         "Yes — every buy and sell is processed — but a sale on its own doesn't change your return. Selling just turns shares into cash at their market price, so your portfolio is worth the same the instant before and after (bar fees). Whatever you had already earned stays locked in."],
+        ["If I sell, do I keep my profitability?",
+         "Yes. Your accumulated return is preserved: selling never resets it. From then on your cash simply stops moving — idle cash scores 0% per day — so you hold your position but stop climbing until you buy back in."],
+        ["What actually moves the score, then?",
+         "Only how your holdings change in value day to day: share prices and dividends. Buys and sells reshuffle money between cash and shares without adding or removing any gains."],
+        ["Do deposits or withdrawals help?",
+         "No. Paying in or taking out money is neutralised (simple Dietz), so adding cash never inflates your score. Everyone is compared on <b>percentage return</b>, not on how much they invested."],
+      ],
+      formulaLabel: "The formulas",
+      dailyLbl: "Day",
+      dailyFormula: "r = (end − start − flow) / (start + flow/2)",
+      cumLbl: "Total",
+      cumFormula: "∏ (1 + rₙ) − 1",
+      note: "That's why someone with €100 and someone with €10,000 compete on equal terms: what counts is the percentage, not the amount.",
+    },
     bestOfDay: "Best of the day",
     recentOps: "Latest trades",
     opBuy: "Buy", opSell: "Sell",
@@ -758,6 +801,27 @@ const I18N = {
     pendingText: n => n + " — 明細はアップロード済みですが復号できませんでした。" +
       "パスフレーズがリーグのものと異なる可能性があります。正しいもので再アップロードしてください。",
     leader: "首位",
+    calcHelpAria: "順位の計算方法",
+    calc: {
+      title: "順位の計算方法",
+      subtitle: "時間加重収益率 — 金額が違っても公平に比較",
+      qa: [
+        ["売却は反映されますか？",
+         "はい、売買はすべて処理されます。ただし売却そのものでは収益率は変わりません。売却は保有株を時価で現金に換えるだけなので、直前と直後でポートフォリオの価値は同じです（手数料を除く）。それまでに得た利益はそのまま確定されます。"],
+        ["売却したら、その収益率は維持されますか？",
+         "はい。積み上げた収益率は保たれ、売却でリセットされることはありません。以降は現金が動かなくなるだけです。遊んでいる現金の日次収益は0%なので、買い直すまでは順位を保ちつつ、それ以上は伸びなくなります。"],
+        ["では何がスコアを動かすのですか？",
+         "保有資産の価値が日々どう変わるかだけです。株価と配当です。売買は現金と株の間で資金を組み替えるだけで、利益を足したり引いたりはしません。"],
+        ["入金や出金は有利になりますか？",
+         "いいえ。入金・出金は中立化されます（シンプル・ディーツ法）。現金を足してもスコアは上がりません。全員が投資額ではなく<b>収益率（％）</b>で比較されます。"],
+      ],
+      formulaLabel: "計算式",
+      dailyLbl: "日次",
+      dailyFormula: "r = (終値 − 始値 − 資金流入) / (始値 + 資金流入/2)",
+      cumLbl: "累積",
+      cumFormula: "∏ (1 + rₙ) − 1",
+      note: "だからこそ100ユーロの人と1万ユーロの人が対等に競えます。重要なのは金額ではなく割合です。",
+    },
     bestOfDay: "本日のベスト",
     recentOps: "最新の取引",
     opBuy: "買い", opSell: "売り",
@@ -1875,6 +1939,42 @@ function showModal(node) {
   document.body.style.overflow = "hidden";
   sheet.scrollTop = 0;
 }
+
+// ---- cómo se calcula la rentabilidad (interrogante del widget líder) ----
+function openLeaderHelp() {
+  const c = T.calc;
+  const root = document.createElement("div");
+
+  const head = h("div", "mhead");
+  const title = h("div", "mtitle");
+  title.appendChild(h("div", "t1", c.title));
+  title.appendChild(h("div", "t2", c.subtitle));
+  head.appendChild(title);
+  root.appendChild(head);
+
+  // preguntas y respuestas (la venta, mantener la rentabilidad, los flujos…)
+  c.qa.forEach(([q, a]) => {
+    root.appendChild(sectionEl(q, h("div", "mtext", a)));
+  });
+
+  // fórmulas: rentabilidad diaria (Dietz simple) y acumulada (geométrica)
+  const fsec = h("div", "msec");
+  fsec.appendChild(h("div", "h", c.formulaLabel));
+  const f1 = h("div", "formula");
+  f1.appendChild(h("span", "lbl", c.dailyLbl));
+  f1.appendChild(document.createTextNode(c.dailyFormula));
+  fsec.appendChild(f1);
+  const f2 = h("div", "formula");
+  f2.appendChild(h("span", "lbl", c.cumLbl));
+  f2.appendChild(document.createTextNode(c.cumFormula));
+  fsec.appendChild(f2);
+  root.appendChild(fsec);
+
+  root.appendChild(h("div", "mnote", c.note));
+  showModal(root);
+}
+const heroHelp = document.getElementById("hero-help");
+if (heroHelp) heroHelp.addEventListener("click", openLeaderHelp);
 
 // ---- detalle de ticker ----
 function openTicker(sym) {
