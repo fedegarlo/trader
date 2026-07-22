@@ -14,7 +14,7 @@ import os
 from datetime import date, datetime, timezone
 
 from .players import Player
-from .portfolio import DayResult
+from .portfolio import CASH_KEY, DayResult
 from .revolut import BUY, SELL
 from .tickers import ticker_meta
 
@@ -2594,7 +2594,13 @@ def _day_breakdown(contrib: dict[str, float] | None, denom: float) -> list[dict]
         return []
     out = [{"ticker": ticker, "pct": round(value / denom * 100, 4)}
            for ticker, value in contrib.items()]
-    out = [d for d in out if abs(d["pct"]) >= 0.005]
+    # Solo se oculta el «ruido» insignificante del efectivo/comisiones
+    # (``CASH_KEY``). Una posición real del jugador se mantiene siempre en el
+    # desglose, aunque su aportación redondee a 0,00 %: un valor que apenas se
+    # movió ese día sigue formando parte de la cartera, y omitirlo daba la falsa
+    # impresión de que no se tenía en cuenta.
+    out = [d for d in out
+           if d["ticker"] != CASH_KEY or abs(d["pct"]) >= 0.005]
     out.sort(key=lambda d: abs(d["pct"]), reverse=True)
     return out
 
