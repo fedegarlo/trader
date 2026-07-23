@@ -18,6 +18,7 @@ import sys
 from datetime import date, timedelta
 
 from . import analysts as analysts_mod
+from . import badges as badges_mod
 from . import inbox as inbox_mod
 from . import players as players_mod
 from . import report as report_mod
@@ -143,11 +144,19 @@ def cmd_ranking(args: argparse.Namespace) -> None:
         if consensus:
             analysts[ticker] = consensus
 
+    # Insignias: se acumulan en un histórico (data/badges.json) que no se
+    # recalcula desde cero, solo añade las nuevas y actualiza el récord de la
+    # liga cuando alguien lo supera.
+    store = badges_mod.load_store(args.badges_file)
+    store, badges = badges_mod.update_badges(computed, store,
+                                             price_history=price_history)
+    badges_mod.save_store(store, args.badges_file)
+
     content = report_mod.write_ranking(computed, out_path=args.out)
     webpage.write_index(computed, out_path=args.html_out, pending=pending,
                         allocation=allocation, holdings=holdings,
                         prices=price_history, analysts=analysts,
-                        contributions=contributions)
+                        contributions=contributions, badges=badges)
     with open(args.pending_out, "w", encoding="utf-8") as fh:
         json.dump(pending, fh, ensure_ascii=False)
     print(content)
@@ -192,6 +201,8 @@ def main(argv: list[str] | None = None) -> None:
     p_rank.add_argument("--analysts-dir", default="data/analysts",
                         help="caché del consenso de analistas (Yahoo quoteSummary)")
     p_rank.add_argument("--public-dir", default="data/public")
+    p_rank.add_argument("--badges-file", default="data/badges.json",
+                        help="histórico acumulativo de insignias (badges)")
     p_rank.add_argument("--out", default="docs/ranking.md")
     p_rank.add_argument("--html-out", default="docs/index.html")
     p_rank.add_argument("--pending-out", default="pending.json",

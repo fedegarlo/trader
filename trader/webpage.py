@@ -187,6 +187,32 @@ _TEMPLATE = """<!doctype html>
   .wrow .card { padding-bottom: 18px; display: flex; flex-direction: column; }
   .wrow .card.widget { padding-bottom: 0; }
 
+  /* insignias (badges): récord destacado de la liga + rejilla de logros. */
+  .card.record { padding-bottom: 18px; }
+  .record .record-tk { font-size: 16px; font-weight: 700; color: var(--ink-2); margin-left: 8px; }
+  #record-date { color: var(--muted); font-weight: 600; font-size: 13px; margin-left: 8px; }
+  .badge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(158px, 1fr)); gap: 10px; }
+  .badge { position: relative; display: flex; align-items: flex-start; gap: 11px;
+           padding: 12px 13px; border-radius: 18px; background: var(--surface-2);
+           border: 1px solid var(--hair); }
+  .badge.prov { border-style: dashed; opacity: 0.9; }
+  .badge .bico { font-size: 26px; line-height: 1; flex: 0 0 auto; }
+  .badge .btext { min-width: 0; }
+  .badge .btitle { font-weight: 700; font-size: 14px; color: var(--ink); line-height: 1.2; }
+  .badge .bwho { display: flex; align-items: center; gap: 5px; margin-top: 4px;
+                 font-size: 13px; font-weight: 600; color: var(--ink-2); }
+  .badge .bmeta { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-top: 3px; }
+  .badge .ptag { font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+                 color: var(--muted); margin-top: 4px; }
+  /* insignias compactas dentro de la ficha del jugador */
+  .mbadges { display: flex; flex-wrap: wrap; gap: 8px; }
+  .mbadge-chip { display: inline-flex; align-items: center; gap: 7px;
+                 background: var(--surface-2); border: 1px solid var(--hair);
+                 padding: 6px 12px 6px 8px; border-radius: 999px;
+                 font-weight: 700; font-size: 13px; color: var(--ink); }
+  .mbadge-chip.prov { border-style: dashed; }
+  .mbadge-chip .i { font-size: 17px; line-height: 1; }
+
   /* banners promocionales (solo versión japonesa): anuncios ficticios al
      estilo de los folletos japoneses, intercalados entre los widgets, con
      enlace a webs reales de Japón. Colores propios del banner (fijos en
@@ -569,6 +595,19 @@ _TEMPLATE = """<!doctype html>
     </div>
   </div>
 
+  <section class="card" id="badges-card" style="display:none">
+    <h2 data-i18n="badgesTitle"></h2>
+    <div class="wsub muted" data-i18n="badgesSub" style="margin-top:2px"></div>
+    <section class="card widget record" id="record-card" style="display:none;margin-top:12px">
+      <div class="wlabel"><span data-i18n="recordTitle"></span><span id="record-date"></span></div>
+      <div class="wbig"><span class="num pos" id="record-val"></span><span class="record-tk" id="record-tk"></span></div>
+      <div class="bestname" id="record-holders"></div>
+      <div class="wsub muted" id="record-prev" style="margin-top:6px"></div>
+    </section>
+    <div id="badge-grid" class="badge-grid" style="margin-top:12px"></div>
+    <div class="wsub muted" id="badge-empty" style="display:none;margin-top:8px" data-i18n="badgesEmpty"></div>
+  </section>
+
   <section class="card" id="ops-card" style="display:none">
     <div class="wlabel" data-i18n="recentOps"></div>
     <div id="ops-list" style="margin-top:8px"></div>
@@ -700,6 +739,20 @@ const I18N = {
     dailyCols: ["Date", "Champion", "Day %"],
     leagueWallet: "League portfolio",
     walletsTitle: "Portfolios by player",
+    badgesTitle: "🎖️ Badges",
+    badgesSub: "Achievements pile up over time — once earned, they stay.",
+    badgesEmpty: "No badges yet — they'll appear as the league heats up.",
+    recordTitle: "🚀 Biggest single-day gain",
+    recordHeld: names => "Held by " + names,
+    recordPrev: (pct, tk, d) => "Previous record: " + tk + " " + pct + " · " + d,
+    badgeChamp: ml => "Champion of " + ml,
+    badgeChampProv: ml => "Leading " + ml,
+    badgeWeek: "A week in the green",
+    badgeMilestone: t => "+" + t + "% reached",
+    badgeMonths: n => n + " winning months in a row",
+    badgeChampMeta: pct => "Month " + pct,
+    badgeOn: d => "Earned " + d,
+    badgeLive: "Live",
     cumTitle: "Cumulative return · last 30 days",
     cumChartAria: "Cumulative return over time by player",
     dailyDetailTitle: "Daily detail · last 30 days",
@@ -851,6 +904,20 @@ const I18N = {
     dailyCols: ["日付", "王者", "当日%"],
     leagueWallet: "リーグのポートフォリオ",
     walletsTitle: "プレイヤー別ポートフォリオ",
+    badgesTitle: "🎖️ バッジ",
+    badgesSub: "実績は積み重なり、一度獲得したら消えません。",
+    badgesEmpty: "まだバッジはありません。リーグが白熱すると登場します。",
+    recordTitle: "🚀 1日の最大上昇",
+    recordHeld: names => "保有者: " + names,
+    recordPrev: (pct, tk, d) => "前の記録: " + tk + " " + pct + " · " + d,
+    badgeChamp: ml => ml + "の王者",
+    badgeChampProv: ml => ml + "首位",
+    badgeWeek: "1週間連勝",
+    badgeMilestone: t => "+" + t + "%達成",
+    badgeMonths: n => n + "か月連続勝利",
+    badgeChampMeta: pct => "月間 " + pct,
+    badgeOn: d => d + "獲得",
+    badgeLive: "ライブ",
     cumTitle: "累積リターン · 直近30日",
     cumChartAria: "プレイヤー別の累積リターン推移",
     dailyDetailTitle: "日次詳細 · 直近30日",
@@ -1283,6 +1350,94 @@ function paintDaily() {
   });
 }
 paintDaily();
+
+// ---- insignias (badges): récord de la liga + rejilla de logros acumulados ----
+// Los datos llegan ya calculados y ordenados desde el histórico persistente
+// (data/badges.json): aquí solo se pintan. Cada logro lleva el color del
+// jugador (slot) para reconocerlo de un vistazo.
+const BADGE_ICON = {
+  champion_month: "🏆", week_streak: "🔥", milestone: "💎",
+  months_2: "📈", months_3: "🗓️",
+};
+function badgeMilestoneIcon(t) { return t >= 25 ? "🚀" : (t >= 10 ? "💎" : "🌱"); }
+function badgeTitle(b) {
+  if (b.type === "champion_month") {
+    const ml = monthLabel(+b.month.split("-")[1], +b.month.split("-")[0]);
+    return b.provisional ? T.badgeChampProv(ml) : T.badgeChamp(ml);
+  }
+  if (b.type === "week_streak") return T.badgeWeek;
+  if (b.type === "milestone") return T.badgeMilestone(b.tier);
+  if (b.type === "months_2") return T.badgeMonths(2);
+  if (b.type === "months_3") return T.badgeMonths(3);
+  return b.type;
+}
+function badgeIcon(b) {
+  if (b.type === "milestone") return badgeMilestoneIcon(b.tier);
+  return BADGE_ICON[b.type] || "🎖️";
+}
+// Insignias agrupadas por jugador, para su ficha de detalle. Las provisionales
+// (campeón del mes en curso) van primero; el resto ya llega ordenado de más
+// reciente a más antigua desde el histórico.
+const PLAYER_BADGES = {};
+(((DATA.badges || {}).provisional) || [])
+  .concat(((DATA.badges || {}).awards) || [])
+  .forEach(b => { if (b.player) (PLAYER_BADGES[b.player] || (PLAYER_BADGES[b.player] = [])).push(b); });
+function paintBadges() {
+  const data = DATA.badges || {};
+  const awards = (data.provisional || []).concat(data.awards || []);
+  const record = data.record || null;
+  const card = document.getElementById("badges-card");
+  if (!awards.length && !record) { card.style.display = "none"; return; }
+  card.style.display = "";
+  const slotColor = s => css(SLOTS[(s || 0) % SLOTS.length]);
+
+  // Récord de «mayor subida de un valor en un día».
+  const rc = document.getElementById("record-card");
+  if (record) {
+    rc.style.display = "";
+    document.getElementById("record-date").textContent = " · " + fmtDate(record.date);
+    document.getElementById("record-val").textContent = fmtPct(record.pct);
+    document.getElementById("record-tk").textContent = record.ticker;
+    const holders = (record.holders || []).map(h => h.name);
+    const rh = document.getElementById("record-holders");
+    rh.textContent = holders.length ? T.recordHeld(holders.join(", ")) : "";
+    rh.style.display = holders.length ? "" : "none";
+    const prev = (record.history || []).slice(-1)[0];
+    const rp = document.getElementById("record-prev");
+    if (prev) { rp.style.display = ""; rp.textContent = T.recordPrev(fmtPct(prev.pct), prev.ticker, fmtDate(prev.date)); }
+    else rp.style.display = "none";
+  } else rc.style.display = "none";
+
+  // Rejilla de insignias.
+  const grid = document.getElementById("badge-grid");
+  grid.innerHTML = "";
+  document.getElementById("badge-empty").style.display = awards.length ? "none" : "";
+  awards.forEach(b => {
+    const el = document.createElement("div");
+    el.className = "badge" + (b.provisional ? " prov" : "");
+    const ico = document.createElement("span");
+    ico.className = "bico"; ico.textContent = badgeIcon(b); el.appendChild(ico);
+    const box = document.createElement("div"); box.className = "btext";
+    const title = document.createElement("div");
+    title.className = "btitle"; title.textContent = badgeTitle(b); box.appendChild(title);
+    const who = document.createElement("div"); who.className = "bwho";
+    const key = document.createElement("span");
+    key.className = "key"; key.style.background = slotColor(b.slot); who.appendChild(key);
+    who.appendChild(document.createTextNode(b.name || "")); box.appendChild(who);
+    const meta = document.createElement("div"); meta.className = "bmeta";
+    if (b.type === "champion_month" && b.pct !== undefined && b.pct !== null)
+      meta.textContent = T.badgeChampMeta(fmtPct(b.pct));
+    else if (b.date) meta.textContent = T.badgeOn(fmtDate(b.date));
+    box.appendChild(meta);
+    if (b.provisional) {
+      const tag = document.createElement("div");
+      tag.className = "ptag"; tag.textContent = "● " + T.badgeLive; box.appendChild(tag);
+    }
+    el.appendChild(box);
+    grid.appendChild(el);
+  });
+}
+paintBadges();
 
 // ---- widgets de cartera: asignación por ticker (solo pesos, sin importes) ----
 function badgeColor(t) {
@@ -2133,6 +2288,18 @@ function openPlayer(pid) {
   tiles2.appendChild(tileEl(T.sessions, String(days.length)));
   root.appendChild(tiles2);
 
+  const myBadges = PLAYER_BADGES[pid] || [];
+  if (myBadges.length) {
+    const wrap = h("div", "mbadges");
+    myBadges.forEach(b => {
+      const chip = h("div", "mbadge-chip" + (b.provisional ? " prov" : ""));
+      chip.appendChild(h("span", "i", badgeIcon(b)));
+      chip.appendChild(h("span", "t", badgeTitle(b)));
+      wrap.appendChild(chip);
+    });
+    root.appendChild(sectionEl(T.badgesTitle, wrap));
+  }
+
   if (days.length >= 2) {
     const spark = h("div", "mspark",
       sparkSVG(days.map(d => d.cum), last.cum >= 0 ? upC : downC, "pl", {baseline0: true}));
@@ -2613,6 +2780,7 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
                   prices: dict[str, list[tuple]] | None = None,
                   analysts: dict[str, dict] | None = None,
                   contributions: dict[str, dict[date, dict[str, float]]] | None = None,
+                  badges: dict | None = None,
                   today: date | None = None) -> dict:
     """Datos embebidos en la página. Respeta show_amounts por jugador.
 
@@ -2686,7 +2854,8 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
                 "month": today.month,
                 "month_year": today.year,
                 "rows": _daily_winners(computed, today.year, today.month, order),
-            }}
+            },
+            "badges": badges or {}}
 
 
 def _updated_stamp(today: date | None) -> str:
@@ -2719,12 +2888,13 @@ def write_index(
     prices: dict[str, list[tuple]] | None = None,
     analysts: dict[str, dict] | None = None,
     contributions: dict[str, dict[date, dict[str, float]]] | None = None,
+    badges: dict | None = None,
 ) -> str:
     payload = json.dumps(
         build_payload(computed, last_days=last_days, pending=pending,
                       allocation=allocation, holdings=holdings,
                       prices=prices, analysts=analysts,
-                      contributions=contributions,
+                      contributions=contributions, badges=badges,
                       today=today or date.today()),
         ensure_ascii=False)
     payload = payload.replace("</", "<\\/")  # nunca cerrar el <script> desde los datos
