@@ -1,5 +1,12 @@
 {
   "version": 1,
   "awards": [],
-  "record": null
+  "record": {
+    "ticker": "WDC",
+    "pct": 16.09,
+    "date": "2026-06-15",
+    "holders": [],
+    "recorded": "2026-07-23",
+    "history": []
+  }
 }
