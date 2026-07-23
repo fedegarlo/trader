@@ -557,11 +557,14 @@ _TEMPLATE = """<!doctype html>
   </section>
 
   <div id="widgets" style="display:grid;gap:12px">
-    <section class="card widget" id="hero-card">
+    <section class="card" id="hero-card" style="position:relative">
       <button class="whelp" id="hero-help" type="button" data-i18n-title="calcHelpAria">?</button>
-      <div class="wlabel"><span data-i18n="leader"></span> · <span id="hero-name"></span></div>
-      <div class="wbig"><span class="num" id="hero-val"></span><span class="delta" id="hero-delta"></span></div>
-      <div class="sparkwrap" id="hero-spark"></div>
+      <h2 data-i18n="cumTitle" style="padding-right:34px"></h2>
+      <div class="chartwrap">
+        <svg id="chart" viewBox="0 0 860 360" role="img" data-i18n-aria="cumChartAria"></svg>
+        <div class="tip" id="tip"></div>
+      </div>
+      <div class="legend" id="legend"></div>
     </section>
     <div class="wrow">
       <section class="card widget" id="best-card">
@@ -641,15 +644,6 @@ _TEMPLATE = """<!doctype html>
   <section class="card" id="wallets-card" style="display:none">
     <h2 data-i18n="walletsTitle"></h2>
     <div id="wallets" style="margin-top:4px"></div>
-  </section>
-
-  <section class="card">
-    <h2 data-i18n="cumTitle"></h2>
-    <div class="chartwrap">
-      <svg id="chart" viewBox="0 0 860 360" role="img" data-i18n-aria="cumChartAria"></svg>
-      <div class="tip" id="tip"></div>
-    </div>
-    <div class="legend" id="legend"></div>
   </section>
 
   <section class="card">
@@ -1101,7 +1095,9 @@ const T = I18N[LANG];
     return el ? el.closest(".card") : null;
   };
   const rankingCard = closestCard("ranking");
-  const chartCard = closestCard("chart");
+  // la gráfica acumulada es ahora el primer widget (arriba); anclamos el
+  // último folleto al detalle diario para que sigan repartidos hacia abajo.
+  const chartCard = closestCard("detail");
   after(wrap, mk({
     cls: "jp-b1", icon: "🐧", top: "パート・アルバイト",
     main: '<span class="bhi">採用情報</span>', aria: "ドン・キホーテ 採用情報",
@@ -1207,17 +1203,6 @@ function sparkSVG(values, color, id, opts) {
 }
 function paintWidgets() {
   if (!DATA.players.length) { document.getElementById("widgets").style.display = "none"; return; }
-  const upC = css("--up"), downC = css("--down");
-  // héroe: líder
-  const leader = ranked[0], lc = lastOf(leader);
-  document.getElementById("hero-name").textContent = leader.name;
-  const hv = document.getElementById("hero-val");
-  hv.textContent = fmtPct(lc.cum); hv.className = "num " + (lc.cum >= 0 ? "pos" : "neg");
-  const hd = document.getElementById("hero-delta");
-  hd.textContent = (lc.day >= 0 ? "▲ " : "▼ ") + fmtPct(lc.day);
-  hd.className = "delta " + (lc.day >= 0 ? "pos" : "neg");
-  document.getElementById("hero-spark").innerHTML =
-    sparkSVG(leader.days.map(d => d.cum), lc.cum >= 0 ? upC : downC, "hero", {baseline0: true});
 
   // mejor del día (los fines de semana la última jornada ya es la del viernes;
   // si hay empate en el % del día, desempata la rentabilidad acumulada)
