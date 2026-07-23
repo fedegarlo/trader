@@ -55,6 +55,23 @@ def test_custom_window():
     assert len(payload["players"][0]["days"]) == 7
 
 
+def test_badges_flow_into_payload_and_html(tmp_path):
+    from trader import badges
+    player = Player(player_id="fede", display_name="Fede")
+    series = _series(6)  # 6 jornadas al +1 %: una semana en verde y +5 %
+    computed = [(player, series)]
+
+    store, display = badges.update_badges(computed, {}, today=date(2026, 3, 1))
+    payload = webpage.build_payload(computed, badges=display)
+    types = {a["type"] for a in payload["badges"]["awards"]}
+    assert "week_streak" in types and "milestone" in types
+
+    out = tmp_path / "index.html"
+    webpage.write_index(computed, out_path=str(out), badges=display)
+    html = out.read_text(encoding="utf-8")
+    assert "badges-card" in html and "paintBadges" in html
+
+
 def _july(pid, name, rows):
     player = Player(player_id=pid, display_name=name)
     series = [DayResult(

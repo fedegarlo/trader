@@ -45,6 +45,26 @@ igual que los precios); si Yahoo no responde, la sección simplemente no aparece
 (nunca se inventan cifras). Los valores relacionados están curados en
 `trader/tickers.py`.
 
+### 🎖️ Insignias (badges)
+
+La web muestra una sección de **insignias** que premia los hitos de la liga:
+
+- **🏆 Campeón del mes** — el jugador con mejor rentabilidad compuesta de cada
+  mes ya cerrado (el mes en curso aparece como provisional, con etiqueta *LIVE*).
+- **🔥 Una semana ganando** — cinco jornadas de mercado seguidas en verde.
+- **🌱💎🚀 Hitos +5 % / +10 % / +25 %** — al alcanzar esa rentabilidad acumulada.
+- **📈🗓️ Dos / tres meses consecutivos ganando** — meses naturales seguidos en
+  positivo.
+- **🚀 Mayor subida de un valor en un día** — récord de la liga que se **reescribe
+  cada vez que se supera** (el anterior se guarda en su historial).
+
+Lo importante es que las insignias se **acumulan en un histórico persistente**
+([`data/badges.json`](data/badges.json)): en cada recálculo **no se procesa todo
+desde cero**, sino que se **añaden** las insignias nuevas a las ya conseguidas
+(una vez ganada, se conserva para siempre) y el récord solo se actualiza cuando
+alguien lo bate. La lógica vive en [`trader/badges.py`](trader/badges.py) y el
+fichero se versiona igual que los precios y las series públicas.
+
 Para activarla, una sola vez:
 
 1. Ve a **Settings → Pages** del repositorio.
@@ -167,6 +187,7 @@ La frase de paso se pide por prompt, o se toma de `TRADER_KEY` /
 trader/                     código (parser Revolut, cartera, precios, cifrado, informes, metadatos de tickers)
 players/<id>/               configuración pública + extracto cifrado de cada jugador
 data/prices/                caché de precios de cierre (se versiona; reproducible)
+data/badges.json            histórico acumulativo de insignias (badges)
 data/analysts/              caché del consenso de analistas por ticker (Yahoo quoteSummary)
 data/public/                series diarias públicas en JSON (para gráficas)
 docs/index.html             la web del ranking 🏆 (GitHub Pages)
