@@ -204,6 +204,14 @@ _TEMPLATE = """<!doctype html>
   .badge .bmeta { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-top: 3px; }
   .badge .ptag { font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
                  color: var(--muted); margin-top: 4px; }
+  /* insignias compactas dentro de la ficha del jugador */
+  .mbadges { display: flex; flex-wrap: wrap; gap: 8px; }
+  .mbadge-chip { display: inline-flex; align-items: center; gap: 7px;
+                 background: var(--surface-2); border: 1px solid var(--hair);
+                 padding: 6px 12px 6px 8px; border-radius: 999px;
+                 font-weight: 700; font-size: 13px; color: var(--ink); }
+  .mbadge-chip.prov { border-style: dashed; }
+  .mbadge-chip .i { font-size: 17px; line-height: 1; }
 
   /* banners promocionales (solo versión japonesa): anuncios ficticios al
      estilo de los folletos japoneses, intercalados entre los widgets, con
@@ -1367,6 +1375,13 @@ function badgeIcon(b) {
   if (b.type === "milestone") return badgeMilestoneIcon(b.tier);
   return BADGE_ICON[b.type] || "🎖️";
 }
+// Insignias agrupadas por jugador, para su ficha de detalle. Las provisionales
+// (campeón del mes en curso) van primero; el resto ya llega ordenado de más
+// reciente a más antigua desde el histórico.
+const PLAYER_BADGES = {};
+(((DATA.badges || {}).provisional) || [])
+  .concat(((DATA.badges || {}).awards) || [])
+  .forEach(b => { if (b.player) (PLAYER_BADGES[b.player] || (PLAYER_BADGES[b.player] = [])).push(b); });
 function paintBadges() {
   const data = DATA.badges || {};
   const awards = (data.provisional || []).concat(data.awards || []);
@@ -2272,6 +2287,18 @@ function openPlayer(pid) {
   tiles2.children[1].querySelector(".k").textContent = T.streakLabel(sign, streak);
   tiles2.appendChild(tileEl(T.sessions, String(days.length)));
   root.appendChild(tiles2);
+
+  const myBadges = PLAYER_BADGES[pid] || [];
+  if (myBadges.length) {
+    const wrap = h("div", "mbadges");
+    myBadges.forEach(b => {
+      const chip = h("div", "mbadge-chip" + (b.provisional ? " prov" : ""));
+      chip.appendChild(h("span", "i", badgeIcon(b)));
+      chip.appendChild(h("span", "t", badgeTitle(b)));
+      wrap.appendChild(chip);
+    });
+    root.appendChild(sectionEl(T.badgesTitle, wrap));
+  }
 
   if (days.length >= 2) {
     const spark = h("div", "mspark",

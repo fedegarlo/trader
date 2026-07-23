@@ -70,6 +70,8 @@ def test_badges_flow_into_payload_and_html(tmp_path):
     webpage.write_index(computed, out_path=str(out), badges=display)
     html = out.read_text(encoding="utf-8")
     assert "badges-card" in html and "paintBadges" in html
+    # También en la ficha del jugador: índice por jugador + render de chips.
+    assert "PLAYER_BADGES" in html and "mbadge-chip" in html
 
 
 def _july(pid, name, rows):
