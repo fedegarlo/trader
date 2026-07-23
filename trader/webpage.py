@@ -166,6 +166,15 @@ _TEMPLATE = """<!doctype html>
   .num { font-variant-numeric: tabular-nums; }
   .num.closed { color: var(--ink-2); }
   .delta { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+  /* indicador de líder del primer widget: quién va ganando y con qué % */
+  .leader { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 9px; margin-top: 8px; }
+  .leader .llabel { align-self: center; font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+                    text-transform: uppercase; color: var(--muted); }
+  .leader .key { align-self: center; }
+  .leader .lname { font-size: 17px; font-weight: 800; letter-spacing: -0.02em; }
+  .leader .lval { font-size: clamp(24px, 7.2vw, 31px); font-weight: 800; letter-spacing: -0.035em;
+                  line-height: 1.05; }
+  .leader .delta { font-size: 14px; font-weight: 700; }
   @keyframes pulse {
     0% { box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 55%, transparent); }
     70% { box-shadow: 0 0 0 6px transparent; }
@@ -560,6 +569,13 @@ _TEMPLATE = """<!doctype html>
     <section class="card" id="hero-card" style="position:relative">
       <button class="whelp" id="hero-help" type="button" data-i18n-title="calcHelpAria">?</button>
       <h2 data-i18n="cumTitle" style="padding-right:34px"></h2>
+      <div class="leader" id="leader-row">
+        <span class="llabel" data-i18n="leader"></span>
+        <span class="key" id="leader-key"></span>
+        <span class="lname" id="leader-name"></span>
+        <span class="num lval" id="leader-val"></span>
+        <span class="delta" id="leader-delta"></span>
+      </div>
       <div class="chartwrap">
         <svg id="chart" viewBox="0 0 860 360" role="img" data-i18n-aria="cumChartAria"></svg>
         <div class="tip" id="tip"></div>
@@ -1203,6 +1219,16 @@ function sparkSVG(values, color, id, opts) {
 }
 function paintWidgets() {
   if (!DATA.players.length) { document.getElementById("widgets").style.display = "none"; return; }
+
+  // líder: quién va ganando y con qué rentabilidad acumulada
+  const leader = ranked[0], lc = lastOf(leader);
+  document.getElementById("leader-key").style.background = colorOf(leader);
+  document.getElementById("leader-name").textContent = leader.name;
+  const lv = document.getElementById("leader-val");
+  lv.textContent = fmtPct(lc.cum); lv.className = "num lval " + (lc.cum >= 0 ? "pos" : "neg");
+  const ld = document.getElementById("leader-delta");
+  ld.textContent = (lc.day >= 0 ? "▲ " : "▼ ") + fmtPct(lc.day);
+  ld.className = "delta " + (lc.day >= 0 ? "pos" : "neg");
 
   // mejor del día (los fines de semana la última jornada ya es la del viernes;
   // si hay empate en el % del día, desempata la rentabilidad acumulada)
