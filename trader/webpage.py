@@ -234,8 +234,9 @@ _TEMPLATE = """<!doctype html>
   .mbadge-chip.prov { border-style: dashed; }
   .mbadge-chip .i { font-size: 17px; line-height: 1; }
 
-  /* banners promocionales (solo versión japonesa): anuncios ficticios al
-     estilo de los folletos japoneses, intercalados entre los widgets, con
+  /* banners promocionales (contenido en japonés, en ambos idiomas):
+     anuncios ficticios al estilo de los folletos japoneses,
+     intercalados entre los widgets, con
      enlace a webs reales de Japón. Colores propios del banner (fijos en
      claro/oscuro); la etiqueta «広告» deja claro que son anuncios. */
   .jp-banner { position: relative; display: flex; align-items: center; gap: 13px;
@@ -1090,13 +1091,13 @@ const T = I18N[LANG];
   });
 })();
 
-// ---- banners promocionales (solo japonés) ---------------------------
+// ---- banners promocionales (japonés, en ambos idiomas) --------------
 // Anuncios ficticios al estilo de los folletos japoneses, intercalados
 // entre los widgets. Enlazan a webs reales de Japón y se abren en una
 // pestaña nueva; la etiqueta «広告» (publicidad) deja claro que son
-// anuncios. Solo se pintan cuando la interfaz está en japonés.
+// anuncios. El contenido va siempre en japonés y se pinta tanto en la
+// versión japonesa como en la inglesa.
 (() => {
-  if (LANG !== "ja") return;
   const wrap = document.getElementById("widgets");
   if (!wrap) return;
   const mk = (b) => {
@@ -1130,9 +1131,9 @@ const T = I18N[LANG];
   // último folleto al detalle diario para que sigan repartidos hacia abajo.
   const chartCard = closestCard("detail");
   after(wrap, mk({
-    cls: "jp-b1", icon: "🐧", top: "パート・アルバイト",
-    main: '<span class="bhi">採用情報</span>', aria: "ドン・キホーテ 採用情報",
-    href: "https://www.donki.com/",
+    cls: "jp-b1", icon: "🦌", top: "奈良公園の鹿に会いに行こう",
+    main: '<span class="bhi">奈良観光</span>', aria: "奈良観光 鹿とふれあう旅",
+    href: "https://www.visitnara.jp/",
   }));
   after(rankingCard, mk({
     cls: "jp-b2", icon: "🐸", top: "当店のお得情報をいち早くお届け！",
