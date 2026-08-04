@@ -13,16 +13,16 @@
     }
   ],
   "record": {
-    "ticker": "MU",
-    "pct": 18.46,
-    "date": "2026-07-30",
+    "ticker": "PLTR",
+    "pct": 26.29,
+    "date": "2026-08-04",
     "holders": [
       {
-        "id": "fede",
-        "name": "Fede"
+        "id": "ana",
+        "name": "Ana"
       }
     ],
-    "recorded": "2026-07-30",
+    "recorded": "2026-08-04",
     "history": [
       {
         "ticker": "WDC",
@@ -34,6 +34,18 @@
       {
         "ticker": "MU",
         "pct": 17.75,
+        "date": "2026-07-30",
+        "holders": [
+          {
+            "id": "fede",
+            "name": "Fede"
+          }
+        ],
+        "recorded": "2026-07-30"
+      },
+      {
+        "ticker": "MU",
+        "pct": 18.46,
         "date": "2026-07-30",
         "holders": [
           {
