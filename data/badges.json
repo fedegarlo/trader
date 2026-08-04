@@ -14,7 +14,7 @@
   ],
   "record": {
     "ticker": "PLTR",
-    "pct": 26.29,
+    "pct": 30.7,
     "date": "2026-08-04",
     "holders": [
       {
@@ -54,6 +54,18 @@
           }
         ],
         "recorded": "2026-07-30"
+      },
+      {
+        "ticker": "PLTR",
+        "pct": 26.29,
+        "date": "2026-08-04",
+        "holders": [
+          {
+            "id": "ana",
+            "name": "Ana"
+          }
+        ],
+        "recorded": "2026-08-04"
       }
     ]
   }
