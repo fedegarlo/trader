@@ -22,6 +22,11 @@ el navegador, ni conocer la frase: solo enviar un email con su extracto.
 
 Como es *el bot* quien decide en qué carpeta escribe (según el remitente
 verificado), un jugador no puede tocar la carpeta de otro por construcción.
+
+Los correos procesados se marcan como leídos para no reprocesarlos, **salvo
+los que no traen el informe esperado** (sin adjunto o con un fichero que no es
+un extracto legible): esos se dejan sin leer, de modo que sigan a la vista en
+el buzón y se reintenten en cuanto llegue el fichero correcto.
 """
 
 from __future__ import annotations
@@ -61,6 +66,16 @@ class PlayerCfg:
     show_amounts: bool = False
 
 
+# Estados en los que el correo viene de un jugador legítimo pero **no trae el
+# informe esperado** (falta el adjunto o no es un extracto legible). En esos
+# casos dejamos el correo sin leer: así sigue visible en el buzón, el jugador
+# ve que su envío no ha entrado y basta con responder con el fichero correcto
+# para que la siguiente pasada lo ingiera. Los correos rechazados por
+# remitente/autenticación sí se marcan como leídos, para no acumular ruido de
+# spam que se reprocesaría en cada ejecución.
+_KEEP_UNREAD_STATUSES = frozenset({"no_csv", "invalid_csv"})
+
+
 @dataclass
 class Result:
     """Resultado de procesar un mensaje."""
@@ -72,6 +87,11 @@ class Result:
     @property
     def ingested(self) -> bool:
         return self.status == "ingested"
+
+    @property
+    def keep_unread(self) -> bool:
+        """¿Hay que dejar el correo sin leer para que se pueda reintentar?"""
+        return self.status in _KEEP_UNREAD_STATUSES
 
 
 @dataclass
@@ -288,9 +308,15 @@ def run(passphrase: str, players_dir: str = "players", *, dry_run: bool = False,
             else:
                 summary.skipped.append(result)
                 print(f"  ⚠️  [{result.status}] {result.detail}")
-            # Marcar como visto para no reprocesarlo (salvo simulacro).
-            if not dry_run:
-                conn.store(num, "+FLAGS", "\\Seen")
+            # Marcar como visto para no reprocesarlo (salvo simulacro). Si el
+            # correo no traía el informe esperado, lo dejamos sin leer para que
+            # siga a la vista y se pueda reintentar con el fichero correcto.
+            if dry_run:
+                continue
+            if result.keep_unread:
+                print("     ↩️  se deja sin leer (falta el informe esperado)")
+                continue
+            conn.store(num, "+FLAGS", "\\Seen")
     finally:
         try:
             conn.close()
