@@ -79,10 +79,13 @@ En un par de minutos la web queda en
 ## Cómo funciona
 
 Revolut no ofrece API pública de trading para cuentas personales, así que el
-flujo se basa en el extracto CSV que exporta la propia app:
+flujo se basa en el extracto que da la propia app: el **CSV** que exporta
+(Inversiones -> Extractos) o el **PDF de cuenta** ("Account Statement") que
+Revolut envía por correo; los dos valen y el PDF se convierte al CSV
+equivalente al ingerirlo.
 
 ```
-extracto CSV de Revolut ──email──> buzón de la liga (privado)
+extracto de Revolut (CSV o PDF) ──email──> buzón de la liga (privado)
                                             │
                      GitHub Action (IMAP)   │ verifica el remitente por DMARC
                                             │ y CIFRA con el secret TRADER_KEY
@@ -98,7 +101,8 @@ extracto CSV de Revolut ──email──> buzón de la liga (privado)
 ```
 
 La vía recomendada para subir el extracto es **por email** (el jugador solo
-adjunta su CSV y lo envía; ni token de GitHub ni frase ni cifrado manual). Se
+adjunta su extracto y lo envía; ni token de GitHub ni frase ni cifrado
+manual). Se
 mantiene además la subida desde la web y por CLI como alternativas avanzadas
 (ver [`players/README.md`](players/README.md)).
 
@@ -130,8 +134,8 @@ Para cada día natural se calcula:
 > leerlos. Si quisieras privacidad también entre jugadores, se usaría una
 > frase por jugador (un secret `PLAYER_<ID>_KEY` cada uno).
 >
-> **Subida por email (recomendada):** el jugador envía su extracto CSV como
-> adjunto a un buzón de la liga. Un workflow (`.github/workflows/inbox.yml`)
+> **Subida por email (recomendada):** el jugador envía su extracto (CSV o el
+> PDF "Account Statement") como adjunto a un buzón de la liga. Un workflow (`.github/workflows/inbox.yml`)
 > lo lee por IMAP, **verifica el remitente por DMARC** (no por el `From:`, que
 > es falsificable: mira la cabecera `Authentication-Results` que estampa el
 > servidor receptor y exige `dmarc=pass`), lo **cifra él mismo** con
@@ -163,8 +167,11 @@ python -m trader ranking --players-dir examples/players \
 ### Unirse a la competición
 
 Lo más fácil es **enviar tu extracto por email**: el administrador te dice a
-qué dirección y te registra; tú exportas el CSV de Revolut y lo adjuntas en un
-correo desde tu dirección registrada. Sin token, sin frase, sin cifrar nada.
+qué dirección y te registra; tú adjuntas tu extracto de Revolut —el CSV que
+exporta la app o el PDF de cuenta que te manda Revolut— en un correo desde tu
+dirección registrada. Ojo: manda un extracto que cubra **desde tu primera
+operación**; si empieza más tarde, con la cartera ya montada, no se puede
+reconstruir (el bot lo avisa en el log). Sin token, sin frase, sin cifrar nada.
 También puedes usar la web **[⬆️ Subir tu extracto](https://fedegarlo.github.io/trader/subir.html)**
 (cifra en el navegador y sube con tu token, sin PR) o la CLI + PR. Los
 detalles, en [`players/README.md`](players/README.md).

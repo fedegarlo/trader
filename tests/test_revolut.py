@@ -34,10 +34,10 @@ def test_money_and_dates():
 
 
 def test_parse_money_formats():
-    assert revolut._parse_money("$1,234.56") == 1234.56
-    assert revolut._parse_money("1.234,56 €") == 1234.56
-    assert revolut._parse_money("-US$12.30") == -12.30
-    assert revolut._parse_money("") == 0.0
+    assert revolut.parse_money("$1,234.56") == 1234.56
+    assert revolut.parse_money("1.234,56 €") == 1234.56
+    assert revolut.parse_money("-US$12.30") == -12.30
+    assert revolut.parse_money("") == 0.0
 
 
 def test_commission_classified_as_fee():
