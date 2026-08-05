@@ -201,12 +201,24 @@ _TEMPLATE = """<!doctype html>
   .winnername .trophy { font-size: 22px; line-height: 1; }
   .wsub.muted { color: var(--muted); font-weight: 500; }
   .wsub.treat { color: var(--ink-2); font-weight: 700; margin-top: 6px; }
-  .sparkwrap { margin: 12px -18px 0; height: 116px; }
-  .sparkwrap.sm { height: 58px; margin-top: 10px; }
   svg.spark { display: block; width: 100%; height: 100%; }
   .wrow { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .wrow .card { padding-bottom: 18px; display: flex; flex-direction: column; }
   .wrow .card.widget { padding-bottom: 0; }
+
+  /* «ganador del mes»: tarjetas a ancho completo con la evolución de todos los
+     jugadores dentro del mes (cada uno con su color), no solo la del campeón. */
+  .mrow { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  .card.widget.month { padding-bottom: 18px; }
+  .mhead { display: flex; align-items: flex-end; justify-content: space-between;
+           gap: 10px 16px; flex-wrap: wrap; }
+  .mhead .mhead-l { min-width: 0; }
+  .mhead .wbig { margin-top: 0; }
+  .mchart { margin-top: 12px; }
+  .mchart svg { display: block; width: 100%; height: auto; }
+  .mlegend { margin-top: 10px; gap: 7px 14px; font-size: 12.5px; }
+  .mlegend .mval { margin-left: 7px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .mlegend .mtrophy { margin-right: 5px; }
 
   /* insignias (badges): récord destacado de la liga + rejilla de logros. */
   .card.record { padding-bottom: 18px; }
@@ -556,7 +568,6 @@ _TEMPLATE = """<!doctype html>
   @media (min-width: 620px) {
     main { gap: 14px; }
     .card { padding: 22px; }
-    .sparkwrap { margin: 14px -22px 0; }
     .modal { align-items: center; padding: 20px; }
     .sheet { border-radius: 24px; border-bottom: 1px solid var(--ring);
              padding-top: 18px; touch-action: auto;
@@ -645,19 +656,29 @@ _TEMPLATE = """<!doctype html>
         </div>
       </section>
     </div>
-    <div class="wrow" id="month-row" style="display:none">
-      <section class="card widget" id="month-cur-card">
+    <div class="mrow" id="month-row" style="display:none">
+      <section class="card widget month" id="month-cur-card">
         <div class="wlabel" id="month-cur-label"></div>
-        <div class="winnername"><span id="month-cur-player"></span><span class="trophy">🏆</span></div>
-        <div class="wbig sm"><span class="num" id="month-cur-val"></span></div>
-        <div class="wsub treat" id="month-cur-note"></div>
-        <div class="sparkwrap sm" id="month-cur-spark"></div>
+        <div class="mhead">
+          <div class="mhead-l">
+            <div class="winnername"><span id="month-cur-player"></span><span class="trophy">🏆</span></div>
+            <div class="wsub treat" id="month-cur-note"></div>
+          </div>
+          <div class="wbig sm"><span class="num" id="month-cur-val"></span></div>
+        </div>
+        <div class="mchart" id="month-cur-chart"></div>
+        <div class="legend mlegend" id="month-cur-legend"></div>
       </section>
-      <section class="card widget" id="month-prev-card">
+      <section class="card widget month" id="month-prev-card">
         <div class="wlabel" id="month-prev-label"></div>
-        <div class="winnername"><span id="month-prev-player"></span><span class="trophy">🏆</span></div>
-        <div class="wbig sm"><span class="num" id="month-prev-val"></span></div>
-        <div class="sparkwrap sm" id="month-prev-spark"></div>
+        <div class="mhead">
+          <div class="mhead-l">
+            <div class="winnername"><span id="month-prev-player"></span><span class="trophy">🏆</span></div>
+          </div>
+          <div class="wbig sm"><span class="num" id="month-prev-val"></span></div>
+        </div>
+        <div class="mchart" id="month-prev-chart"></div>
+        <div class="legend mlegend" id="month-prev-legend"></div>
       </section>
     </div>
   </div>
@@ -790,6 +811,7 @@ const I18N = {
     marketClosed: "Market closed",
     gapTitle: "1st–last gap",
     winnerOf: ml => "Winner of " + ml,
+    monthChartAria: ml => "Return of every player during " + ml,
     lunchNote: "🍽️ Their turn to buy lunch",
     aiBadge: "AI",
     insightsTitle: "League insights",
@@ -958,6 +980,7 @@ const I18N = {
     marketClosed: "市場は休場",
     gapTitle: "首位と最下位の差",
     winnerOf: ml => ml + "の優勝者",
+    monthChartAria: ml => ml + "の全プレイヤーのリターン推移",
     lunchNote: "🍽️ ランチをおごる番",
     aiBadge: "AI",
     insightsTitle: "リーグのインサイト",
@@ -1349,10 +1372,121 @@ function paintWidgets() {
 paintWidgets();
 
 // ---- widgets «mejor del mes»: este mes y el mes pasado (si hay datos) ----
+// Aunque el titular sea el ganador, la gráfica pinta a todos los jugadores del
+// mes con su color: así se ve de un vistazo cómo va el resto y cuánta ventaja
+// lleva el campeón. El acumulado arranca en 0 el primer día del mes (es la
+// carrera *de ese mes*, no el acumulado de toda la liga).
+function monthChart(host, info) {
+  const NSm = "http://www.w3.org/2000/svg";
+  const mk = (tag, attrs) => { const e = document.createElementNS(NSm, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]); return e; };
+  const dates = info.dates || [], series = info.series || [];
+  host.innerHTML = "";
+  if (!dates.length || !series.length) return;
+  // Las unidades del viewBox son px reales del contenedor: el texto no se
+  // deforma al escalar en pantallas estrechas (igual que la gráfica principal).
+  const W = Math.max(280, Math.round(host.clientWidth || 600));
+  const narrow = W < 520;
+  const H = narrow ? 190 : 220;
+  const M = {t: 12, r: 14, b: 24, l: narrow ? 42 : 48};
+  // línea base en 0: la magnitud es honesta aunque nadie se mueva mucho
+  let lo = 0, hi = 0;
+  series.forEach(s => s.cum.forEach(v => {
+    if (v === null) return; lo = Math.min(lo, v); hi = Math.max(hi, v); }));
+  if (hi === lo) { hi += 1; lo -= 1; }
+  const padv = (hi - lo) * 0.12; hi += padv; lo -= padv;
+  const Y = v => M.t + (1 - (v - lo) / (hi - lo)) * (H - M.t - M.b);
+  // El % final va junto al último punto solo si hay sitio y las etiquetas no se
+  // pisan entre sí; si no, la derecha se aprovecha para la propia gráfica (la
+  // leyenda de abajo siempre lleva el dato de cada jugador).
+  const ends = series
+    .map(s => { const v = s.cum.filter(x => x !== null && x !== undefined).pop();
+                return v === undefined ? null : {yy: Y(v), value: s.value}; })
+    .filter(Boolean)
+    .sort((a, b) => a.yy - b.yy);
+  const showEnds = !narrow && ends.length &&
+    !ends.some((e, i) => i && e.yy - ends[i - 1].yy < 13);
+  if (showEnds) M.r = 58;
+  const X = i => M.l + (dates.length < 2 ? 0.5 : i / (dates.length - 1)) * (W - M.l - M.r);
+  const svg = mk("svg", {viewBox: "0 0 " + W + " " + H, role: "img",
+    "aria-label": T.monthChartAria(monthLabel(info.month, info.month_year))});
+
+  // rejilla + eje Y
+  niceTicks(lo, hi, 4).forEach(v => {
+    const isZero = Math.abs(v) < 1e-9;
+    svg.appendChild(mk("line", {x1: M.l, x2: W - M.r, y1: Y(v), y2: Y(v),
+      stroke: isZero ? css("--baseline") : css("--grid"), "stroke-width": 1}));
+    const t = mk("text", {x: M.l - 8, y: Y(v) + 4, "text-anchor": "end",
+      fill: css("--muted"), "font-size": 11, style: "font-variant-numeric:tabular-nums"});
+    t.textContent = (v > 0 ? "+" : "") + v.toFixed(Math.abs(v) < 10 && v % 1 ? 1 : 0) + "%";
+    svg.appendChild(t);
+  });
+  // eje X: tantas fechas como quepan (~1 cada 110px), con la última siempre
+  const stepX = Math.max(1, Math.round(dates.length /
+    Math.max(2, Math.round((W - M.l - M.r) / 110))));
+  dates.forEach((d, i) => {
+    const isLast = i === dates.length - 1;
+    if (!isLast && (i % stepX !== 0 || dates.length - 1 - i < stepX * 0.6)) return;
+    // la última fecha se alinea a la derecha si centrada se saldría del lienzo
+    const clip = isLast && X(i) + 32 > W;
+    const t = mk("text", {x: clip ? W - 2 : X(i), y: H - 7,
+      "text-anchor": clip ? "end" : "middle",
+      fill: css("--muted"), "font-size": 11});
+    t.textContent = fmtDate(d);
+    svg.appendChild(t);
+  });
+  // una línea por jugador, con su color; la del ganador va algo más gruesa
+  series.forEach((s, si) => {
+    const c = css(SLOTS[s.slot % SLOTS.length]);
+    const pts = dates.map((d, i) => s.cum[i] === null || s.cum[i] === undefined
+      ? null : [X(i), Y(s.cum[i])]).filter(Boolean);
+    if (!pts.length) return;
+    if (pts.length > 1) svg.appendChild(mk("path", {
+      d: pts.map((pt, i) => (i ? "L" : "M") + pt[0].toFixed(1) + " " + pt[1].toFixed(1)).join(""),
+      fill: "none", stroke: c, "stroke-width": si === 0 ? 2.8 : 2,
+      opacity: si === 0 ? 1 : 0.85,
+      "stroke-linejoin": "round", "stroke-linecap": "round"}));
+    const end = pts[pts.length - 1];
+    svg.appendChild(mk("circle", {cx: end[0], cy: end[1], r: si === 0 ? 4 : 3.4, fill: c,
+      stroke: css("--card-solid"), "stroke-width": 2.5}));
+  });
+  if (showEnds) ends.forEach(e => {
+    const t = mk("text", {x: W - M.r + 5, y: e.yy + 4, fill: css("--ink-2"),
+      "font-size": 11, style: "font-variant-numeric:tabular-nums;font-weight:600"});
+    t.textContent = fmtPct(e.value);
+    svg.appendChild(t);
+  });
+  host.appendChild(svg);
+}
+
+// Leyenda del mes: cada jugador con su color y su % del mes, de mejor a peor.
+// Abre la ficha del jugador al pulsar (delegación sobre ``data-player``).
+function monthLegend(host, info) {
+  host.innerHTML = "";
+  const series = info.series || [];
+  if (series.length < 2) return;
+  series.forEach((s, i) => {
+    const el = document.createElement("span");
+    el.className = "clk"; el.dataset.player = s.id;
+    const key = document.createElement("span");
+    key.className = "key"; key.style.background = css(SLOTS[s.slot % SLOTS.length]);
+    el.appendChild(key);
+    if (i === 0) {
+      const tr = document.createElement("span");
+      tr.className = "mtrophy"; tr.textContent = "🏆"; el.appendChild(tr);
+    }
+    el.appendChild(document.createTextNode(s.name));
+    const val = document.createElement("span");
+    val.className = "mval " + (s.value >= 0 ? "pos" : "neg");
+    val.textContent = fmtPct(s.value);
+    el.appendChild(val);
+    host.appendChild(el);
+  });
+}
+
 function paintMonthly() {
   const m = DATA.monthly || {};
-  const upC = css("--up"), downC = css("--down");
-  const paint = (info, key, spark0) => {
+  const paint = (info, key) => {
     const card = document.getElementById(key + "-card");
     if (!info) { card.style.display = "none"; return false; }
     card.style.display = "";
@@ -1364,16 +1498,14 @@ function paintMonthly() {
     document.getElementById(key + "-player").textContent = info.name;
     const note = document.getElementById(key + "-note");
     if (note) note.textContent = T.lunchNote;
-    document.getElementById(key + "-spark").innerHTML =
-      sparkSVG(info.spark, info.value >= 0 ? upC : downC, spark0, {baseline0: true});
+    monthChart(document.getElementById(key + "-chart"), info);
+    monthLegend(document.getElementById(key + "-legend"), info);
     return true;
   };
-  const hasCur = paint(m.current, "month-cur", "mcur");
-  const hasPrev = paint(m.previous, "month-prev", "mprev");
+  const hasCur = paint(m.current, "month-cur");
+  const hasPrev = paint(m.previous, "month-prev");
   const row = document.getElementById("month-row");
-  if (!hasCur && !hasPrev) { row.style.display = "none"; return; }
-  row.style.display = "grid";
-  row.style.gridTemplateColumns = (hasCur && hasPrev) ? "1fr 1fr" : "1fr";
+  row.style.display = (hasCur || hasPrev) ? "grid" : "none";
 }
 paintMonthly();
 
@@ -1864,7 +1996,8 @@ if (mq.addEventListener) mq.addEventListener("change", () => { draw(); paintWidg
 let rafId;
 window.addEventListener("resize", () => {
   cancelAnimationFrame(rafId);
-  rafId = requestAnimationFrame(draw);
+  // las gráficas del mes también miden en px reales: hay que repintarlas
+  rafId = requestAnimationFrame(() => { draw(); paintMonthly(); });
 });
 
 // ---- leyenda ----
@@ -2697,11 +2830,15 @@ def _month_best(computed: list[tuple[Player, list[DayResult]]],
     """Mejor jugador de un mes concreto (composición de sus % diarios).
 
     Solo cuentan los días de la competición (``day >= COMPETITION_START``). Si
-    nadie tiene datos ese mes devuelve ``None`` (el widget no se pinta). El
-    ``spark`` es el acumulado intra-mes del ganador, para la mini gráfica.
+    nadie tiene datos ese mes devuelve ``None`` (el widget no se pinta).
+
+    Además del ganador se publica la evolución de *todos* los jugadores dentro
+    del mes (``dates`` + ``series``), para que el widget dibuje la gráfica
+    completa —cada jugador con su color— y no solo la del campeón. Cada entrada
+    de ``series`` trae su acumulado alineado con ``dates`` (``None`` en los días
+    en los que ese jugador no tiene jornada) y llega ordenada de mejor a peor.
     """
-    best = None
-    best_ret = None
+    tracks = []
     for player, series in computed:
         rows = sorted(
             (r for r in series
@@ -2711,22 +2848,40 @@ def _month_best(computed: list[tuple[Player, list[DayResult]]],
         if not rows:
             continue
         factor = 1.0
-        spark = []
+        points = {}
         for r in rows:
             factor *= 1.0 + r.daily_return
-            spark.append(round((factor - 1.0) * 100, 4))
-        ret = (factor - 1.0) * 100
-        if best_ret is None or ret > best_ret:
-            best_ret = ret
-            best = {
-                "name": player.display_name,
-                "value": round(ret, 2),
-                "slot": order[player.player_id],
-                "month": month,
-                "month_year": year,
-                "spark": spark,
-            }
-    return best
+            points[r.day.isoformat()] = round((factor - 1.0) * 100, 4)
+        tracks.append({
+            "id": player.player_id,
+            "name": player.display_name,
+            "slot": order[player.player_id],
+            "ret": (factor - 1.0) * 100,
+            "points": points,
+        })
+    if not tracks:
+        return None
+
+    dates = sorted({d for t in tracks for d in t["points"]})
+    # Orden estable: en caso de empate manda el orden de ``computed``, igual que
+    # cuando el ganador se elegía con una comparación estricta.
+    tracks.sort(key=lambda t: -t["ret"])
+    best = tracks[0]
+    return {
+        "name": best["name"],
+        "value": round(best["ret"], 2),
+        "slot": best["slot"],
+        "month": month,
+        "month_year": year,
+        "dates": dates,
+        "series": [{
+            "id": t["id"],
+            "name": t["name"],
+            "slot": t["slot"],
+            "value": round(t["ret"], 2),
+            "cum": [t["points"].get(d) for d in dates],
+        } for t in tracks],
+    }
 
 
 def _monthly_bests(computed: list[tuple[Player, list[DayResult]]],

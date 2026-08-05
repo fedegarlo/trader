@@ -268,9 +268,45 @@ def test_monthly_best_current_month():
     # Ana: 1.05*0.99-1 = 3.95% > Fede: 1.02*1.01-1 = 3.02%
     assert cur["name"] == "Ana"
     assert cur["value"] == 3.95
-    assert cur["spark"] == [5.0, 3.95]
     # Junio no tiene datos de competición: sin widget de mes pasado.
     assert payload["monthly"]["previous"] is None
+
+
+def test_monthly_series_includes_every_player():
+    """El widget pinta a todos los jugadores del mes, no solo al ganador."""
+    fede = Player(player_id="fede", display_name="Fede")
+    ana = Player(player_id="ana", display_name="Ana")
+    fede_series = [_day(date(2026, 7, 14), 0.02), _day(date(2026, 7, 15), 0.01)]
+    ana_series = [_day(date(2026, 7, 14), 0.05), _day(date(2026, 7, 15), -0.01)]
+    payload = webpage.build_payload(
+        [(fede, fede_series), (ana, ana_series)], today=date(2026, 7, 15))
+
+    cur = payload["monthly"]["current"]
+    assert cur["dates"] == ["2026-07-14", "2026-07-15"]
+    # ordenadas de mejor a peor: primero la del ganador
+    assert [s["name"] for s in cur["series"]] == ["Ana", "Fede"]
+    assert [s["value"] for s in cur["series"]] == [3.95, 3.02]
+    assert cur["series"][0]["cum"] == [5.0, 3.95]
+    assert cur["series"][1]["cum"] == [2.0, 3.02]
+    # cada jugador lleva su id (ficha) y su slot (color), como en la gráfica
+    slots = {p["id"]: p["slot"] for p in payload["players"]}
+    assert {s["id"]: s["slot"] for s in cur["series"]} == slots
+
+
+def test_monthly_series_aligns_missing_days():
+    """Si un jugador no tiene jornada ese día, su punto va a ``None``."""
+    fede = Player(player_id="fede", display_name="Fede")
+    ana = Player(player_id="ana", display_name="Ana")
+    payload = webpage.build_payload(
+        [(fede, [_day(date(2026, 7, 14), 0.02), _day(date(2026, 7, 15), 0.01)]),
+         (ana, [_day(date(2026, 7, 15), 0.05)])],
+        today=date(2026, 7, 15))
+
+    cur = payload["monthly"]["current"]
+    assert cur["dates"] == ["2026-07-14", "2026-07-15"]
+    by_name = {s["name"]: s["cum"] for s in cur["series"]}
+    assert by_name["Ana"] == [None, 5.0]
+    assert by_name["Fede"] == [2.0, 3.02]
 
 
 def test_monthly_ignores_pre_competition_days():
