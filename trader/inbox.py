@@ -1,7 +1,9 @@
 """Ingesta de extractos por email (IMAP), sin token de GitHub por jugador.
 
-Idea: cada jugador **envía su extracto CSV como adjunto a un buzón** de la
-liga. Un workflow programado ejecuta este módulo, que:
+Idea: cada jugador **envía su extracto como adjunto a un buzón** de la liga,
+en cualquiera de los dos formatos de Revolut: el CSV que exporta la app o el
+PDF de cuenta ("Account Statement"). Un workflow programado ejecuta este
+módulo, que:
 
 1. Se conecta al buzón por IMAP y lee los correos no vistos.
 2. **Verifica el remitente por DMARC** (no por el ``From:`` a secas, que es
@@ -12,16 +14,22 @@ liga. Un workflow programado ejecuta este módulo, que:
    equivalente a "tienes un token de GitHub".
 3. Mapea el remitente a un jugador con ``PLAYER_EMAILS`` (Variable del repo,
    JSON ``id -> {email, name, currency, show_amounts}``).
-4. Valida que el adjunto es un extracto de Revolut legible.
+4. Valida que el adjunto es un extracto de Revolut legible; si viene en PDF,
+   lo convierte antes al CSV de la app (:mod:`trader.revolut_pdf`).
 5. **Cifra el CSV con la frase de la liga** (``TRADER_KEY``) y lo escribe en
-   ``players/<id>/trades.csv.enc``. El jugador manda el CSV en claro a un
-   buzón privado; el cifrado del fichero público lo hace el bot.
+   ``players/<id>/trades.csv.enc``. El jugador manda el extracto en claro a
+   un buzón privado; el cifrado del fichero público lo hace el bot.
 
 El jugador ya no necesita token de GitHub, ni ser colaborador, ni cifrar en
 el navegador, ni conocer la frase: solo enviar un email con su extracto.
 
 Como es *el bot* quien decide en qué carpeta escribe (según el remitente
 verificado), un jugador no puede tocar la carpeta de otro por construcción.
+
+Los correos procesados se marcan como leídos para no reprocesarlos, **salvo
+los que no traen el informe esperado** (sin adjunto o con un fichero que no es
+un extracto legible): esos se dejan sin leer, de modo que sigan a la vista en
+el buzón y se reintenten en cuanto llegue el fichero correcto.
 """
 
 from __future__ import annotations
@@ -35,7 +43,7 @@ from dataclasses import dataclass, field
 from email.message import Message
 from email.utils import parseaddr
 
-from . import revolut, secretbox
+from . import revolut, revolut_pdf, secretbox
 
 # Cabecera que estampa el servidor receptor con el veredicto de autenticación.
 def _env(name: str) -> str | None:
@@ -61,17 +69,33 @@ class PlayerCfg:
     show_amounts: bool = False
 
 
+# Estados en los que el correo viene de un jugador legítimo pero **no trae el
+# informe esperado** (falta el adjunto o no es un extracto legible). En esos
+# casos dejamos el correo sin leer: así sigue visible en el buzón, el jugador
+# ve que su envío no ha entrado y basta con responder con el fichero correcto
+# para que la siguiente pasada lo ingiera. Los correos rechazados por
+# remitente/autenticación sí se marcan como leídos, para no acumular ruido de
+# spam que se reprocesaría en cada ejecución.
+_KEEP_UNREAD_STATUSES = frozenset({"no_report", "invalid_report"})
+
+
 @dataclass
 class Result:
     """Resultado de procesar un mensaje."""
 
-    status: str            # ingested | unauthorized | auth_failed | no_csv | invalid_csv
+    status: str            # ingested | unauthorized | auth_failed | no_report | invalid_report
     player_id: str | None = None
     detail: str = ""
+    warnings: list[str] = field(default_factory=list)
 
     @property
     def ingested(self) -> bool:
         return self.status == "ingested"
+
+    @property
+    def keep_unread(self) -> bool:
+        """¿Hay que dejar el correo sin leer para que se pueda reintentar?"""
+        return self.status in _KEEP_UNREAD_STATUSES
 
 
 @dataclass
@@ -154,20 +178,38 @@ def verify_sender_auth(msg: Message, from_domain: str,
     return False, f"no pasa DMARC/DKIM ({got})"
 
 
-def extract_csv_attachment(msg: Message) -> bytes | None:
-    """Devuelve el primer adjunto que parezca un CSV, o ``None``."""
+def extract_statement_attachment(msg: Message) -> tuple[bytes, str] | None:
+    """Primer adjunto que parezca un extracto: ``(contenido, "csv"|"pdf")``.
+
+    Se aceptan las dos formas en que Revolut entrega el extracto: el CSV que
+    exporta la app y el PDF de cuenta ("Account Statement") que manda por
+    correo. Si vienen los dos, gana el CSV (es el formato nativo). Devuelve
+    ``None`` si el correo no trae ninguno.
+    """
+    found: dict[str, bytes] = {}
     for part in msg.walk():
         if part.get_content_maintype() == "multipart":
             continue
-        filename = part.get_filename() or ""
+        filename = (part.get_filename() or "").lower()
         ctype = (part.get_content_type() or "").lower()
-        is_csv = filename.lower().endswith(".csv") or ctype in (
-            "text/csv", "application/csv", "application/vnd.ms-excel")
-        if not is_csv:
-            continue
         payload = part.get_payload(decode=True)
-        if payload:
-            return payload
+        if not payload:
+            continue
+        if filename.endswith(".csv") or ctype in (
+                "text/csv", "application/csv", "application/vnd.ms-excel"):
+            kind = "csv"
+        elif filename.endswith(".pdf") or ctype == "application/pdf" \
+                or revolut_pdf.looks_like_pdf(payload):
+            # Algunos clientes mandan el PDF como octet-stream: la firma del
+            # fichero ('%PDF') lo identifica igual.
+            kind = "pdf"
+        else:
+            continue
+        found.setdefault(kind, payload)
+
+    for kind in ("csv", "pdf"):
+        if kind in found:
+            return found[kind], kind
     return None
 
 
@@ -217,19 +259,32 @@ def process_message(msg: Message, emails: dict[str, PlayerCfg], passphrase: str,
     if not ok:
         return Result("auth_failed", cfg.player_id, f"{sender}: {why}")
 
-    payload = extract_csv_attachment(msg)
-    if payload is None:
-        return Result("no_csv", cfg.player_id, f"{sender}: sin adjunto CSV")
+    attachment = extract_statement_attachment(msg)
+    if attachment is None:
+        return Result("no_report", cfg.player_id, f"{sender}: sin adjunto CSV ni PDF")
 
-    csv_text = _decode_csv(payload)
+    payload, kind = attachment
+    warnings: list[str] = []
+    if kind == "pdf":
+        # El PDF se convierte al CSV de la app: lo que se guarda cifrado es
+        # siempre un CSV, así que el resto del sistema no se entera.
+        try:
+            csv_text, warnings = revolut_pdf.pdf_to_csv(payload)
+        except revolut_pdf.PdfError as exc:
+            return Result("invalid_report", cfg.player_id, f"{sender}: {exc}")
+    else:
+        csv_text = _decode_csv(payload)
+
     events, _ = revolut.parse_csv(csv_text)
     if not events:
-        return Result("invalid_csv", cfg.player_id,
-                      f"{sender}: el CSV no tiene operaciones reconocibles")
+        return Result("invalid_report", cfg.player_id,
+                      f"{sender}: el extracto {kind.upper()} no tiene operaciones "
+                      "reconocibles")
 
     write_extract(cfg, csv_text, passphrase, players_dir)
     return Result("ingested", cfg.player_id,
-                  f"{sender}: {len(events)} operaciones, cifrado en players/{cfg.player_id}/")
+                  f"{sender}: {len(events)} operaciones ({kind.upper()}), cifrado "
+                  f"en players/{cfg.player_id}/", warnings)
 
 
 def run(passphrase: str, players_dir: str = "players", *, dry_run: bool = False,
@@ -285,12 +340,20 @@ def run(passphrase: str, players_dir: str = "players", *, dry_run: bool = False,
             if result.ingested:
                 summary.ingested.append(result.player_id)
                 print(f"  ✅ {result.detail}")
+                for warning in result.warnings:
+                    print(f"     ⚠️  {warning}")
             else:
                 summary.skipped.append(result)
                 print(f"  ⚠️  [{result.status}] {result.detail}")
-            # Marcar como visto para no reprocesarlo (salvo simulacro).
-            if not dry_run:
-                conn.store(num, "+FLAGS", "\\Seen")
+            # Marcar como visto para no reprocesarlo (salvo simulacro). Si el
+            # correo no traía el informe esperado, lo dejamos sin leer para que
+            # siga a la vista y se pueda reintentar con el fichero correcto.
+            if dry_run:
+                continue
+            if result.keep_unread:
+                print("     ↩️  se deja sin leer (falta el informe esperado)")
+                continue
+            conn.store(num, "+FLAGS", "\\Seen")
     finally:
         try:
             conn.close()

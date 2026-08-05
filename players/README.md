@@ -24,21 +24,29 @@ No necesitas token de GitHub, ni ser colaborador, ni cifrar nada:
 
 1. Pídele al administrador que te **registre** (tu id ↔ tu dirección de
    correo).
-2. Exporta tu extracto desde la app de Revolut
-   (**Inversiones → ⋯ → Extractos → CSV**).
-3. **Envía un email a `ligatrader26@gmail.com`, con el CSV adjunto, desde tu
-   dirección registrada.** Eso es todo.
+2. Consigue tu extracto de Revolut, en **cualquiera de los dos formatos**:
+   - el **CSV** que exporta la app (**Inversiones → ⋯ → Extractos → CSV**), o
+   - el **PDF de cuenta** (*Account Statement*) que Revolut te manda por
+     correo; puedes reenviarlo tal cual.
+
+   Pide el periodo **desde tu primera operación** (si el extracto empieza con
+   la cartera ya montada, no se puede reconstruir lo anterior).
+3. **Envía un email a `ligatrader26@gmail.com`, con el extracto adjunto, desde
+   tu dirección registrada.** Eso es todo.
 
 Un workflow lee el buzón cada pocos minutos, **verifica que el correo pasa
 DMARC** (que de verdad viene de tu dirección, no de alguien que la suplanta),
-**cifra tu CSV** con la frase de la liga y lo publica en tu carpeta
-`players/<tu-id>/`. En 1–2 minutos aparece en el ranking.
+convierte el PDF al CSV equivalente si hace falta, **lo cifra** con la frase
+de la liga y lo publica en tu carpeta `players/<tu-id>/`. En 1–2 minutos
+aparece en el ranking.
 
 > **Importante:** envía el correo **desde la dirección que registró el
 > administrador**, y desde un proveedor que use DMARC (Gmail, iCloud, Outlook,
 > etc. — casi todos). Si el remitente no coincide o no pasa DMARC, el extracto
-> se descarta por seguridad. Para actualizar tus operaciones, reenvía un CSV
-> nuevo: el último gana.
+> se descarta por seguridad. Si el correo llega **sin extracto** (o con un
+> fichero que no se puede leer), se queda **sin leer en el buzón** y no se
+> ingiere: reenvía el fichero bueno. Para actualizar tus operaciones, manda un
+> extracto nuevo: el último gana.
 
 ## Alternativa: desde la web, con token (sin PR)
 
@@ -68,6 +76,9 @@ en tu propia carpeta `players/<tu-id>/`.
    ```bash
    python -m trader encrypt extracto.csv --out players/<tu-id>/trades.csv.enc
    ```
+
+   Vale también el PDF de cuenta (`extracto.pdf`): se convierte al CSV
+   equivalente antes de cifrarlo, así que lo que se sube sigue siendo un CSV.
 
 3. Sube `player.json` y `trades.csv.enc` en un pull request. **Jamás subas el
    CSV sin cifrar** (el `.gitignore` ayuda, pero revisa el diff).

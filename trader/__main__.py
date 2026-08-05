@@ -1,7 +1,7 @@
 """CLI: python -m trader <comando>
 
 Comandos:
-  encrypt   Cifra un extracto CSV para poder subirlo al repositorio.
+  encrypt   Cifra un extracto (CSV o PDF de Revolut) para subirlo al repositorio.
   decrypt   Descifra un fichero .csv.enc (para comprobarlo en local).
   report    Calcula la serie diaria de un jugador y la muestra por pantalla.
   ranking   Calcula todos los jugadores y genera docs/ranking.md + data/public/.
@@ -22,7 +22,7 @@ from . import badges as badges_mod
 from . import inbox as inbox_mod
 from . import players as players_mod
 from . import report as report_mod
-from . import secretbox, webpage
+from . import revolut_pdf, secretbox, webpage
 from .portfolio import (
     compute_daily_series,
     daily_contributions,
@@ -47,7 +47,23 @@ def _passphrase(args_key: str | None, env_first: str | None = None, confirm: boo
 
 def cmd_encrypt(args: argparse.Namespace) -> None:
     out = args.out or args.file + ".enc"
-    secretbox.encrypt_file(args.file, out, _passphrase(args.key, confirm=True))
+    with open(args.file, "rb") as fh:
+        data = fh.read()
+
+    if revolut_pdf.looks_like_pdf(data):
+        # El extracto PDF se guarda como el CSV equivalente, igual que hace la
+        # ingesta por email: lo cifrado siempre es un CSV.
+        try:
+            csv_text, warnings = revolut_pdf.pdf_to_csv(data)
+        except revolut_pdf.PdfError as exc:
+            sys.exit(f"No se puede leer el extracto PDF: {exc}")
+        for warning in warnings:
+            print(f"AVISO: {warning}", file=sys.stderr)
+        data = csv_text.encode("utf-8")
+        print(f"Extracto PDF convertido a CSV ({len(csv_text.splitlines()) - 1} filas).")
+
+    with open(out, "wb") as fh:
+        fh.write(secretbox.encrypt(data, _passphrase(args.key, confirm=True)))
     print(f"Cifrado: {out}")
 
 
@@ -174,7 +190,7 @@ def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="trader", description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
 
-    p_enc = sub.add_parser("encrypt", help="cifrar un CSV")
+    p_enc = sub.add_parser("encrypt", help="cifrar un extracto (CSV o PDF)")
     p_enc.add_argument("file")
     p_enc.add_argument("--out")
     p_enc.add_argument("--key", help="frase de paso (mejor por prompt o TRADER_KEY)")

@@ -1,9 +1,12 @@
 name: Ingesta por email
 
-# Cada jugador envía su extracto CSV como adjunto a un buzón de la liga. Este
-# workflow lo lee por IMAP, verifica el remitente por DMARC, cifra el CSV con
-# la frase de la liga y lo commitea en players/<id>/. El jugador no necesita
-# token de GitHub, ni ser colaborador, ni cifrar nada: solo enviar un email.
+# Cada jugador envía su extracto de Revolut —el CSV que exporta la app o el PDF
+# de cuenta ("Account Statement")— como adjunto a un buzón de la liga. Este
+# workflow lo lee por IMAP, verifica el remitente por DMARC, convierte el PDF a
+# CSV si hace falta, lo cifra con la frase de la liga y lo commitea en
+# players/<id>/. El jugador no necesita token de GitHub, ni ser colaborador, ni
+# cifrar nada: solo enviar un email. Los correos que no traen extracto se dejan
+# sin leer, para que el jugador los vea y pueda reenviar el fichero correcto.
 #
 # Configuración (una sola vez):
 #   Secrets  (Settings -> Secrets and variables -> Actions -> Secrets):

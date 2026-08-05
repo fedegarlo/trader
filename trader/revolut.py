@@ -59,7 +59,7 @@ _TYPE_MAP = [
 _MONEY_RE = re.compile(r"[^0-9.\-]")
 
 
-def _parse_money(raw: str) -> float:
+def parse_money(raw: str) -> float:
     """Convierte '$1,234.56' / '-US$12.30' / '1.234,56 €' a float."""
     raw = (raw or "").strip()
     if not raw:
@@ -127,8 +127,8 @@ def parse_csv(text: str) -> tuple[list[Event], list[str]]:
             day=day,
             kind=kind,
             ticker=(col(row, "ticker") or None),
-            quantity=_parse_money(col(row, "quantity")),
-            total=abs(_parse_money(col(row, "total amount", "total"))),
+            quantity=parse_money(col(row, "quantity")),
+            total=abs(parse_money(col(row, "total amount", "total"))),
             currency=col(row, "currency") or "USD",
         ))
 

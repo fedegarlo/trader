@@ -1,2 +1,3 @@
 cryptography>=42
+pypdf>=5
 pytest>=8
