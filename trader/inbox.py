@@ -34,12 +34,15 @@ el buzón y se reintenten en cuanto llegue el fichero correcto.
 
 from __future__ import annotations
 
+import csv
 import email
 import imaplib
+import io
 import json
 import os
 import re
 from dataclasses import dataclass, field
+from datetime import date
 from email.message import Message
 from email.utils import parseaddr
 
@@ -83,7 +86,8 @@ _KEEP_UNREAD_STATUSES = frozenset({"no_report", "invalid_report"})
 class Result:
     """Resultado de procesar un mensaje."""
 
-    status: str            # ingested | unauthorized | auth_failed | no_report | invalid_report
+    # ingested | unchanged | unauthorized | auth_failed | no_report | invalid_report
+    status: str
     player_id: str | None = None
     detail: str = ""
     warnings: list[str] = field(default_factory=list)
@@ -101,6 +105,7 @@ class Result:
 @dataclass
 class RunSummary:
     ingested: list[str] = field(default_factory=list)   # ids actualizados
+    unchanged: list[str] = field(default_factory=list)  # extracto válido sin novedades
     skipped: list[Result] = field(default_factory=list)  # con motivo
 
 
@@ -222,10 +227,121 @@ def _decode_csv(payload: bytes) -> str:
     return payload.decode("utf-8", errors="replace")
 
 
+def _plural(n: int, singular: str, plural: str) -> str:
+    return f"{n} {singular if n == 1 else plural}"
+
+
+@dataclass
+class MergeStats:
+    """Qué ha aportado el extracto recibido frente al que ya estaba guardado."""
+
+    total: int = 0      # operaciones del extracto recibido
+    new: int = 0        # de esas, las que no estaban ya registradas
+    kept: int = 0       # operaciones anteriores conservadas (fuera de su periodo)
+    covers: tuple[date, date] | None = None  # periodo que cubre el extracto
+
+    @property
+    def period(self) -> str:
+        if not self.covers:
+            return "sin fechas"
+        lo, hi = self.covers
+        return lo.isoformat() if lo == hi else f"{lo.isoformat()}…{hi.isoformat()}"
+
+
+def _rows_with_dates(text: str) -> tuple[list[str], list[tuple[date | None, dict]]]:
+    """(campos, [(fecha, fila)]) del CSV, conservando las filas tal cual.
+
+    La fecha se obtiene con el mismo criterio que el parser (:mod:`revolut`);
+    las filas sin fecha reconocible salen con ``None``.
+    """
+    reader = csv.DictReader(io.StringIO(text or ""))
+    if not reader.fieldnames:
+        return [], []
+    fields = {name.strip().lower(): name for name in reader.fieldnames}
+    out: list[tuple[date | None, dict]] = []
+    for row in reader:
+        raw = row.get(fields.get("date", ""), "") or ""
+        try:
+            day = revolut._parse_date(raw)
+        except ValueError:
+            day = None
+        out.append((day, row))
+    return list(reader.fieldnames), out
+
+
+def _signatures(text: str) -> dict[tuple, int]:
+    """Recuento de operaciones por «firma» (día, tipo, ticker, cantidad, importe).
+
+    Sirve para contar cuántas operaciones del extracto recibido son realmente
+    nuevas, sin depender del formato exacto de la fila.
+    """
+    counts: dict[tuple, int] = {}
+    events, _ = revolut.parse_csv(text or "")
+    for ev in events:
+        key = (ev.day, ev.kind, ev.ticker, round(ev.quantity, 6), round(ev.total, 2))
+        counts[key] = counts.get(key, 0) + 1
+    return counts
+
+
+def merge_statements(old_csv: str | None, new_csv: str) -> tuple[str, MergeStats]:
+    """Combina el extracto guardado con el recién recibido.
+
+    El extracto nuevo **manda en el periodo que cubre** (de su primera a su
+    última operación): esas filas sustituyen a las guardadas, así que corregir
+    o reenviar un extracto sigue funcionando. Fuera de ese periodo se conservan
+    las operaciones que ya había, de modo que un extracto **parcial** (solo el
+    mes en curso) o **antiguo** (exportado antes de las últimas operaciones)
+    nunca borra lo ya registrado.
+
+    Si no hay nada que conservar se devuelve el CSV recibido tal cual, sin
+    reformatear: lo normal es que el extracto sea el histórico completo.
+    """
+    new_fields, new_rows = _rows_with_dates(new_csv)
+    dated = [d for d, _row in new_rows if d is not None]
+    stats = MergeStats(total=sum(_signatures(new_csv).values()),
+                       covers=(min(dated), max(dated)) if dated else None)
+
+    old_counts = _signatures(old_csv or "")
+    new_counts = _signatures(new_csv)
+    stats.new = sum(max(0, n - old_counts.get(key, 0))
+                    for key, n in new_counts.items())
+
+    if not dated or not old_csv:
+        return new_csv, stats
+
+    lo, hi = stats.covers
+    old_fields, old_rows = _rows_with_dates(old_csv)
+    keep = [(d, row) for d, row in old_rows if d is not None and (d < lo or d > hi)]
+    stats.kept = len(keep)
+    if not keep:
+        return new_csv, stats
+
+    fields = list(new_fields)
+    fields += [name for name in old_fields if name not in fields]
+    rows = sorted(keep + [(d, row) for d, row in new_rows if d is not None],
+                  key=lambda item: item[0])
+    rows += [(None, row) for d, row in new_rows if d is None]
+
+    buf = io.StringIO()
+    writer = csv.DictWriter(buf, fieldnames=fields, extrasaction="ignore",
+                            lineterminator="\n")
+    writer.writeheader()
+    for _day, row in rows:
+        writer.writerow({name: row.get(name, "") for name in fields})
+    return buf.getvalue(), stats
+
+
 def write_extract(cfg: PlayerCfg, csv_text: str, passphrase: str,
-                  players_dir: str) -> None:
-    """Cifra el CSV y lo escribe en ``players/<id>/``; crea ``player.json``
-    solo si no existe (para no pisar ajustes que el jugador ya tuviera)."""
+                  players_dir: str) -> tuple[bool, MergeStats]:
+    """Guarda el extracto en ``players/<id>/`` y dice si ha cambiado algo.
+
+    El CSV recibido se **fusiona** con el que ya hubiera (:func:`merge_statements`)
+    y solo se reescribe el fichero cifrado si el resultado es distinto del
+    guardado: cifrar dos veces el mismo CSV da bytes distintos (la sal es
+    aleatoria), y eso hacía que un extracto sin novedades pareciese una ingesta
+    con datos nuevos. ``player.json`` se crea solo si no existe, para no pisar
+    ajustes que el jugador ya tuviera.
+    """
     pdir = os.path.join(players_dir, cfg.player_id)
     os.makedirs(pdir, exist_ok=True)
 
@@ -239,9 +355,24 @@ def write_extract(cfg: PlayerCfg, csv_text: str, passphrase: str,
             }, fh, ensure_ascii=False, indent=2)
             fh.write("\n")
 
-    blob = secretbox.encrypt(csv_text.encode("utf-8"), passphrase)
-    with open(os.path.join(pdir, "trades.csv.enc"), "wb") as fh:
-        fh.write(blob)
+    path = os.path.join(pdir, "trades.csv.enc")
+    stored: str | None = None
+    if os.path.exists(path):
+        try:
+            stored = secretbox.decrypt_file(path, passphrase).decode("utf-8-sig")
+        except (secretbox.DecryptError, UnicodeDecodeError):
+            stored = None  # no se puede leer lo anterior: manda el nuevo
+
+    merged, stats = merge_statements(stored, csv_text)
+    # Se compara por operaciones, no por texto: un cambio de formato del export
+    # (columnas nuevas, comillas distintas) no es un dato nuevo y no merece ni
+    # reescritura ni commit.
+    if stored is not None and _signatures(merged) == _signatures(stored):
+        return False, stats
+
+    with open(path, "wb") as fh:
+        fh.write(secretbox.encrypt(merged.encode("utf-8"), passphrase))
+    return True, stats
 
 
 def process_message(msg: Message, emails: dict[str, PlayerCfg], passphrase: str,
@@ -275,16 +406,28 @@ def process_message(msg: Message, emails: dict[str, PlayerCfg], passphrase: str,
     else:
         csv_text = _decode_csv(payload)
 
-    events, _ = revolut.parse_csv(csv_text)
+    events, parse_warnings = revolut.parse_csv(csv_text)
+    # Las filas que el parser no entiende se avisaban solo en el ranking; aquí
+    # también, que es donde se ve si un extracto ha entrado entero o a medias.
+    warnings += parse_warnings
     if not events:
         return Result("invalid_report", cfg.player_id,
                       f"{sender}: el extracto {kind.upper()} no tiene operaciones "
-                      "reconocibles")
+                      "reconocibles", warnings)
 
-    write_extract(cfg, csv_text, passphrase, players_dir)
+    changed, stats = write_extract(cfg, csv_text, passphrase, players_dir)
+    detail = (f"{sender}: {_plural(stats.total, 'operación', 'operaciones')} "
+              f"({kind.upper()}, {stats.period}), "
+              f"{_plural(stats.new, 'nueva', 'nuevas')}")
+    if stats.kept:
+        detail += (", " + _plural(stats.kept, "anterior conservada",
+                                  "anteriores conservadas") + " fuera de ese periodo")
+    if not changed:
+        return Result("unchanged", cfg.player_id,
+                      detail + "; el extracto no aporta nada que no estuviera ya "
+                      "registrado", warnings)
     return Result("ingested", cfg.player_id,
-                  f"{sender}: {len(events)} operaciones ({kind.upper()}), cifrado "
-                  f"en players/{cfg.player_id}/", warnings)
+                  detail + f"; cifrado en players/{cfg.player_id}/", warnings)
 
 
 def run(passphrase: str, players_dir: str = "players", *, dry_run: bool = False,
@@ -340,11 +483,17 @@ def run(passphrase: str, players_dir: str = "players", *, dry_run: bool = False,
             if result.ingested:
                 summary.ingested.append(result.player_id)
                 print(f"  ✅ {result.detail}")
-                for warning in result.warnings:
-                    print(f"     ⚠️  {warning}")
+            elif result.status == "unchanged":
+                # El correo era válido, pero el extracto no traía nada nuevo
+                # (típico: se exporta antes de que Revolut refleje el día). No
+                # se reescribe nada, para que un commit signifique datos nuevos.
+                summary.unchanged.append(result.player_id)
+                print(f"  ℹ️  {result.detail}")
             else:
                 summary.skipped.append(result)
                 print(f"  ⚠️  [{result.status}] {result.detail}")
+            for warning in result.warnings:
+                print(f"     ⚠️  {warning}")
             # Marcar como visto para no reprocesarlo (salvo simulacro). Si el
             # correo no traía el informe esperado, lo dejamos sin leer para que
             # siga a la vista y se pueda reintentar con el fichero correcto.

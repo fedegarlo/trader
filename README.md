@@ -149,6 +149,16 @@ Para cada día natural se calcula:
 > construcción**. Dar de alta a alguien nuevo solo requiere añadir su
 > `email ↔ id` a la Variable `PLAYER_EMAILS`.
 >
+> El extracto recibido **se fusiona** con el que ya hubiera: manda en el
+> periodo que cubre (de su primera a su última operación, así se pueden
+> corregir cosas) y fuera de ese periodo se conserva lo ya registrado. Por eso
+> un extracto **parcial** (solo el mes en curso) o **antiguo** (exportado antes
+> de las últimas operaciones) nunca borra operaciones. Si el extracto no aporta
+> nada nuevo no se reescribe nada y **no hay commit**: en el log del workflow
+> se ve `0 nueva(s)`. Si esperabas ver operaciones que no salen, casi siempre es
+> que Revolut todavía no las había incluido al exportar: vuelve a enviarlo más
+> tarde.
+>
 > **Alternativa: subida por token (web/CLI).** Con `docs/subir.html` el commit
 > va directo con el token del jugador (cifrado en el navegador, sin PR). Aquí
 > el jugador escribe con un token que da acceso a todo el repo, así que un

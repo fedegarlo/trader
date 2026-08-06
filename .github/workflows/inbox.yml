@@ -70,7 +70,14 @@ jobs:
           IMAP_MAILBOX: ${{ vars.IMAP_MAILBOX }}
           PLAYER_EMAILS: ${{ vars.PLAYER_EMAILS }}
           INBOX_TRUSTED_AUTHSERV: ${{ vars.INBOX_TRUSTED_AUTHSERV }}
-        run: python -m trader inbox
+        # El resultado se copia al resumen de la ejecución (la portada del run),
+        # que es donde se ve de un vistazo si el extracto traía operaciones
+        # nuevas ("N nueva(s)") o no, sin tener que abrir el log.
+        run: |
+          set -o pipefail
+          printf '### Ingesta por email\n\n```\n' >> "$GITHUB_STEP_SUMMARY"
+          python -m trader inbox | tee -a "$GITHUB_STEP_SUMMARY"
+          printf '```\n' >> "$GITHUB_STEP_SUMMARY"
 
       - name: ¿Han llegado extractos nuevos?
         id: changed
