@@ -79,13 +79,18 @@ jobs:
           python -m trader inbox | tee -a "$GITHUB_STEP_SUMMARY"
           printf '```\n' >> "$GITHUB_STEP_SUMMARY"
 
-      - name: ¿Han llegado extractos nuevos?
+      # Ojo con el nombre: esto NO mira si ha llegado correo (eso lo dice el paso
+      # anterior), sino si algún extracto ha traído operaciones que no
+      # estuvieran ya registradas. Un extracto reenviado, o exportado antes de
+      # que Revolut refleje las últimas operaciones, no cambia ningún fichero.
+      - name: ¿Alguna operación nueva?
         id: changed
         run: |
           if [ -n "$(git status --porcelain players/)" ]; then
             echo "yes=true" >> "$GITHUB_OUTPUT"
           else
-            echo "Sin extractos nuevos."
+            echo "Ningún extracto ha traído operaciones nuevas (ver el paso" \
+                 "anterior: dice cuántas trae cada uno y cuántas son nuevas)."
           fi
 
       - name: Recalcular ranking

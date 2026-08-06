@@ -1,5 +1,5 @@
 import os
-from datetime import date
+from datetime import date, datetime
 
 from trader import revolut
 
@@ -31,6 +31,26 @@ def test_money_and_dates():
     assert buy.ticker == "AAPL"
     assert buy.quantity == 2
     assert buy.total == 400.0
+
+
+def test_keeps_the_time_of_day_when_the_statement_has_it():
+    """La hora del CSV se conserva para ordenar operaciones del mismo día."""
+    events = _sample_events()
+    assert events[0].at == datetime(2026, 7, 1, 9, 0)        # 09:00Z
+    # Dos operaciones del mismo día quedan ordenadas por su hora.
+    same_day = [ev for ev in events if ev.day == date(2026, 7, 3)]
+    assert [ev.at.hour for ev in same_day] == [14, 16]
+
+
+def test_parse_moment_formats():
+    # Con hora (los dos husos habituales del CSV) -> instante en UTC.
+    assert revolut.parse_moment("2026-08-05T13:35:16.400Z") == (
+        date(2026, 8, 5), datetime(2026, 8, 5, 13, 35, 16, 400000))
+    assert revolut.parse_moment("2026-08-05T15:35:16+0200") == (
+        date(2026, 8, 5), datetime(2026, 8, 5, 13, 35, 16))
+    # Solo día (el PDF de cuenta): no hay instante que comparar.
+    assert revolut.parse_moment("2026-08-05") == (date(2026, 8, 5), None)
+    assert revolut.parse_moment("05/08/2026") == (date(2026, 8, 5), None)
 
 
 def test_parse_money_formats():

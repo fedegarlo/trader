@@ -19,7 +19,7 @@ import csv
 import io
 import re
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 
 
 # Categorías internas de evento
@@ -42,6 +42,11 @@ class Event:
     quantity: float
     total: float  # importe en la divisa del extracto, siempre >= 0
     currency: str
+    # Instante exacto (UTC, sin tzinfo) si el extracto trae hora. El CSV de la
+    # app la trae ("2026-08-05T13:35:16.400Z"); el PDF de cuenta, no. Solo se
+    # usa para ordenar operaciones del mismo día: el cálculo diario no depende
+    # de la hora.
+    at: datetime | None = None
 
 
 _TYPE_MAP = [
@@ -73,16 +78,41 @@ def parse_money(raw: str) -> float:
     return float(cleaned) if cleaned not in ("", "-", ".") else 0.0
 
 
-def _parse_date(raw: str) -> date:
+_DATE_FORMATS = (
+    # (formato, ¿trae hora?)
+    ("%Y-%m-%dT%H:%M:%S.%f%z", True), ("%Y-%m-%dT%H:%M:%S%z", True),
+    ("%Y-%m-%d %H:%M:%S", True), ("%Y-%m-%d", False),
+    ("%d/%m/%Y %H:%M:%S", True), ("%d/%m/%Y", False),
+)
+
+
+def _to_utc(moment: datetime) -> datetime:
+    """Instante en UTC y sin tzinfo, para poder comparar filas entre sí."""
+    if moment.tzinfo is None:
+        return moment
+    return moment.astimezone(timezone.utc).replace(tzinfo=None)
+
+
+def parse_moment(raw: str) -> tuple[date, datetime | None]:
+    """``(día, instante)`` de la fecha de una fila del extracto.
+
+    El instante es ``None`` cuando la fila solo trae el día (el PDF de cuenta,
+    por ejemplo). Sirve para ordenar dos operaciones del mismo día.
+    """
     raw = raw.strip()
-    for fmt in ("%Y-%m-%dT%H:%M:%S.%f%z", "%Y-%m-%dT%H:%M:%S%z",
-                "%Y-%m-%d %H:%M:%S", "%Y-%m-%d", "%d/%m/%Y %H:%M:%S", "%d/%m/%Y"):
+    for fmt, has_time in _DATE_FORMATS:
         try:
-            return datetime.strptime(raw.replace("Z", "+0000"), fmt).date()
+            moment = datetime.strptime(raw.replace("Z", "+0000"), fmt)
         except ValueError:
             continue
+        return moment.date(), _to_utc(moment) if has_time else None
     # ISO genérico como último recurso
-    return datetime.fromisoformat(raw.replace("Z", "+00:00")).date()
+    moment = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+    return moment.date(), _to_utc(moment) if ":" in raw else None
+
+
+def _parse_date(raw: str) -> date:
+    return parse_moment(raw)[0]
 
 
 def classify(raw_type: str) -> str | None:
@@ -119,7 +149,7 @@ def parse_csv(text: str) -> tuple[list[Event], list[str]]:
             warnings.append(f"Línea {lineno}: tipo no reconocido '{raw_type}', ignorada")
             continue
         try:
-            day = _parse_date(col(row, "date"))
+            day, at = parse_moment(col(row, "date"))
         except ValueError:
             warnings.append(f"Línea {lineno}: fecha no válida '{col(row, 'date')}', ignorada")
             continue
@@ -130,6 +160,7 @@ def parse_csv(text: str) -> tuple[list[Event], list[str]]:
             quantity=parse_money(col(row, "quantity")),
             total=abs(parse_money(col(row, "total amount", "total"))),
             currency=col(row, "currency") or "USD",
+            at=at,
         ))
 
     events.sort(key=lambda ev: ev.day)
