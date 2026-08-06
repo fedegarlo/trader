@@ -213,14 +213,118 @@ def test_process_rejects_pdf_that_is_not_a_statement(tmp_path):
     assert not (tmp_path / "fede").exists()
 
 
+# ----- fusión con el extracto ya guardado -----
+
+HEADER = SAMPLE_CSV.decode().splitlines()[0] + "\n"
+
+
+def _row(day, ticker, kind="BUY - MARKET", qty="1", price="$10.00", total="$10.00"):
+    return f"{day}T14:00:00.000000Z,{ticker},{kind},{qty},{price},{total},USD,1.00\n"
+
+
+def _csv(*rows) -> bytes:
+    return (HEADER + "".join(rows)).encode()
+
+
+def _stored(tmp_path, key="clave-liga") -> str:
+    return secretbox.decrypt_file(str(tmp_path / "fede" / "trades.csv.enc"),
+                                  key).decode()
+
+
+def test_same_statement_twice_does_not_rewrite(tmp_path):
+    """Reenviar el mismo extracto no es una ingesta nueva.
+
+    Cifrar dos veces el mismo CSV da bytes distintos (sal aleatoria), y eso
+    hacía que un reenvío sin novedades pareciera datos nuevos y generara commit.
+    """
+    inbox.process_message(_make_email(), _emails_map(), "clave-liga", str(tmp_path))
+    blob = (tmp_path / "fede" / "trades.csv.enc").read_bytes()
+
+    res = inbox.process_message(_make_email(), _emails_map(), "clave-liga",
+                                str(tmp_path))
+    assert res.status == "unchanged" and not res.ingested
+    assert "0 nuevas" in res.detail
+    assert (tmp_path / "fede" / "trades.csv.enc").read_bytes() == blob
+
+
+def test_new_operations_are_counted_and_stored(tmp_path):
+    inbox.process_message(_make_email(attach=_csv(_row("2026-07-01", "AAPL"))),
+                          _emails_map(), "clave-liga", str(tmp_path))
+    res = inbox.process_message(
+        _make_email(attach=_csv(_row("2026-07-01", "AAPL"),
+                                _row("2026-07-02", "MSFT"))),
+        _emails_map(), "clave-liga", str(tmp_path))
+    assert res.ingested and "1 nueva" in res.detail
+    assert "MSFT" in _stored(tmp_path)
+
+
+def test_stale_statement_keeps_later_operations(tmp_path):
+    """Un extracto exportado *antes* de las últimas operaciones no las borra."""
+    inbox.process_message(
+        _make_email(attach=_csv(_row("2026-07-01", "AAPL"),
+                                _row("2026-07-06", "NVDA"))),
+        _emails_map(), "clave-liga", str(tmp_path))
+    # Reenvía uno viejo, que solo llega hasta el 01: la de NVDA sigue estando.
+    res = inbox.process_message(_make_email(attach=_csv(_row("2026-07-01", "AAPL"))),
+                                _emails_map(), "clave-liga", str(tmp_path))
+    assert res.status == "unchanged"        # no aporta ni pierde nada
+    assert "NVDA" in _stored(tmp_path)
+
+
+def test_partial_statement_keeps_earlier_history(tmp_path):
+    """Un extracto solo del mes en curso no borra el histórico anterior."""
+    inbox.process_message(
+        _make_email(attach=_csv(_row("2026-07-01", "AAPL"),
+                                _row("2026-07-02", "MSFT"))),
+        _emails_map(), "clave-liga", str(tmp_path))
+    res = inbox.process_message(_make_email(attach=_csv(_row("2026-08-03", "NVDA"))),
+                                _emails_map(), "clave-liga", str(tmp_path))
+    assert res.ingested and "1 nueva" in res.detail and "conservada" in res.detail
+    stored = _stored(tmp_path)
+    assert "AAPL" in stored and "MSFT" in stored and "NVDA" in stored
+
+
+def test_statement_corrects_its_own_period(tmp_path):
+    """Dentro del periodo que cubre, el extracto nuevo manda (permite corregir)."""
+    inbox.process_message(
+        _make_email(attach=_csv(_row("2026-07-01", "AAPL", qty="1"),
+                                _row("2026-07-02", "MSFT"))),
+        _emails_map(), "clave-liga", str(tmp_path))
+    inbox.process_message(
+        _make_email(attach=_csv(_row("2026-07-01", "AAPL", qty="2"),
+                                _row("2026-07-02", "MSFT"))),
+        _emails_map(), "clave-liga", str(tmp_path))
+    stored = _stored(tmp_path)
+    assert stored.count("AAPL") == 1                 # no se duplica la corregida
+    assert ",AAPL,BUY - MARKET,2," in stored
+
+
+def test_merge_keeps_new_statement_verbatim_when_nothing_to_keep():
+    merged, stats = inbox.merge_statements(None, SAMPLE_CSV.decode())
+    assert merged == SAMPLE_CSV.decode()             # no se reformatea
+    assert stats.total == 7 and stats.new == 7 and stats.kept == 0
+    assert stats.period == "2026-07-01…2026-07-04"
+
+
+def test_unreadable_rows_are_reported(tmp_path):
+    """Las filas que el parser no entiende se avisan también en la ingesta."""
+    raw = _csv(_row("2026-07-01", "AAPL"),
+               "2026-07-02T14:00:00.000000Z,AAPL,MARCIANADA,1,$1.00,$1.00,USD,1.00\n")
+    res = inbox.process_message(_make_email(attach=raw), _emails_map(),
+                                "clave-liga", str(tmp_path))
+    assert res.ingested
+    assert any("MARCIANADA" in w for w in res.warnings)
+
+
 # ----- marcado como leído -----
 
 def test_keep_unread_only_when_report_missing():
     # Sin informe (o ilegible): se deja sin leer para poder reintentar.
     assert inbox.Result("no_report").keep_unread
     assert inbox.Result("invalid_report").keep_unread
-    # Ingerido o descartado por remitente/autenticación: se marca como leído.
+    # Ingerido, sin novedades o descartado: se marca como leído.
     assert not inbox.Result("ingested").keep_unread
+    assert not inbox.Result("unchanged").keep_unread
     assert not inbox.Result("unauthorized").keep_unread
     assert not inbox.Result("auth_failed").keep_unread
 

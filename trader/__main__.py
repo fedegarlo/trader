@@ -184,6 +184,10 @@ def cmd_inbox(args: argparse.Namespace) -> None:
                             dry_run=args.dry_run)
     print(f"\nInbox: {len(summary.ingested)} extracto(s) ingerido(s)"
           f"{': ' + ', '.join(summary.ingested) if summary.ingested else ''}.")
+    if summary.unchanged:
+        print(f"Sin novedades: {', '.join(summary.unchanged)} "
+              "(el extracto recibido ya estaba registrado entero; si faltan "
+              "operaciones, vuelve a exportarlo cuando Revolut las refleje).")
 
 
 def main(argv: list[str] | None = None) -> None:
