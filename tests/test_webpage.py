@@ -1,4 +1,4 @@
-"""La página embebe solo los últimos 30 días, pero conserva inicio y acumulado."""
+"""La página embebe la serie completa de cada jugador (la liga es desde el inicio)."""
 
 from datetime import date, timedelta
 
@@ -25,23 +25,23 @@ def _series(n_days: int) -> list[DayResult]:
     return out
 
 
-def test_payload_limits_to_last_30_days():
+def test_payload_keeps_the_whole_series_since_the_start():
     player = Player(player_id="fede", display_name="Fede")
     series = _series(45)
     payload = webpage.build_payload([(player, series)])
     p = payload["players"][0]
 
-    # Solo las últimas 30 jornadas hábiles en la ventana visible.
-    assert len(p["days"]) == 30
-    assert p["days"][0]["date"] == series[-30].day.isoformat()   # jornada 45-30+1
-    assert p["days"][-1]["date"] == series[-1].day.isoformat()   # jornada 45
+    # La gráfica principal es de toda la competición, no de los últimos 30 días.
+    assert len(p["days"]) == 45
+    assert p["days"][0]["date"] == series[0].day.isoformat()
+    assert p["days"][-1]["date"] == series[-1].day.isoformat()
 
-    # Pero la fecha de inicio real y el acumulado se conservan.
+    # La fecha de inicio real y el acumulado se conservan.
     assert p["since"] == series[0].day.isoformat()
     assert p["days"][-1]["cum"] == round(45 * 1.0, 4)  # 45% acumulado desde el inicio
 
 
-def test_payload_keeps_all_when_shorter_than_window():
+def test_payload_keeps_all_when_short_history():
     player = Player(player_id="ana", display_name="Ana")
     payload = webpage.build_payload([(player, _series(10))])
     p = payload["players"][0]
@@ -371,6 +371,27 @@ def test_ticker_details_price_series_and_return():
         {"date": "2026-07-15", "close": 110.0},
     ]
     assert aapl["ret"] == 10.0  # de 100 a 110 → +10%
+
+
+def test_ticker_price_window_is_independent_of_the_league_series():
+    """La mini-serie del ticker sigue siendo una ventana (contexto de mercado).
+
+    La serie del jugador va desde el inicio, pero los precios del detalle de
+    cada valor se recortan a ``price_days``.
+    """
+    from datetime import date as _date
+    player = Player(player_id="fede", display_name="Fede")
+    prices = {"AAPL": [(_date(2026, 1, 1) + timedelta(days=i), 100.0 + i)
+                       for i in range(60)]}
+    payload = webpage.build_payload(
+        [(player, _series(45))], allocation={"AAPL": 100.0}, prices=prices)
+    assert len(payload["players"][0]["days"]) == 45      # liga: desde el inicio
+    assert len(payload["tickers"][0]["prices"]) == 30    # ticker: últimos 30
+
+    payload = webpage.build_payload(
+        [(player, _series(45))], allocation={"AAPL": 100.0}, prices=prices,
+        price_days=5)
+    assert len(payload["tickers"][0]["prices"]) == 5
 
 
 def test_ticker_details_empty_without_allocation():

@@ -16,7 +16,10 @@ cada día de mercado por una GitHub Action:
 ## Ver en web
 
 La página es estática y autocontenida (tabla de clasificación + gráfica de
-rentabilidad acumulada por jugador + detalle diario). Además, al **tocar un
+rentabilidad acumulada por jugador + detalle diario). La liga se juega **desde
+el inicio**: la gráfica principal, la diferencia entre el primero y el último y
+el detalle diario cubren toda la competición; los campeones del mes actual y
+del anterior son **parciales** y se calculan aparte. Además, al **tocar un
 jugador** (fila del ranking, leyenda o su cartera) o un **ticker** (leyenda de
 cualquier tarta de cartera) se abre una **ficha de detalle**:
 

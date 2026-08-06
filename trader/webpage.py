@@ -600,7 +600,7 @@ _TEMPLATE = """<!doctype html>
     </div>
     <div class="hbar">
       <span class="chip" id="hchip"><span data-i18n="allPlayers"></span> <span class="caret">▾</span></span>
-      <span class="period" data-i18n="period30"></span>
+      <span class="period" data-i18n="periodAll"></span>
     </div>
   </header>
 
@@ -779,7 +779,7 @@ const I18N = {
     kyoruSub: "Open up to the world and step out of yourself.",
     kyoruAria: "Kyoru: discover and download the app",
     allPlayers: "All players",
-    period30: "Last 30 days",
+    periodAll: "Since the start",
     pendingTitle: "⏳ Awaiting passphrase",
     pendingText: n => n + " — the statement is uploaded but couldn't be decrypted. " +
       "The passphrase is probably not the league's: please re-upload with the correct one.",
@@ -809,7 +809,7 @@ const I18N = {
     recentOps: "Latest trades",
     opBuy: "Buy", opSell: "Sell",
     marketClosed: "Market closed",
-    gapTitle: "1st–last gap",
+    gapTitle: "1st–last gap · since the start",
     winnerOf: ml => "Winner of " + ml,
     monthChartAria: ml => "Return of every player during " + ml,
     lunchNote: "🍽️ Their turn to buy lunch",
@@ -836,9 +836,9 @@ const I18N = {
     badgeChampMeta: pct => "Month " + pct,
     badgeOn: d => "Earned " + d,
     badgeLive: "Live",
-    cumTitle: "Cumulative return · last 30 days",
-    cumChartAria: "Cumulative return over time by player",
-    dailyDetailTitle: "Daily detail · last 30 days",
+    cumTitle: "Cumulative return · since the start",
+    cumChartAria: "Cumulative return since the start of the league, by player",
+    dailyDetailTitle: "Daily detail · since the start",
     detailAria: "Detail",
     dayByAsset: "Return by asset",
     dayOthers: "Rest of players",
@@ -896,7 +896,6 @@ const I18N = {
     streakLabel: (sign, n) => sign > 0 ? (n === 1 ? "day green" : "days green")
       : (sign < 0 ? (n === 1 ? "day red" : "days red") : "streak"),
     sessions: "Sessions",
-    cumLastN: n => "Cumulative return · last " + n + " days",
     portfolioCount: n => "Portfolio (" + n + (n === 1 ? " holding)" : " holdings)"),
     recentSessions: "Recent sessions",
     portfolioNews: "Portfolio news",
@@ -925,12 +924,12 @@ const I18N = {
       cutsGround: (lo, up, g) => lo + " gains ground on " + up + ": " + g + " today.",
       redStreak: (a, s) => a + " strings together " + s + " days in the red. Time to bounce back.",
       holdsFirm: (a, s) => a + " holds firm: " + s + " straight days positive.",
-      onARoll: (a, g) => a + " is on a roll: " + g + " since the window opened.",
+      onARoll: (a, g) => a + " is on a roll: " + g + " since the league started.",
       sharp: (a, g, k) => a + " is sharp: " + g + " of the last " + k + " days green.",
       needsReact: (a, p) => a + " needs to react: " + p + " cumulative.",
       signsOfLife: (a, p) => a + " shows signs of life: " + p + " today from the bottom.",
       bottomEarly: a => a + " sits at the bottom, but the league has only just begun.",
-      rollercoaster: (a, g) => a + " is on a rollercoaster: " + g + " of swing in the window.",
+      rollercoaster: (a, g) => a + " is on a rollercoaster: " + g + " of swing since the start.",
       allIn: (a, tk) => a + " is all in on " + tk + ": 100% of the portfolio.",
       concentrates: (a, w, tk) => a + " concentrates risk: " + w + " in " + tk + ".",
       mostDiversified: (a, n) => a + " is the most diversified: " + n + " holdings.",
@@ -948,7 +947,7 @@ const I18N = {
     kyoruSub: "世界にひらいて、「わたし」から一歩そとへ。",
     kyoruAria: "Kyoru：アプリを知る・ダウンロードする",
     allPlayers: "全プレイヤー",
-    period30: "直近30日",
+    periodAll: "開始から",
     pendingTitle: "⏳ パスフレーズ待ち",
     pendingText: n => n + " — 明細はアップロード済みですが復号できませんでした。" +
       "パスフレーズがリーグのものと異なる可能性があります。正しいもので再アップロードしてください。",
@@ -978,7 +977,7 @@ const I18N = {
     recentOps: "最新の取引",
     opBuy: "買い", opSell: "売り",
     marketClosed: "市場は休場",
-    gapTitle: "首位と最下位の差",
+    gapTitle: "首位と最下位の差 · 開始から",
     winnerOf: ml => ml + "の優勝者",
     monthChartAria: ml => ml + "の全プレイヤーのリターン推移",
     lunchNote: "🍽️ ランチをおごる番",
@@ -1005,9 +1004,9 @@ const I18N = {
     badgeChampMeta: pct => "月間 " + pct,
     badgeOn: d => d + "獲得",
     badgeLive: "ライブ",
-    cumTitle: "累積リターン · 直近30日",
-    cumChartAria: "プレイヤー別の累積リターン推移",
-    dailyDetailTitle: "日次詳細 · 直近30日",
+    cumTitle: "累積リターン · 開始から",
+    cumChartAria: "リーグ開始からのプレイヤー別の累積リターン推移",
+    dailyDetailTitle: "日次詳細 · 開始から",
     detailAria: "詳細",
     dayByAsset: "銘柄別リターン",
     dayOthers: "他のプレイヤー",
@@ -1063,7 +1062,6 @@ const I18N = {
     streak: "連続",
     streakLabel: (sign, n) => sign > 0 ? "連続プラス" : (sign < 0 ? "連続マイナス" : "連続"),
     sessions: "取引日数",
-    cumLastN: n => "累積リターン · 直近" + n + "日",
     portfolioCount: n => "ポートフォリオ（" + n + "銘柄）",
     recentSessions: "直近の取引日",
     portfolioNews: "ポートフォリオのニュース",
@@ -1092,12 +1090,12 @@ const I18N = {
       cutsGround: (lo, up, g) => lo + "が" + up + "を追い上げ：本日" + g + "上回る。",
       redStreak: (a, s) => a + "が" + s + "日連続でマイナス。巻き返しの時。",
       holdsFirm: (a, s) => a + "が持ちこたえる：" + s + "日連続プラス。",
-      onARoll: (a, g) => a + "が好調：期間開始から" + g + "。",
+      onARoll: (a, g) => a + "が好調：リーグ開始から" + g + "。",
       sharp: (a, g, k) => a + "が絶好調：直近" + k + "日中" + g + "日プラス。",
       needsReact: (a, p) => a + "は立て直しが必要：累積" + p + "。",
       signsOfLife: (a, p) => a + "が最下位から反撃：本日" + p + "。",
       bottomEarly: a => a + "が最下位だが、リーグは始まったばかり。",
-      rollercoaster: (a, g) => a + "はジェットコースター状態：期間中" + g + "の変動。",
+      rollercoaster: (a, g) => a + "はジェットコースター状態：開始から" + g + "の変動。",
       allIn: (a, tk) => a + "は" + tk + "に全賭け：ポートフォリオの100%。",
       concentrates: (a, w, tk) => a + "はリスク集中：" + tk + "に" + w + "。",
       mostDiversified: (a, n) => a + "が最も分散：" + n + "銘柄保有。",
@@ -1759,7 +1757,8 @@ function computeInsights() {
   const streak = (p, positive) => { let c = 0; for (let i = p.days.length - 1; i >= 0; i--) {
     const d = p.days[i].day; if (positive ? d > 0 : d < 0) c++; else break; } return c; };
   const greenCount = (p, k) => p.days.slice(-k).filter(d => d.day > 0).length;
-  const windowDelta = p => lastp(p).cum - p.days[0].cum;
+  // avance desde el inicio de la liga (la serie ya no se recorta a 30 días)
+  const totalDelta = p => lastp(p).cum - p.days[0].cum;
   const range = p => { const c = p.days.map(d => d.cum); return Math.max(...c) - Math.min(...c); };
   const recovered = p => p.days.length >= 2 &&
     lastp(p).day > 0 && p.days[p.days.length - 2].day < 0;
@@ -1828,7 +1827,7 @@ function computeInsights() {
     add(6.0 + s * 0.2, "🌧️", I.redStreak(who(p), s)); });
   ps.forEach(p => { if (p === leader) return; const s = streak(p, true); if (s >= 3)
     add(6.4, "🔋", I.holdsFirm(who(p), s)); });
-  ps.forEach(p => { const d = windowDelta(p); if (d > 3)
+  ps.forEach(p => { const d = totalDelta(p); if (d > 3)
     add(6.0 + Math.min(d, 10) / 10, "🛫", I.onARoll(who(p), pts(d))); });
   ps.forEach(p => { const k = Math.min(5, p.days.length); if (k >= 4 && greenCount(p, k) >= 4)
     add(5.8, "✅", I.sharp(who(p), greenCount(p, k), k)); });
@@ -2502,7 +2501,8 @@ function openPlayer(pid) {
   if (days.length >= 2) {
     const spark = h("div", "mspark",
       sparkSVG(days.map(d => d.cum), last.cum >= 0 ? upC : downC, "pl", {baseline0: true}));
-    root.appendChild(sectionEl(T.cumLastN(days.length), spark));
+    // la serie del jugador es toda la liga: mismo título que la gráfica grande
+    root.appendChild(sectionEl(T.cumTitle, spark));
   }
 
   if (p.holdings && p.holdings.length) {
@@ -2709,7 +2709,7 @@ def _ticker_details(
     order: dict[str, int],
     names: dict[str, str],
     prices: dict[str, list[tuple]] | None,
-    last_days: int,
+    price_days: int,
     analysts: dict[str, dict] | None = None,
 ) -> list[dict]:
     """Detalle público por ticker para la vista de detalle de la web.
@@ -2717,8 +2717,10 @@ def _ticker_details(
     Para cada valor de la cartera agregada de la liga reúne: nombre y dominio
     (para el logo), peso agregado (%), qué jugadores lo tienen con su peso
     dentro de *su propia* cartera (solo %), y una mini-serie de precio de cierre
-    de la ventana visible con su variación. Nada de esto expone importes ni
-    operaciones: pesos y precios públicos de mercado.
+    de los últimos ``price_days`` días con su variación. Esta ventana es solo
+    del contexto de mercado del valor: la competición (la gráfica del acumulado)
+    va siempre desde el inicio. Nada de esto expone importes ni operaciones:
+    pesos y precios públicos de mercado.
     """
     weights = _allocation_weights(allocation)
     if not weights:
@@ -2746,7 +2748,7 @@ def _ticker_details(
         holders.sort(key=lambda h: h["w"], reverse=True)
 
         raw = prices.get(ticker) or []
-        window = raw[-last_days:] if last_days else raw
+        window = raw[-price_days:] if price_days else raw
         series = [{"date": d.isoformat() if hasattr(d, "isoformat") else str(d),
                    "close": round(float(c), 4)} for d, c in window]
         ret = None
@@ -2994,7 +2996,8 @@ def _day_breakdown(contrib: dict[str, float] | None, denom: float) -> list[dict]
 
 
 def build_payload(computed: list[tuple[Player, list[DayResult]]],
-                  last_days: int = 30,
+                  last_days: int = 0,
+                  price_days: int = 30,
                   pending: list[dict] | None = None,
                   allocation: dict[str, float] | None = None,
                   holdings: dict[str, dict[str, float]] | None = None,
@@ -3005,10 +3008,17 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
                   today: date | None = None) -> dict:
     """Datos embebidos en la página. Respeta show_amounts por jugador.
 
-    Solo se incluyen los últimos ``last_days`` días de cada jugador (la gráfica
-    y las tablas de detalle muestran esa ventana). El ``% acumulado`` de cada
-    día sigue siendo el de siempre (desde el inicio real), y ``since`` guarda la
-    fecha de inicio real para la columna «Desde» de la clasificación.
+    La liga se juega **desde el inicio**: por defecto (``last_days=0``) se
+    publica la serie completa de cada jugador, así que la gráfica del acumulado
+    y la diferencia entre el primero y el último cubren toda la competición. Los
+    campeones del mes actual y del anterior son parciales y se calculan aparte
+    (``monthly``), sin recortar esta serie. ``last_days > 0`` recorta a esa
+    ventana (útil en pruebas). El ``% acumulado`` de cada día es siempre el de
+    siempre (desde el inicio real), y ``since`` guarda la fecha de inicio real
+    para la columna «Desde» de la clasificación.
+
+    ``price_days`` es otra cosa: la ventana de la mini-serie de precios del
+    detalle de cada ticker (contexto de mercado del valor, no de la liga).
 
     ``allocation`` es el valor de mercado agregado por ticker de toda la liga;
     se publica solo como pesos (%) para el widget de cartera de la liga, sin
@@ -3069,7 +3079,7 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
             "operations": _recent_operations(computed, order),
             "allocation": _allocation_weights(allocation),
             "tickers": _ticker_details(allocation, holdings, order, names,
-                                       prices, last_days, analysts),
+                                       prices, price_days, analysts),
             "monthly": _monthly_bests(computed, today, order),
             "dailyWinners": {
                 "month": today.month,
@@ -3102,7 +3112,8 @@ def write_index(
     computed: list[tuple[Player, list[DayResult]]],
     out_path: str = "docs/index.html",
     today: date | None = None,
-    last_days: int = 30,
+    last_days: int = 0,
+    price_days: int = 30,
     pending: list[dict] | None = None,
     allocation: dict[str, float] | None = None,
     holdings: dict[str, dict[str, float]] | None = None,
@@ -3112,7 +3123,8 @@ def write_index(
     badges: dict | None = None,
 ) -> str:
     payload = json.dumps(
-        build_payload(computed, last_days=last_days, pending=pending,
+        build_payload(computed, last_days=last_days, price_days=price_days,
+                      pending=pending,
                       allocation=allocation, holdings=holdings,
                       prices=prices, analysts=analysts,
                       contributions=contributions, badges=badges,
