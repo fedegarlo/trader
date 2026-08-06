@@ -1,11 +1,11 @@
 # 🏆 Ranking de rentabilidad
 
-_Actualizado: 2026-08-05_
+_Actualizado: 2026-08-06_
 
 | # | Jugador | % acumulado | % último día | Desde |
 |---|---|---:|---:|---|
 | 🥇 | Ana | **+1.95%** | +0.06% | 2026-07-14 |
-| 🥈 | Fede | **-4.27%** | -0.25% | 2026-07-14 |
+| 🥈 | Fede | **-4.91%** | -0.92% | 2026-07-14 |
 
 ## 🏅 Ganador de cada día (agosto 2026)
 
@@ -51,7 +51,7 @@ _Actualizado: 2026-08-05_
 | 2026-07-31 | -0.35% | -7.27% |
 | 2026-08-03 | +0.13% | -7.15% |
 | 2026-08-04 | +3.37% | -4.02% |
-| 2026-08-05 | -0.25% | -4.27% |
+| 2026-08-05 | -0.92% | -4.91% |
 
 ---
 _Rentabilidad diaria calculada con Dietz simple (los ingresos y retiradas
