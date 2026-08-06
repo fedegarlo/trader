@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import json
 import os
-from datetime import date, datetime, timezone
+from datetime import date, datetime, time, timezone
 
 from .players import Player
 from .portfolio import CASH_KEY, DayResult
@@ -2944,7 +2944,7 @@ def _drop_weekends(
 
 
 def _recent_operations(computed: list[tuple[Player, list[DayResult]]],
-                       order: dict[str, int], limit: int = 3) -> list[dict]:
+                       order: dict[str, int], limit: int = 8) -> list[dict]:
     """Las últimas ``limit`` operaciones (compras/ventas) de toda la liga.
 
     Solo compras y ventas de un valor concreto (los ingresos, retiradas,
@@ -2953,22 +2953,24 @@ def _recent_operations(computed: list[tuple[Player, list[DayResult]]],
     compra o venta y el ticker — el mismo nivel de detalle que ya publica la
     web con las carteras por jugador.
 
-    El extracto de Revolut solo trae la fecha (sin hora), así que dentro de un
-    mismo día se respeta el orden del CSV (las filas más abajo son las más
-    recientes). Se ordena por (fecha, orden en el extracto) de forma
-    descendente y se toman las ``limit`` primeras.
+    Se ordena por el instante de la operación (el CSV de Revolut trae la hora)
+    y, cuando no hay hora —el PDF de cuenta solo da el día—, por el orden del
+    extracto: las filas de más abajo son las más recientes. El desempate por
+    posición solo vale dentro del extracto de un jugador, así que sin hora dos
+    operaciones del mismo día de jugadores distintos quedan en un orden
+    arbitrario pero estable.
     """
-    ops: list[tuple[date, int, str, str, int, str, str]] = []
+    ops: list[tuple[date, datetime, int, str, str, int, str, str]] = []
     for player, _series in computed:
         for seq, ev in enumerate(player.events):
             if ev.kind in (BUY, SELL) and ev.ticker:
-                ops.append((ev.day, seq, player.player_id,
-                            player.display_name, order[player.player_id],
-                            ev.kind, ev.ticker))
-    ops.sort(key=lambda o: (o[0], o[1]), reverse=True)
+                ops.append((ev.day, ev.at or datetime.combine(ev.day, time.min),
+                            seq, player.player_id, player.display_name,
+                            order[player.player_id], ev.kind, ev.ticker))
+    ops.sort(key=lambda o: (o[0], o[1], o[2]), reverse=True)
     return [{"date": day.isoformat(), "id": pid, "name": name,
              "slot": slot, "kind": kind, "ticker": ticker}
-            for day, _seq, pid, name, slot, kind, ticker in ops[:limit]]
+            for day, _at, _seq, pid, name, slot, kind, ticker in ops[:limit]]
 
 
 def _day_breakdown(contrib: dict[str, float] | None, denom: float) -> list[dict]:

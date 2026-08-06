@@ -1,6 +1,6 @@
 """La página embebe la serie completa de cada jugador (la liga es desde el inicio)."""
 
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 from trader import webpage
 from trader.players import Player
@@ -453,12 +453,12 @@ def test_player_suggestion_trims_negative_tone():
     assert s["ticker"] == "AAPL" and s["action"] == "trim"
 
 
-def _ev(day, kind, ticker=None, qty=1.0, total=100.0):
+def _ev(day, kind, ticker=None, qty=1.0, total=100.0, at=None):
     return Event(day=day, kind=kind, ticker=ticker, quantity=qty,
-                 total=total, currency="USD")
+                 total=total, currency="USD", at=at)
 
 
-def test_recent_operations_last_three_across_players():
+def test_recent_operations_across_players():
     fede = Player(player_id="fede", display_name="Fede", events=[
         _ev(date(2026, 7, 14), BUY, "AAPL"),
         _ev(date(2026, 7, 16), SELL, "MSFT"),
@@ -470,15 +470,54 @@ def test_recent_operations_last_three_across_players():
     ops = webpage.build_payload(
         [(fede, _series(5)), (ana, _series(5))])["operations"]
 
-    # Las tres más recientes de toda la liga, de más nueva a más antigua.
+    # De más nueva a más antigua, mezclando a los dos jugadores.
     assert [(o["date"], o["name"], o["kind"], o["ticker"]) for o in ops] == [
         ("2026-07-17", "Ana", "BUY", "TSM"),
         ("2026-07-16", "Fede", "SELL", "MSFT"),
         ("2026-07-15", "Ana", "BUY", "NVDA"),
+        ("2026-07-14", "Fede", "BUY", "AAPL"),
     ]
     # El slot de color acompaña al jugador (ana < fede por orden alfabético de id).
     assert ops[0]["slot"] == 0 and ops[0]["id"] == "ana"
     assert ops[1]["slot"] == 1 and ops[1]["id"] == "fede"
+
+
+def test_recent_operations_shows_a_whole_days_trading(tmp_path):
+    """Una jornada movida de la liga cabe entera: no se corta a tres.
+
+    Con el corte anterior, un día con cuatro operaciones dejaba fuera la más
+    antigua de la jornada y parecía que no se había registrado.
+    """
+    def at(hh, mm):
+        return datetime(2026, 8, 5, hh, mm)
+
+    fede = Player(player_id="fede", display_name="Fede", events=[
+        _ev(date(2026, 8, 5), BUY, "SNDK", at=at(14, 10)),
+        _ev(date(2026, 8, 5), SELL, "NVDA", at=at(14, 5)),
+    ])
+    ana = Player(player_id="ana", display_name="Ana", events=[
+        _ev(date(2026, 8, 5), BUY, "MU", at=at(8, 58)),
+        _ev(date(2026, 8, 5), SELL, "MU", at=at(13, 35)),
+    ])
+    ops = webpage.build_payload(
+        [(fede, _series(5)), (ana, _series(5))])["operations"]
+
+    # Las cuatro, ordenadas por la hora del extracto (no por jugador).
+    assert [(o["name"], o["kind"], o["ticker"]) for o in ops] == [
+        ("Fede", "BUY", "SNDK"),
+        ("Fede", "SELL", "NVDA"),
+        ("Ana", "SELL", "MU"),
+        ("Ana", "BUY", "MU"),
+    ]
+
+
+def test_recent_operations_are_capped():
+    fede = Player(player_id="fede", display_name="Fede", events=[
+        _ev(date(2026, 7, 1) + timedelta(days=i), BUY, "AAPL") for i in range(12)
+    ])
+    ops = webpage.build_payload([(fede, _series(5))])["operations"]
+    assert len(ops) == 8
+    assert ops[0]["date"] == "2026-07-12"          # la más reciente primero
 
 
 def test_recent_operations_ignores_non_trades():
