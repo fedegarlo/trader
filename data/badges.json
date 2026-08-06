@@ -10,6 +10,14 @@
       "date": "2026-07-31",
       "month": "2026-07",
       "pct": -6.18
+    },
+    {
+      "key": "week_streak:ana",
+      "recorded": "2026-08-06",
+      "type": "week_streak",
+      "player": "ana",
+      "name": "Ana",
+      "date": "2026-08-06"
     }
   ],
   "record": {
