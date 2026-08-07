@@ -5,7 +5,7 @@ _Actualizado: 2026-08-07_
 | # | Jugador | % acumulado | % último día | Desde |
 |---|---|---:|---:|---|
 | 🥇 | Ana | **+2.47%** | +0.08% | 2026-07-14 |
-| 🥈 | Fede | **-7.56%** | -2.79% | 2026-07-14 |
+| 🥈 | Fede | **-7.12%** | -2.33% | 2026-07-14 |
 
 ## 🏅 Ganador de cada día (agosto 2026)
 
@@ -52,7 +52,7 @@ _Actualizado: 2026-08-07_
 | 2026-08-03 | +0.13% | -7.15% |
 | 2026-08-04 | +3.37% | -4.02% |
 | 2026-08-05 | -0.92% | -4.91% |
-| 2026-08-06 | -2.79% | -7.56% |
+| 2026-08-06 | -2.33% | -7.12% |
 
 ---
 _Rentabilidad diaria calculada con Dietz simple (los ingresos y retiradas
