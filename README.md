@@ -45,8 +45,29 @@ búsqueda por símbolo: la página sigue sin exponer importes ni operaciones. El
 **consenso de analistas** se descarga en el build del ranking (Yahoo Finance,
 módulo `quoteSummary`) y se cachea en `data/analysts/<TICKER>.json` (versionado,
 igual que los precios); si Yahoo no responde, la sección simplemente no aparece
-(nunca se inventan cifras). Los valores relacionados están curados en
-`trader/tickers.py`.
+(nunca se inventan cifras). La **cotización fuera de horario** (pre-market /
+after-hours) se descarga también en el build, del mismo `quoteSummary`, pero
+**no se cachea**: caduca en minutos, así que o hay dato fresco o no se enseña.
+Los valores relacionados están curados en `trader/tickers.py`.
+
+### 🌅🌙 Pre-market y after-hours
+
+Cuando el mercado de EE. UU. está en **pre-market** (antes de abrir) o en
+**after-hours** (tras el cierre), la web enseña una tarjeta con la **cotización
+fuera de horario valor a valor**: precio y variación frente al último cierre
+regular de cada ticker de la liga, más la **media ponderada por el peso de cada
+posición** en la cartera agregada. La misma información aparece en la ficha de
+cada ticker.
+
+Como la página es estática, ese dato es la **foto del momento del build** (por
+eso la tarjeta lleva siempre la hora a la que se tomó, y desaparece si se abre
+la página más de 6 horas después). El workflow del ranking pasa a propósito por
+las dos franjas para que el dato llegue a tiempo. No cuenta para la
+clasificación: la jornada solo se cierra con el precio de cierre oficial.
+
+Con el **mercado cerrado**, el widget de *mejor del día* no se queda en blanco:
+enseña al ganador de la **última jornada cerrada**, con su fecha y una etiqueta
+de «mercado cerrado» para que se vea de qué sesión es el dato.
 
 ### 🎖️ Insignias (badges)
 
@@ -209,6 +230,8 @@ players/<id>/               configuración pública + extracto cifrado de cada j
 data/prices/                caché de precios de cierre (se versiona; reproducible)
 data/badges.json            histórico acumulativo de insignias (badges)
 data/analysts/              caché del consenso de analistas por ticker (Yahoo quoteSummary)
+trader/extended.py          cotización fuera de horario (pre-market / after-hours), sin caché
+trader/yahoo.py             sesión anónima de Yahoo (cookie + crumb) compartida
 data/public/                series diarias públicas en JSON (para gráficas)
 docs/index.html             la web del ranking 🏆 (GitHub Pages)
 docs/subir.html             página para subir tu extracto (cifra en el navegador, sin PR)

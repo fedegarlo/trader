@@ -16,29 +16,13 @@ a título informativo, con atribución; no son una recomendación de inversión.
 
 from __future__ import annotations
 
-import http.cookiejar
 import json
 import os
 import sys
-import urllib.error
 import urllib.parse
-import urllib.request
 from datetime import date
 
-_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
-_HOSTS = ("query1.finance.yahoo.com", "query2.finance.yahoo.com")
-
-
-def _num(value):
-    """Acepta un número crudo o el ``{"raw":..}`` de Yahoo y devuelve float."""
-    if isinstance(value, dict):
-        value = value.get("raw")
-    if value is None:
-        return None
-    try:
-        return float(value)
-    except (TypeError, ValueError):
-        return None
+from .yahoo import Session, num as _num
 
 
 def _int(value):
@@ -117,13 +101,14 @@ class AnalystCache:
     """Consenso de analistas por ticker con caché en disco y descarga de Yahoo."""
 
     def __init__(self, cache_dir: str = "data/analysts", offline: bool = False,
-                 refresh: bool = False):
+                 refresh: bool = False, session: Session | None = None):
         self.cache_dir = cache_dir
         self.offline = offline
         self.refresh = refresh
         self._mem: dict[str, dict | None] = {}
-        self._crumb: str | None = None
-        self._opener: urllib.request.OpenerDirector | None = None
+        # La sesión (cookie + crumb) se comparte con el resto de consultas a
+        # Yahoo del mismo build; si no nos dan una, se crea al primer fetch.
+        self.session = session
 
     def _path(self, ticker: str) -> str:
         return os.path.join(self.cache_dir, f"{ticker.replace('/', '_')}.json")
@@ -144,44 +129,13 @@ class AnalystCache:
             json.dump(data, fh, ensure_ascii=False, indent=1, sort_keys=True)
 
     # ------------------------------------------------------------- red
-    def _ensure_session(self) -> None:
-        """Cookie + crumb de Yahoo (necesarios para ``quoteSummary`` anónimo)."""
-        if self._crumb is not None:
-            return
-        jar = http.cookiejar.CookieJar()
-        self._opener = urllib.request.build_opener(
-            urllib.request.HTTPCookieProcessor(jar))
-        # una visita a finance.yahoo.com siembra la cookie de sesión
-        req = urllib.request.Request("https://finance.yahoo.com/quote/AAPL",
-                                     headers={"User-Agent": _UA})
-        with self._opener.open(req, timeout=20):
-            pass
-        req = urllib.request.Request(
-            "https://query1.finance.yahoo.com/v1/test/getcrumb",
-            headers={"User-Agent": _UA, "Accept": "text/plain"})
-        with self._opener.open(req, timeout=20) as resp:
-            self._crumb = resp.read().decode("utf-8").strip()
-
     def _fetch(self, ticker: str) -> dict | None:
-        self._ensure_session()
-        params = urllib.parse.urlencode({
-            "modules": "financialData,recommendationTrend",
-            "crumb": self._crumb or "",
-        })
-        last_err: Exception | None = None
-        for host in _HOSTS:
-            url = (f"https://{host}/v10/finance/quoteSummary/"
-                   f"{urllib.parse.quote(ticker)}?{params}")
-            req = urllib.request.Request(url, headers={
-                "User-Agent": _UA, "Accept": "application/json"})
-            try:
-                with self._opener.open(req, timeout=25) as resp:  # type: ignore[union-attr]
-                    return parse_summary(json.load(resp))
-            except (urllib.error.URLError, TimeoutError, ValueError) as exc:
-                last_err = exc
-        if last_err is not None:
-            raise last_err
-        return None
+        if self.session is None:
+            self.session = Session()
+        payload = self.session.get_json(
+            f"v10/finance/quoteSummary/{urllib.parse.quote(ticker)}",
+            {"modules": "financialData,recommendationTrend"})
+        return parse_summary(payload)
 
     # ------------------------------------------------------------ lookup
     def get(self, ticker: str) -> dict | None:
