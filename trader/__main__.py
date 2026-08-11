@@ -19,10 +19,11 @@ from datetime import date, timedelta
 
 from . import analysts as analysts_mod
 from . import badges as badges_mod
+from . import extended as extended_mod
 from . import inbox as inbox_mod
 from . import players as players_mod
 from . import report as report_mod
-from . import revolut_pdf, secretbox, webpage
+from . import revolut_pdf, secretbox, webpage, yahoo
 from .portfolio import (
     compute_daily_series,
     daily_contributions,
@@ -148,17 +149,26 @@ def cmd_ranking(args: argparse.Namespace) -> None:
             if hist:
                 price_history[ticker] = hist
 
+    # Sesión de Yahoo (cookie + crumb) compartida por las dos consultas de
+    # abajo: se negocia una sola vez por build.
+    session = None if args.offline else yahoo.Session()
+
     # Consenso de analistas por ticker (best-effort, cacheado y versionado).
     # Se descarga en el build (Yahoo quoteSummary); si el entorno no llega al
     # host, se usa la caché y, si no hay, la sección simplemente no aparece.
     analyst_cache = analysts_mod.AnalystCache(
         cache_dir=args.analysts_dir, offline=args.offline,
-        refresh=getattr(args, "refresh", False))
+        refresh=getattr(args, "refresh", False), session=session)
     analysts: dict[str, dict] = {}
     for ticker in allocation:
         consensus = analyst_cache.get(ticker)
         if consensus:
             analysts[ticker] = consensus
+
+    # Cotización fuera de horario (pre-market / after-hours) por ticker. No se
+    # cachea: caduca en minutos, así que o se descarga ahora o no se enseña.
+    extended = extended_mod.ExtendedQuotes(
+        offline=args.offline, session=session).fetch_all(allocation)
 
     # Insignias: se acumulan en un histórico (data/badges.json) que no se
     # recalcula desde cero, solo añade las nuevas y actualiza el récord de la
@@ -172,6 +182,7 @@ def cmd_ranking(args: argparse.Namespace) -> None:
     webpage.write_index(computed, out_path=args.html_out, pending=pending,
                         allocation=allocation, holdings=holdings,
                         prices=price_history, analysts=analysts,
+                        extended=extended,
                         contributions=contributions, badges=badges)
     with open(args.pending_out, "w", encoding="utf-8") as fh:
         json.dump(pending, fh, ensure_ascii=False)

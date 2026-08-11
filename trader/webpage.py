@@ -164,7 +164,12 @@ _TEMPLATE = """<!doctype html>
   .wbig { font-size: clamp(26px, 8vw, 34px); font-weight: 800; letter-spacing: -0.035em; line-height: 1.1; margin-top: 3px; display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; }
   .wbig.sm { font-size: clamp(22px, 6.6vw, 28px); white-space: nowrap; }
   .num { font-variant-numeric: tabular-nums; }
-  .num.closed { color: var(--ink-2); }
+  /* «mercado cerrado»: etiqueta junto al ganador de la última jornada, para
+     que se vea que el dato es de la sesión ya cerrada y no de hoy. */
+  .closed-tag { flex: none; font-size: 11px; font-weight: 800; letter-spacing: 0.03em;
+                text-transform: uppercase; padding: 3px 9px; border-radius: 999px;
+                background: var(--surface-2); border: 1px solid var(--hair);
+                color: var(--ink-2); }
   .delta { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
   /* indicador de líder del primer widget: banda tintada con el color del
      jugador que va en cabeza, su nombre y su rentabilidad acumulada. */
@@ -193,7 +198,7 @@ _TEMPLATE = """<!doctype html>
     100% { box-shadow: 0 0 0 0 transparent; }
   }
   .wsub { color: var(--ink-2); font-size: 13.5px; font-weight: 600; margin-top: 4px; }
-  .bestname { color: var(--ink); font-size: 18px; font-weight: 700; margin-top: 8px; display: flex; align-items: center; gap: 6px; }
+  .bestname { color: var(--ink); font-size: 18px; font-weight: 700; margin-top: 8px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
   .bestname .medal { font-size: 20px; line-height: 1; }
   .winnername { color: var(--ink); font-size: clamp(20px, 5.5vw, 24px); font-weight: 800;
                 letter-spacing: -0.02em; line-height: 1.15; margin-top: 6px;
@@ -316,6 +321,32 @@ _TEMPLATE = """<!doctype html>
   .wallet .donut-wrap { margin-top: 12px; }
 
   .pos { color: var(--up); } .neg { color: var(--down); }
+
+  /* sesión extendida: pre-market / after-hours valor a valor. La página es
+     estática, así que la cabecera lleva siempre la hora de la foto. */
+  .ext-head { display: flex; align-items: flex-start; justify-content: space-between;
+              gap: 10px 16px; flex-wrap: wrap; }
+  .ext-head .wbig { margin-top: 0; }
+  .ext-when { display: inline-flex; align-items: center; gap: 5px; margin-left: 8px;
+              color: var(--muted); font-weight: 600; font-size: 12.5px; }
+  .ext-when .dot { width: 7px; height: 7px; border-radius: 999px; background: var(--accent);
+                   color: var(--accent); animation: pulse 2.4s infinite; }
+  .ext-list { margin-top: 12px; }
+  .ext-row { display: flex; align-items: center; gap: 10px; padding: 10px 4px;
+             border-top: 1px solid var(--hair); border-radius: 10px; }
+  .ext-row:first-child { border-top: none; }
+  .ext-row.clk { cursor: pointer; }
+  .ext-row.clk:hover { background: var(--surface-2); }
+  .ext-row.clk:hover .sym { color: var(--accent); }
+  .ext-row .logo, .ext-row .mono { width: 30px; height: 30px; flex: none; }
+  .ext-row .tk { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .ext-row .sym { font-weight: 700; letter-spacing: -0.01em; white-space: nowrap; }
+  .ext-row .nm { color: var(--muted); font-weight: 600; font-size: 12.5px;
+                 overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ext-row .px { margin-left: auto; flex: none; color: var(--ink-2); font-weight: 600;
+                 font-size: 13.5px; font-variant-numeric: tabular-nums; }
+  .ext-row .pct { flex: none; min-width: 74px; text-align: right; font-weight: 800;
+                  font-variant-numeric: tabular-nums; }
 
   /* widget de últimas operaciones (fecha · compra/venta · ticker · jugador) */
   .op-row { display: flex; align-items: center; gap: 10px; padding: 11px 4px;
@@ -683,6 +714,23 @@ _TEMPLATE = """<!doctype html>
     </div>
   </div>
 
+  <!-- sesión extendida (pre-market / after-hours) de los valores de la liga.
+       Solo se pinta cuando había una sesión extendida en curso al generar la
+       página y la foto sigue siendo reciente: la web es estática y no se
+       refresca sola, así que siempre se dice a qué hora se tomó. -->
+  <section class="card" id="ext-card" style="display:none">
+    <div class="ext-head">
+      <div style="min-width:0">
+        <div class="wlabel"><span id="ext-title"></span><span class="ext-when"
+          ><span class="dot"></span><span id="ext-when"></span></span></div>
+        <div class="wsub muted" id="ext-sub"></div>
+      </div>
+      <div class="wbig sm"><span class="num" id="ext-val"></span></div>
+    </div>
+    <div class="ext-list" id="ext-list"></div>
+    <div class="wsub muted" id="ext-note" style="margin-top:10px"></div>
+  </section>
+
   <section class="card" id="badges-card" style="display:none">
     <h2 data-i18n="badgesTitle"></h2>
     <div class="wsub muted" data-i18n="badgesSub" style="margin-top:2px"></div>
@@ -809,6 +857,15 @@ const I18N = {
     recentOps: "Latest trades",
     opBuy: "Buy", opSell: "Sell",
     marketClosed: "Market closed",
+    extPre: "Pre-market",
+    extPost: "After hours",
+    extAt: t => "as of " + t,
+    extHoldings: n => n + (n === 1 ? " holding" : " holdings"),
+    extSession: "Extended session",
+    extLeague: "League portfolio, weighted",
+    extNote: "Prices outside regular trading hours (Yahoo Finance), captured " +
+      "when the page was built — they don't count towards the standings until " +
+      "the session closes.",
     gapTitle: "1st–last gap · since the start",
     winnerOf: ml => "Winner of " + ml,
     monthChartAria: ml => "Return of every player during " + ml,
@@ -977,6 +1034,14 @@ const I18N = {
     recentOps: "最新の取引",
     opBuy: "買い", opSell: "売り",
     marketClosed: "市場は休場",
+    extPre: "プレマーケット",
+    extPost: "時間外取引",
+    extAt: t => t + "時点",
+    extHoldings: n => n + "銘柄",
+    extSession: "時間外セッション",
+    extLeague: "リーグ全体（加重平均）",
+    extNote: "通常取引時間外の株価（Yahoo Finance）。ページ生成時点のスナップショット" +
+      "です。セッションが終わるまで順位には反映されません。",
     gapTitle: "首位と最下位の差 · 開始から",
     winnerOf: ml => ml + "の優勝者",
     monthChartAria: ml => ml + "の全プレイヤーのリターン推移",
@@ -1324,13 +1389,16 @@ function paintWidgets() {
     document.querySelector(".wrow").style.gridTemplateColumns = "1fr";
   } else {
     bestCard.style.display = "";
-    // El mejor del día perdura toda la tarde y noche hasta la medianoche de
-    // Madrid: solo se muestra «mercado cerrado» en la madrugada/mañana de un
-    // día laborable, antes de que abra el mercado de EE. UU. (~15:30 en Madrid)
-    // y mientras no haya jornada de hoy. Todo se calcula en hora de Madrid para
-    // que el corte sea exactamente la medianoche local (con DST correcto). Los
-    // fines de semana y tras el cierre —con la jornada del día ya publicada— se
-    // sigue mostrando el mejor.
+    // Con el mercado cerrado el widget NO se queda en blanco: sigue enseñando
+    // al ganador de la última jornada cerrada (que es la anterior a hoy), solo
+    // que con una etiqueta de «mercado cerrado» junto a su fecha para que se
+    // vea de qué sesión es el dato.
+    //
+    // «Cerrado» aquí es la madrugada/mañana de un día laborable, antes de que
+    // abra el mercado de EE. UU. (~15:30 en Madrid) y mientras no haya jornada
+    // de hoy. Todo se calcula en hora de Madrid para que el corte sea
+    // exactamente la medianoche local (con DST correcto). Los fines de semana y
+    // tras el cierre —con la jornada del día ya publicada— no se marca nada.
     const mp = new Intl.DateTimeFormat("en-GB", {
       timeZone: "Europe/Madrid", weekday: "short",
       year: "numeric", month: "2-digit", day: "2-digit",
@@ -1342,15 +1410,15 @@ function paintWidgets() {
     const hh = +gp("hour"), mm = +gp("minute");
     const preOpen = hh < 15 || (hh === 15 && mm < 30);
     const marketClosed = isWeekday && preOpen && bd.date !== madridDate;
+    bDate.textContent = " · " + bd.date.slice(5).split("-").reverse().join("/");
+    bv.textContent = fmtPct(bd.day); bv.className = "num " + (bd.day >= 0 ? "pos" : "neg");
+    bn.innerHTML = '<span class="medal">🥇</span>';
+    bn.appendChild(document.createTextNode(best.name));
     if (marketClosed) {
-      bDate.textContent = "";
-      bv.textContent = "🚧"; bv.className = "num closed";
-      bn.textContent = T.marketClosed;
-    } else {
-      bDate.textContent = " · " + bd.date.slice(5).split("-").reverse().join("/");
-      bv.textContent = fmtPct(bd.day); bv.className = "num " + (bd.day >= 0 ? "pos" : "neg");
-      bn.innerHTML = '<span class="medal">🥇</span>';
-      bn.appendChild(document.createTextNode(best.name));
+      const tag = document.createElement("span");
+      tag.className = "closed-tag";
+      tag.textContent = "🚧 " + T.marketClosed;
+      bn.appendChild(tag);
     }
   }
 
@@ -2169,6 +2237,65 @@ function paintOperations() {
 }
 paintOperations();
 
+// ---- sesión extendida: pre-market / after-hours valor a valor -------------
+// La web es estática: lo que se pinta es la foto que se tomó al generarla (el
+// build corre cada hora en horario de mercado y también en las franjas de
+// pre-market y after-hours). Por eso la cabecera lleva siempre la hora del
+// dato y, si quien abre la página lo hace mucho después, la tarjeta se esconde
+// en vez de enseñar un pre-market de hace horas como si fuera de ahora.
+const EXT_MAX_AGE = 6 * 3600;  // segundos
+const CUR_SYM = {USD: "$", EUR: "\\u20ac", GBP: "\\u00a3"};
+const extLabel = session => session === "pre" ? T.extPre : T.extPost;
+function extMoney(v, cur) {
+  const n = Number(v).toLocaleString("en-US",
+    {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  return CUR_SYM[cur] ? CUR_SYM[cur] + n : n + (cur ? " " + cur : "");
+}
+function fmtClock(epoch) {
+  return new Intl.DateTimeFormat(LANG === "ja" ? "ja-JP" : "en-GB", {
+    timeZone: "Europe/Madrid", hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+  }).format(new Date(epoch * 1000));
+}
+function paintExtended() {
+  const m = DATA.market, card = document.getElementById("ext-card");
+  const fresh = m && m.asOf && (Date.now() / 1000 - m.asOf) < EXT_MAX_AGE;
+  const rows = (DATA.tickers || []).filter(t =>
+    t.ext && m && t.ext.session === m.session && t.ext.pct != null);
+  if (!fresh || !rows.length) { card.style.display = "none"; return; }
+  card.style.display = "";
+
+  document.getElementById("ext-title").textContent =
+    (m.session === "pre" ? "\\ud83c\\udf05 " : "\\ud83c\\udf19 ") + extLabel(m.session);
+  document.getElementById("ext-when").textContent = T.extAt(fmtClock(m.asOf));
+  // El titular es la variación media de la liga ponderada por el peso de cada
+  // posición; si no se ha podido calcular, la tarjeta se queda en la lista.
+  const val = document.getElementById("ext-val");
+  val.textContent = m.pct == null ? "" : fmtPct(m.pct);
+  val.className = "num " + (m.pct >= 0 ? "pos" : "neg");
+  document.getElementById("ext-sub").textContent =
+    (m.pct == null ? T.extSession : T.extLeague) + " \\u00b7 " +
+    T.extHoldings(rows.length);
+  document.getElementById("ext-note").textContent = T.extNote;
+
+  const box = document.getElementById("ext-list");
+  box.innerHTML = "";
+  rows.sort((a, b) => b.ext.pct - a.ext.pct).forEach(t => {
+    const row = h("div", "ext-row clk");
+    row.dataset.ticker = t.ticker;
+    row.appendChild(tickerLogoEl(t, 30));
+    const tk = h("div", "tk");
+    const sym = h("span", "sym"); sym.textContent = t.ticker;
+    const nm = h("span", "nm"); nm.textContent = t.name;
+    tk.appendChild(sym); tk.appendChild(nm);
+    row.appendChild(tk);
+    row.appendChild(h("span", "px", extMoney(t.ext.price, t.ext.currency)));
+    row.appendChild(h("span", "pct " + (t.ext.pct >= 0 ? "pos" : "neg"),
+                      fmtPct(t.ext.pct)));
+    box.appendChild(row);
+  });
+}
+paintExtended();
+
 function newsRow(sym) {
   const q = encodeURIComponent(sym + " stock");
   const links = [
@@ -2397,6 +2524,14 @@ function openTicker(sym) {
   tiles.appendChild(tileEl(T.heldBy, T.playersCount(t.holders.length)));
   tiles.appendChild(tileEl(T.variation, t.ret == null ? "—" : fmtPct(t.ret),
     t.ret == null ? "" : (t.ret >= 0 ? "pos" : "neg")));
+  // Sesión extendida del valor (pre-market / after-hours), si la había cuando
+  // se generó la página: el precio fuera de horario y su variación frente al
+  // último cierre regular.
+  const ex = t.ext;
+  if (ex && ex.session && ex.pct != null)
+    tiles.appendChild(tileEl(
+      extLabel(ex.session) + " \\u00b7 " + extMoney(ex.price, ex.currency),
+      fmtPct(ex.pct), ex.pct >= 0 ? "pos" : "neg"));
   root.appendChild(tiles);
 
   const revSec = sectionEl(T.tradeOnRevolut, revolutRow(t.ticker));
@@ -2711,6 +2846,7 @@ def _ticker_details(
     prices: dict[str, list[tuple]] | None,
     price_days: int,
     analysts: dict[str, dict] | None = None,
+    extended: dict[str, dict] | None = None,
 ) -> list[dict]:
     """Detalle público por ticker para la vista de detalle de la web.
 
@@ -2727,6 +2863,7 @@ def _ticker_details(
         return []
     prices = prices or {}
     analysts = analysts or {}
+    extended = extended or {}
     out = []
     for item in weights:
         ticker = item["ticker"]
@@ -2768,8 +2905,63 @@ def _ticker_details(
         consensus = analysts.get(ticker)
         if consensus:
             entry["analyst"] = consensus
+        ext = extended.get(ticker)
+        if ext:
+            entry["ext"] = ext
         out.append(entry)
     return out
+
+
+def _market_snapshot(allocation: dict[str, float] | None,
+                     extended: dict[str, dict] | None,
+                     stamp: int) -> dict | None:
+    """Resumen de la sesión extendida en curso para la tarjeta del dashboard.
+
+    Devuelve la sesión (``pre``/``post``), cuándo se tomó la foto y la variación
+    media de la liga: la media de la variación de cada valor **ponderada por su
+    peso en la cartera agregada**, así que pesa lo que de verdad pesa. Solo
+    entran los valores con dato de esa misma sesión, y los pesos se
+    renormalizan entre ellos.
+
+    ``stamp`` es el instante del build en segundos epoch: la página lo usa para
+    decir a qué hora se tomó la foto y para esconder la tarjeta si quien la abre
+    lo hace mucho después (la web es estática y no se refresca sola).
+
+    ``None`` si no hay ninguna sesión extendida en curso (mercado abierto,
+    noche cerrada o fin de semana): entonces la tarjeta no se pinta.
+    """
+    extended = extended or {}
+    weights = {d["ticker"]: d["w"] for d in _allocation_weights(allocation)}
+
+    # Puede que algún ticker vaya rezagado y siga en la sesión anterior (o que
+    # la liga tenga valores de plazas distintas): manda la sesión que más pesa
+    # en la cartera, y a igualdad de peso la que tenga más valores.
+    stats: dict[str, list[float]] = {}
+    for ticker, quote in extended.items():
+        session = quote.get("session")
+        if not session:
+            continue
+        acc = stats.setdefault(session, [0.0, 0.0])
+        acc[0] += weights.get(ticker, 0.0)
+        acc[1] += 1
+    if not stats:
+        return None
+    session = max(sorted(stats), key=lambda s: (stats[s][0], stats[s][1]))
+
+    total = 0.0
+    weighted = 0.0
+    count = 0
+    for ticker, quote in extended.items():
+        if quote.get("session") != session or quote.get("pct") is None:
+            continue
+        count += 1
+        w = weights.get(ticker, 0.0)
+        total += w
+        weighted += w * quote["pct"]
+    snapshot = {"session": session, "asOf": stamp, "count": count}
+    if total > 0:
+        snapshot["pct"] = round(weighted / total, 2)
+    return snapshot
 
 
 def _buy_sell_suggestion(holdings_weights: list[dict],
@@ -3005,9 +3197,11 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
                   holdings: dict[str, dict[str, float]] | None = None,
                   prices: dict[str, list[tuple]] | None = None,
                   analysts: dict[str, dict] | None = None,
+                  extended: dict[str, dict] | None = None,
                   contributions: dict[str, dict[date, dict[str, float]]] | None = None,
                   badges: dict | None = None,
-                  today: date | None = None) -> dict:
+                  today: date | None = None,
+                  now: datetime | None = None) -> dict:
     """Datos embebidos en la página. Respeta show_amounts por jugador.
 
     La liga se juega **desde el inicio**: por defecto (``last_days=0``) se
@@ -3028,10 +3222,17 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
     desglosado por jugador (``{id: {ticker: valor}}``): se publica también solo
     como pesos (%) para la sección «Carteras», que muestra el reparto de cada
     jugador sin revelar importes.
+
+    ``extended`` es la cotización fuera de horario por ticker (pre-market /
+    after-hours, ver :mod:`trader.extended`): precios públicos de mercado, foto
+    del momento del build, que alimentan la tarjeta de sesión extendida del
+    dashboard y el detalle de cada valor.
     """
     today = today or date.today()
+    now = now or datetime.now(timezone.utc)
     holdings = holdings or {}
     analysts = analysts or {}
+    extended = extended or {}
     contributions = contributions or {}
     computed = _drop_weekends(computed)
     players = []
@@ -3080,8 +3281,10 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
     return {"players": players, "pending": pending or [],
             "operations": _recent_operations(computed, order),
             "allocation": _allocation_weights(allocation),
+            "market": _market_snapshot(allocation, extended,
+                                       int(now.timestamp())),
             "tickers": _ticker_details(allocation, holdings, order, names,
-                                       prices, price_days, analysts),
+                                       prices, price_days, analysts, extended),
             "monthly": _monthly_bests(computed, today, order),
             "dailyWinners": {
                 "month": today.month,
@@ -3121,6 +3324,7 @@ def write_index(
     holdings: dict[str, dict[str, float]] | None = None,
     prices: dict[str, list[tuple]] | None = None,
     analysts: dict[str, dict] | None = None,
+    extended: dict[str, dict] | None = None,
     contributions: dict[str, dict[date, dict[str, float]]] | None = None,
     badges: dict | None = None,
 ) -> str:
@@ -3128,7 +3332,7 @@ def write_index(
         build_payload(computed, last_days=last_days, price_days=price_days,
                       pending=pending,
                       allocation=allocation, holdings=holdings,
-                      prices=prices, analysts=analysts,
+                      prices=prices, analysts=analysts, extended=extended,
                       contributions=contributions, badges=badges,
                       today=today or date.today()),
         ensure_ascii=False)

@@ -1,6 +1,6 @@
 """La página embebe la serie completa de cada jugador (la liga es desde el inicio)."""
 
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 
 from trader import webpage
 from trader.players import Player
@@ -427,6 +427,79 @@ def test_ticker_details_no_analyst_key_without_data():
     player = Player(player_id="fede", display_name="Fede")
     payload = webpage.build_payload([(player, _series(5))], allocation={"AAPL": 100.0})
     assert "analyst" not in payload["tickers"][0]
+
+
+# ---- sesión extendida (pre-market / after-hours) ---------------------------
+
+def _ext(session, pct, price=100.0):
+    return {"state": session.upper(), "session": session, "price": price,
+            "pct": pct, "regular": 100.0, "currency": "USD"}
+
+
+def test_extended_quote_travels_with_its_ticker():
+    player = Player(player_id="fede", display_name="Fede")
+    extended = {"AAPL": _ext("post", 1.25, price=210.0)}
+    payload = webpage.build_payload(
+        [(player, _series(5))], allocation={"AAPL": 100.0}, extended=extended)
+    assert payload["tickers"][0]["ext"] == extended["AAPL"]
+
+
+def test_no_ext_key_without_extended_data():
+    player = Player(player_id="fede", display_name="Fede")
+    payload = webpage.build_payload([(player, _series(5))], allocation={"AAPL": 100.0})
+    assert "ext" not in payload["tickers"][0]
+    assert payload["market"] is None
+
+
+def test_market_snapshot_weights_by_position_size():
+    """La variación de la liga pondera cada valor por su peso en la cartera."""
+    player = Player(player_id="fede", display_name="Fede")
+    now = datetime(2026, 8, 11, 22, 45, tzinfo=timezone.utc)
+    payload = webpage.build_payload(
+        [(player, _series(5))],
+        allocation={"AAPL": 750.0, "MSFT": 250.0},
+        extended={"AAPL": _ext("post", 2.0), "MSFT": _ext("post", -2.0)},
+        now=now)
+    market = payload["market"]
+    assert market["session"] == "post"
+    assert market["count"] == 2
+    assert market["pct"] == 1.0  # 0.75 * 2 + 0.25 * (-2)
+    assert market["asOf"] == int(now.timestamp())
+
+
+def test_market_snapshot_ignores_tickers_of_another_session():
+    player = Player(player_id="fede", display_name="Fede")
+    payload = webpage.build_payload(
+        [(player, _series(5))],
+        allocation={"AAPL": 900.0, "MSFT": 100.0},
+        extended={"AAPL": _ext("pre", 3.0), "MSFT": _ext("post", -9.0)})
+    # Manda la sesión mayoritaria por peso de datos; el rezagado no la contamina.
+    assert payload["market"]["session"] == "pre"
+    assert payload["market"]["pct"] == 3.0
+    assert payload["market"]["count"] == 1
+
+
+def test_market_snapshot_none_when_no_session_open():
+    player = Player(player_id="fede", display_name="Fede")
+    quote = {"state": "REGULAR", "session": None, "regular": 100.0}
+    payload = webpage.build_payload(
+        [(player, _series(5))], allocation={"AAPL": 100.0}, extended={"AAPL": quote})
+    assert payload["market"] is None
+    # El ticker conserva su cotización aunque no haya sesión extendida.
+    assert payload["tickers"][0]["ext"] == quote
+
+
+def test_market_closed_widget_shows_the_last_session_winner():
+    """Con el mercado cerrado el widget no se queda en blanco.
+
+    Antes pintaba un 🚧 sin ganador; ahora enseña al ganador de la última
+    jornada cerrada y le añade la etiqueta de «mercado cerrado».
+    """
+    snippet = webpage._TEMPLATE.split("const marketClosed =", 1)[1].split(
+        "// diferencia 1º - último", 1)[0]
+    assert 'bv.textContent = fmtPct(bd.day)' in snippet
+    assert 'tag.className = "closed-tag"' in snippet
+    assert 'bDate.textContent = ""' not in snippet
 
 
 def test_player_suggestion_prefers_highest_upside_buy():

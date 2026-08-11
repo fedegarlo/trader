@@ -17,6 +17,15 @@ on:
     # Cierre oficial: tras el cierre de la bolsa de EE. UU. (a las 22:00 UTC),
     # ya con los cierres definitivos del día. También fuera del minuto en punto.
     - cron: "43 22 * * 1-5"
+    # Sesión extendida: la tarjeta de pre-market / after-hours de la web es la
+    # foto que se toma en el build, así que hace falta pasar por esas franjas.
+    # El pre-market de EE. UU. va de 4:00 a 9:30 ET (08:00–13:30 UTC en verano,
+    # 09:00–14:30 en invierno) y el after-hours de 16:00 a 20:00 ET
+    # (20:00–00:00 UTC en verano, 21:00–01:00 en invierno). El run de las 13:17
+    # ya cae en pre-market y el de las 22:43 en after-hours; estos dos añaden
+    # una pasada temprana por cada franja para que el dato no llegue tarde.
+    - cron: "11 11 * * 1-5"
+    - cron: "9 23 * * 1-5"
   workflow_dispatch: {}
   # La web (docs/subir.html) lanza este evento tras subir un extracto: los
   # commits creados por la API de GitHub no disparan el evento `push`, así que
