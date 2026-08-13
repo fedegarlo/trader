@@ -18,6 +18,15 @@
       "player": "ana",
       "name": "Ana",
       "date": "2026-08-06"
+    },
+    {
+      "key": "milestone:fede:5",
+      "recorded": "2026-08-13",
+      "type": "milestone",
+      "tier": 5,
+      "player": "fede",
+      "name": "Fede",
+      "date": "2026-08-13"
     }
   ],
   "record": {
