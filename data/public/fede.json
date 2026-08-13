@@ -101,18 +101,18 @@
     },
     {
       "date": "2026-08-10",
-      "daily_return_pct": 0.352,
-      "cumulative_return_pct": -8.6019
+      "daily_return_pct": 0.3525,
+      "cumulative_return_pct": -8.6015
     },
     {
       "date": "2026-08-11",
-      "daily_return_pct": 1.966,
-      "cumulative_return_pct": -6.805
+      "daily_return_pct": 1.9709,
+      "cumulative_return_pct": -6.8002
     },
     {
       "date": "2026-08-12",
-      "daily_return_pct": 4.6627,
-      "cumulative_return_pct": -2.4597
+      "daily_return_pct": 4.737,
+      "cumulative_return_pct": -2.3854
     }
   ]
 }
