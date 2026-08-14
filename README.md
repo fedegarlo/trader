@@ -131,6 +131,11 @@ La web muestra una sección de **insignias** que premia los hitos de la liga:
 - **🚀 Mayor subida de un valor en un día** — récord de la liga que se **reescribe
   cada vez que se supera** (el anterior se guarda en su historial).
 
+Cada logro es su propia tarjeta y todas se pasan **en carrusel**, deslizando en
+horizontal: se quedan ancladas de una en una y debajo se ve en cuál se está
+(puntos, o un contador «3 / 27» cuando ya hay demasiadas para pintar un punto
+por insignia).
+
 Lo importante es que las insignias se **acumulan en un histórico persistente**
 ([`data/badges.json`](data/badges.json)): en cada recálculo **no se procesa todo
 desde cero**, sino que se **añaden** las insignias nuevas a las ya conseguidas

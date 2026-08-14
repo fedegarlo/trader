@@ -101,8 +101,11 @@ _TEMPLATE = """<!doctype html>
     font: 15px/1.5 -apple-system, BlinkMacSystemFont, "SF Pro Display",
           system-ui, "Segoe UI", Roboto, sans-serif;
     letter-spacing: -0.01em;
+    /* el aura del fondo se difumina justo arriba y la primera línea (el sello
+       de «actualizado») le quedaba pegada: 34px de aire la despegan del borde
+       —y del notch, que suma su propio safe-area. */
     padding:
-      calc(20px + env(safe-area-inset-top))
+      calc(34px + env(safe-area-inset-top))
       calc(14px + env(safe-area-inset-right))
       calc(40px + env(safe-area-inset-bottom))
       calc(14px + env(safe-area-inset-left));
@@ -238,10 +241,37 @@ _TEMPLATE = """<!doctype html>
   .card.record { padding-bottom: 18px; }
   .record .record-tk { font-size: 16px; font-weight: 700; color: var(--ink-2); margin-left: 8px; }
   #record-date { color: var(--muted); font-weight: 600; font-size: 13px; margin-left: 8px; }
-  .badge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(158px, 1fr)); gap: 10px; }
+  /* carrusel: cada logro es su propia tarjeta y se pasan deslizando en
+     horizontal, con anclaje (scroll-snap) para que ninguna quede a medias. El
+     carril se sale del acolchado de la tarjeta para llegar a los bordes: así se
+     ve que hay más insignias esperando a la derecha. */
+  .badge-rail {
+    display: flex; gap: 10px; overflow-x: auto; overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+    margin: 0 -18px; padding: 2px 18px 4px; scroll-padding-left: 18px;
+    scrollbar-width: none;
+    /* las tarjetas que entran y salen se desvanecen en los bordes en vez de
+       cortarse a hachazos contra el borde redondeado de la tarjeta madre */
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 18px,
+                        #000 calc(100% - 18px), transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, #000 18px,
+                #000 calc(100% - 18px), transparent 100%);
+  }
+  .badge-rail::-webkit-scrollbar { display: none; }
+  .badge-rail:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 18px; }
   .badge { position: relative; display: flex; align-items: flex-start; gap: 11px;
            padding: 12px 13px; border-radius: 18px; background: var(--surface-2);
-           border: 1px solid var(--hair); }
+           border: 1px solid var(--hair);
+           flex: 0 0 clamp(196px, 72%, 232px); scroll-snap-align: start; }
+  /* puntos del carrusel (o «3 / 27» si hay demasiadas para pintar un punto por
+     insignia): indican en cuál se está y permiten saltar a otra. */
+  .badge-nav { display: flex; justify-content: center; align-items: center; gap: 6px; margin-top: 10px; }
+  .badge-nav button { width: 7px; height: 7px; padding: 0; border: 0; border-radius: 999px;
+                      background: var(--hair); cursor: pointer;
+                      transition: width .18s ease, background-color .18s ease; }
+  .badge-nav button.on { width: 20px; background: var(--accent); }
+  .badge-nav .count { font-size: 12px; font-weight: 700; color: var(--muted);
+                      font-variant-numeric: tabular-nums; }
   .badge.prov { border-style: dashed; opacity: 0.9; }
   .badge .bico { font-size: 26px; line-height: 1; flex: 0 0 auto; }
   .badge .btext { min-width: 0; }
@@ -770,7 +800,9 @@ _TEMPLATE = """<!doctype html>
       <div class="bestname" id="record-holders"></div>
       <div class="wsub muted" id="record-prev" style="margin-top:6px"></div>
     </section>
-    <div id="badge-grid" class="badge-grid" style="margin-top:12px"></div>
+    <div id="badge-rail" class="badge-rail" style="margin-top:12px" tabindex="0"
+         role="group" data-i18n-aria="badgesRailAria"></div>
+    <div id="badge-nav" class="badge-nav" style="display:none"></div>
     <div class="wsub muted" id="badge-empty" style="display:none;margin-top:8px" data-i18n="badgesEmpty"></div>
   </section>
 
@@ -856,10 +888,31 @@ const monthLabel = (m, y) => LANG === "ja"
 // d'août, d'octobre), así que el conector va junto a la etiqueta del mes.
 const deMois = ml => (/^[aeiouâéêîô]/i.test(ml) ? "d'" : "de ") + ml;
 
+// El sello de la última actualización llega del build como «AAAA-MM-DD HH:MM»
+// (hora de Madrid). En la cabecera se lee con el mes escrito en el idioma que
+// toque —«August 14, 2026 · 09:30», «14 août 2026 · 09:30», «2026年8月14日
+// 09:30»— en vez del ISO crudo, que parece más un número de serie que una
+// fecha. Si el sello no viniera con la forma esperada se deja tal cual. Va con
+// espacios duros: en el móvil la cabecera cabe justa y así la fecha salta
+// entera al segundo renglón en vez de dejar la hora suelta.
+const updatedOn = (() => {
+  const m = /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}:\d{2}))?/.exec(UPDATED.trim());
+  if (!m) return () => UPDATED;
+  const y = m[1], mo = +m[2], d = +m[3], hm = m[4];
+  return lang => {
+    const day = lang === "ja" ? y + "年" + mo + "月" + d + "日"
+      : lang === "fr" ? d + NBSP + MONTHS.fr[mo - 1] + NBSP + y
+      : MONTHS.en[mo - 1] + NBSP + d + "," + NBSP + y;
+    // en japonés la hora va pegada a la fecha, sin el punto medio que separa
+    // los bloques del resto de la cabecera
+    return hm ? day + (lang === "ja" ? NBSP : NBSP + "·" + NBSP) + hm : day;
+  };
+})();
+
 const I18N = {
   en: {
     appTitle: "Trader League",
-    eyebrow: "🏆 League · Revolut · updated " + UPDATED,
+    eyebrow: "🏆 League · Revolut · updated " + updatedOn("en"),
     sendPositions: "Send positions",
     mailBody: "attached are my positions in csv format",
     langAria: "Change language",
@@ -932,6 +985,8 @@ const I18N = {
     badgesTitle: "🎖️ Badges",
     badgesSub: "Achievements pile up over time — once earned, they stay.",
     badgesEmpty: "No badges yet — they'll appear as the league heats up.",
+    badgesRailAria: "Badges, swipe sideways",
+    badgeGoTo: (i, n) => "Badge " + i + " of " + n,
     recordTitle: "🚀 Biggest single-day gain",
     recordHeld: names => "Held by " + names,
     recordPrev: (pct, tk, d) => "Previous record: " + tk + " " + pct + " · " + d,
@@ -1043,7 +1098,7 @@ const I18N = {
   },
   ja: {
     appTitle: "トレーダーリーグ",
-    eyebrow: "🏆 リーグ · Revolut · 更新 " + UPDATED,
+    eyebrow: "🏆 リーグ · Revolut · 更新 " + updatedOn("ja"),
     sendPositions: "ポジションを送信",
     mailBody: "csv形式のポジションを添付します",
     langAria: "言語を切り替え",
@@ -1114,6 +1169,8 @@ const I18N = {
     badgesTitle: "🎖️ バッジ",
     badgesSub: "実績は積み重なり、一度獲得したら消えません。",
     badgesEmpty: "まだバッジはありません。リーグが白熱すると登場します。",
+    badgesRailAria: "バッジ（横にスワイプ）",
+    badgeGoTo: (i, n) => n + "件中" + i + "件目のバッジ",
     recordTitle: "🚀 1日の最大上昇",
     recordHeld: names => "保有者: " + names,
     recordPrev: (pct, tk, d) => "前の記録: " + tk + " " + pct + " · " + d,
@@ -1223,7 +1280,7 @@ const I18N = {
   },
   fr: {
     appTitle: "Ligue des Traders",
-    eyebrow: "🏆 Ligue · Revolut · mis à jour " + UPDATED,
+    eyebrow: "🏆 Ligue · Revolut · mis à jour le " + updatedOn("fr"),
     sendPositions: "Envoyer mes positions",
     mailBody: "ci-joint mes positions au format csv",
     langAria: "Changer de langue",
@@ -1297,6 +1354,8 @@ const I18N = {
     badgesTitle: "🎖️ Badges",
     badgesSub: "Les trophées s'accumulent avec le temps — une fois gagnés, ils restent.",
     badgesEmpty: "Pas encore de badges — ils arriveront quand la ligue s'échauffera.",
+    badgesRailAria: "Badges, faites glisser sur le côté",
+    badgeGoTo: (i, n) => "Badge " + i + " sur " + n,
     recordTitle: "🚀 Plus forte hausse en une séance",
     recordHeld: names => "Détenu par " + names,
     recordPrev: (pct, tk, d) => "Record précédent : " + tk + " " + pct + " · " + d,
@@ -1914,9 +1973,9 @@ function paintBadges() {
     else rp.style.display = "none";
   } else rc.style.display = "none";
 
-  // Rejilla de insignias.
-  const grid = document.getElementById("badge-grid");
-  grid.innerHTML = "";
+  // Carrusel de insignias: una tarjeta por logro, que se pasan deslizando.
+  const rail = document.getElementById("badge-rail");
+  rail.innerHTML = "";
   document.getElementById("badge-empty").style.display = awards.length ? "none" : "";
   const cards = awards.map(b => {
     const el = document.createElement("div");
@@ -1940,10 +1999,63 @@ function paintBadges() {
       tag.className = "ptag"; tag.textContent = "● " + T.badgeLive; box.appendChild(tag);
     }
     el.appendChild(box);
-    grid.appendChild(el);
+    el.setAttribute("role", "listitem");
+    rail.appendChild(el);
     return el;
   });
-  collapseList(cards, card);
+  rail.setAttribute("role", cards.length ? "list" : "group");
+  badgeNav(rail, cards);
+}
+// Indicador del carrusel: un punto por insignia (y salta a ella al pulsarlo)
+// mientras quepan; en cuanto son muchas, un contador «3 / 27», que ocupa lo
+// mismo con veinte insignias que con cien. El punto activo es el de la tarjeta
+// anclada al borde izquierdo del carril, que es la que el anclaje deja fija.
+const BADGE_DOTS_MAX = 10;
+function badgeNav(rail, cards) {
+  const nav = document.getElementById("badge-nav");
+  nav.innerHTML = "";
+  nav.style.display = "none";
+  if (cards.length < 2) return;
+  // en pantallas anchas puede que quepan todas: sin nada que deslizar, sobra
+  // el indicador (y al girar el móvil se recalcula)
+  const showNav = () => { nav.style.display = rail.scrollWidth > rail.clientWidth + 2 ? "" : "none"; };
+  window.addEventListener("resize", showNav);
+  const dots = cards.length <= BADGE_DOTS_MAX ? cards.map((el, i) => {
+    const dot = document.createElement("button");
+    dot.type = "button";
+    dot.setAttribute("aria-label", T.badgeGoTo(i + 1, cards.length));
+    dot.addEventListener("click", () => {
+      const left = el.getBoundingClientRect().left - rail.getBoundingClientRect().left
+                 + rail.scrollLeft - 18;
+      rail.scrollTo({left: Math.max(0, left), behavior: "smooth"});
+    });
+    nav.appendChild(dot);
+    return dot;
+  }) : null;
+  const count = dots ? null : nav.appendChild(document.createElement("span"));
+  if (count) count.className = "count";
+  let at = -1, tick = 0;
+  const sync = () => {
+    tick = 0;
+    const base = rail.getBoundingClientRect().left + 18;  // borde útil, tras el acolchado
+    let best = 0, dist = Infinity;
+    cards.forEach((el, i) => {
+      const d = Math.abs(el.getBoundingClientRect().left - base);
+      if (d < dist) { dist = d; best = i; }
+    });
+    if (best === at) return;
+    at = best;
+    if (dots) dots.forEach((d, i) => {
+      d.classList.toggle("on", i === at);
+      d.setAttribute("aria-current", i === at ? "true" : "false");
+    });
+    else count.textContent = (at + 1) + " / " + cards.length;
+  };
+  rail.addEventListener("scroll", () => {
+    if (!tick) tick = requestAnimationFrame(sync);
+  }, {passive: true});
+  sync();
+  showNav();
 }
 paintBadges();
 
