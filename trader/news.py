@@ -37,17 +37,37 @@ import os
 import re
 import sys
 import urllib.error
+import urllib.parse
 import urllib.request
 from datetime import date
 
-DEFAULT_ENDPOINT = "http://imprifyapp.com/api/trader/news"
+# El endpoint responde por HTTPS; en claro contesta un 307 hacia él. Se pide
+# directo por HTTPS (una ida y vuelta menos, y el cuerpo no viaja en claro),
+# pero si alguien apunta a `http://` los redirects se siguen igual.
+DEFAULT_ENDPOINT = "https://imprifyapp.com/api/trader/news"
 DEFAULT_TIMEZONE = "Europe/Madrid"
 DEFAULT_LIMIT = 5
 # Tickers por petición: la API acepta una lista, pero se trocea para no mandar
 # una petición desmedida cuando la liga tiene muchos valores.
 BATCH = 20
 TIMEOUT = 20
+MAX_REDIRECTS = 3
 UA = "trader-league/1.0 (+https://github.com/fedegarlo/trader)"
+
+
+class _KeepPost(urllib.request.HTTPRedirectHandler):
+    """Redirects sin seguir: los reenvía :meth:`NewsCache._post` con su cuerpo.
+
+    Devolver ``None`` aquí hace que urllib no siga el redirect y eleve el
+    ``HTTPError``, que es justo lo que necesitamos para repetir el POST en el
+    destino en vez de dejar que lo degrade a un GET sin cuerpo.
+    """
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
+_OPENER = urllib.request.build_opener(_KeepPost)
 
 # Formato de símbolo que acepta la API (`AAPL`, `BRK.B`, `^GSPC`, `BTC-USD`).
 # Lo que no encaje se descarta antes de mandarlo: la API lo rechazaría igual.
@@ -197,18 +217,47 @@ class NewsCache:
                       fh, ensure_ascii=False, indent=1)
 
     # ------------------------------------------------------------- red
-    def _post(self, tickers: list[str]) -> dict:
+    def _post(self, tickers: list[str], url: str | None = None,
+              hops: int = 0) -> dict:
+        """POST del lote, siguiendo los redirects **sin perder el cuerpo**.
+
+        urllib no reenvía un POST cuando le contestan 307/308: lo convierte en
+        `HTTPError` (y con 301/302/303 lo reintenta como GET, sin el cuerpo).
+        La API contesta 307 al hablarle en claro, así que ese redirect hay que
+        seguirlo a mano, repitiendo el POST tal cual en el destino.
+        """
+        url = url or self.endpoint
         body = json.dumps({
             "tickers": tickers,
             "limit": self.limit,
             "timezone": self.timezone,
         }).encode("utf-8")
-        req = urllib.request.Request(self.endpoint, data=body, method="POST",
+        req = urllib.request.Request(url, data=body, method="POST",
                                      headers={"Content-Type": "application/json",
                                               "Accept": "application/json",
                                               "User-Agent": UA})
-        with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:
-            return json.load(resp)
+        try:
+            with _OPENER.open(req, timeout=TIMEOUT) as resp:
+                return json.load(resp)
+        except urllib.error.HTTPError as exc:
+            target = self._redirect_target(exc, url, hops)
+            if target is None:
+                raise
+            return self._post(tickers, target, hops + 1)
+
+    @staticmethod
+    def _redirect_target(exc: urllib.error.HTTPError, url: str,
+                         hops: int) -> str | None:
+        """Destino al que repetir el POST, o ``None`` si no hay que seguir."""
+        if exc.code not in (301, 302, 303, 307, 308) or hops >= MAX_REDIRECTS:
+            return None
+        location = exc.headers.get("Location") if exc.headers else None
+        if not location:
+            return None
+        target = urllib.parse.urljoin(url, location)
+        # Nunca se sigue a otro esquema (un `file://` o similar en un Location
+        # de terceros no tiene ningún sentido aquí).
+        return target if target.startswith(("http://", "https://")) else None
 
     def _download(self, tickers: list[str]) -> dict[str, list[dict]]:
         """Descarga en lotes; cada lote que falle solo se pierde a sí mismo."""

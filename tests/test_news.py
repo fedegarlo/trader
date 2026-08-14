@@ -238,6 +238,82 @@ def test_limit_caps_what_reaches_the_page(tmp_path):
     assert len(news["AAPL"]) == 3
 
 
+def _serve(handler_cls):
+    """Servidor HTTP de usar y tirar; devuelve (url_base, parar())."""
+    import threading
+    from http.server import HTTPServer
+
+    srv = HTTPServer(("127.0.0.1", 0), handler_cls)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    return f"http://127.0.0.1:{srv.server_port}", srv.shutdown
+
+
+def _news_handler(redirects):
+    """Handler que contesta ``redirects`` veces con 307 y luego con noticias."""
+    from http.server import BaseHTTPRequestHandler
+
+    state = {"left": redirects, "bodies": []}
+
+    class H(BaseHTTPRequestHandler):
+        def do_POST(self):
+            body = self.rfile.read(int(self.headers.get("Content-Length", 0)))
+            state["bodies"].append((self.path, json.loads(body)))
+            if state["left"] > 0:
+                state["left"] -= 1
+                self.send_response(307)
+                self.send_header("Location", "/api/trader/news")
+                self.end_headers()
+                return
+            payload = json.dumps(_response(
+                _result("AAPL", [_item(link="https://x/1")]))).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(payload)))
+            self.end_headers()
+            self.wfile.write(payload)
+
+        def log_message(self, *a):
+            pass
+
+    return H, state
+
+
+def test_a_307_does_not_lose_the_post_body(tmp_path):
+    """La API contesta 307 al hablarle en claro: urllib deja caer el POST.
+
+    Sin seguir el redirect a mano el build se quedaba sin noticias con un
+    «HTTP Error 307: Temporary Redirect», que es lo que pasó en producción.
+    """
+    handler, state = _news_handler(redirects=1)
+    base, stop = _serve(handler)
+    try:
+        cache = NewsCache(cache_dir=str(tmp_path / "news"),
+                          endpoint=base + "/redirigeme")
+        news = cache.fetch_all(["AAPL"])
+    finally:
+        stop()
+    assert news["AAPL"][0]["link"] == "https://x/1"
+    # El POST se repite en el destino, con el mismo cuerpo (no degradado a GET).
+    assert [path for path, _ in state["bodies"]] == ["/redirigeme", "/api/trader/news"]
+    assert state["bodies"][0][1] == state["bodies"][1][1]
+
+
+def test_redirect_loops_give_up_instead_of_hanging(tmp_path, capsys):
+    handler, _ = _news_handler(redirects=99)
+    base, stop = _serve(handler)
+    try:
+        cache = NewsCache(cache_dir=str(tmp_path / "news"), endpoint=base + "/x")
+        assert cache.fetch_all(["AAPL"]) == {}
+    finally:
+        stop()
+    assert "307" in capsys.readouterr().err
+
+
+def test_default_endpoint_is_https():
+    # En claro la API contesta 307; se pide directo por HTTPS.
+    assert news_mod.DEFAULT_ENDPOINT.startswith("https://")
+
+
 def test_request_body_carries_tickers_limit_and_timezone(tmp_path, monkeypatch):
     sent = {}
 
@@ -251,14 +327,14 @@ def test_request_body_carries_tickers_limit_and_timezone(tmp_path, monkeypatch):
         def __exit__(self, *exc):
             return False
 
-    def fake_urlopen(req, timeout=None):
+    def fake_open(req, timeout=None):
         sent["url"] = req.full_url
         sent["method"] = req.get_method()
         sent["body"] = json.loads(req.data.decode("utf-8"))
         sent["type"] = req.get_header("Content-type")
         return _Resp()
 
-    monkeypatch.setattr(news_mod.urllib.request, "urlopen", fake_urlopen)
+    monkeypatch.setattr(news_mod._OPENER, "open", fake_open)
     NewsCache(cache_dir=str(tmp_path / "news"), endpoint="http://api.test/news",
               limit=5).fetch_all(["AAPL"])
 
