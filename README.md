@@ -55,10 +55,15 @@ Los valores relacionados están curados en `trader/tickers.py`.
 ### 🎯 Camino al objetivo
 
 Un módulo con **todos los jugadores** y una barra de avance hacia el objetivo
-de la liga: **14.000 entre inversiones y efectivo antes del 1 de agosto**. La
-tarjeta lleva la cuenta atrás (los días que quedan para el próximo 1 de
-agosto: es una meta que se renueva cada año) y ordena a los jugadores de más a
-menos avance.
+de la liga: **14.000 entre inversiones y efectivo antes del 1 de agosto**. Los
+jugadores van de más a menos avance.
+
+La tarjeta es deliberadamente escueta: **ni la fecha ni el importe del objetivo
+se escriben** —los sabe quien juega—, solo la cuenta atrás (los días que quedan
+para el próximo 1 de agosto: es una meta que se renueva cada año), el nombre,
+el porcentaje y la barra. Dos líneas por jugador, para que quepan todos sin
+convertir la pantalla en un scroll. Los datos completos siguen en el JSON
+embebido de la página.
 
 El porcentaje es el valor de la cartera al último cierre (posiciones + efectivo)
 sobre el objetivo de cada uno, así que **publicar el avance es publicar ese
@@ -69,9 +74,8 @@ Por eso el avance es **opt-in y por defecto está apagado**, incluso para quien
 tenga `show_amounts: true`: solo se pinta la barra de quien active
 `"show_goal": true` en su `player.json`. Quien no lo active sigue apareciendo
 en el módulo —están todos— pero con la barra en trama y sin ninguna cifra.
-`show_amounts: true` añade encima el importe escrito (`5.000 € de 14.000 €`),
-que a esas alturas ya no revela nada nuevo. El objetivo se cambia por jugador
-con `"goal"`.
+`show_amounts: true` añade debajo lo que lleva (`5.000 €`), que a esas alturas
+ya no revela nada nuevo. El objetivo se cambia por jugador con `"goal"`.
 
 **El objetivo está en euros y las carteras se valoran en la divisa del
 extracto** (dólares, para los valores de EE. UU.), así que hay que convertir:
@@ -79,8 +83,9 @@ sin hacerlo, una cartera de 5.895 $ salía al 42 % de 14.000 € cuando de verda
 va por el 36 %. El cambio se descarga de Yahoo (`EURUSD=X` y equivalentes) en
 el build y se cachea y versiona como un precio más
 ([`trader/fx.py`](trader/fx.py)); la tarjeta enseña el cambio aplicado bajo el
-título. Es la **única** parte del proyecto que toca divisas — la clasificación
-va en porcentaje y ahí la divisa se cancela. Si Yahoo no responde y no hay
+título (`1 USD = 0,8481 €`), que es lo único que se escribe ahí. Es la
+**única** parte del proyecto que toca divisas — la clasificación va en
+porcentaje y ahí la divisa se cancela. Si Yahoo no responde y no hay
 caché, el módulo dice que no hay cambio en vez de enseñar un avance
 equivocado.
 

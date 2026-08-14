@@ -316,7 +316,7 @@ _TEMPLATE = """<!doctype html>
                      letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
   .goal-count .lbl { display: block; color: var(--muted); font-size: 12px;
                      font-weight: 600; margin-top: 2px; }
-  .goal-row { border-top: 1px solid var(--hair); padding: 13px 4px 14px; border-radius: 10px; }
+  .goal-row { border-top: 1px solid var(--hair); padding: 11px 4px 12px; border-radius: 10px; }
   .goal-row:first-child { border-top: none; }
   .goal-row.clk { cursor: pointer; }
   .goal-row.clk:hover { background: var(--surface-2); }
@@ -327,13 +327,13 @@ _TEMPLATE = """<!doctype html>
                    font-variant-numeric: tabular-nums; }
   .goal-top .pct.done { color: var(--s2); }
   .goal-top .pct.hidden { color: var(--muted); font-weight: 600; }
-  .goal-bar { position: relative; height: 10px; border-radius: 999px; margin-top: 9px;
+  .goal-bar { position: relative; height: 10px; border-radius: 999px; margin-top: 8px;
               background: var(--surface-2); border: 1px solid var(--hair); overflow: hidden; }
   .goal-bar > span { display: block; height: 100%; border-radius: 999px; min-width: 3px; }
   /* sin permiso para publicar el avance: barra en trama, nunca a medias */
   .goal-bar.priv { background: repeating-linear-gradient(115deg,
       var(--grid) 0 6px, transparent 6px 12px); }
-  .goal-meta { color: var(--muted); font-size: 12.5px; font-weight: 600; margin-top: 7px;
+  .goal-meta { color: var(--muted); font-size: 12.5px; font-weight: 600; margin-top: 6px;
                font-variant-numeric: tabular-nums; }
 
   /* listados largos: 5 filas y el resto detrás de «ver más». El !important no
@@ -734,7 +734,6 @@ _TEMPLATE = """<!doctype html>
     <div class="goal-head">
       <div class="goal-l">
         <h2 data-i18n="goalTitle"></h2>
-        <div class="wsub muted" id="goal-sub"></div>
         <div class="wsub muted" id="goal-fx" style="display:none"></div>
       </div>
       <div class="goal-count">
@@ -918,19 +917,12 @@ const I18N = {
     ranking: "Standings",
     rankCols: ["#", "Player", "Cumulative %", "Last day %"],
     goalTitle: "🎯 Road to the goal",
-    goalSub: (amount, d) => "Every player is chasing " + amount +
-      " in holdings and cash by " + d + ".",
     goalDays: "days left",
     goalDay: "day left",
     goalToday: "last day",
-    goalOf: (value, target) => value + " of " + target,
-    goalLeft: amount => amount + " to go",
-    goalDone: "Goal reached 🎉",
     goalHidden: "private",
-    goalHiddenNote: "Progress not published — this player keeps their amounts private.",
-    goalFx: (cur, rate) => "Amounts converted at 1 " + cur + " = " + rate + " €.",
-    goalNoFx: cur => "No " + cur + "/EUR rate at build time — progress can't be " +
-      "converted, so it isn't shown rather than shown wrong.",
+    goalNoRate: "no rate",
+    goalFx: (cur, rate) => "1 " + cur + " = " + rate + " €",
     showMore: n => "Show " + n + " more",
     showLess: "Show less",
     dailyTitle: ml => "🏅 Daily champion · " + ml,
@@ -1107,18 +1099,12 @@ const I18N = {
     ranking: "順位表",
     rankCols: ["#", "プレイヤー", "累積%", "前日比%"],
     goalTitle: "🎯 目標までの道のり",
-    goalSub: (amount, d) => d + "までに保有株と現金で" + amount + "を目指します。",
     goalDays: "日残り",
     goalDay: "日残り",
     goalToday: "最終日",
-    goalOf: (value, target) => target + "中" + value,
-    goalLeft: amount => "あと" + amount,
-    goalDone: "目標達成 🎉",
     goalHidden: "非公開",
-    goalHiddenNote: "進捗は非公開です（金額を公開していないプレイヤー）。",
-    goalFx: (cur, rate) => "1 " + cur + " = " + rate + " € で換算しています。",
-    goalNoFx: cur => "生成時に" + cur + "/EURのレートが取得できませんでした。誤った進捗を" +
-      "出さないため非表示にしています。",
+    goalNoRate: "レートなし",
+    goalFx: (cur, rate) => "1 " + cur + " = " + rate + " €",
     showMore: n => "さらに" + n + "件を表示",
     showLess: "折りたたむ",
     dailyTitle: ml => "🏅 デイリー王者 · " + ml,
@@ -1296,19 +1282,12 @@ const I18N = {
     ranking: "Classement",
     rankCols: ["#", "Joueur", "% cumulé", "% du dernier jour"],
     goalTitle: "🎯 En route vers l'objectif",
-    goalSub: (amount, d) => "Chaque joueur vise " + amount +
-      " en titres et liquidités d'ici au " + d + ".",
     goalDays: "jours restants",
     goalDay: "jour restant",
     goalToday: "dernier jour",
-    goalOf: (value, target) => value + " sur " + target,
-    goalLeft: amount => "encore " + amount,
-    goalDone: "Objectif atteint 🎉",
     goalHidden: "privé",
-    goalHiddenNote: "Progression non publiée — ce joueur garde ses montants privés.",
-    goalFx: (cur, rate) => "Montants convertis à 1 " + cur + " = " + rate + " €.",
-    goalNoFx: cur => "Pas de taux " + cur + "/EUR à la génération — la progression " +
-      "ne peut pas être convertie, elle n'est donc pas affichée plutôt que fausse.",
+    goalNoRate: "pas de taux",
+    goalFx: (cur, rate) => "1 " + cur + " = " + rate + " €",
     showMore: n => "Voir " + n + " de plus",
     showLess: "Voir moins",
     dailyTitle: ml => "🏅 Champion du jour · " + ml,
@@ -2374,8 +2353,9 @@ function paintGoal() {
   const card = document.getElementById("goal-card");
   if (!g || !ranked.length) { card.style.display = "none"; return; }
   card.style.display = "";
-  document.getElementById("goal-sub").textContent =
-    T.goalSub(goalMoney(g.target), fmtDate(g.deadline));
+  // Ni la fecha límite ni el importe del objetivo se escriben: la cuenta atrás
+  // ya dice cuánto queda y la barra, cuánto llevas. Los datos siguen en
+  // ``DATA.goal`` para quien los quiera, pero la tarjeta va al grano.
   document.getElementById("goal-days").textContent = g.days;
   document.getElementById("goal-days-lbl").textContent =
     g.days === 0 ? T.goalToday : (g.days === 1 ? T.goalDay : T.goalDays);
@@ -2401,10 +2381,11 @@ function paintGoal() {
     top.appendChild(nm);
     const pct = h("span", "pct");
     if (goal) {
-      pct.textContent = goal.pct.toFixed(1) + "%";
+      // El objetivo cumplido se celebra en la propia cifra, sin línea aparte.
+      pct.textContent = goal.pct.toFixed(1) + "%" + (goal.pct >= 100 ? " 🎉" : "");
       if (goal.pct >= 100) pct.classList.add("done");
     } else {
-      pct.textContent = T.goalHidden;
+      pct.textContent = (p.goal && p.goal.noFx) ? T.goalNoRate : T.goalHidden;
       pct.classList.add("hidden");
     }
     top.appendChild(pct);
@@ -2419,14 +2400,11 @@ function paintGoal() {
     }
     row.appendChild(bar);
 
-    const meta = [];
-    if (!goal) meta.push(p.goal && p.goal.noFx
-      ? T.goalNoFx(p.goal.currency || "") : T.goalHiddenNote);
-    else if (goal.pct >= 100) meta.push(T.goalDone);
-    else if (goal.value != null)
-      meta.push(T.goalOf(goalMoney(goal.value), goalMoney(goal.target)) + " \\u00b7 " +
-                T.goalLeft(goalMoney(goal.target - goal.value)));
-    if (meta.length) row.appendChild(h("div", "goal-meta", meta.join(" \\u00b7 ")));
+    // Única línea extra posible, y solo para quien publica importes: lo que
+    // lleva. El objetivo no se escribe — es el mismo para todos y ya está en
+    // la barra.
+    if (goal && goal.value != null)
+      row.appendChild(h("div", "goal-meta", goalMoney(goal.value)));
 
     box.appendChild(row);
     return row;
