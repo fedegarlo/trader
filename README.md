@@ -233,6 +233,11 @@ Para cada día natural se calcula:
 > construcción**. Dar de alta a alguien nuevo solo requiere añadir su
 > `email ↔ id` a la Variable `PLAYER_EMAILS`.
 >
+> Al editar esa Variable, ojo con **escribirla desde el móvil**: iOS y macOS
+> sustituyen las comillas rectas por tipográficas (`“ ”`) y el JSON deja de ser
+> válido. La ingesta las interpreta igualmente para no caerse, pero avisa en el
+> log; lo suyo es pegar el JSON con comillas rectas (`"`).
+>
 > El extracto recibido **se fusiona** con el que ya hubiera: manda en el
 > periodo que cubre (de su primera a su última operación, así se pueden
 > corregir cosas) y fuera de ese periodo se conserva lo ya registrado. Por eso

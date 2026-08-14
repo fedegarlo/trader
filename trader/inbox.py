@@ -112,6 +112,44 @@ class RunSummary:
     skipped: list[Result] = field(default_factory=list)  # con motivo
 
 
+# Comillas dobles "de imprenta" que iOS y macOS ponen automáticamente al
+# escribir `"`. Copiar el JSON de la documentación a la caja de texto de una
+# Variable del repo desde el móvil basta para colar alguna: el JSON deja de ser
+# válido y la ingesta se cae entera sin haber leído el buzón.
+_SMART_DQUOTES = "“”„‟«»″"
+
+
+def _loads_player_emails(raw: str) -> dict:
+    """``json.loads`` tolerante con las comillas tipográficas del móvil.
+
+    Primero se intenta el JSON tal cual: si es válido, se respeta al pie de la
+    letra (un nombre puede llevar comillas tipográficas a propósito). Solo si
+    falla se reintenta con las comillas dobles curvas convertidas en rectas,
+    que es el error de copia habitual. Si sigue sin ser válido, el mensaje dice
+    qué hay que arreglar y dónde, en vez de soltar un traceback de json.
+    """
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError as first_error:
+        fixed = raw.translate({ord(q): '"' for q in _SMART_DQUOTES})
+        if fixed != raw:
+            try:
+                data = json.loads(fixed)
+            except json.JSONDecodeError:
+                pass
+            else:
+                print("inbox: PLAYER_EMAILS traía comillas tipográficas "
+                      "(“ ”); las he interpretado como comillas normales. "
+                      "Conviene corregir la Variable del repositorio.")
+                return data
+        raise ValueError(
+            f"PLAYER_EMAILS no es JSON válido ({first_error.msg}, línea "
+            f"{first_error.lineno} columna {first_error.colno}). Revisa la "
+            "Variable del repositorio: debe ser un objeto id -> datos con "
+            'comillas rectas ("), p. ej. {"fede": {"email": "fede@mail.com"}}.'
+        ) from first_error
+
+
 def parse_player_emails(raw: str | None) -> dict[str, PlayerCfg]:
     """Parsea ``PLAYER_EMAILS`` a un mapa ``email (minúsculas) -> PlayerCfg``.
 
@@ -126,7 +164,7 @@ def parse_player_emails(raw: str | None) -> dict[str, PlayerCfg]:
     """
     if not raw or not raw.strip():
         return {}
-    data = json.loads(raw)
+    data = _loads_player_emails(raw)
     out: dict[str, PlayerCfg] = {}
     for player_id, cfg in data.items():
         if isinstance(cfg, str):  # forma corta: id -> email
