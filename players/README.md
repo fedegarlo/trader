@@ -74,8 +74,9 @@ en tu propia carpeta `players/<tu-id>/`.
    Con `show_amounts: false` el ranking público solo muestra porcentajes;
    tus importes no se publican.
 
-   `goal` es tu objetivo de la liga (14.000 por defecto: lo que quieres tener
-   entre inversiones y efectivo el 1 de agosto) y `show_goal` decide si tu
+   `goal` es tu objetivo de la liga **en euros** (14.000 por defecto: lo que
+   quieres tener entre inversiones y efectivo el 1 de agosto; si tu cartera va
+   en otra divisa se convierte al cambio del día) y `show_goal` decide si tu
    avance sale en el módulo **🎯 Camino al objetivo** de la web. Va aparte de
    `show_amounts` a propósito: aunque solo se publique el porcentaje, un
    «62 % de 14.000» deja adivinar el importe de tu cartera. Con
