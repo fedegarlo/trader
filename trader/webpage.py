@@ -251,53 +251,6 @@ _TEMPLATE = """<!doctype html>
   .mbadge-chip.prov { border-style: dashed; }
   .mbadge-chip .i { font-size: 17px; line-height: 1; }
 
-  /* banners promocionales (contenido en japonés, en ambos idiomas):
-     anuncios ficticios al estilo de los folletos japoneses,
-     intercalados entre los widgets, con
-     enlace a webs reales de Japón. Colores propios del banner (fijos en
-     claro/oscuro); la etiqueta «広告» deja claro que son anuncios. */
-  .jp-banner { position: relative; display: flex; align-items: center; gap: 13px;
-               margin: 10px 0; padding: 14px 16px; border-radius: 22px; text-decoration: none;
-               color: #1a1a1a; overflow: hidden;
-               border: 1px solid rgba(11,10,16,0.06);
-               box-shadow: 0 1px 1px rgba(11,10,16,0.05), 0 14px 30px -24px rgba(11,10,16,0.55); }
-  .jp-banner:active { transform: translateY(1px); }
-  .jp-banner .bicon { flex: none; width: 52px; height: 52px; border-radius: 14px;
-                      display: grid; place-items: center; font-size: 29px; line-height: 1;
-                      background: rgba(255,255,255,0.94); box-shadow: 0 2px 6px rgba(0,0,0,0.12); }
-  .jp-banner .btext { flex: 1 1 0; min-width: 0; }
-  .jp-banner .btop { font-size: 12.5px; font-weight: 700; opacity: 0.9; letter-spacing: 0.01em;
-                     display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .jp-banner .bmain { font-size: 19px; font-weight: 800; letter-spacing: 0.01em; line-height: 1.2;
-                      margin-top: 1px; display: block; }
-  .jp-banner .btag { display: inline-block; margin-top: 5px; font-size: 10px; font-weight: 800;
-                     background: rgba(255,255,255,0.9); color: #1f6bff; padding: 1px 7px; border-radius: 999px; }
-  .jp-banner .barrow { flex: none; font-size: 16px; font-weight: 800; opacity: 0.65; }
-  .jp-b1 { background: linear-gradient(180deg, #ffe873, #ffe04c); color: #333; }   /* amarillo */
-  .jp-b1 .bhi { color: #0b63d6; }
-  .jp-b2 { background: linear-gradient(180deg, #cdecff, #8fd3f7); color: #0b3a5b; }   /* celeste */
-  .jp-b3 { background: linear-gradient(180deg, #3a9bff, #1f6bff); color: #fff; }   /* azul */
-
-  /* banner de Kyoru: invita a conocer y descargar la app (no es un anuncio
-     ficticio, por eso no lleva la etiqueta «広告»). Colores fijos en claro y
-     oscuro, al estilo de la tarjeta original de la app. */
-  .kyoru-banner { display: flex; align-items: center; gap: 15px; margin: 12px 0;
-                  padding: 15px 18px; border-radius: 26px; text-decoration: none;
-                  background: linear-gradient(180deg, #eef4fd, #e4edfa);
-                  border: 1px solid rgba(31,107,255,0.10);
-                  box-shadow: 0 1px 1px rgba(11,10,16,0.05), 0 14px 30px -24px rgba(11,10,16,0.55); }
-  .kyoru-banner:active { transform: translateY(1px); }
-  .kyoru-banner .kicon { flex: none; width: 60px; height: 60px; border-radius: 19px;
-                         display: grid; place-items: center; background: #fbfcfe;
-                         box-shadow: 0 2px 6px rgba(11,10,16,0.10); }
-  .kyoru-banner .kicon img { width: 44px; height: 44px; display: block; }
-  .kyoru-banner .ktext { flex: 1 1 0; min-width: 0; }
-  .kyoru-banner .kmain { display: block; font-size: 18px; font-weight: 800;
-                         letter-spacing: 0.01em; line-height: 1.25; color: #12161f; }
-  .kyoru-banner .ksub { display: block; margin-top: 4px; font-size: 13.5px;
-                        font-weight: 500; line-height: 1.35; color: #5d6774; }
-  .kyoru-banner .karrow { flex: none; font-size: 20px; font-weight: 800; color: #2f7fe0; }
-
   /* widget de cartera: gráfico de tarta (cada porción = su peso real) */
   .donut-wrap { display: flex; align-items: center; gap: 18px; margin-top: 16px; }
   .donut { flex: none; display: block; }
@@ -640,18 +593,6 @@ _TEMPLATE = """<!doctype html>
     <div class="wsub" id="pending" style="margin-top:6px"></div>
   </section>
 
-  <!-- banner de Kyoru: presenta y enlaza la descarga de la app; el texto se
-       traduce con data-i18n, así que aparece en inglés y en japonés. -->
-  <a class="kyoru-banner" href="https://imprifyapp.com/kyoru/index.html"
-     target="_blank" rel="noopener noreferrer" data-i18n-aria="kyoruAria">
-    <span class="kicon" aria-hidden="true"><img src="kyoru.png" alt="" width="44" height="44"></span>
-    <span class="ktext">
-      <span class="kmain" data-i18n="kyoruTitle"></span>
-      <span class="ksub" data-i18n="kyoruSub"></span>
-    </span>
-    <span class="karrow" aria-hidden="true">→</span>
-  </a>
-
   <div id="widgets" style="display:grid;gap:12px">
     <section class="card" id="hero-card" style="position:relative">
       <button class="whelp" id="hero-help" type="button" data-i18n-title="calcHelpAria">?</button>
@@ -823,9 +764,6 @@ const I18N = {
     mailBody: "attached are my positions in csv format",
     langBtnLabel: "日本語",
     langBtnAria: "Switch to Japanese",
-    kyoruTitle: "Get the new Kyoru app",
-    kyoruSub: "Open up to the world and step out of yourself.",
-    kyoruAria: "Kyoru: discover and download the app",
     allPlayers: "All players",
     periodAll: "Since the start",
     pendingTitle: "⏳ Awaiting passphrase",
@@ -1000,9 +938,6 @@ const I18N = {
     mailBody: "csv形式のポジションを添付します",
     langBtnLabel: "EN",
     langBtnAria: "英語に切り替え",
-    kyoruTitle: "新しいアプリ「Kyoru」を手に入れよう",
-    kyoruSub: "世界にひらいて、「わたし」から一歩そとへ。",
-    kyoruAria: "Kyoru：アプリを知る・ダウンロードする",
     allPlayers: "全プレイヤー",
     periodAll: "開始から",
     pendingTitle: "⏳ パスフレーズ待ち",
@@ -1213,62 +1148,6 @@ const T = I18N[LANG];
     try { localStorage.setItem("lang", next); } catch (e) {}
     location.reload();
   });
-})();
-
-// ---- banners promocionales (japonés, en ambos idiomas) --------------
-// Anuncios ficticios al estilo de los folletos japoneses, intercalados
-// entre los widgets. Enlazan a webs reales de Japón y se abren en una
-// pestaña nueva; la etiqueta «広告» (publicidad) deja claro que son
-// anuncios. El contenido va siempre en japonés y se pinta tanto en la
-// versión japonesa como en la inglesa.
-(() => {
-  const wrap = document.getElementById("widgets");
-  if (!wrap) return;
-  const mk = (b) => {
-    const a = document.createElement("a");
-    a.className = "jp-banner " + b.cls;
-    a.href = b.href;
-    a.target = "_blank";
-    a.rel = "noopener noreferrer";
-    a.setAttribute("aria-label", "広告：" + b.aria);
-    a.innerHTML =
-      '<span class="bicon" aria-hidden="true">' + b.icon + "</span>" +
-      '<span class="btext">' +
-        '<span class="btop">' + b.top + "</span>" +
-        '<span class="bmain">' + b.main + "</span>" +
-        '<span class="btag">広告</span>' +
-      "</span>" +
-      '<span class="barrow" aria-hidden="true">↗</span>';
-    return a;
-  };
-  const after = (node, el) => {
-    if (node && node.parentNode) node.parentNode.insertBefore(el, node.nextSibling);
-  };
-  // Repartidos hacia abajo y bien espaciados: debajo del bloque de
-  // widgets, tras el ranking y tras la gráfica acumulada.
-  const closestCard = (id) => {
-    const el = document.getElementById(id);
-    return el ? el.closest(".card") : null;
-  };
-  const rankingCard = closestCard("ranking");
-  // la gráfica acumulada es ahora el primer widget (arriba); anclamos el
-  // último folleto al detalle diario para que sigan repartidos hacia abajo.
-  const chartCard = closestCard("detail");
-  after(wrap, mk({
-    cls: "jp-b1", icon: "🦌", top: "奈良公園の鹿に会いに行こう",
-    main: '<span class="bhi">奈良観光</span>', aria: "奈良観光 鹿とふれあう旅",
-    href: "https://www.visitnara.jp/",
-  }));
-  after(rankingCard, mk({
-    cls: "jp-b2", icon: "🐸", top: "当店のお得情報をいち早くお届け！",
-    main: "シュフーチラシアプリ", aria: "シュフー チラシアプリ",
-    href: "https://www.shufoo.net/",
-  }));
-  after(chartCard, mk({
-    cls: "jp-b3", icon: "📈", top: "日本株・米国株の取引はこちら",
-    main: "楽天証券", aria: "楽天証券",
-    href: "https://www.rakuten-sec.co.jp/",
-  }));
 })();
 
 // ---- enlace de envío de posiciones por correo ----
