@@ -2,6 +2,8 @@ import json
 import os
 from email.message import EmailMessage
 
+import pytest
+
 from pdfbuild import make_pdf
 from test_revolut_pdf import STATEMENT
 from trader import inbox, secretbox
@@ -54,6 +56,28 @@ def test_parse_player_emails_rich_and_short():
 def test_parse_player_emails_empty():
     assert inbox.parse_player_emails("") == {}
     assert inbox.parse_player_emails(None) == {}
+
+
+def test_parse_player_emails_tolera_comillas_tipograficas():
+    # Editar la Variable del repo desde el móvil convierte los `"` en `“ ”`.
+    # El JSON deja de ser válido, pero la intención se entiende: se acepta.
+    m = inbox.parse_player_emails(
+        '{"fede": {"email": "fede@icloud.com", "show_amounts": false,'
+        ' “show_goal”: true}}')
+    assert m["fede@icloud.com"].show_goal is True
+
+
+def test_parse_player_emails_respeta_comillas_tipograficas_en_los_valores():
+    # Si el JSON ya es válido no se toca: las comillas curvas de un nombre
+    # están puestas a propósito.
+    m = inbox.parse_player_emails(
+        '{"fede": {"email": "fede@icloud.com", "name": "Fede “el rápido”"}}')
+    assert m["fede@icloud.com"].name == "Fede “el rápido”"
+
+
+def test_parse_player_emails_json_roto_explica_el_problema():
+    with pytest.raises(ValueError, match="PLAYER_EMAILS no es JSON válido"):
+        inbox.parse_player_emails('{"fede": ')
 
 
 # ----- verify_sender_auth -----
