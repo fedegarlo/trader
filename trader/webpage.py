@@ -174,26 +174,6 @@ _TEMPLATE = """<!doctype html>
                 text-transform: uppercase; padding: 3px 9px; border-radius: 999px;
                 background: var(--surface-2); border: 1px solid var(--hair);
                 color: var(--ink-2); }
-  .delta { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
-  /* indicador de líder del primer widget: banda tintada con el color del
-     jugador que va en cabeza, su nombre y su rentabilidad acumulada. */
-  .leader { display: flex; align-items: center; justify-content: space-between; gap: 12px;
-            margin-top: 12px; padding: 12px 15px; border-radius: 18px;
-            background: linear-gradient(180deg,
-              color-mix(in srgb, var(--lead, var(--accent)) 13%, var(--surface-2)),
-              color-mix(in srgb, var(--lead, var(--accent)) 6%, var(--surface-2)));
-            border: 1px solid color-mix(in srgb, var(--lead, var(--accent)) 26%, var(--ring)); }
-  .lead-l { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-  .lead-r { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; flex: none; }
-  .lead-tag { display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 800;
-              letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-2); }
-  .lead-trophy { font-size: 12px; line-height: 1; }
-  .lead-name { display: inline-flex; align-items: center; gap: 8px; font-size: 19px; font-weight: 800;
-               letter-spacing: -0.02em; min-width: 0; }
-  .lead-name > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .leader .lval { font-size: clamp(24px, 7vw, 30px); font-weight: 800; letter-spacing: -0.035em;
-                  line-height: 1.02; }
-  .leader .delta { font-size: 13px; font-weight: 700; }
   @keyframes pulse {
     0% { box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 55%, transparent); }
     70% { box-shadow: 0 0 0 6px transparent; }
@@ -604,16 +584,6 @@ _TEMPLATE = """<!doctype html>
     <section class="card" id="hero-card" style="position:relative">
       <button class="whelp" id="hero-help" type="button" data-i18n-title="calcHelpAria">?</button>
       <h2 data-i18n="ranking" style="padding-right:34px"></h2>
-      <div class="leader" id="leader-row">
-        <div class="lead-l">
-          <span class="lead-tag"><span class="lead-trophy">🏆</span><span data-i18n="leader"></span></span>
-          <span class="lead-name"><span id="leader-name"></span></span>
-        </div>
-        <div class="lead-r">
-          <span class="num lval" id="leader-val"></span>
-          <span class="delta" id="leader-delta"></span>
-        </div>
-      </div>
       <div class="overx" style="margin-top:12px"><table id="standings"></table></div>
     </section>
     <section class="card widget" id="best-card">
@@ -759,7 +729,6 @@ const I18N = {
     pendingTitle: "⏳ Awaiting passphrase",
     pendingText: n => n + " — the statement is uploaded but couldn't be decrypted. " +
       "The passphrase is probably not the league's: please re-upload with the correct one.",
-    leader: "Leader",
     calcHelpAria: "How the ranking is calculated",
     calc: {
       title: "How the ranking is calculated",
@@ -930,7 +899,6 @@ const I18N = {
     pendingTitle: "⏳ パスフレーズ待ち",
     pendingText: n => n + " — 明細はアップロード済みですが復号できませんでした。" +
       "パスフレーズがリーグのものと異なる可能性があります。正しいもので再アップロードしてください。",
-    leader: "首位",
     calcHelpAria: "順位の計算方法",
     calc: {
       title: "順位の計算方法",
@@ -1227,23 +1195,15 @@ function sparkSVG(values, color, id, opts) {
 }
 function paintWidgets() {
   // Sin jugadores la clasificación ya enseña su propio mensaje vacío: solo se
-  // esconde lo que no tiene nada que contar (líder y mejor del día).
+  // esconde lo que no tiene nada que contar (el mejor del día).
   if (!DATA.players.length) {
-    document.getElementById("leader-row").style.display = "none";
     document.getElementById("best-card").style.display = "none";
     return;
   }
 
-  // líder: quién va ganando y con qué rentabilidad acumulada. El color se pone
-  // en la tarjeta para que lo hereden la banda del líder y su fila de la tabla.
-  const leader = ranked[0], lc = lastOf(leader);
-  document.getElementById("hero-card").style.setProperty("--lead", colorOf(leader));
-  document.getElementById("leader-name").textContent = leader.name;
-  const lv = document.getElementById("leader-val");
-  lv.textContent = fmtPct(lc.cum); lv.className = "num lval " + (lc.cum >= 0 ? "pos" : "neg");
-  const ld = document.getElementById("leader-delta");
-  ld.textContent = (lc.day >= 0 ? "▲ " : "▼ ") + fmtPct(lc.day);
-  ld.className = "delta " + (lc.day >= 0 ? "pos" : "neg");
+  // el color del líder se pone en la tarjeta para que lo herede su fila de la
+  // clasificación, que va tintada como primera de la parrilla
+  document.getElementById("hero-card").style.setProperty("--lead", colorOf(ranked[0]));
 
   // mejor del día (los fines de semana la última jornada ya es la del viernes;
   // si hay empate en el % del día, desempata la rentabilidad acumulada)
