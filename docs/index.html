@@ -122,6 +122,9 @@
   .card.warn { border-color: color-mix(in srgb, var(--s3) 55%, var(--ring)); background: color-mix(in srgb, var(--s3) 10%, var(--surface)); }
 
   /* widgets */
+  /* sin ``min-width: 0`` una tabla ancha estiraría su tarjeta y con ella toda
+     la página: así la clasificación se desplaza dentro de su propio ``.overx``. */
+  #widgets > * { min-width: 0; }
   .widget { position: relative; overflow: hidden; padding-bottom: 0; }
   /* interrogante: abre el modal que explica cómo se calcula la rentabilidad */
   .whelp { position: absolute; z-index: 3; top: 12px; right: 12px;
@@ -143,28 +146,6 @@
                 text-transform: uppercase; padding: 3px 9px; border-radius: 999px;
                 background: var(--surface-2); border: 1px solid var(--hair);
                 color: var(--ink-2); }
-  .delta { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
-  /* indicador de líder del primer widget: banda tintada con el color del
-     jugador que va en cabeza, su nombre y su rentabilidad acumulada. */
-  .leader { display: flex; align-items: center; justify-content: space-between; gap: 12px;
-            margin-top: 12px; padding: 12px 15px; border-radius: 18px;
-            background: linear-gradient(180deg,
-              color-mix(in srgb, var(--lead, var(--accent)) 13%, var(--surface-2)),
-              color-mix(in srgb, var(--lead, var(--accent)) 6%, var(--surface-2)));
-            border: 1px solid color-mix(in srgb, var(--lead, var(--accent)) 26%, var(--ring)); }
-  .lead-l { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-  .lead-r { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; flex: none; }
-  .lead-tag { display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 800;
-              letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-2); }
-  .lead-trophy { font-size: 12px; line-height: 1; }
-  .lead-name { display: inline-flex; align-items: center; gap: 8px; font-size: 19px; font-weight: 800;
-               letter-spacing: -0.02em; min-width: 0; }
-  .lead-name > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .lead-name .key { width: 11px; height: 11px; flex: none;
-                    box-shadow: 0 0 0 3px color-mix(in srgb, var(--lead, var(--accent)) 22%, transparent); }
-  .leader .lval { font-size: clamp(24px, 7vw, 30px); font-weight: 800; letter-spacing: -0.035em;
-                  line-height: 1.02; }
-  .leader .delta { font-size: 13px; font-weight: 700; }
   @keyframes pulse {
     0% { box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 55%, transparent); }
     70% { box-shadow: 0 0 0 6px transparent; }
@@ -180,9 +161,10 @@
   .wsub.muted { color: var(--muted); font-weight: 500; }
   .wsub.treat { color: var(--ink-2); font-weight: 700; margin-top: 6px; }
   svg.spark { display: block; width: 100%; height: 100%; }
-  .wrow { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .wrow .card { padding-bottom: 18px; display: flex; flex-direction: column; }
-  .wrow .card.widget { padding-bottom: 0; }
+  /* «mejor del día»: tarjeta a ancho completo (nombre a la izquierda, % a la
+     derecha), con el aire de abajo que el resto de widgets deja para su spark. */
+  #best-card { padding-bottom: 18px; }
+  #best-card .bestname { margin-top: 6px; }
 
   /* «ganador del mes»: tarjetas a ancho completo con la evolución de todos los
      jugadores dentro del mes (cada uno con su color), no solo la del campeón. */
@@ -339,22 +321,26 @@
          vertical-align: middle; margin-right: 8px; }
   .big { font-weight: 700; }
 
-  /* gráfica multilínea */
-  .chartwrap { position: relative; margin-top: 12px; }
-  svg#chart { display: block; width: 100%; height: auto; touch-action: pan-y; }
+  /* clasificación tipo parrilla (F1 / liga): posición, jugador, acumulado y el
+     % de la última jornada. La fila del líder va tintada con su color. */
+  #standings td.rank { font-size: 16px; }
+  #standings tr.lead td {
+    background: color-mix(in srgb, var(--lead, var(--accent)) 11%, transparent);
+  }
+  #standings tr.lead td:first-child { border-radius: 12px 0 0 12px; }
+  #standings tr.lead td:last-child { border-radius: 0 12px 12px 0; }
+  #standings td.empty { color: var(--muted); font-weight: 500; }
+  @media (max-width: 560px) {
+    #standings th, #standings td { padding: 9px 6px; }
+    /* los títulos se parten en dos líneas antes que obligar a desplazar la
+       tabla: los datos (que sí van en una línea) caben en la pantalla. */
+    #standings th { white-space: normal; }
+  }
+
+  /* leyenda (widgets de mes) */
   .legend { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-top: 12px;
             font-size: 13px; font-weight: 600; color: var(--ink-2); }
   .legend span { display: inline-flex; align-items: center; }
-  .tip {
-    position: absolute; pointer-events: none; display: none; z-index: 2;
-    background: var(--card-solid); border: 1px solid var(--ring); border-radius: 14px;
-    padding: 9px 11px; font-size: 12.5px; box-shadow: 0 8px 24px -8px rgba(11,10,16,.35);
-    min-width: 152px;
-  }
-  .tip .d { color: var(--muted); margin-bottom: 5px; font-weight: 600; }
-  .tip .row { display: flex; align-items: center; gap: 7px; justify-content: space-between; }
-  .tip .row b { font-variant-numeric: tabular-nums; font-weight: 700; }
-  .tip .row .nm { color: var(--ink-2); display: inline-flex; align-items: center; font-weight: 500; }
 
   /* detalle */
   details { border-top: 1px solid var(--hair); }
@@ -569,38 +555,16 @@
   <div id="widgets" style="display:grid;gap:12px">
     <section class="card" id="hero-card" style="position:relative">
       <button class="whelp" id="hero-help" type="button" data-i18n-title="calcHelpAria">?</button>
-      <h2 data-i18n="cumTitle" style="padding-right:34px"></h2>
-      <div class="leader" id="leader-row">
-        <div class="lead-l">
-          <span class="lead-tag"><span class="lead-trophy">🏆</span><span data-i18n="leader"></span></span>
-          <span class="lead-name"><span class="key" id="leader-key"></span><span id="leader-name"></span></span>
-        </div>
-        <div class="lead-r">
-          <span class="num lval" id="leader-val"></span>
-          <span class="delta" id="leader-delta"></span>
-        </div>
-      </div>
-      <div class="chartwrap">
-        <svg id="chart" viewBox="0 0 860 360" role="img" data-i18n-aria="cumChartAria"></svg>
-        <div class="tip" id="tip"></div>
-      </div>
-      <div class="legend" id="legend"></div>
+      <h2 data-i18n="ranking" style="padding-right:34px"></h2>
+      <div class="overx" style="margin-top:12px"><table id="standings"></table></div>
     </section>
-    <div class="wrow">
-      <section class="card widget" id="best-card">
-        <div class="wlabel"><span data-i18n="bestOfDay"></span><span id="best-date"></span></div>
+    <section class="card widget" id="best-card">
+      <div class="wlabel"><span data-i18n="bestOfDay"></span><span id="best-date"></span></div>
+      <div class="mhead">
+        <div class="mhead-l"><div class="bestname" id="best-name"></div></div>
         <div class="wbig"><span class="num" id="best-val"></span></div>
-        <div class="bestname" id="best-name"></div>
-      </section>
-      <section class="card" id="gap-card">
-        <div class="wlabel" data-i18n="gapTitle"></div>
-        <div class="wbig sm"><span class="num" id="gap-val"></span></div>
-        <div style="margin-top:auto">
-          <div class="wsub" id="gap-top"></div>
-          <div class="wsub muted" id="gap-bot"></div>
-        </div>
-      </section>
-    </div>
+      </div>
+    </section>
     <div class="mrow" id="month-row" style="display:none">
       <section class="card widget month" id="month-cur-card">
         <div class="wlabel" id="month-cur-label"></div>
@@ -672,11 +636,6 @@
     <div class="insights" id="insights"></div>
   </section>
 
-  <section class="card">
-    <h2 data-i18n="ranking"></h2>
-    <div class="overx" style="margin-top:6px"><table id="ranking"></table></div>
-  </section>
-
   <section class="card" id="daily-card" style="display:none">
     <h2 id="daily-title"></h2>
     <div class="overx" style="margin-top:6px"><table id="daily"></table></div>
@@ -707,7 +666,7 @@
 <footer data-i18n-html="footer"></footer>
 <script>
 const DATA = {"players": [{"id": "ana", "name": "Ana", "slot": 0, "amounts": false, "since": "2026-07-14", "days": [{"date": "2026-07-14", "day": 1.5255, "cum": 1.5255, "bd": [{"ticker": "PLTR", "pct": 1.5255}]}, {"date": "2026-07-15", "day": 0.0299, "cum": 1.5559, "bd": [{"ticker": "PLTR", "pct": 0.0299}]}, {"date": "2026-07-16", "day": -2.6311, "cum": -1.1161, "bd": [{"ticker": "SMCI", "pct": -1.8665}, {"ticker": "META", "pct": -1.0134}, {"ticker": "PLTR", "pct": 0.2489}]}, {"date": "2026-07-17", "day": -2.1399, "cum": -3.2322, "bd": [{"ticker": "META", "pct": -1.0154}, {"ticker": "SMCI", "pct": -0.6165}, {"ticker": "PLTR", "pct": -0.508}]}, {"date": "2026-07-20", "day": 0.322, "cum": -2.9206, "bd": [{"ticker": "PLTR", "pct": 0.5713}, {"ticker": "SMCI", "pct": -0.4048}, {"ticker": "META", "pct": 0.1555}]}, {"date": "2026-07-21", "day": 4.7588, "cum": 1.6992, "bd": [{"ticker": "SMCI", "pct": 5.3704}, {"ticker": "PLTR", "pct": -0.4667}, {"ticker": "META", "pct": -0.1449}]}, {"date": "2026-07-22", "day": -2.7738, "cum": -1.1218, "bd": [{"ticker": "PLTR", "pct": -1.6456}, {"ticker": "META", "pct": -1.1283}]}, {"date": "2026-07-23", "day": -1.7204, "cum": -2.8229, "bd": [{"ticker": "META", "pct": -1.4694}, {"ticker": "PLTR", "pct": -0.2511}]}, {"date": "2026-07-24", "day": -0.87, "cum": -3.6683, "bd": [{"ticker": "META", "pct": -0.7742}, {"ticker": "PLTR", "pct": -0.0958}]}, {"date": "2026-07-27", "day": 1.7545, "cum": -1.9782, "bd": [{"ticker": "PLTR", "pct": 1.849}, {"ticker": "META", "pct": -0.0945}]}, {"date": "2026-07-28", "day": -1.7207, "cum": -3.6649, "bd": [{"ticker": "PLTR", "pct": -1.6883}, {"ticker": "META", "pct": -0.0324}]}, {"date": "2026-07-29", "day": -0.6721, "cum": -4.3123, "bd": [{"ticker": "META", "pct": -0.5583}, {"ticker": "PLTR", "pct": -0.1138}]}, {"date": "2026-07-30", "day": -3.5167, "cum": -7.6774, "bd": [{"ticker": "META", "pct": -3.3567}, {"ticker": "PLTR", "pct": -0.16}]}, {"date": "2026-07-31", "day": 1.6272, "cum": -6.1751, "bd": [{"ticker": "META", "pct": 1.448}, {"ticker": "PLTR", "pct": 0.1793}]}, {"date": "2026-08-03", "day": 3.2384, "cum": -3.1367, "bd": [{"ticker": "META", "pct": 2.6673}, {"ticker": "PLTR", "pct": 0.5711}]}, {"date": "2026-08-04", "day": 5.1958, "cum": 1.8962, "bd": [{"ticker": "PLTR", "pct": 5.3596}, {"ticker": "META", "pct": -0.1637}]}, {"date": "2026-08-05", "day": 0.4915, "cum": 2.3971, "bd": [{"ticker": "MU", "pct": 0.4354}, {"ticker": "META", "pct": 0.0562}]}, {"date": "2026-08-06", "day": 0.6287, "cum": 3.0409, "bd": [{"ticker": "MU", "pct": 0.5526}, {"ticker": "META", "pct": 0.0761}]}, {"date": "2026-08-07", "day": 0.3986, "cum": 3.4516, "bd": [{"ticker": "SNOW", "pct": 0.3384}, {"ticker": "META", "pct": 0.1472}, {"ticker": "MU", "pct": -0.087}]}, {"date": "2026-08-10", "day": 0.1004, "cum": 3.5555, "bd": [{"ticker": "MU", "pct": -0.3682}, {"ticker": "SNOW", "pct": 0.2806}, {"ticker": "META", "pct": 0.188}]}, {"date": "2026-08-11", "day": 0.4093, "cum": 3.9794, "bd": [{"ticker": "META", "pct": 0.2797}, {"ticker": "MU", "pct": 0.1669}, {"ticker": "SNOW", "pct": -0.0373}]}, {"date": "2026-08-12", "day": -0.2244, "cum": 3.7461, "bd": [{"ticker": "META", "pct": -1.3442}, {"ticker": "MU", "pct": 1.2445}, {"ticker": "SNOW", "pct": -0.1247}]}, {"date": "2026-08-13", "day": 1.4117, "cum": 5.2107, "bd": [{"ticker": "META", "pct": 1.0714}, {"ticker": "SNOW", "pct": 0.3403}]}], "holdings": [{"ticker": "META", "w": 63.81}, {"ticker": "SNOW", "w": 36.19}]}, {"id": "fede", "name": "Fede", "slot": 1, "amounts": false, "since": "2026-07-14", "days": [{"date": "2026-07-14", "day": 1.7906, "cum": 1.7906, "bd": [{"ticker": "NVDA", "pct": 1.4736}, {"ticker": "WDC", "pct": 0.5776}, {"ticker": "MU", "pct": -0.2606}]}, {"date": "2026-07-15", "day": -4.8532, "cum": -3.1496, "bd": [{"ticker": "WDC", "pct": -2.5959}, {"ticker": "MU", "pct": -2.5088}, {"ticker": "TSM", "pct": 0.1634}, {"ticker": "NVDA", "pct": 0.088}]}, {"date": "2026-07-16", "day": -4.961, "cum": -7.9543, "bd": [{"ticker": "WDC", "pct": -2.2945}, {"ticker": "MU", "pct": -1.5116}, {"ticker": "NVDA", "pct": -0.5965}, {"ticker": "TSM", "pct": -0.5584}]}, {"date": "2026-07-17", "day": -0.2142, "cum": -8.1514, "bd": [{"ticker": "NVDA", "pct": -0.495}, {"ticker": "WDC", "pct": 0.4683}, {"ticker": "MU", "pct": -0.116}, {"ticker": "TSM", "pct": -0.0715}]}, {"date": "2026-07-20", "day": 1.2635, "cum": -6.9909, "bd": [{"ticker": "WDC", "pct": 0.4091}, {"ticker": "TSM", "pct": 0.4075}, {"ticker": "MU", "pct": 0.4017}, {"ticker": "NVDA", "pct": 0.0452}]}, {"date": "2026-07-21", "day": 6.743, "cum": -0.7194, "bd": [{"ticker": "MU", "pct": 2.2626}, {"ticker": "WDC", "pct": 2.1586}, {"ticker": "TSM", "pct": 2.0418}, {"ticker": "NVDA", "pct": 0.3403}, {"ticker": "ASML", "pct": -0.0604}]}, {"date": "2026-07-22", "day": 0.1256, "cum": -0.5947, "bd": [{"ticker": "NVDA", "pct": 0.3449}, {"ticker": "TSM", "pct": -0.2651}, {"ticker": "WDC", "pct": 0.2498}, {"ticker": "MU", "pct": -0.2075}, {"ticker": "ASML", "pct": 0.0035}]}, {"date": "2026-07-23", "day": -0.0547, "cum": -0.6491, "bd": [{"ticker": "MU", "pct": 0.5616}, {"ticker": "TSM", "pct": -0.4385}, {"ticker": "NVDA", "pct": -0.2383}, {"ticker": "WDC", "pct": 0.0491}, {"ticker": "ASML", "pct": 0.0114}]}, {"date": "2026-07-24", "day": -3.9736, "cum": -4.5969, "bd": [{"ticker": "MU", "pct": -1.2664}, {"ticker": "WDC", "pct": -1.1606}, {"ticker": "TSM", "pct": -0.9484}, {"ticker": "ASML", "pct": -0.4595}, {"ticker": "NVDA", "pct": -0.1387}]}, {"date": "2026-07-27", "day": -3.2713, "cum": -7.7178, "bd": [{"ticker": "ASML", "pct": -1.0613}, {"ticker": "NVDA", "pct": -0.7774}, {"ticker": "WDC", "pct": -0.6869}, {"ticker": "MU", "pct": -0.3951}, {"ticker": "TSM", "pct": -0.3506}]}, {"date": "2026-07-28", "day": -3.9942, "cum": -11.4038, "bd": [{"ticker": "MU", "pct": -1.5684}, {"ticker": "WDC", "pct": -1.1168}, {"ticker": "ASML", "pct": -0.7791}, {"ticker": "TSM", "pct": -0.5688}, {"ticker": "NVDA", "pct": 0.0389}]}, {"date": "2026-07-29", "day": -4.1922, "cum": -15.1179, "bd": [{"ticker": "MU", "pct": -1.6717}, {"ticker": "TSM", "pct": -1.5415}, {"ticker": "NVDA", "pct": -0.5673}, {"ticker": "ASML", "pct": -0.3621}, {"ticker": "WDC", "pct": -0.0497}]}, {"date": "2026-07-30", "day": 9.6265, "cum": -6.9468, "bd": [{"ticker": "MU", "pct": 2.9034}, {"ticker": "TSM", "pct": 2.6122}, {"ticker": "WDC", "pct": 2.5052}, {"ticker": "ASML", "pct": 1.1802}, {"ticker": "NVDA", "pct": 0.4255}]}, {"date": "2026-07-31", "day": -0.3492, "cum": -7.2717, "bd": [{"ticker": "MU", "pct": -1.0079}, {"ticker": "NVDA", "pct": 0.4406}, {"ticker": "WDC", "pct": 0.3798}, {"ticker": "ASML", "pct": -0.2398}, {"ticker": "TSM", "pct": 0.0782}]}, {"date": "2026-08-03", "day": 0.1301, "cum": -7.151, "bd": [{"ticker": "WDC", "pct": -0.4805}, {"ticker": "NVDA", "pct": 0.385}, {"ticker": "SAP", "pct": -0.1349}, {"ticker": "TSM", "pct": 0.1311}, {"ticker": "ASML", "pct": 0.1224}, {"ticker": "MU", "pct": 0.107}]}, {"date": "2026-08-04", "day": 3.3692, "cum": -4.0228, "bd": [{"ticker": "SAP", "pct": 0.8255}, {"ticker": "MU", "pct": 0.664}, {"ticker": "ASML", "pct": 0.5427}, {"ticker": "TSM", "pct": 0.5346}, {"ticker": "WDC", "pct": 0.5029}, {"ticker": "NVDA", "pct": 0.2994}]}, {"date": "2026-08-05", "day": -0.92, "cum": -4.9057, "bd": [{"ticker": "WDC", "pct": -0.6334}, {"ticker": "SNDK", "pct": -0.6063}, {"ticker": "NVDA", "pct": 0.2898}, {"ticker": "SAP", "pct": 0.2379}, {"ticker": "ASML", "pct": -0.228}, {"ticker": "MU", "pct": 0.0201}]}, {"date": "2026-08-06", "day": -2.3317, "cum": -7.123, "bd": [{"ticker": "WDC", "pct": -1.3872}, {"ticker": "SNDK", "pct": -0.7489}, {"ticker": "MU", "pct": -0.4318}, {"ticker": "ASML", "pct": 0.178}, {"ticker": "SAP", "pct": 0.0582}]}, {"date": "2026-08-07", "day": -1.9376, "cum": -8.9226, "bd": [{"ticker": "SNDK", "pct": -1.6855}, {"ticker": "WDC", "pct": -0.3596}, {"ticker": "ASML", "pct": 0.2539}, {"ticker": "MU", "pct": -0.1463}]}, {"date": "2026-08-10", "day": 0.3525, "cum": -8.6015, "bd": [{"ticker": "SNDK", "pct": 0.9542}, {"ticker": "MU", "pct": -0.6347}, {"ticker": "WDC", "pct": 0.0861}, {"ticker": "ASML", "pct": -0.0532}]}, {"date": "2026-08-11", "day": 1.9709, "cum": -6.8002, "bd": [{"ticker": "SNDK", "pct": 1.2268}, {"ticker": "ASML", "pct": 0.4654}, {"ticker": "MU", "pct": 0.2874}, {"ticker": "WDC", "pct": -0.0087}]}, {"date": "2026-08-12", "day": 4.737, "cum": -2.3854, "bd": [{"ticker": "SNDK", "pct": 2.6596}, {"ticker": "MU", "pct": 1.603}, {"ticker": "WDC", "pct": 0.3373}, {"ticker": "ASML", "pct": 0.1371}]}, {"date": "2026-08-13", "day": 5.6518, "cum": 3.1316, "bd": [{"ticker": "SKHY", "pct": 2.1124}, {"ticker": "SNDK", "pct": 1.5857}, {"ticker": "MU", "pct": 1.3283}, {"ticker": "WDC", "pct": 0.6254}]}], "holdings": [{"ticker": "WDC", "w": 100.0}]}], "pending": [], "operations": [{"date": "2026-08-13", "id": "fede", "name": "Fede", "slot": 1, "kind": "SELL", "ticker": "SKHY"}, {"date": "2026-08-13", "id": "fede", "name": "Fede", "slot": 1, "kind": "SELL", "ticker": "MU"}, {"date": "2026-08-13", "id": "fede", "name": "Fede", "slot": 1, "kind": "SELL", "ticker": "SNDK"}, {"date": "2026-08-13", "id": "fede", "name": "Fede", "slot": 1, "kind": "BUY", "ticker": "SKHY"}, {"date": "2026-08-12", "id": "fede", "name": "Fede", "slot": 1, "kind": "SELL", "ticker": "ASML"}, {"date": "2026-08-12", "id": "ana", "name": "Ana", "slot": 0, "kind": "SELL", "ticker": "MU"}, {"date": "2026-08-07", "id": "ana", "name": "Ana", "slot": 0, "kind": "BUY", "ticker": "SNOW"}, {"date": "2026-08-06", "id": "fede", "name": "Fede", "slot": 1, "kind": "BUY", "ticker": "SNDK"}], "allocation": [{"ticker": "META", "w": 54.34}, {"ticker": "SNOW", "w": 30.82}, {"ticker": "WDC", "w": 14.84}], "market": null, "tickers": [{"ticker": "META", "name": "Meta Platforms", "domain": "meta.com", "w": 54.34, "holders": [{"name": "Ana", "slot": 0, "w": 63.81}], "prices": [{"date": "2026-07-07", "close": 615.58}, {"date": "2026-07-08", "close": 603.12}, {"date": "2026-07-09", "close": 631.48}, {"date": "2026-07-10", "close": 669.21}, {"date": "2026-07-13", "close": 656.73}, {"date": "2026-07-14", "close": 661.04}, {"date": "2026-07-15", "close": 681.31}, {"date": "2026-07-16", "close": 664.54}, {"date": "2026-07-17", "close": 646.01}, {"date": "2026-07-20", "close": 645.85}, {"date": "2026-07-21", "close": 643.81}, {"date": "2026-07-22", "close": 627.17}, {"date": "2026-07-23", "close": 606.1}, {"date": "2026-07-24", "close": 595.19}, {"date": "2026-07-27", "close": 593.87}, {"date": "2026-07-28", "close": 593.41}, {"date": "2026-07-29", "close": 585.61}, {"date": "2026-07-30", "close": 539.03}, {"date": "2026-07-31", "close": 556.71}, {"date": "2026-08-03", "close": 590.24}, {"date": "2026-08-04", "close": 587.94}, {"date": "2026-08-05", "close": 588.77}, {"date": "2026-08-06", "close": 589.9}, {"date": "2026-08-07", "close": 592.1}, {"date": "2026-08-10", "close": 594.92}, {"date": "2026-08-11", "close": 599.12}, {"date": "2026-08-12", "close": 578.85}, {"date": "2026-08-13", "close": 594.97}], "ret": -3.35, "peers": [{"ticker": "GOOGL", "name": "Alphabet", "domain": "abc.xyz"}, {"ticker": "AMZN", "name": "Amazon", "domain": "amazon.com"}, {"ticker": "NFLX", "name": "Netflix", "domain": "netflix.com"}]}, {"ticker": "SNOW", "name": "SNOW", "domain": "", "w": 30.82, "holders": [{"name": "Ana", "slot": 0, "w": 36.19}], "prices": [{"date": "2026-07-07", "close": 262.74}, {"date": "2026-07-08", "close": 261.31}, {"date": "2026-07-09", "close": 267.49}, {"date": "2026-07-10", "close": 261.45}, {"date": "2026-07-13", "close": 268.65}, {"date": "2026-07-14", "close": 275.94}, {"date": "2026-07-15", "close": 271.87}, {"date": "2026-07-16", "close": 270.02}, {"date": "2026-07-17", "close": 268.9}, {"date": "2026-07-20", "close": 274.34}, {"date": "2026-07-21", "close": 271.73}, {"date": "2026-07-22", "close": 267.8}, {"date": "2026-07-23", "close": 265.13}, {"date": "2026-07-24", "close": 268.06}, {"date": "2026-07-27", "close": 272.92}, {"date": "2026-07-28", "close": 270.36}, {"date": "2026-07-29", "close": 282.9}, {"date": "2026-07-30", "close": 298.1}, {"date": "2026-07-31", "close": 293.28}, {"date": "2026-08-03", "close": 307.53}, {"date": "2026-08-04", "close": 316.77}, {"date": "2026-08-05", "close": 316.84}, {"date": "2026-08-06", "close": 318.0}, {"date": "2026-08-07", "close": 330.49}, {"date": "2026-08-10", "close": 334.7}, {"date": "2026-08-11", "close": 334.14}, {"date": "2026-08-12", "close": 332.26}, {"date": "2026-08-13", "close": 337.38}], "ret": 28.41, "peers": []}, {"ticker": "WDC", "name": "Western Digital", "domain": "westerndigital.com", "w": 14.84, "holders": [{"name": "Fede", "slot": 1, "w": 100.0}], "prices": [{"date": "2026-07-02", "close": 539.0}, {"date": "2026-07-06", "close": 577.46}, {"date": "2026-07-07", "close": 532.1}, {"date": "2026-07-08", "close": 550.3}, {"date": "2026-07-09", "close": 578.05}, {"date": "2026-07-10", "close": 582.59}, {"date": "2026-07-13", "close": 555.55}, {"date": "2026-07-14", "close": 563.32}, {"date": "2026-07-15", "close": 513.84}, {"date": "2026-07-16", "close": 466.81}, {"date": "2026-07-17", "close": 477.22}, {"date": "2026-07-20", "close": 487.42}, {"date": "2026-07-21", "close": 548.39}, {"date": "2026-07-22", "close": 556.67}, {"date": "2026-07-23", "close": 558.3}, {"date": "2026-07-24", "close": 519.8}, {"date": "2026-07-27", "close": 497.92}, {"date": "2026-07-28", "close": 463.51}, {"date": "2026-07-29", "close": 462.04}, {"date": "2026-07-30", "close": 533.04}, {"date": "2026-07-31", "close": 544.84}, {"date": "2026-08-03", "close": 527.22}, {"date": "2026-08-04", "close": 548.56}, {"date": "2026-08-05", "close": 519.17}, {"date": "2026-08-06", "close": 451.52}, {"date": "2026-08-07", "close": 434.3}, {"date": "2026-08-10", "close": 438.34}, {"date": "2026-08-11", "close": 437.93}, {"date": "2026-08-12", "close": 454.1}, {"date": "2026-08-13", "close": 487.29}], "ret": -9.59, "peers": [{"ticker": "MU", "name": "Micron Technology", "domain": "micron.com"}, {"ticker": "STX", "name": "STX", "domain": ""}, {"ticker": "TSM", "name": "Taiwan Semiconductor", "domain": "tsmc.com"}]}], "monthly": {"current": {"name": "Ana", "value": 12.14, "slot": 0, "month": 8, "month_year": 2026, "dates": ["2026-08-03", "2026-08-04", "2026-08-05", "2026-08-06", "2026-08-07", "2026-08-10", "2026-08-11", "2026-08-12", "2026-08-13"], "series": [{"id": "ana", "name": "Ana", "slot": 0, "value": 12.14, "cum": [3.2384, 8.6025, 9.1363, 9.8225, 10.2603, 10.371, 10.8227, 10.5741, 12.1351]}, {"id": "fede", "name": "Fede", "slot": 1, "value": 11.22, "cum": [0.1301, 3.5037, 2.5515, 0.1603, -1.7804, -1.4342, 0.5084, 5.2695, 11.219]}]}, "previous": {"name": "Ana", "value": -6.18, "slot": 0, "month": 7, "month_year": 2026, "dates": ["2026-07-14", "2026-07-15", "2026-07-16", "2026-07-17", "2026-07-20", "2026-07-21", "2026-07-22", "2026-07-23", "2026-07-24", "2026-07-27", "2026-07-28", "2026-07-29", "2026-07-30", "2026-07-31"], "series": [{"id": "ana", "name": "Ana", "slot": 0, "value": -6.18, "cum": [1.5255, 1.5559, -1.1161, -3.2322, -2.9206, 1.6992, -1.1218, -2.8229, -3.6683, -1.9782, -3.6649, -4.3123, -7.6774, -6.1751]}, {"id": "fede", "name": "Fede", "slot": 1, "value": -7.27, "cum": [1.7906, -3.1496, -7.9543, -8.1514, -6.9909, -0.7194, -0.5947, -0.6491, -4.5969, -7.7178, -11.4038, -15.1179, -6.9468, -7.2717]}]}}, "dailyWinners": {"month": 8, "month_year": 2026, "rows": [{"date": "2026-08-13", "names": ["Fede"], "ids": ["fede"], "slot": 1, "value": 5.65}, {"date": "2026-08-12", "names": ["Fede"], "ids": ["fede"], "slot": 1, "value": 4.74}, {"date": "2026-08-11", "names": ["Fede"], "ids": ["fede"], "slot": 1, "value": 1.97}, {"date": "2026-08-10", "names": ["Fede"], "ids": ["fede"], "slot": 1, "value": 0.35}, {"date": "2026-08-07", "names": ["Ana"], "ids": ["ana"], "slot": 0, "value": 0.4}, {"date": "2026-08-06", "names": ["Ana"], "ids": ["ana"], "slot": 0, "value": 0.63}, {"date": "2026-08-05", "names": ["Ana"], "ids": ["ana"], "slot": 0, "value": 0.49}, {"date": "2026-08-04", "names": ["Ana"], "ids": ["ana"], "slot": 0, "value": 5.2}, {"date": "2026-08-03", "names": ["Ana"], "ids": ["ana"], "slot": 0, "value": 3.24}]}, "badges": {"awards": [{"key": "milestone:fede:5", "recorded": "2026-08-13", "type": "milestone", "tier": 5, "player": "fede", "name": "Fede", "date": "2026-08-13", "slot": 1}, {"key": "milestone:ana:5", "recorded": "2026-08-13", "type": "milestone", "tier": 5, "player": "ana", "name": "Ana", "date": "2026-08-13", "slot": 0}, {"key": "week_streak:ana", "recorded": "2026-08-06", "type": "week_streak", "player": "ana", "name": "Ana", "date": "2026-08-06", "slot": 0}, {"key": "champion:2026-07", "recorded": "2026-08-03", "type": "champion_month", "player": "ana", "name": "Ana", "date": "2026-07-31", "month": "2026-07", "pct": -6.18, "slot": 0}], "provisional": [{"type": "champion_month", "player": "ana", "name": "Ana", "date": "2026-08-13", "month": "2026-08", "pct": 12.14, "key": "champion:2026-08", "provisional": true, "slot": 0}], "record": {"ticker": "PLTR", "pct": 30.7, "date": "2026-08-04", "holders": [{"id": "ana", "name": "Ana"}], "recorded": "2026-08-04", "history": [{"ticker": "WDC", "pct": 16.09, "date": "2026-06-15", "holders": [], "recorded": "2026-07-23"}, {"ticker": "MU", "pct": 17.75, "date": "2026-07-30", "holders": [{"id": "fede", "name": "Fede"}], "recorded": "2026-07-30"}, {"ticker": "MU", "pct": 18.46, "date": "2026-07-30", "holders": [{"id": "fede", "name": "Fede"}], "recorded": "2026-07-30"}, {"ticker": "PLTR", "pct": 26.29, "date": "2026-08-04", "holders": [{"id": "ana", "name": "Ana"}], "recorded": "2026-08-04"}]}}};
-const UPDATED = "2026-08-14 08:03";
+const UPDATED = "2026-08-14 08:35";
 
 // ==== idioma: inglés por defecto, japonés opcional ====================
 // La selección se recuerda por dispositivo en localStorage. El toggle solo
@@ -742,7 +701,6 @@ const I18N = {
     pendingTitle: "⏳ Awaiting passphrase",
     pendingText: n => n + " — the statement is uploaded but couldn't be decrypted. " +
       "The passphrase is probably not the league's: please re-upload with the correct one.",
-    leader: "Leader",
     calcHelpAria: "How the ranking is calculated",
     calc: {
       title: "How the ranking is calculated",
@@ -777,7 +735,6 @@ const I18N = {
     extNote: "Prices outside regular trading hours (Yahoo Finance), captured " +
       "when the page was built — they don't count towards the standings until " +
       "the session closes.",
-    gapTitle: "1st–last gap · since the start",
     winnerOf: ml => "Winner of " + ml,
     monthChartAria: ml => "Return of every player during " + ml,
     lunchNote: "🍽️ Their turn to buy lunch",
@@ -785,7 +742,7 @@ const I18N = {
     insightsTitle: "League insights",
     aiLive: "automatic analysis",
     ranking: "Standings",
-    rankCols: ["#", "Player", "Cumulative %", "Last day %", "Since"],
+    rankCols: ["#", "Player", "Cumulative %", "Last day %"],
     dailyTitle: ml => "🏅 Daily champion · " + ml,
     dailyCols: ["Date", "Champion", "Day %"],
     leagueWallet: "League portfolio",
@@ -805,7 +762,6 @@ const I18N = {
     badgeOn: d => "Earned " + d,
     badgeLive: "Live",
     cumTitle: "Cumulative return · since the start",
-    cumChartAria: "Cumulative return since the start of the league, by player",
     dailyDetailTitle: "Daily detail · since the start",
     detailAria: "Detail",
     dayByAsset: "Return by asset",
@@ -816,7 +772,6 @@ const I18N = {
       "as gains); cumulative by geometric compounding (time-weighted return). " +
       "Data: encrypted Revolut statements · closing prices from Yahoo Finance · " +
       "logos by <a href=\"https://logo.dev\" target=\"_blank\" rel=\"noopener noreferrer\">Logo.dev</a>.",
-    pp: "\u00a0pp",
     assets: n => n === 1 ? "asset" : "assets",
     others: "Others",
     donutAria: "Portfolio breakdown by weight",
@@ -916,7 +871,6 @@ const I18N = {
     pendingTitle: "⏳ パスフレーズ待ち",
     pendingText: n => n + " — 明細はアップロード済みですが復号できませんでした。" +
       "パスフレーズがリーグのものと異なる可能性があります。正しいもので再アップロードしてください。",
-    leader: "首位",
     calcHelpAria: "順位の計算方法",
     calc: {
       title: "順位の計算方法",
@@ -950,7 +904,6 @@ const I18N = {
     extLeague: "リーグ全体（加重平均）",
     extNote: "通常取引時間外の株価（Yahoo Finance）。ページ生成時点のスナップショット" +
       "です。セッションが終わるまで順位には反映されません。",
-    gapTitle: "首位と最下位の差 · 開始から",
     winnerOf: ml => ml + "の優勝者",
     monthChartAria: ml => ml + "の全プレイヤーのリターン推移",
     lunchNote: "🍽️ ランチをおごる番",
@@ -958,7 +911,7 @@ const I18N = {
     insightsTitle: "リーグのインサイト",
     aiLive: "自動分析",
     ranking: "順位表",
-    rankCols: ["#", "プレイヤー", "累積%", "前日比%", "開始"],
+    rankCols: ["#", "プレイヤー", "累積%", "前日比%"],
     dailyTitle: ml => "🏅 デイリー王者 · " + ml,
     dailyCols: ["日付", "王者", "当日%"],
     leagueWallet: "リーグのポートフォリオ",
@@ -978,7 +931,6 @@ const I18N = {
     badgeOn: d => d + "獲得",
     badgeLive: "ライブ",
     cumTitle: "累積リターン · 開始から",
-    cumChartAria: "リーグ開始からのプレイヤー別の累積リターン推移",
     dailyDetailTitle: "日次詳細 · 開始から",
     detailAria: "詳細",
     dayByAsset: "銘柄別リターン",
@@ -988,7 +940,6 @@ const I18N = {
     footer: "日次リターンはシンプルDietz法（入出金は損益に含めない）、累積は幾何連鎖" +
       "（時間加重収益率）。データ：暗号化されたRevolut明細 · Yahoo Financeの終値 · " +
       "ロゴは <a href=\"https://logo.dev\" target=\"_blank\" rel=\"noopener noreferrer\">Logo.dev</a>。",
-    pp: "\u00a0pp",
     assets: n => "銘柄",
     others: "その他",
     donutAria: "重み付けによるポートフォリオ内訳",
@@ -1151,11 +1102,14 @@ const lastOf = p => p.days[p.days.length - 1];
 const TICKERS = {}; (DATA.tickers || []).forEach(t => TICKERS[t.ticker] = t);
 const PLAYERS = {}; DATA.players.forEach(p => PLAYERS[p.id] = p);
 
-// ---- clasificación (ordenada por acumulado; el color sigue al jugador) ----
+// ---- clasificación (ordenada por acumulado) ----
+// Se lee como una parrilla de F1 o una tabla de liga: primero, segundo,
+// tercero… con el acumulado de cada jugador y el % de la última jornada. En el
+// móvil no sobra ni una columna, así que solo van esos cuatro datos.
 const ranked = [...DATA.players].sort((a, b) => lastOf(b).cum - lastOf(a).cum);
 const MEDALS = ["🥇","🥈","🥉"];
 {
-  const t = document.getElementById("ranking");
+  const t = document.getElementById("standings");
   const mk = (tag, cls, text) => { const el = document.createElement(tag);
     if (cls) el.className = cls; if (text !== undefined) el.textContent = text; return el; };
   const head = t.insertRow();
@@ -1163,18 +1117,20 @@ const MEDALS = ["🥇","🥈","🥉"];
     const th = document.createElement("th");
     th.textContent = h; if (i === 1) th.className = "name"; head.appendChild(th);
   });
+  if (!ranked.length) {
+    const empty = mk("td", "empty", T.noPlayers);
+    empty.colSpan = T.rankCols.length;
+    t.insertRow().appendChild(empty);
+  }
   ranked.forEach((p, i) => {
     const last = lastOf(p);
     const tr = t.insertRow();
     tr.classList.add("clk"); tr.dataset.player = p.id;
+    if (i === 0) tr.classList.add("lead");
     tr.appendChild(mk("td", "rank", MEDALS[i] || String(i + 1)));
-    const name = mk("td", "name");
-    const key = mk("span", "key"); key.style.background = colorOf(p);
-    name.appendChild(key); name.appendChild(document.createTextNode(p.name));
-    tr.appendChild(name);
+    tr.appendChild(mk("td", "name", p.name));
     tr.appendChild(mk("td", "big " + (last.cum >= 0 ? "pos" : "neg"), fmtPct(last.cum)));
     tr.appendChild(mk("td", last.day >= 0 ? "pos" : "neg", fmtPct(last.day)));
-    tr.appendChild(mk("td", "", p.since || p.days[0].date));
   });
 }
 
@@ -1210,18 +1166,16 @@ function sparkSVG(values, color, id, opts) {
     '</svg>';
 }
 function paintWidgets() {
-  if (!DATA.players.length) { document.getElementById("widgets").style.display = "none"; return; }
+  // Sin jugadores la clasificación ya enseña su propio mensaje vacío: solo se
+  // esconde lo que no tiene nada que contar (el mejor del día).
+  if (!DATA.players.length) {
+    document.getElementById("best-card").style.display = "none";
+    return;
+  }
 
-  // líder: quién va ganando y con qué rentabilidad acumulada
-  const leader = ranked[0], lc = lastOf(leader);
-  document.getElementById("leader-row").style.setProperty("--lead", colorOf(leader));
-  document.getElementById("leader-key").style.background = colorOf(leader);
-  document.getElementById("leader-name").textContent = leader.name;
-  const lv = document.getElementById("leader-val");
-  lv.textContent = fmtPct(lc.cum); lv.className = "num lval " + (lc.cum >= 0 ? "pos" : "neg");
-  const ld = document.getElementById("leader-delta");
-  ld.textContent = (lc.day >= 0 ? "▲ " : "▼ ") + fmtPct(lc.day);
-  ld.className = "delta " + (lc.day >= 0 ? "pos" : "neg");
+  // el color del líder se pone en la tarjeta para que lo herede su fila de la
+  // clasificación, que va tintada como primera de la parrilla
+  document.getElementById("hero-card").style.setProperty("--lead", colorOf(ranked[0]));
 
   // mejor del día (los fines de semana la última jornada ya es la del viernes;
   // si hay empate en el % del día, desempata la rentabilidad acumulada)
@@ -1233,12 +1187,10 @@ function paintWidgets() {
   const bv = document.getElementById("best-val");
   const bn = document.getElementById("best-name");
   // Si todos los jugadores empatan a 0 en la jornada, el «mejor del día» no
-  // aporta nada (sería alguien con +0,00%): se oculta el widget y la diferencia
-  // 1º–último ocupa toda la fila.
+  // aporta nada (sería alguien con +0,00%): se oculta el widget.
   const allZeroDay = DATA.players.every(p => Math.abs(lastOf(p).day) < 0.005);
   if (allZeroDay) {
     bestCard.style.display = "none";
-    document.querySelector(".wrow").style.gridTemplateColumns = "1fr";
   } else {
     bestCard.style.display = "";
     // Con el mercado cerrado el widget NO se queda en blanco: sigue enseñando
@@ -1273,19 +1225,6 @@ function paintWidgets() {
       bn.appendChild(tag);
     }
   }
-
-  // diferencia 1º - último
-  const gapCard = document.getElementById("gap-card");
-  if (ranked.length < 2) {
-    gapCard.style.display = "none";
-    document.querySelector(".wrow").style.gridTemplateColumns = "1fr";
-    return;
-  }
-  const last = ranked[ranked.length - 1];
-  const gap = lastOf(ranked[0]).cum - lastOf(last).cum;
-  document.getElementById("gap-val").textContent = "+" + gap.toFixed(2) + T.pp;
-  document.getElementById("gap-top").textContent = "🥇 " + ranked[0].name + " · " + fmtPct(lastOf(ranked[0]).cum);
-  document.getElementById("gap-bot").textContent = last.name + " · " + fmtPct(lastOf(last).cum);
 }
 paintWidgets();
 
@@ -1808,39 +1747,7 @@ function paintInsights() {
 }
 paintInsights();
 
-// ---- gráfica de líneas: % acumulado ----
-const svg = document.getElementById("chart");
-const wrap = document.querySelector(".chartwrap");
-const NS = "http://www.w3.org/2000/svg";
-// Dimensiones en unidades del viewBox == px reales del contenedor, para que
-// el texto no se encoja al escalar en pantallas estrechas.
-let W = 860, H = 360;
-const M = {t: 16, r: 64, b: 30, l: 52};
-function computeSize() {
-  W = Math.max(300, Math.round(wrap.clientWidth || 860));
-  const narrow = W < 520;
-  H = narrow ? 300 : 360;
-  M.r = narrow ? 52 : 64;
-  M.l = narrow ? 48 : 52;
-  svg.setAttribute("viewBox", "0 0 " + W + " " + H);
-}
-const dates = DATA.players.length
-  ? DATA.players.map(p => p.days.map(d => d.date)).flat().filter((v,i,a) => a.indexOf(v) === i).sort()
-  : [];
-const byDate = {};
-DATA.players.forEach(p => { byDate[p.id] = {}; p.days.forEach(d => byDate[p.id][d.date] = d.cum); });
-
-let vmin = 0, vmax = 0;
-DATA.players.forEach(p => p.days.forEach(d => {
-  vmin = Math.min(vmin, d.cum); vmax = Math.max(vmax, d.cum); }));
-if (vmax === vmin) { vmax += 1; vmin -= 1; }
-const pad = (vmax - vmin) * 0.1; vmax += pad; vmin -= pad;
-
-const x = i => M.l + (dates.length < 2 ? 0.5 : i / (dates.length - 1)) * (W - M.l - M.r);
-const y = v => M.t + (1 - (v - vmin) / (vmax - vmin)) * (H - M.t - M.b);
-const el = (tag, attrs) => { const e = document.createElementNS(NS, tag);
-  for (const k in attrs) e.setAttribute(k, attrs[k]); return e; };
-
+// ---- utilidades de escala (las usan las gráficas de los widgets del mes) ----
 function niceTicks(lo, hi, n) {
   const span = hi - lo, step0 = span / n, mag = Math.pow(10, Math.floor(Math.log10(step0)));
   const step = [1,2,2.5,5,10].map(m => m * mag).find(s => span / s <= n) || 10 * mag;
@@ -1848,129 +1755,14 @@ function niceTicks(lo, hi, n) {
   return out;
 }
 
-function draw() {
-  computeSize();
-  while (svg.firstChild) svg.removeChild(svg.firstChild);
-  if (!DATA.players.length) {
-    const t = el("text", {x: W/2, y: H/2, "text-anchor": "middle", fill: css("--muted"), "font-size": 14});
-    t.textContent = T.noPlayers;
-    svg.appendChild(t); return;
-  }
-  // rejilla + eje Y
-  niceTicks(vmin, vmax, 6).forEach(v => {
-    const isZero = Math.abs(v) < 1e-9;
-    svg.appendChild(el("line", {x1: M.l, x2: W - M.r, y1: y(v), y2: y(v),
-      stroke: isZero ? css("--baseline") : css("--grid"), "stroke-width": 1}));
-    const t = el("text", {x: M.l - 8, y: y(v) + 4, "text-anchor": "end",
-      fill: css("--muted"), "font-size": 11.5, style: "font-variant-numeric:tabular-nums"});
-    t.textContent = (v > 0 ? "+" : "") + v.toFixed(Math.abs(v) < 10 && v % 1 ? 1 : 0) + "%";
-    svg.appendChild(t);
-  });
-  // eje X: tantas fechas como quepan (~1 cada 120px)
-  const nTicks = Math.max(3, Math.round((W - M.l - M.r) / 120));
-  const stepX = Math.max(1, Math.round(dates.length / nTicks));
-  dates.forEach((d, i) => {
-    const isLast = i === dates.length - 1;
-    // el último siempre; los intermedios solo si no se pegan al último
-    if (!isLast && (i % stepX !== 0 || dates.length - 1 - i < stepX * 0.6)) return;
-    const t = el("text", {x: x(i), y: H - 8, "text-anchor": "middle",
-      fill: css("--muted"), "font-size": 11.5});
-    t.textContent = fmtDate(d);
-    svg.appendChild(t);
-  });
-  // líneas + punto final
-  DATA.players.forEach(p => {
-    const c = colorOf(p);
-    const pts = dates.map((d, i) => byDate[p.id][d] === undefined ? null : [x(i), y(byDate[p.id][d])])
-      .filter(Boolean);
-    svg.appendChild(el("path", {
-      d: pts.map((pt, i) => (i ? "L" : "M") + pt[0].toFixed(1) + " " + pt[1].toFixed(1)).join(""),
-      fill: "none", stroke: c, "stroke-width": 2.4,
-      "stroke-linejoin": "round", "stroke-linecap": "round"}));
-    const end = pts[pts.length - 1];
-    svg.appendChild(el("circle", {cx: end[0], cy: end[1], r: 4, fill: c,
-      stroke: css("--card-solid"), "stroke-width": 2.5}));
-  });
-  // etiquetas directas al final (solo si no chocan; la leyenda siempre está)
-  if (DATA.players.length <= 4 && W >= 520) {
-    const ends = DATA.players.map(p => {
-      const lastDate = p.days[p.days.length-1].date;
-      return {v: p.days[p.days.length-1].cum, yy: y(byDate[p.id][lastDate])};
-    }).sort((a, b) => a.yy - b.yy);
-    const collide = ends.some((e, i) => i && e.yy - ends[i-1].yy < 14);
-    if (!collide) ends.forEach(e => {
-      const t = el("text", {x: W - M.r + 4, y: e.yy + 4, fill: css("--ink-2"),
-        "font-size": 11.5, style: "font-variant-numeric:tabular-nums;font-weight:600"});
-      t.textContent = fmtPct(e.v);
-      svg.appendChild(t);
-    });
-  }
-  // capa de crosshair
-  svg.appendChild(el("line", {id: "xhair", x1: 0, x2: 0, y1: M.t, y2: H - M.b,
-    stroke: css("--baseline"), "stroke-width": 1, visibility: "hidden"}));
-}
-draw();
+// Repintado ante cambios de tema o de tamaño: las gráficas de los widgets del
+// mes miden en px reales del contenedor, así que hay que rehacerlas.
 const mq = window.matchMedia("(prefers-color-scheme: dark)");
-if (mq.addEventListener) mq.addEventListener("change", () => { draw(); paintWidgets(); paintMonthly(); paintAllocation(); paintWallets(); paintInsights(); });
+if (mq.addEventListener) mq.addEventListener("change", () => { paintWidgets(); paintMonthly(); paintAllocation(); paintWallets(); paintInsights(); });
 let rafId;
 window.addEventListener("resize", () => {
   cancelAnimationFrame(rafId);
-  // las gráficas del mes también miden en px reales: hay que repintarlas
-  rafId = requestAnimationFrame(() => { draw(); paintMonthly(); });
-});
-
-// ---- leyenda ----
-{
-  const lg = document.getElementById("legend");
-  if (DATA.players.length >= 2) DATA.players.forEach(p => {
-    const s = document.createElement("span");
-    s.className = "clk"; s.dataset.player = p.id;
-    const key = document.createElement("span");
-    key.className = "key"; key.style.background = colorOf(p);
-    s.appendChild(key); s.appendChild(document.createTextNode(p.name));
-    lg.appendChild(s);
-  });
-}
-
-// ---- tooltip con crosshair ----
-const tip = document.getElementById("tip");
-function onMove(ev) {
-  if (!DATA.players.length) return;
-  const rect = svg.getBoundingClientRect();
-  const px = (ev.clientX - rect.left) * (W / rect.width);
-  const frac = (px - M.l) / (W - M.l - M.r);
-  const idx = Math.max(0, Math.min(dates.length - 1, Math.round(frac * (dates.length - 1))));
-  const d = dates[idx];
-  const xh = svg.querySelector("#xhair");
-  xh.setAttribute("x1", x(idx)); xh.setAttribute("x2", x(idx));
-  xh.setAttribute("visibility", "visible");
-
-  while (tip.firstChild) tip.removeChild(tip.firstChild);
-  const head = document.createElement("div"); head.className = "d";
-  head.textContent = fmtDate(d); tip.appendChild(head);
-  [...DATA.players].sort((a, b) => (byDate[b.id][d] ?? -1e9) - (byDate[a.id][d] ?? -1e9))
-    .forEach(p => {
-      const v = byDate[p.id][d];
-      if (v === undefined) return;
-      const row = document.createElement("div"); row.className = "row";
-      const nm = document.createElement("span"); nm.className = "nm";
-      const key = document.createElement("span"); key.className = "key";
-      key.style.background = colorOf(p);
-      nm.appendChild(key); nm.appendChild(document.createTextNode(p.name));
-      const val = document.createElement("b"); val.textContent = fmtPct(v);
-      row.appendChild(nm); row.appendChild(val); tip.appendChild(row);
-    });
-  tip.style.display = "block";
-  const wr = wrap.getBoundingClientRect();
-  const tx = (x(idx) / W) * wr.width;
-  tip.style.left = Math.min(tx + 14, wr.width - tip.offsetWidth - 4) + "px";
-  tip.style.top = Math.max(0, ev.clientY - wr.top - tip.offsetHeight - 12) + "px";
-}
-svg.addEventListener("pointermove", onMove);
-svg.addEventListener("pointerleave", () => {
-  tip.style.display = "none";
-  const xh = svg.querySelector("#xhair");
-  if (xh) xh.setAttribute("visibility", "hidden");
+  rafId = requestAnimationFrame(paintMonthly);
 });
 
 // ---- detalle diario (vista de tabla: los valores nunca dependen del hover) ----
