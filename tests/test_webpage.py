@@ -425,6 +425,107 @@ def test_revolut_buttons_use_same_tab_universal_link():
     assert 'a.target = "_blank"' not in snippet
 
 
+def test_ticker_details_carry_the_news_of_their_ticker():
+    player = Player(player_id="fede", display_name="Fede")
+    news = {"AAPL": [{"title": "Apple presenta resultados",
+                      "link": "https://finance.yahoo.com/news/a",
+                      "source": "Yahoo Finance", "at": "2026-08-14T13:05:00Z"}]}
+    payload = webpage.build_payload(
+        [(player, _series(5))], allocation={"AAPL": 100.0, "ZZZZ": 50.0},
+        news=news)
+    tickers = {t["ticker"]: t for t in payload["tickers"]}
+    assert tickers["AAPL"]["news"] == news["AAPL"]
+    assert "news" not in tickers["ZZZZ"]  # sin titulares, sin clave
+
+
+def test_ticker_details_no_news_key_without_data():
+    player = Player(player_id="fede", display_name="Fede")
+    payload = webpage.build_payload([(player, _series(5))], allocation={"AAPL": 100.0})
+    assert "news" not in payload["tickers"][0]
+
+
+def test_news_travel_to_the_html(tmp_path):
+    player = Player(player_id="fede", display_name="Fede")
+    out = webpage.write_index(
+        [(player, _series(5))], out_path=str(tmp_path / "index.html"),
+        allocation={"AAPL": 100.0},
+        news={"AAPL": [{"title": "Apple presenta resultados",
+                        "link": "https://finance.yahoo.com/news/a"}]})
+    html = open(out, encoding="utf-8").read()
+    assert "Apple presenta resultados" in html
+
+
+def test_player_news_gather_the_whole_portfolio():
+    """La ficha del jugador reúne los titulares de todas sus posiciones."""
+    snippet = webpage._TEMPLATE.split("function newsFor(", 1)[1].split(
+        "function newsSectionEl", 1)[0]
+    assert "TICKERS[sym] || {}).news" in snippet
+    assert "newsFor(syms, 6)" in webpage._TEMPLATE
+
+
+def test_news_titles_are_never_injected_as_html():
+    """Los textos vienen de una API de terceros: solo textContent, nunca innerHTML."""
+    snippet = webpage._TEMPLATE.split("function newsListEl(items)", 1)[1].split(
+        "function newsFor(", 1)[0]
+    assert "innerHTML" not in snippet
+    assert "title.textContent = n.title" in snippet
+
+
+def test_home_has_a_news_card_fed_by_every_ticker():
+    """El módulo de portada mezcla los titulares de todos los valores."""
+    assert 'id="news-card"' in webpage._TEMPLATE
+    assert "paintNews();" in webpage._TEMPLATE
+    snippet = webpage._TEMPLATE.split("function paintNews()", 1)[1].split(
+        "paintNews();", 1)[0]
+    assert "(DATA.tickers || []).map(t => t.ticker)" in snippet
+    assert "newsFor(syms, NEWS_HOME_MAX)" in snippet
+    assert "collapseList(rows, box)" in snippet  # 5 filas y el resto tras «ver más»
+
+
+def test_home_news_card_hides_itself_without_news():
+    snippet = webpage._TEMPLATE.split("function paintNews()", 1)[1].split(
+        "paintNews();", 1)[0]
+    assert 'if (!items.length) { card.style.display = "none"; return; }' in snippet
+
+
+def test_home_news_card_is_translated_in_every_language():
+    for key in ("leagueNews", "newsCount", "newsTickers", "newsNote"):
+        assert webpage._TEMPLATE.count(key + ":") == 3, key
+
+
+def test_home_news_rows_open_the_article_in_another_window():
+    snippet = webpage._TEMPLATE.split("function paintNews()", 1)[1].split(
+        "paintNews();", 1)[0]
+    assert "externalLink(n.link)" in snippet
+    assert "innerHTML" not in snippet.replace("box.innerHTML = \"\";", "")
+
+
+def test_every_news_link_goes_through_external_link():
+    """Titulares y enlaces de búsqueda: todos salen a otra ventana."""
+    for fn in ("function newsRow(sym)", "function newsListEl(items)"):
+        snippet = webpage._TEMPLATE.split(fn, 1)[1].split("\nfunction ", 1)[0]
+        assert "externalLink(" in snippet
+        assert 'target = "_blank"' not in snippet  # lo pone externalLink
+
+
+def test_external_links_escape_the_installed_app():
+    """Instalada como app (standalone) un _blank se abre dentro: window.open."""
+    snippet = webpage._TEMPLATE.split("function externalLink(href)", 1)[1].split(
+        "function newsRow(", 1)[0]
+    assert 'a.target = "_blank"; a.rel = "noopener noreferrer"' in snippet
+    assert "ev.preventDefault()" in snippet
+    assert 'window.open(href, "_blank", "noopener,noreferrer")' in snippet
+    assert "if (STANDALONE)" in snippet  # en el navegador manda el target
+    assert "window.navigator.standalone === true" in webpage._TEMPLATE  # iOS
+
+
+def test_search_links_survive_without_downloaded_news():
+    """Sin titulares (API caída) la sección se queda con los enlaces de siempre."""
+    snippet = webpage._TEMPLATE.split("function newsSectionEl(", 1)[1].split(
+        "// Botones", 1)[0]
+    assert "items.length ? newsListEl(items) : newsRow(sym)" in snippet
+
+
 def test_ticker_details_no_analyst_key_without_data():
     player = Player(player_id="fede", display_name="Fede")
     payload = webpage.build_payload([(player, _series(5))], allocation={"AAPL": 100.0})

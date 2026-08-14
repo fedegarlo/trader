@@ -445,6 +445,23 @@ _TEMPLATE = """<!doctype html>
              font-variant-numeric: tabular-nums; }
   .op-tk.clk:hover .sym, .op-name.clk:hover .nm { color: var(--accent); }
 
+  /* widget de noticias de la liga (titulares de los valores en cartera) */
+  .nw-row { display: flex; align-items: flex-start; gap: 10px; padding: 11px 4px;
+            border-top: 1px solid var(--hair); border-radius: 10px;
+            text-decoration: none; color: inherit; }
+  .nw-row:first-child { border-top: none; }
+  .nw-row:hover { background: var(--surface-2); }
+  .nw-row:hover .nw-t { color: var(--accent); }
+  .nw-row .logo, .nw-row .mono { width: 30px; height: 30px; flex: none; }
+  .nw-b { min-width: 0; }
+  .nw-t { font-size: 13.5px; font-weight: 700; line-height: 1.35;
+          /* dos líneas como mucho: el titular no puede comerse la tarjeta */
+          display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+          overflow: hidden; }
+  .nw-m { color: var(--muted); font-size: 11.5px; font-weight: 600; margin-top: 4px;
+          overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .nw-m .sym { color: var(--ink-2); font-weight: 800; }
+
   /* insights generados por IA */
   .ai-head { display: flex; align-items: center; gap: 9px; }
   .ai-badge {
@@ -603,6 +620,18 @@ _TEMPLATE = """<!doctype html>
   }
   .news a:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--hair)); color: var(--accent); }
   .news a .ext { color: var(--muted); font-size: 11px; }
+  /* titulares descargados en el build (API de noticias de la liga) */
+  .newslist { display: flex; flex-direction: column; }
+  .newslist + .news { margin-top: 12px; }
+  .news-item { display: block; text-decoration: none; color: inherit;
+               padding: 10px 4px; border-top: 1px solid var(--hair); }
+  .news-item:first-child { border-top: none; padding-top: 2px; }
+  .news-item .nt { font-size: 13.5px; font-weight: 700; line-height: 1.35; }
+  .news-item:hover .nt { color: var(--accent); }
+  .news-item .nd { color: var(--ink-2); font-size: 12px; line-height: 1.4; margin-top: 3px; }
+  .news-item .nm { color: var(--muted); font-size: 11.5px; font-weight: 600; margin-top: 4px;
+                   display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .news-item .nm .tk { font-weight: 800; color: var(--ink-2); }
   /* operar en Revolut: botones comprar/vender que abren la app en el detalle del valor */
   .revolut { display: flex; gap: 10px; }
   .rev-btn {
@@ -824,6 +853,13 @@ _TEMPLATE = """<!doctype html>
     <div id="ops-list" style="margin-top:8px"></div>
   </section>
 
+  <section class="card" id="news-card" style="display:none">
+    <div class="wlabel"><span data-i18n="leagueNews"></span></div>
+    <div class="wsub muted" id="news-sub"></div>
+    <div id="news-feed" style="margin-top:8px"></div>
+    <div class="wsub muted" id="news-note" style="margin-top:10px"></div>
+  </section>
+
   <section class="card" id="insights-card" style="display:none">
     <div class="ai-head">
       <span class="ai-badge" data-i18n="aiBadge"></span>
@@ -962,6 +998,11 @@ const I18N = {
     bestOfDay: "Best of the day",
     recentOps: "Latest trades",
     opBuy: "Buy", opSell: "Sell",
+    leagueNews: "League news",
+    newsCount: n => n + (n === 1 ? " headline" : " headlines"),
+    newsTickers: n => n + (n === 1 ? " holding" : " holdings"),
+    newsNote: "Headlines for the tickers held in the league, fetched when the " +
+      "page was built. Each one opens on its own outlet.",
     marketClosed: "Market closed",
     extPre: "Pre-market",
     extPost: "After hours",
@@ -1146,6 +1187,11 @@ const I18N = {
     bestOfDay: "本日のベスト",
     recentOps: "最新の取引",
     opBuy: "買い", opSell: "売り",
+    leagueNews: "リーグのニュース",
+    newsCount: n => n + "件の見出し",
+    newsTickers: n => n + "銘柄",
+    newsNote: "リーグの保有銘柄に関する見出しです。ページ生成時に取得したもので、" +
+      "各見出しは配信元のサイトで開きます。",
     marketClosed: "市場は休場",
     extPre: "プレマーケット",
     extPost: "時間外取引",
@@ -1328,6 +1374,11 @@ const I18N = {
     bestOfDay: "Meilleur du jour",
     recentOps: "Dernières opérations",
     opBuy: "Achat", opSell: "Vente",
+    leagueNews: "Actualités de la ligue",
+    newsCount: n => n + (n === 1 ? " titre" : " titres"),
+    newsTickers: n => n + (n === 1 ? " valeur" : " valeurs"),
+    newsNote: "Titres des valeurs détenues dans la ligue, récupérés lors de la " +
+      "génération de la page. Chacun s'ouvre sur son média.",
     marketClosed: "Marché fermé",
     extPre: "Avant-Bourse",
     extPost: "Après-Bourse",
@@ -2642,6 +2693,29 @@ function paintExtended() {
 }
 paintExtended();
 
+// ---- enlaces de noticias: siempre en otra ventana -------------------------
+// Un `target="_blank"` basta en el navegador, pero NO con la web instalada como
+// app (el manifest va en `display: standalone`): ahí el enlace se abre dentro
+// de la propia app, sin barra de direcciones ni botón de atrás, y quien entra a
+// leer una noticia se queda atrapado en ella. Cuando estamos en ese modo la
+// abrimos nosotros con `window.open`, que sí salta al navegador — llamado
+// dentro del propio click, que si no lo bloquea el navegador.
+const STANDALONE = (() => {
+  try {
+    return ["standalone", "fullscreen", "minimal-ui"].some(
+      m => window.matchMedia("(display-mode: " + m + ")").matches)
+      || window.navigator.standalone === true;
+  } catch (e) { return false; }
+})();
+function externalLink(href) {
+  const a = document.createElement("a");
+  a.href = href; a.target = "_blank"; a.rel = "noopener noreferrer";
+  if (STANDALONE) a.addEventListener("click", ev => {
+    ev.preventDefault();
+    window.open(href, "_blank", "noopener,noreferrer");
+  });
+  return a;
+}
 function newsRow(sym) {
   const q = encodeURIComponent(sym + " stock");
   const links = [
@@ -2651,13 +2725,99 @@ function newsRow(sym) {
   ];
   const box = h("div", "news");
   links.forEach(([label, href]) => {
-    const a = document.createElement("a");
-    a.href = href; a.target = "_blank"; a.rel = "noopener noreferrer";
+    const a = externalLink(href);
     a.innerHTML = label + ' <span class="ext">↗</span>';
     box.appendChild(a);
   });
   return box;
 }
+// Titulares descargados en el build (API de noticias de la liga) para los
+// valores que tiene alguien en cartera. Todo el texto entra por textContent:
+// viene de una API de terceros y nunca se interpreta como HTML.
+function newsListEl(items) {
+  const box = h("div", "newslist");
+  items.forEach(n => {
+    const a = externalLink(n.link);
+    a.className = "news-item";
+    const title = h("div", "nt"); title.textContent = n.title; a.appendChild(title);
+    if (n.desc) {
+      const d = h("div", "nd"); d.textContent = n.desc; a.appendChild(d);
+    }
+    const meta = h("div", "nm");
+    if (n.sym) {
+      const tk = h("span", "tk"); tk.textContent = n.sym; meta.appendChild(tk);
+    }
+    const bits = [];
+    if (n.source) bits.push(n.source);
+    if (n.at && /^\\d{4}-\\d{2}-\\d{2}/.test(n.at)) bits.push(fmtDate(n.at.slice(0, 10)));
+    if (bits.length) meta.appendChild(document.createTextNode(bits.join(" · ")));
+    if (meta.childNodes.length) a.appendChild(meta);
+    box.appendChild(a);
+  });
+  return box;
+}
+// Titulares de varios valores a la vez (la cartera de un jugador): sin
+// repetidos y de más a menos reciente, marcando de qué valor es cada uno.
+function newsFor(syms, max) {
+  const seen = {}, out = [];
+  syms.forEach(sym => ((TICKERS[sym] || {}).news || []).forEach(n => {
+    if (seen[n.link]) return;
+    seen[n.link] = 1;
+    out.push(Object.assign({sym: sym}, n));
+  }));
+  out.sort((a, b) => (b.at || "").localeCompare(a.at || ""));
+  return max ? out.slice(0, max) : out;
+}
+// Sección de noticias: los titulares del build si los hay y, siempre, los
+// enlaces de búsqueda por símbolo (que no dependen de que la API respondiera).
+function newsSectionEl(title, items, sym) {
+  const sec = sectionEl(title, items.length ? newsListEl(items) : newsRow(sym));
+  if (items.length) sec.appendChild(newsRow(sym));
+  return sec;
+}
+// ---- noticias de la liga: módulo de portada -------------------------------
+// Los titulares de todos los valores que alguien tiene en cartera, mezclados de
+// más a menos reciente. Cada fila abre la noticia en su medio; el símbolo dice
+// de qué valor es (su ficha se abre desde la cartera, como siempre). Sin
+// noticias descargadas la tarjeta no se pinta: la portada no enseña huecos.
+const NEWS_HOME_MAX = 12;
+function paintNews() {
+  const card = document.getElementById("news-card");
+  const syms = (DATA.tickers || []).map(t => t.ticker);
+  const items = newsFor(syms, NEWS_HOME_MAX);
+  if (!items.length) { card.style.display = "none"; return; }
+  card.style.display = "";
+
+  const withNews = syms.filter(s => ((TICKERS[s] || {}).news || []).length).length;
+  document.getElementById("news-sub").textContent =
+    T.newsCount(items.length) + " \\u00b7 " + T.newsTickers(withNews);
+  document.getElementById("news-note").textContent = T.newsNote;
+
+  const box = document.getElementById("news-feed");
+  box.innerHTML = "";
+  const rows = items.map(n => {
+    const row = externalLink(n.link);
+    row.className = "nw-row";
+    row.appendChild(tickerLogoEl(TICKERS[n.sym] || {ticker: n.sym}, 30));
+    const body = h("div", "nw-b");
+    const title = h("div", "nw-t"); title.textContent = n.title;
+    body.appendChild(title);
+    const meta = h("div", "nw-m");
+    const sym = h("span", "sym"); sym.textContent = n.sym;
+    meta.appendChild(sym);
+    const bits = [];
+    if (n.source) bits.push(n.source);
+    if (n.at && /^\\d{4}-\\d{2}-\\d{2}/.test(n.at)) bits.push(fmtDate(n.at.slice(0, 10)));
+    if (bits.length)
+      meta.appendChild(document.createTextNode(" \\u00b7 " + bits.join(" \\u00b7 ")));
+    body.appendChild(meta);
+    row.appendChild(body);
+    box.appendChild(row);
+    return row;
+  });
+  collapseList(rows, box);
+}
+paintNews();
 // Botones «Comprar»/«Vender» que abren la app de Revolut en el detalle del
 // valor. Ambos llevan al mismo detalle; desde ahí se elige comprar o vender.
 function revolutRow(sym) {
@@ -2913,7 +3073,7 @@ function openTicker(sym) {
 
   if (t.peers && t.peers.length) root.appendChild(peersSectionEl(t.peers));
 
-  root.appendChild(sectionEl(T.news, newsRow(t.ticker)));
+  root.appendChild(newsSectionEl(T.news, t.news || [], t.ticker));
   root.appendChild(h("div", "mnote", T.tickerNote));
   showModal(root);
 }
@@ -3015,7 +3175,9 @@ function openPlayer(pid) {
   }
 
   if (p.holdings && p.holdings.length) {
-    root.appendChild(sectionEl(T.portfolioNews, newsRow(p.holdings[0].ticker)));
+    // Los titulares de toda su cartera, no solo los de su primera posición.
+    const syms = p.holdings.map(hh => hh.ticker);
+    root.appendChild(newsSectionEl(T.portfolioNews, newsFor(syms, 6), syms[0]));
   }
   showModal(root);
 }
@@ -3197,6 +3359,7 @@ def _ticker_details(
     price_days: int,
     analysts: dict[str, dict] | None = None,
     extended: dict[str, dict] | None = None,
+    news: dict[str, list[dict]] | None = None,
 ) -> list[dict]:
     """Detalle público por ticker para la vista de detalle de la web.
 
@@ -3214,6 +3377,7 @@ def _ticker_details(
     prices = prices or {}
     analysts = analysts or {}
     extended = extended or {}
+    news = news or {}
     out = []
     for item in weights:
         ticker = item["ticker"]
@@ -3258,6 +3422,9 @@ def _ticker_details(
         ext = extended.get(ticker)
         if ext:
             entry["ext"] = ext
+        headlines = news.get(ticker)
+        if headlines:
+            entry["news"] = headlines
         out.append(entry)
     return out
 
@@ -3596,6 +3763,7 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
                   prices: dict[str, list[tuple]] | None = None,
                   analysts: dict[str, dict] | None = None,
                   extended: dict[str, dict] | None = None,
+                  news: dict[str, list[dict]] | None = None,
                   contributions: dict[str, dict[date, dict[str, float]]] | None = None,
                   badges: dict | None = None,
                   fx: dict[str, float] | None = None,
@@ -3633,6 +3801,11 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
     after-hours, ver :mod:`trader.extended`): precios públicos de mercado, foto
     del momento del build, que alimentan la tarjeta de sesión extendida del
     dashboard y el detalle de cada valor.
+
+    ``news`` son los titulares por ticker (:mod:`trader.news`) de los valores
+    que tienen los participantes: viajan con su valor y la ficha de cada
+    jugador reúne los de su cartera. Son enlaces y titulares públicos, así que
+    no revelan nada de nadie.
     """
     today = today or date.today()
     now = now or datetime.now(timezone.utc)
@@ -3706,7 +3879,8 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
             "market": _market_snapshot(allocation, extended,
                                        int(now.timestamp())),
             "tickers": _ticker_details(allocation, holdings, order, names,
-                                       prices, price_days, analysts, extended),
+                                       prices, price_days, analysts, extended,
+                                       news),
             "monthly": _monthly_bests(computed, today, order),
             "dailyWinners": {
                 "month": today.month,
@@ -3747,6 +3921,7 @@ def write_index(
     prices: dict[str, list[tuple]] | None = None,
     analysts: dict[str, dict] | None = None,
     extended: dict[str, dict] | None = None,
+    news: dict[str, list[dict]] | None = None,
     contributions: dict[str, dict[date, dict[str, float]]] | None = None,
     badges: dict | None = None,
     fx: dict[str, float] | None = None,
@@ -3756,6 +3931,7 @@ def write_index(
                       pending=pending,
                       allocation=allocation, holdings=holdings,
                       prices=prices, analysts=analysts, extended=extended,
+                      news=news,
                       contributions=contributions, badges=badges, fx=fx,
                       today=today or date.today()),
         ensure_ascii=False)
