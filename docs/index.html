@@ -410,6 +410,23 @@
              font-variant-numeric: tabular-nums; }
   .op-tk.clk:hover .sym, .op-name.clk:hover .nm { color: var(--accent); }
 
+  /* widget de noticias de la liga (titulares de los valores en cartera) */
+  .nw-row { display: flex; align-items: flex-start; gap: 10px; padding: 11px 4px;
+            border-top: 1px solid var(--hair); border-radius: 10px;
+            text-decoration: none; color: inherit; }
+  .nw-row:first-child { border-top: none; }
+  .nw-row:hover { background: var(--surface-2); }
+  .nw-row:hover .nw-t { color: var(--accent); }
+  .nw-row .logo, .nw-row .mono { width: 30px; height: 30px; flex: none; }
+  .nw-b { min-width: 0; }
+  .nw-t { font-size: 13.5px; font-weight: 700; line-height: 1.35;
+          /* dos líneas como mucho: el titular no puede comerse la tarjeta */
+          display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+          overflow: hidden; }
+  .nw-m { color: var(--muted); font-size: 11.5px; font-weight: 600; margin-top: 4px;
+          overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .nw-m .sym { color: var(--ink-2); font-weight: 800; }
+
   /* insights generados por IA */
   .ai-head { display: flex; align-items: center; gap: 9px; }
   .ai-badge {
@@ -568,6 +585,18 @@
   }
   .news a:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--hair)); color: var(--accent); }
   .news a .ext { color: var(--muted); font-size: 11px; }
+  /* titulares descargados en el build (API de noticias de la liga) */
+  .newslist { display: flex; flex-direction: column; }
+  .newslist + .news { margin-top: 12px; }
+  .news-item { display: block; text-decoration: none; color: inherit;
+               padding: 10px 4px; border-top: 1px solid var(--hair); }
+  .news-item:first-child { border-top: none; padding-top: 2px; }
+  .news-item .nt { font-size: 13.5px; font-weight: 700; line-height: 1.35; }
+  .news-item:hover .nt { color: var(--accent); }
+  .news-item .nd { color: var(--ink-2); font-size: 12px; line-height: 1.4; margin-top: 3px; }
+  .news-item .nm { color: var(--muted); font-size: 11.5px; font-weight: 600; margin-top: 4px;
+                   display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .news-item .nm .tk { font-weight: 800; color: var(--ink-2); }
   /* operar en Revolut: botones comprar/vender que abren la app en el detalle del valor */
   .revolut { display: flex; gap: 10px; }
   .rev-btn {
@@ -789,6 +818,13 @@
     <div id="ops-list" style="margin-top:8px"></div>
   </section>
 
+  <section class="card" id="news-card" style="display:none">
+    <div class="wlabel"><span data-i18n="leagueNews"></span></div>
+    <div class="wsub muted" id="news-sub"></div>
+    <div id="news-feed" style="margin-top:8px"></div>
+    <div class="wsub muted" id="news-note" style="margin-top:10px"></div>
+  </section>
+
   <section class="card" id="insights-card" style="display:none">
     <div class="ai-head">
       <span class="ai-badge" data-i18n="aiBadge"></span>
@@ -827,8 +863,8 @@
 </div>
 <footer data-i18n-html="footer"></footer>
 <script>
-const DATA = {"players": [{"id": "ana", "name": "Ana", "slot": 0, "amounts": false, "since": "2026-07-14", "days": [{"date": "2026-07-14", "day": 1.5255, "cum": 1.5255, "bd": [{"ticker": "PLTR", "pct": 1.5255}]}, {"date": "2026-07-15", "day": 0.0299, "cum": 1.5559, "bd": [{"ticker": "PLTR", "pct": 0.0299}]}, {"date": "2026-07-16", "day": -2.6311, "cum": -1.1161, "bd": [{"ticker": "SMCI", "pct": -1.8665}, {"ticker": "META", "pct": -1.0134}, {"ticker": "PLTR", "pct": 0.2489}]}, {"date": "2026-07-17", "day": -2.1399, "cum": -3.2322, "bd": [{"ticker": "META", "pct": -1.0154}, {"ticker": "SMCI", "pct": -0.6165}, {"ticker": "PLTR", "pct": -0.508}]}, {"date": "2026-07-20", "day": 0.322, "cum": -2.9206, "bd": [{"ticker": "PLTR", "pct": 0.5713}, {"ticker": "SMCI", "pct": -0.4048}, {"ticker": "META", "pct": 0.1555}]}, {"date": "2026-07-21", "day": 4.7588, "cum": 1.6992, "bd": [{"ticker": "SMCI", "pct": 5.3704}, {"ticker": "PLTR", "pct": -0.4667}, {"ticker": "META", "pct": -0.1449}]}, {"date": "2026-07-22", "day": -2.7738, "cum": -1.1218, "bd": [{"ticker": "PLTR", "pct": -1.6456}, {"ticker": "META", "pct": -1.1283}]}, {"date": "2026-07-23", "day": -1.7204, "cum": -2.8229, "bd": [{"ticker": "META", "pct": -1.4694}, {"ticker": "PLTR", "pct": -0.2511}]}, {"date": "2026-07-24", "day": -0.87, "cum": -3.6683, "bd": [{"ticker": "META", "pct": -0.7742}, {"ticker": "PLTR", "pct": -0.0958}]}, {"date": "2026-07-27", "day": 1.7545, "cum": -1.9782, "bd": [{"ticker": "PLTR", "pct": 1.849}, {"ticker": "META", "pct": -0.0945}]}, {"date": "2026-07-28", "day": -1.7207, "cum": -3.6649, "bd": [{"ticker": "PLTR", "pct": -1.6883}, {"ticker": "META", "pct": -0.0324}]}, {"date": "2026-07-29", "day": -0.6721, "cum": -4.3123, "bd": [{"ticker": "META", "pct": -0.5583}, {"ticker": "PLTR", "pct": -0.1138}]}, {"date": "2026-07-30", "day": -3.5167, "cum": -7.6774, "bd": [{"ticker": "META", "pct": -3.3567}, {"ticker": "PLTR", "pct": -0.16}]}, {"date": "2026-07-31", "day": 1.6272, "cum": -6.1751, "bd": [{"ticker": "META", "pct": 1.448}, {"ticker": "PLTR", "pct": 0.1793}]}, {"date": "2026-08-03", "day": 3.2384, "cum": -3.1367, "bd": [{"ticker": "META", "pct": 2.6673}, {"ticker": "PLTR", "pct": 0.5711}]}, {"date": "2026-08-04", "day": 5.1958, "cum": 1.8962, "bd": [{"ticker": "PLTR", "pct": 5.3596}, {"ticker": "META", "pct": -0.1637}]}, {"date": "2026-08-05", "day": 0.4915, "cum": 2.3971, "bd": [{"ticker": "MU", "pct": 0.4354}, {"ticker": "META", "pct": 0.0562}]}, {"date": "2026-08-06", "day": 0.6287, "cum": 3.0409, "bd": [{"ticker": "MU", "pct": 0.5526}, {"ticker": "META", "pct": 0.0761}]}, {"date": "2026-08-07", "day": 0.3986, "cum": 3.4516, "bd": [{"ticker": "SNOW", "pct": 0.3384}, {"ticker": "META", "pct": 0.1472}, {"ticker": "MU", "pct": -0.087}]}, {"date": "2026-08-10", "day": 0.1004, "cum": 3.5555, "bd": [{"ticker": "MU", "pct": -0.3682}, {"ticker": "SNOW", "pct": 0.2806}, {"ticker": "META", "pct": 0.188}]}, {"date": "2026-08-11", "day": 0.4093, "cum": 3.9794, "bd": [{"ticker": "META", "pct": 0.2797}, {"ticker": "MU", "pct": 0.1669}, {"ticker": "SNOW", "pct": -0.0373}]}, {"date": "2026-08-12", "day": -0.2244, "cum": 3.7461, "bd": [{"ticker": "META", "pct": -1.3442}, {"ticker": "MU", "pct": 1.2445}, {"ticker": "SNOW", "pct": -0.1247}]}, {"date": "2026-08-13", "day": 1.0654, "cum": 4.8514, "bd": [{"ticker": "META", "pct": 1.0714}, {"ticker": "WDC", "pct": -0.3463}, {"ticker": "SNOW", "pct": 0.3403}]}, {"date": "2026-08-14", "day": -0.1896, "cum": 4.6526, "bd": [{"ticker": "WDC", "pct": 0.5594}, {"ticker": "SNOW", "pct": -0.5215}, {"ticker": "META", "pct": -0.2275}]}], "holdings": [{"ticker": "META", "w": 47.16}, {"ticker": "WDC", "w": 26.58}, {"ticker": "SNOW", "w": 26.27}]}, {"id": "fede", "name": "Fede", "slot": 1, "amounts": true, "since": "2026-07-14", "days": [{"date": "2026-07-14", "day": 1.7906, "cum": 1.7906, "bd": [{"ticker": "NVDA", "pct": 1.4736}, {"ticker": "WDC", "pct": 0.5776}, {"ticker": "MU", "pct": -0.2606}], "start": 1045.04, "end": 1670.52, "flow": 601.39, "pnl": 24.1}, {"date": "2026-07-15", "day": -4.8532, "cum": -3.1496, "bd": [{"ticker": "WDC", "pct": -2.5959}, {"ticker": "MU", "pct": -2.5088}, {"ticker": "TSM", "pct": 0.1634}, {"ticker": "NVDA", "pct": 0.088}], "start": 1670.52, "end": 2050.33, "flow": 472.34, "pnl": -92.54}, {"date": "2026-07-16", "day": -4.961, "cum": -7.9543, "bd": [{"ticker": "WDC", "pct": -2.2945}, {"ticker": "MU", "pct": -1.5116}, {"ticker": "NVDA", "pct": -0.5965}, {"ticker": "TSM", "pct": -0.5584}], "start": 2050.33, "end": 1948.61, "flow": 0.0, "pnl": -101.72}, {"date": "2026-07-17", "day": -0.2142, "cum": -8.1514, "bd": [{"ticker": "NVDA", "pct": -0.495}, {"ticker": "WDC", "pct": 0.4683}, {"ticker": "MU", "pct": -0.116}, {"ticker": "TSM", "pct": -0.0715}], "start": 1948.61, "end": 2493.85, "flow": 550.0, "pnl": -4.76}, {"date": "2026-07-20", "day": 1.2635, "cum": -6.9909, "bd": [{"ticker": "WDC", "pct": 0.4091}, {"ticker": "TSM", "pct": 0.4075}, {"ticker": "MU", "pct": 0.4017}, {"ticker": "NVDA", "pct": 0.0452}], "start": 2493.85, "end": 2525.36, "flow": 0.0, "pnl": 31.51}, {"date": "2026-07-21", "day": 6.743, "cum": -0.7194, "bd": [{"ticker": "MU", "pct": 2.2626}, {"ticker": "WDC", "pct": 2.1586}, {"ticker": "TSM", "pct": 2.0418}, {"ticker": "NVDA", "pct": 0.3403}, {"ticker": "ASML", "pct": -0.0604}], "start": 2525.36, "end": 3315.85, "flow": 599.98, "pnl": 190.51}, {"date": "2026-07-22", "day": 0.1256, "cum": -0.5947, "bd": [{"ticker": "NVDA", "pct": 0.3449}, {"ticker": "TSM", "pct": -0.2651}, {"ticker": "WDC", "pct": 0.2498}, {"ticker": "MU", "pct": -0.2075}, {"ticker": "ASML", "pct": 0.0035}], "start": 3315.85, "end": 3320.01, "flow": 0.0, "pnl": 4.16}, {"date": "2026-07-23", "day": -0.0547, "cum": -0.6491, "bd": [{"ticker": "MU", "pct": 0.5616}, {"ticker": "TSM", "pct": -0.4385}, {"ticker": "NVDA", "pct": -0.2383}, {"ticker": "WDC", "pct": 0.0491}, {"ticker": "ASML", "pct": 0.0114}], "start": 3320.01, "end": 3318.2, "flow": 0.0, "pnl": -1.82}, {"date": "2026-07-24", "day": -3.9736, "cum": -4.5969, "bd": [{"ticker": "MU", "pct": -1.2664}, {"ticker": "WDC", "pct": -1.1606}, {"ticker": "TSM", "pct": -0.9484}, {"ticker": "ASML", "pct": -0.4595}, {"ticker": "NVDA", "pct": -0.1387}], "start": 3318.2, "end": 3186.34, "flow": 0.0, "pnl": -131.85}, {"date": "2026-07-27", "day": -3.2713, "cum": -7.7178, "bd": [{"ticker": "ASML", "pct": -1.0613}, {"ticker": "NVDA", "pct": -0.7774}, {"ticker": "WDC", "pct": -0.6869}, {"ticker": "MU", "pct": -0.3951}, {"ticker": "TSM", "pct": -0.3506}], "start": 3186.34, "end": 3082.11, "flow": 0.0, "pnl": -104.23}, {"date": "2026-07-28", "day": -3.9942, "cum": -11.4038, "bd": [{"ticker": "MU", "pct": -1.5684}, {"ticker": "WDC", "pct": -1.1168}, {"ticker": "ASML", "pct": -0.7791}, {"ticker": "TSM", "pct": -0.5688}, {"ticker": "NVDA", "pct": 0.0389}], "start": 3082.11, "end": 2959.0, "flow": 0.0, "pnl": -123.11}, {"date": "2026-07-29", "day": -4.1922, "cum": -15.1179, "bd": [{"ticker": "MU", "pct": -1.6717}, {"ticker": "TSM", "pct": -1.5415}, {"ticker": "NVDA", "pct": -0.5673}, {"ticker": "ASML", "pct": -0.3621}, {"ticker": "WDC", "pct": -0.0497}], "start": 2959.0, "end": 2834.96, "flow": 0.0, "pnl": -124.05}, {"date": "2026-07-30", "day": 9.6265, "cum": -6.9468, "bd": [{"ticker": "MU", "pct": 2.9034}, {"ticker": "TSM", "pct": 2.6122}, {"ticker": "WDC", "pct": 2.5052}, {"ticker": "ASML", "pct": 1.1802}, {"ticker": "NVDA", "pct": 0.4255}], "start": 2834.96, "end": 3107.86, "flow": 0.0, "pnl": 272.91}, {"date": "2026-07-31", "day": -0.3492, "cum": -7.2717, "bd": [{"ticker": "MU", "pct": -1.0079}, {"ticker": "NVDA", "pct": 0.4406}, {"ticker": "WDC", "pct": 0.3798}, {"ticker": "ASML", "pct": -0.2398}, {"ticker": "TSM", "pct": 0.0782}], "start": 3107.86, "end": 3097.01, "flow": 0.0, "pnl": -10.85}, {"date": "2026-08-03", "day": 0.1301, "cum": -7.151, "bd": [{"ticker": "WDC", "pct": -0.4805}, {"ticker": "NVDA", "pct": 0.385}, {"ticker": "SAP", "pct": -0.1349}, {"ticker": "TSM", "pct": 0.1311}, {"ticker": "ASML", "pct": 0.1224}, {"ticker": "MU", "pct": 0.107}], "start": 3097.01, "end": 4244.63, "flow": 1142.85, "pnl": 4.77}, {"date": "2026-08-04", "day": 3.3692, "cum": -4.0228, "bd": [{"ticker": "SAP", "pct": 0.8255}, {"ticker": "MU", "pct": 0.664}, {"ticker": "ASML", "pct": 0.5427}, {"ticker": "TSM", "pct": 0.5346}, {"ticker": "WDC", "pct": 0.5029}, {"ticker": "NVDA", "pct": 0.2994}], "start": 4244.63, "end": 4387.64, "flow": 0.0, "pnl": 143.01}, {"date": "2026-08-05", "day": -0.92, "cum": -4.9057, "bd": [{"ticker": "WDC", "pct": -0.6334}, {"ticker": "SNDK", "pct": -0.6063}, {"ticker": "NVDA", "pct": 0.2898}, {"ticker": "SAP", "pct": 0.2379}, {"ticker": "ASML", "pct": -0.228}, {"ticker": "MU", "pct": 0.0201}], "start": 4387.64, "end": 4852.45, "flow": 507.51, "pnl": -42.7}, {"date": "2026-08-06", "day": -2.3317, "cum": -7.123, "bd": [{"ticker": "WDC", "pct": -1.3872}, {"ticker": "SNDK", "pct": -0.7489}, {"ticker": "MU", "pct": -0.4318}, {"ticker": "ASML", "pct": 0.178}, {"ticker": "SAP", "pct": 0.0582}], "start": 4852.45, "end": 4790.19, "flow": 51.48, "pnl": -113.74}, {"date": "2026-08-07", "day": -1.9376, "cum": -8.9226, "bd": [{"ticker": "SNDK", "pct": -1.6855}, {"ticker": "WDC", "pct": -0.3596}, {"ticker": "ASML", "pct": 0.2539}, {"ticker": "MU", "pct": -0.1463}], "start": 4790.19, "end": 4697.38, "flow": 0.0, "pnl": -92.81}, {"date": "2026-08-10", "day": 0.3525, "cum": -8.6015, "bd": [{"ticker": "SNDK", "pct": 0.9542}, {"ticker": "MU", "pct": -0.6347}, {"ticker": "WDC", "pct": 0.0861}, {"ticker": "ASML", "pct": -0.0532}], "start": 4697.38, "end": 4702.33, "flow": -11.58, "pnl": 16.54}, {"date": "2026-08-11", "day": 1.9709, "cum": -6.8002, "bd": [{"ticker": "SNDK", "pct": 1.2268}, {"ticker": "ASML", "pct": 0.4654}, {"ticker": "MU", "pct": 0.2874}, {"ticker": "WDC", "pct": -0.0087}], "start": 4702.33, "end": 4795.01, "flow": 0.0, "pnl": 92.68}, {"date": "2026-08-12", "day": 4.737, "cum": -2.3854, "bd": [{"ticker": "SNDK", "pct": 2.6596}, {"ticker": "MU", "pct": 1.603}, {"ticker": "WDC", "pct": 0.3373}, {"ticker": "ASML", "pct": 0.1371}], "start": 4795.01, "end": 5022.15, "flow": 0.0, "pnl": 227.14}, {"date": "2026-08-13", "day": 5.6518, "cum": 3.1316, "bd": [{"ticker": "SKHY", "pct": 2.1124}, {"ticker": "SNDK", "pct": 1.5857}, {"ticker": "MU", "pct": 1.3283}, {"ticker": "WDC", "pct": 0.6254}], "start": 5022.15, "end": 5895.95, "flow": 573.75, "pnl": 300.05}, {"date": "2026-08-14", "day": 0.2157, "cum": 3.354, "bd": [{"ticker": "WDC", "pct": 0.2157}], "start": 5895.95, "end": 5908.67, "flow": 0.0, "pnl": 12.72}], "holdings": [{"ticker": "WDC", "w": 100.0}], "goal": {"target": 14000.0, "pct": 36.48, "currency": "USD", "value": 5107.45}}], "pending": [], "goal": {"target": 14000.0, "deadline": "2027-08-01", "days": 352, "fx": {"USD": 0.8644}}, "operations": [{"date": "2026-08-13", "id": "fede", "name": "Fede", "slot": 1, "kind": "SELL", "ticker": "SKHY"}, {"date": "2026-08-13", "id": "ana", "name": "Ana", "slot": 0, "kind": "BUY", "ticker": "WDC"}, {"date": "2026-08-13", "id": "fede", "name": "Fede", "slot": 1, "kind": "SELL", "ticker": "MU"}, {"date": "2026-08-13", "id": "fede", "name": "Fede", "slot": 1, "kind": "SELL", "ticker": "SNDK"}, {"date": "2026-08-13", "id": "fede", "name": "Fede", "slot": 1, "kind": "BUY", "ticker": "SKHY"}, {"date": "2026-08-12", "id": "fede", "name": "Fede", "slot": 1, "kind": "SELL", "ticker": "ASML"}, {"date": "2026-08-12", "id": "ana", "name": "Ana", "slot": 0, "kind": "SELL", "ticker": "MU"}, {"date": "2026-08-07", "id": "ana", "name": "Ana", "slot": 0, "kind": "BUY", "ticker": "SNOW"}], "allocation": [{"ticker": "META", "w": 41.62}, {"ticker": "WDC", "w": 35.19}, {"ticker": "SNOW", "w": 23.18}], "market": null, "tickers": [{"ticker": "META", "name": "Meta Platforms", "domain": "meta.com", "w": 41.62, "holders": [{"name": "Ana", "slot": 0, "w": 47.16}], "prices": [{"date": "2026-07-07", "close": 615.58}, {"date": "2026-07-08", "close": 603.12}, {"date": "2026-07-09", "close": 631.48}, {"date": "2026-07-10", "close": 669.21}, {"date": "2026-07-13", "close": 656.73}, {"date": "2026-07-14", "close": 661.04}, {"date": "2026-07-15", "close": 681.31}, {"date": "2026-07-16", "close": 664.54}, {"date": "2026-07-17", "close": 646.01}, {"date": "2026-07-20", "close": 645.85}, {"date": "2026-07-21", "close": 643.81}, {"date": "2026-07-22", "close": 627.17}, {"date": "2026-07-23", "close": 606.1}, {"date": "2026-07-24", "close": 595.19}, {"date": "2026-07-27", "close": 593.87}, {"date": "2026-07-28", "close": 593.41}, {"date": "2026-07-29", "close": 585.61}, {"date": "2026-07-30", "close": 539.03}, {"date": "2026-07-31", "close": 556.71}, {"date": "2026-08-03", "close": 590.24}, {"date": "2026-08-04", "close": 587.94}, {"date": "2026-08-05", "close": 588.77}, {"date": "2026-08-06", "close": 589.9}, {"date": "2026-08-07", "close": 592.1}, {"date": "2026-08-10", "close": 594.92}, {"date": "2026-08-11", "close": 599.12}, {"date": "2026-08-12", "close": 578.85}, {"date": "2026-08-13", "close": 594.97}, {"date": "2026-08-14", "close": 591.51}], "ret": -3.91, "peers": [{"ticker": "GOOGL", "name": "Alphabet", "domain": "abc.xyz"}, {"ticker": "AMZN", "name": "Amazon", "domain": "amazon.com"}, {"ticker": "NFLX", "name": "Netflix", "domain": "netflix.com"}]}, {"ticker": "WDC", "name": "Western Digital", "domain": "westerndigital.com", "w": 35.19, "holders": [{"name": "Fede", "slot": 1, "w": 100.0}, {"name": "Ana", "slot": 0, "w": 26.58}], "prices": [{"date": "2026-07-06", "close": 577.46}, {"date": "2026-07-07", "close": 532.1}, {"date": "2026-07-08", "close": 550.3}, {"date": "2026-07-09", "close": 578.05}, {"date": "2026-07-10", "close": 582.59}, {"date": "2026-07-13", "close": 555.55}, {"date": "2026-07-14", "close": 563.32}, {"date": "2026-07-15", "close": 513.84}, {"date": "2026-07-16", "close": 466.81}, {"date": "2026-07-17", "close": 477.22}, {"date": "2026-07-20", "close": 487.42}, {"date": "2026-07-21", "close": 548.39}, {"date": "2026-07-22", "close": 556.67}, {"date": "2026-07-23", "close": 558.3}, {"date": "2026-07-24", "close": 519.8}, {"date": "2026-07-27", "close": 497.92}, {"date": "2026-07-28", "close": 463.51}, {"date": "2026-07-29", "close": 462.04}, {"date": "2026-07-30", "close": 533.04}, {"date": "2026-07-31", "close": 544.84}, {"date": "2026-08-03", "close": 527.22}, {"date": "2026-08-04", "close": 548.56}, {"date": "2026-08-05", "close": 519.17}, {"date": "2026-08-06", "close": 451.52}, {"date": "2026-08-07", "close": 434.3}, {"date": "2026-08-10", "close": 438.34}, {"date": "2026-08-11", "close": 437.93}, {"date": "2026-08-12", "close": 454.1}, {"date": "2026-08-13", "close": 487.29}, {"date": "2026-08-14", "close": 500.0051}], "ret": -13.41, "peers": [{"ticker": "MU", "name": "Micron Technology", "domain": "micron.com"}, {"ticker": "STX", "name": "STX", "domain": ""}, {"ticker": "TSM", "name": "Taiwan Semiconductor", "domain": "tsmc.com"}]}, {"ticker": "SNOW", "name": "SNOW", "domain": "", "w": 23.18, "holders": [{"name": "Ana", "slot": 0, "w": 26.27}], "prices": [{"date": "2026-07-07", "close": 262.74}, {"date": "2026-07-08", "close": 261.31}, {"date": "2026-07-09", "close": 267.49}, {"date": "2026-07-10", "close": 261.45}, {"date": "2026-07-13", "close": 268.65}, {"date": "2026-07-14", "close": 275.94}, {"date": "2026-07-15", "close": 271.87}, {"date": "2026-07-16", "close": 270.02}, {"date": "2026-07-17", "close": 268.9}, {"date": "2026-07-20", "close": 274.34}, {"date": "2026-07-21", "close": 271.73}, {"date": "2026-07-22", "close": 267.8}, {"date": "2026-07-23", "close": 265.13}, {"date": "2026-07-24", "close": 268.06}, {"date": "2026-07-27", "close": 272.92}, {"date": "2026-07-28", "close": 270.36}, {"date": "2026-07-29", "close": 282.9}, {"date": "2026-07-30", "close": 298.1}, {"date": "2026-07-31", "close": 293.28}, {"date": "2026-08-03", "close": 307.53}, {"date": "2026-08-04", "close": 316.77}, {"date": "2026-08-05", "close": 316.84}, {"date": "2026-08-06", "close": 318.0}, {"date": "2026-08-07", "close": 330.49}, {"date": "2026-08-10", "close": 334.7}, {"date": "2026-08-11", "close": 334.14}, {"date": "2026-08-12", "close": 332.26}, {"date": "2026-08-13", "close": 337.38}, {"date": "2026-08-14", "close": 329.45}], "ret": 25.39, "peers": []}], "monthly": {"current": {"name": "Ana", "value": 11.54, "slot": 0, "month": 8, "month_year": 2026, "dates": ["2026-08-03", "2026-08-04", "2026-08-05", "2026-08-06", "2026-08-07", "2026-08-10", "2026-08-11", "2026-08-12", "2026-08-13", "2026-08-14"], "series": [{"id": "ana", "name": "Ana", "slot": 0, "value": 11.54, "cum": [3.2384, 8.6025, 9.1363, 9.8225, 10.2603, 10.371, 10.8227, 10.5741, 11.7522, 11.5403]}, {"id": "fede", "name": "Fede", "slot": 1, "value": 11.46, "cum": [0.1301, 3.5037, 2.5515, 0.1603, -1.7804, -1.4342, 0.5084, 5.2695, 11.219, 11.459]}]}, "previous": {"name": "Ana", "value": -6.18, "slot": 0, "month": 7, "month_year": 2026, "dates": ["2026-07-14", "2026-07-15", "2026-07-16", "2026-07-17", "2026-07-20", "2026-07-21", "2026-07-22", "2026-07-23", "2026-07-24", "2026-07-27", "2026-07-28", "2026-07-29", "2026-07-30", "2026-07-31"], "series": [{"id": "ana", "name": "Ana", "slot": 0, "value": -6.18, "cum": [1.5255, 1.5559, -1.1161, -3.2322, -2.9206, 1.6992, -1.1218, -2.8229, -3.6683, -1.9782, -3.6649, -4.3123, -7.6774, -6.1751]}, {"id": "fede", "name": "Fede", "slot": 1, "value": -7.27, "cum": [1.7906, -3.1496, -7.9543, -8.1514, -6.9909, -0.7194, -0.5947, -0.6491, -4.5969, -7.7178, -11.4038, -15.1179, -6.9468, -7.2717]}]}}, "dailyWinners": {"month": 8, "month_year": 2026, "rows": [{"date": "2026-08-14", "names": ["Fede"], "ids": ["fede"], "slot": 1, "value": 0.22}, {"date": "2026-08-13", "names": ["Fede"], "ids": ["fede"], "slot": 1, "value": 5.65}, {"date": "2026-08-12", "names": ["Fede"], "ids": ["fede"], "slot": 1, "value": 4.74}, {"date": "2026-08-11", "names": ["Fede"], "ids": ["fede"], "slot": 1, "value": 1.97}, {"date": "2026-08-10", "names": ["Fede"], "ids": ["fede"], "slot": 1, "value": 0.35}, {"date": "2026-08-07", "names": ["Ana"], "ids": ["ana"], "slot": 0, "value": 0.4}, {"date": "2026-08-06", "names": ["Ana"], "ids": ["ana"], "slot": 0, "value": 0.63}, {"date": "2026-08-05", "names": ["Ana"], "ids": ["ana"], "slot": 0, "value": 0.49}, {"date": "2026-08-04", "names": ["Ana"], "ids": ["ana"], "slot": 0, "value": 5.2}, {"date": "2026-08-03", "names": ["Ana"], "ids": ["ana"], "slot": 0, "value": 3.24}]}, "badges": {"awards": [{"key": "week_streak:fede", "recorded": "2026-08-14", "type": "week_streak", "player": "fede", "name": "Fede", "date": "2026-08-14", "slot": 1}, {"key": "milestone:fede:5", "recorded": "2026-08-13", "type": "milestone", "tier": 5, "player": "fede", "name": "Fede", "date": "2026-08-13", "slot": 1}, {"key": "milestone:ana:5", "recorded": "2026-08-13", "type": "milestone", "tier": 5, "player": "ana", "name": "Ana", "date": "2026-08-13", "slot": 0}, {"key": "week_streak:ana", "recorded": "2026-08-06", "type": "week_streak", "player": "ana", "name": "Ana", "date": "2026-08-06", "slot": 0}, {"key": "champion:2026-07", "recorded": "2026-08-03", "type": "champion_month", "player": "ana", "name": "Ana", "date": "2026-07-31", "month": "2026-07", "pct": -6.18, "slot": 0}], "provisional": [{"type": "champion_month", "player": "ana", "name": "Ana", "date": "2026-08-14", "month": "2026-08", "pct": 11.54, "key": "champion:2026-08", "provisional": true, "slot": 0}], "record": {"ticker": "PLTR", "pct": 30.7, "date": "2026-08-04", "holders": [{"id": "ana", "name": "Ana"}], "recorded": "2026-08-04", "history": [{"ticker": "WDC", "pct": 16.09, "date": "2026-06-15", "holders": [], "recorded": "2026-07-23"}, {"ticker": "MU", "pct": 17.75, "date": "2026-07-30", "holders": [{"id": "fede", "name": "Fede"}], "recorded": "2026-07-30"}, {"ticker": "MU", "pct": 18.46, "date": "2026-07-30", "holders": [{"id": "fede", "name": "Fede"}], "recorded": "2026-07-30"}, {"ticker": "PLTR", "pct": 26.29, "date": "2026-08-04", "holders": [{"id": "ana", "name": "Ana"}], "recorded": "2026-08-04"}]}}};
-const UPDATED = "2026-08-14 20:08";
+const DATA = {"players": [{"id": "ana", "name": "Ana", "slot": 0, "amounts": false, "since": "2026-07-14", "days": [{"date": "2026-07-14", "day": 1.5255, "cum": 1.5255, "bd": [{"ticker": "PLTR", "pct": 1.5255}]}, {"date": "2026-07-15", "day": 0.0299, "cum": 1.5559, "bd": [{"ticker": "PLTR", "pct": 0.0299}]}, {"date": "2026-07-16", "day": -2.6311, "cum": -1.1161, "bd": [{"ticker": "SMCI", "pct": -1.8665}, {"ticker": "META", "pct": -1.0134}, {"ticker": "PLTR", "pct": 0.2489}]}, {"date": "2026-07-17", "day": -2.1399, "cum": -3.2322, "bd": [{"ticker": "META", "pct": -1.0154}, {"ticker": "SMCI", "pct": -0.6165}, {"ticker": "PLTR", "pct": -0.508}]}, {"date": "2026-07-20", "day": 0.322, "cum": -2.9206, "bd": [{"ticker": "PLTR", "pct": 0.5713}, {"ticker": "SMCI", "pct": -0.4048}, {"ticker": "META", "pct": 0.1555}]}, {"date": "2026-07-21", "day": 4.7588, "cum": 1.6992, "bd": [{"ticker": "SMCI", "pct": 5.3704}, {"ticker": "PLTR", "pct": -0.4667}, {"ticker": "META", "pct": -0.1449}]}, {"date": "2026-07-22", "day": -2.7738, "cum": -1.1218, "bd": [{"ticker": "PLTR", "pct": -1.6456}, {"ticker": "META", "pct": -1.1283}]}, {"date": "2026-07-23", "day": -1.7204, "cum": -2.8229, "bd": [{"ticker": "META", "pct": -1.4694}, {"ticker": "PLTR", "pct": -0.2511}]}, {"date": "2026-07-24", "day": -0.87, "cum": -3.6683, "bd": [{"ticker": "META", "pct": -0.7742}, {"ticker": "PLTR", "pct": -0.0958}]}, {"date": "2026-07-27", "day": 1.7545, "cum": -1.9782, "bd": [{"ticker": "PLTR", "pct": 1.849}, {"ticker": "META", "pct": -0.0945}]}, {"date": "2026-07-28", "day": -1.7207, "cum": -3.6649, "bd": [{"ticker": "PLTR", "pct": -1.6883}, {"ticker": "META", "pct": -0.0324}]}, {"date": "2026-07-29", "day": -0.6721, "cum": -4.3123, "bd": [{"ticker": "META", "pct": -0.5583}, {"ticker": "PLTR", "pct": -0.1138}]}, {"date": "2026-07-30", "day": -3.5167, "cum": -7.6774, "bd": [{"ticker": "META", "pct": -3.3567}, {"ticker": "PLTR", "pct": -0.16}]}, {"date": "2026-07-31", "day": 1.6272, "cum": -6.1751, "bd": [{"ticker": "META", "pct": 1.448}, {"ticker": "PLTR", "pct": 0.1793}]}, {"date": "2026-08-03", "day": 3.2384, "cum": -3.1367, "bd": [{"ticker": "META", "pct": 2.6673}, {"ticker": "PLTR", "pct": 0.5711}]}, {"date": "2026-08-04", "day": 5.1958, "cum": 1.8962, "bd": [{"ticker": "PLTR", "pct": 5.3596}, {"ticker": "META", "pct": -0.1637}]}, {"date": "2026-08-05", "day": 0.4915, "cum": 2.3971, "bd": [{"ticker": "MU", "pct": 0.4354}, {"ticker": "META", "pct": 0.0562}]}, {"date": "2026-08-06", "day": 0.6287, "cum": 3.0409, "bd": [{"ticker": "MU", "pct": 0.5526}, {"ticker": "META", "pct": 0.0761}]}, {"date": "2026-08-07", "day": 0.3986, "cum": 3.4516, "bd": [{"ticker": "SNOW", "pct": 0.3384}, {"ticker": "META", "pct": 0.1472}, {"ticker": "MU", "pct": -0.087}]}, {"date": "2026-08-10", "day": 0.1004, "cum": 3.5555, "bd": [{"ticker": "MU", "pct": -0.3682}, {"ticker": "SNOW", "pct": 0.2806}, {"ticker": "META", "pct": 0.188}]}, {"date": "2026-08-11", "day": 0.4093, "cum": 3.9794, "bd": [{"ticker": "META", "pct": 0.2797}, {"ticker": "MU", "pct": 0.1669}, {"ticker": "SNOW", "pct": -0.0373}]}, {"date": "2026-08-12", "day": -0.2244, "cum": 3.7461, "bd": [{"ticker": "META", "pct": -1.3442}, {"ticker": "MU", "pct": 1.2445}, {"ticker": "SNOW", "pct": -0.1247}]}, {"date": "2026-08-13", "day": 1.0654, "cum": 4.8514, "bd": [{"ticker": "META", "pct": 1.0714}, {"ticker": "WDC", "pct": -0.3463}, {"ticker": "SNOW", "pct": 0.3403}]}, {"date": "2026-08-14", "day": -0.2957, "cum": 4.5413, "bd": [{"ticker": "SNOW", "pct": -0.5314}, {"ticker": "WDC", "pct": 0.452}, {"ticker": "META", "pct": -0.22}]}], "holdings": [{"ticker": "META", "w": 47.23}, {"ticker": "WDC", "w": 26.48}, {"ticker": "SNOW", "w": 26.29}]}, {"id": "fede", "name": "Fede", "slot": 1, "amounts": true, "since": "2026-07-14", "days": [{"date": "2026-07-14", "day": 1.7906, "cum": 1.7906, "bd": [{"ticker": "NVDA", "pct": 1.4736}, {"ticker": "WDC", "pct": 0.5776}, {"ticker": "MU", "pct": -0.2606}], "start": 1045.04, "end": 1670.52, "flow": 601.39, "pnl": 24.1}, {"date": "2026-07-15", "day": -4.8532, "cum": -3.1496, "bd": [{"ticker": "WDC", "pct": -2.5959}, {"ticker": "MU", "pct": -2.5088}, {"ticker": "TSM", "pct": 0.1634}, {"ticker": "NVDA", "pct": 0.088}], "start": 1670.52, "end": 2050.33, "flow": 472.34, "pnl": -92.54}, {"date": "2026-07-16", "day": -4.961, "cum": -7.9543, "bd": [{"ticker": "WDC", "pct": -2.2945}, {"ticker": "MU", "pct": -1.5116}, {"ticker": "NVDA", "pct": -0.5965}, {"ticker": "TSM", "pct": -0.5584}], "start": 2050.33, "end": 1948.61, "flow": 0.0, "pnl": -101.72}, {"date": "2026-07-17", "day": -0.2142, "cum": -8.1514, "bd": [{"ticker": "NVDA", "pct": -0.495}, {"ticker": "WDC", "pct": 0.4683}, {"ticker": "MU", "pct": -0.116}, {"ticker": "TSM", "pct": -0.0715}], "start": 1948.61, "end": 2493.85, "flow": 550.0, "pnl": -4.76}, {"date": "2026-07-20", "day": 1.2635, "cum": -6.9909, "bd": [{"ticker": "WDC", "pct": 0.4091}, {"ticker": "TSM", "pct": 0.4075}, {"ticker": "MU", "pct": 0.4017}, {"ticker": "NVDA", "pct": 0.0452}], "start": 2493.85, "end": 2525.36, "flow": 0.0, "pnl": 31.51}, {"date": "2026-07-21", "day": 6.743, "cum": -0.7194, "bd": [{"ticker": "MU", "pct": 2.2626}, {"ticker": "WDC", "pct": 2.1586}, {"ticker": "TSM", "pct": 2.0418}, {"ticker": "NVDA", "pct": 0.3403}, {"ticker": "ASML", "pct": -0.0604}], "start": 2525.36, "end": 3315.85, "flow": 599.98, "pnl": 190.51}, {"date": "2026-07-22", "day": 0.1256, "cum": -0.5947, "bd": [{"ticker": "NVDA", "pct": 0.3449}, {"ticker": "TSM", "pct": -0.2651}, {"ticker": "WDC", "pct": 0.2498}, {"ticker": "MU", "pct": -0.2075}, {"ticker": "ASML", "pct": 0.0035}], "start": 3315.85, "end": 3320.01, "flow": 0.0, "pnl": 4.16}, {"date": "2026-07-23", "day": -0.0547, "cum": -0.6491, "bd": [{"ticker": "MU", "pct": 0.5616}, {"ticker": "TSM", "pct": -0.4385}, {"ticker": "NVDA", "pct": -0.2383}, {"ticker": "WDC", "pct": 0.0491}, {"ticker": "ASML", "pct": 0.0114}], "start": 3320.01, "end": 3318.2, "flow": 0.0, "pnl": -1.82}, {"date": "2026-07-24", "day": -3.9736, "cum": -4.5969, "bd": [{"ticker": "MU", "pct": -1.2664}, {"ticker": "WDC", "pct": -1.1606}, {"ticker": "TSM", "pct": -0.9484}, {"ticker": "ASML", "pct": -0.4595}, {"ticker": "NVDA", "pct": -0.1387}], "start": 3318.2, "end": 3186.34, "flow": 0.0, "pnl": -131.85}, {"date": "2026-07-27", "day": -3.2713, "cum": -7.7178, "bd": [{"ticker": "ASML", "pct": -1.0613}, {"ticker": "NVDA", "pct": -0.7774}, {"ticker": "WDC", "pct": -0.6869}, {"ticker": "MU", "pct": -0.3951}, {"ticker": "TSM", "pct": -0.3506}], "start": 3186.34, "end": 3082.11, "flow": 0.0, "pnl": -104.23}, {"date": "2026-07-28", "day": -3.9942, "cum": -11.4038, "bd": [{"ticker": "MU", "pct": -1.5684}, {"ticker": "WDC", "pct": -1.1168}, {"ticker": "ASML", "pct": -0.7791}, {"ticker": "TSM", "pct": -0.5688}, {"ticker": "NVDA", "pct": 0.0389}], "start": 3082.11, "end": 2959.0, "flow": 0.0, "pnl": -123.11}, {"date": "2026-07-29", "day": -4.1922, "cum": -15.1179, "bd": [{"ticker": "MU", "pct": -1.6717}, {"ticker": "TSM", "pct": -1.5415}, {"ticker": "NVDA", "pct": -0.5673}, {"ticker": "ASML", "pct": -0.3621}, {"ticker": "WDC", "pct": -0.0497}], "start": 2959.0, "end": 2834.96, "flow": 0.0, "pnl": -124.05}, {"date": "2026-07-30", "day": 9.6265, "cum": -6.9468, "bd": [{"ticker": "MU", "pct": 2.9034}, {"ticker": "TSM", "pct": 2.6122}, {"ticker": "WDC", "pct": 2.5052}, {"ticker": "ASML", "pct": 1.1802}, {"ticker": "NVDA", "pct": 0.4255}], "start": 2834.96, "end": 3107.86, "flow": 0.0, "pnl": 272.91}, {"date": "2026-07-31", "day": -0.3492, "cum": -7.2717, "bd": [{"ticker": "MU", "pct": -1.0079}, {"ticker": "NVDA", "pct": 0.4406}, {"ticker": "WDC", "pct": 0.3798}, {"ticker": "ASML", "pct": -0.2398}, {"ticker": "TSM", "pct": 0.0782}], "start": 3107.86, "end": 3097.01, "flow": 0.0, "pnl": -10.85}, {"date": "2026-08-03", "day": 0.1301, "cum": -7.151, "bd": [{"ticker": "WDC", "pct": -0.4805}, {"ticker": "NVDA", "pct": 0.385}, {"ticker": "SAP", "pct": -0.1349}, {"ticker": "TSM", "pct": 0.1311}, {"ticker": "ASML", "pct": 0.1224}, {"ticker": "MU", "pct": 0.107}], "start": 3097.01, "end": 4244.63, "flow": 1142.85, "pnl": 4.77}, {"date": "2026-08-04", "day": 3.3692, "cum": -4.0228, "bd": [{"ticker": "SAP", "pct": 0.8255}, {"ticker": "MU", "pct": 0.664}, {"ticker": "ASML", "pct": 0.5427}, {"ticker": "TSM", "pct": 0.5346}, {"ticker": "WDC", "pct": 0.5029}, {"ticker": "NVDA", "pct": 0.2994}], "start": 4244.63, "end": 4387.64, "flow": 0.0, "pnl": 143.01}, {"date": "2026-08-05", "day": -0.92, "cum": -4.9057, "bd": [{"ticker": "WDC", "pct": -0.6334}, {"ticker": "SNDK", "pct": -0.6063}, {"ticker": "NVDA", "pct": 0.2898}, {"ticker": "SAP", "pct": 0.2379}, {"ticker": "ASML", "pct": -0.228}, {"ticker": "MU", "pct": 0.0201}], "start": 4387.64, "end": 4852.45, "flow": 507.51, "pnl": -42.7}, {"date": "2026-08-06", "day": -2.3317, "cum": -7.123, "bd": [{"ticker": "WDC", "pct": -1.3872}, {"ticker": "SNDK", "pct": -0.7489}, {"ticker": "MU", "pct": -0.4318}, {"ticker": "ASML", "pct": 0.178}, {"ticker": "SAP", "pct": 0.0582}], "start": 4852.45, "end": 4790.19, "flow": 51.48, "pnl": -113.74}, {"date": "2026-08-07", "day": -1.9376, "cum": -8.9226, "bd": [{"ticker": "SNDK", "pct": -1.6855}, {"ticker": "WDC", "pct": -0.3596}, {"ticker": "ASML", "pct": 0.2539}, {"ticker": "MU", "pct": -0.1463}], "start": 4790.19, "end": 4697.38, "flow": 0.0, "pnl": -92.81}, {"date": "2026-08-10", "day": 0.3525, "cum": -8.6015, "bd": [{"ticker": "SNDK", "pct": 0.9542}, {"ticker": "MU", "pct": -0.6347}, {"ticker": "WDC", "pct": 0.0861}, {"ticker": "ASML", "pct": -0.0532}], "start": 4697.38, "end": 4702.33, "flow": -11.58, "pnl": 16.54}, {"date": "2026-08-11", "day": 1.9709, "cum": -6.8002, "bd": [{"ticker": "SNDK", "pct": 1.2268}, {"ticker": "ASML", "pct": 0.4654}, {"ticker": "MU", "pct": 0.2874}, {"ticker": "WDC", "pct": -0.0087}], "start": 4702.33, "end": 4795.01, "flow": 0.0, "pnl": 92.68}, {"date": "2026-08-12", "day": 4.737, "cum": -2.3854, "bd": [{"ticker": "SNDK", "pct": 2.6596}, {"ticker": "MU", "pct": 1.603}, {"ticker": "WDC", "pct": 0.3373}, {"ticker": "ASML", "pct": 0.1371}], "start": 4795.01, "end": 5022.15, "flow": 0.0, "pnl": 227.14}, {"date": "2026-08-13", "day": 5.6518, "cum": 3.1316, "bd": [{"ticker": "SKHY", "pct": 2.1124}, {"ticker": "SNDK", "pct": 1.5857}, {"ticker": "MU", "pct": 1.3283}, {"ticker": "WDC", "pct": 0.6254}], "start": 5022.15, "end": 5895.95, "flow": 573.75, "pnl": 300.05}, {"date": "2026-08-14", "day": 0.1749, "cum": 3.312, "bd": [{"ticker": "WDC", "pct": 0.1749}], "start": 5895.95, "end": 5906.26, "flow": 0.0, "pnl": 10.31}], "holdings": [{"ticker": "WDC", "w": 100.0}], "goal": {"target": 14000.0, "pct": 36.46, "currency": "USD", "value": 5104.78}}], "pending": [], "goal": {"target": 14000.0, "deadline": "2027-08-01", "days": 352, "fx": {"USD": 0.8643}}, "operations": [{"date": "2026-08-13", "id": "fede", "name": "Fede", "slot": 1, "kind": "SELL", "ticker": "SKHY"}, {"date": "2026-08-13", "id": "ana", "name": "Ana", "slot": 0, "kind": "BUY", "ticker": "WDC"}, {"date": "2026-08-13", "id": "fede", "name": "Fede", "slot": 1, "kind": "SELL", "ticker": "MU"}, {"date": "2026-08-13", "id": "fede", "name": "Fede", "slot": 1, "kind": "SELL", "ticker": "SNDK"}, {"date": "2026-08-13", "id": "fede", "name": "Fede", "slot": 1, "kind": "BUY", "ticker": "SKHY"}, {"date": "2026-08-12", "id": "fede", "name": "Fede", "slot": 1, "kind": "SELL", "ticker": "ASML"}, {"date": "2026-08-12", "id": "ana", "name": "Ana", "slot": 0, "kind": "SELL", "ticker": "MU"}, {"date": "2026-08-07", "id": "ana", "name": "Ana", "slot": 0, "kind": "BUY", "ticker": "SNOW"}], "allocation": [{"ticker": "META", "w": 41.71}, {"ticker": "WDC", "w": 35.08}, {"ticker": "SNOW", "w": 23.21}], "market": null, "tickers": [{"ticker": "META", "name": "Meta Platforms", "domain": "meta.com", "w": 41.71, "holders": [{"name": "Ana", "slot": 0, "w": 47.23}], "prices": [{"date": "2026-07-07", "close": 615.58}, {"date": "2026-07-08", "close": 603.12}, {"date": "2026-07-09", "close": 631.48}, {"date": "2026-07-10", "close": 669.21}, {"date": "2026-07-13", "close": 656.73}, {"date": "2026-07-14", "close": 661.04}, {"date": "2026-07-15", "close": 681.31}, {"date": "2026-07-16", "close": 664.54}, {"date": "2026-07-17", "close": 646.01}, {"date": "2026-07-20", "close": 645.85}, {"date": "2026-07-21", "close": 643.81}, {"date": "2026-07-22", "close": 627.17}, {"date": "2026-07-23", "close": 606.1}, {"date": "2026-07-24", "close": 595.19}, {"date": "2026-07-27", "close": 593.87}, {"date": "2026-07-28", "close": 593.41}, {"date": "2026-07-29", "close": 585.61}, {"date": "2026-07-30", "close": 539.03}, {"date": "2026-07-31", "close": 556.71}, {"date": "2026-08-03", "close": 590.24}, {"date": "2026-08-04", "close": 587.94}, {"date": "2026-08-05", "close": 588.77}, {"date": "2026-08-06", "close": 589.9}, {"date": "2026-08-07", "close": 592.1}, {"date": "2026-08-10", "close": 594.92}, {"date": "2026-08-11", "close": 599.12}, {"date": "2026-08-12", "close": 578.85}, {"date": "2026-08-13", "close": 594.97}, {"date": "2026-08-14", "close": 591.625}], "ret": -3.89, "peers": [{"ticker": "GOOGL", "name": "Alphabet", "domain": "abc.xyz"}, {"ticker": "AMZN", "name": "Amazon", "domain": "amazon.com"}, {"ticker": "NFLX", "name": "Netflix", "domain": "netflix.com"}]}, {"ticker": "WDC", "name": "Western Digital", "domain": "westerndigital.com", "w": 35.08, "holders": [{"name": "Fede", "slot": 1, "w": 100.0}, {"name": "Ana", "slot": 0, "w": 26.48}], "prices": [{"date": "2026-07-06", "close": 577.46}, {"date": "2026-07-07", "close": 532.1}, {"date": "2026-07-08", "close": 550.3}, {"date": "2026-07-09", "close": 578.05}, {"date": "2026-07-10", "close": 582.59}, {"date": "2026-07-13", "close": 555.55}, {"date": "2026-07-14", "close": 563.32}, {"date": "2026-07-15", "close": 513.84}, {"date": "2026-07-16", "close": 466.81}, {"date": "2026-07-17", "close": 477.22}, {"date": "2026-07-20", "close": 487.42}, {"date": "2026-07-21", "close": 548.39}, {"date": "2026-07-22", "close": 556.67}, {"date": "2026-07-23", "close": 558.3}, {"date": "2026-07-24", "close": 519.8}, {"date": "2026-07-27", "close": 497.92}, {"date": "2026-07-28", "close": 463.51}, {"date": "2026-07-29", "close": 462.04}, {"date": "2026-07-30", "close": 533.04}, {"date": "2026-07-31", "close": 544.84}, {"date": "2026-08-03", "close": 527.22}, {"date": "2026-08-04", "close": 548.56}, {"date": "2026-08-05", "close": 519.17}, {"date": "2026-08-06", "close": 451.52}, {"date": "2026-08-07", "close": 434.3}, {"date": "2026-08-10", "close": 438.34}, {"date": "2026-08-11", "close": 437.93}, {"date": "2026-08-12", "close": 454.1}, {"date": "2026-08-13", "close": 487.29}, {"date": "2026-08-14", "close": 497.6}], "ret": -13.83, "peers": [{"ticker": "MU", "name": "Micron Technology", "domain": "micron.com"}, {"ticker": "STX", "name": "STX", "domain": ""}, {"ticker": "TSM", "name": "Taiwan Semiconductor", "domain": "tsmc.com"}]}, {"ticker": "SNOW", "name": "SNOW", "domain": "", "w": 23.21, "holders": [{"name": "Ana", "slot": 0, "w": 26.29}], "prices": [{"date": "2026-07-07", "close": 262.74}, {"date": "2026-07-08", "close": 261.31}, {"date": "2026-07-09", "close": 267.49}, {"date": "2026-07-10", "close": 261.45}, {"date": "2026-07-13", "close": 268.65}, {"date": "2026-07-14", "close": 275.94}, {"date": "2026-07-15", "close": 271.87}, {"date": "2026-07-16", "close": 270.02}, {"date": "2026-07-17", "close": 268.9}, {"date": "2026-07-20", "close": 274.34}, {"date": "2026-07-21", "close": 271.73}, {"date": "2026-07-22", "close": 267.8}, {"date": "2026-07-23", "close": 265.13}, {"date": "2026-07-24", "close": 268.06}, {"date": "2026-07-27", "close": 272.92}, {"date": "2026-07-28", "close": 270.36}, {"date": "2026-07-29", "close": 282.9}, {"date": "2026-07-30", "close": 298.1}, {"date": "2026-07-31", "close": 293.28}, {"date": "2026-08-03", "close": 307.53}, {"date": "2026-08-04", "close": 316.77}, {"date": "2026-08-05", "close": 316.84}, {"date": "2026-08-06", "close": 318.0}, {"date": "2026-08-07", "close": 330.49}, {"date": "2026-08-10", "close": 334.7}, {"date": "2026-08-11", "close": 334.14}, {"date": "2026-08-12", "close": 332.26}, {"date": "2026-08-13", "close": 337.38}, {"date": "2026-08-14", "close": 329.3}], "ret": 25.33, "peers": []}], "monthly": {"current": {"name": "Ana", "value": 11.42, "slot": 0, "month": 8, "month_year": 2026, "dates": ["2026-08-03", "2026-08-04", "2026-08-05", "2026-08-06", "2026-08-07", "2026-08-10", "2026-08-11", "2026-08-12", "2026-08-13", "2026-08-14"], "series": [{"id": "ana", "name": "Ana", "slot": 0, "value": 11.42, "cum": [3.2384, 8.6025, 9.1363, 9.8225, 10.2603, 10.371, 10.8227, 10.5741, 11.7522, 11.4217]}, {"id": "fede", "name": "Fede", "slot": 1, "value": 11.41, "cum": [0.1301, 3.5037, 2.5515, 0.1603, -1.7804, -1.4342, 0.5084, 5.2695, 11.219, 11.4136]}]}, "previous": {"name": "Ana", "value": -6.18, "slot": 0, "month": 7, "month_year": 2026, "dates": ["2026-07-14", "2026-07-15", "2026-07-16", "2026-07-17", "2026-07-20", "2026-07-21", "2026-07-22", "2026-07-23", "2026-07-24", "2026-07-27", "2026-07-28", "2026-07-29", "2026-07-30", "2026-07-31"], "series": [{"id": "ana", "name": "Ana", "slot": 0, "value": -6.18, "cum": [1.5255, 1.5559, -1.1161, -3.2322, -2.9206, 1.6992, -1.1218, -2.8229, -3.6683, -1.9782, -3.6649, -4.3123, -7.6774, -6.1751]}, {"id": "fede", "name": "Fede", "slot": 1, "value": -7.27, "cum": [1.7906, -3.1496, -7.9543, -8.1514, -6.9909, -0.7194, -0.5947, -0.6491, -4.5969, -7.7178, -11.4038, -15.1179, -6.9468, -7.2717]}]}}, "dailyWinners": {"month": 8, "month_year": 2026, "rows": [{"date": "2026-08-14", "names": ["Fede"], "ids": ["fede"], "slot": 1, "value": 0.17}, {"date": "2026-08-13", "names": ["Fede"], "ids": ["fede"], "slot": 1, "value": 5.65}, {"date": "2026-08-12", "names": ["Fede"], "ids": ["fede"], "slot": 1, "value": 4.74}, {"date": "2026-08-11", "names": ["Fede"], "ids": ["fede"], "slot": 1, "value": 1.97}, {"date": "2026-08-10", "names": ["Fede"], "ids": ["fede"], "slot": 1, "value": 0.35}, {"date": "2026-08-07", "names": ["Ana"], "ids": ["ana"], "slot": 0, "value": 0.4}, {"date": "2026-08-06", "names": ["Ana"], "ids": ["ana"], "slot": 0, "value": 0.63}, {"date": "2026-08-05", "names": ["Ana"], "ids": ["ana"], "slot": 0, "value": 0.49}, {"date": "2026-08-04", "names": ["Ana"], "ids": ["ana"], "slot": 0, "value": 5.2}, {"date": "2026-08-03", "names": ["Ana"], "ids": ["ana"], "slot": 0, "value": 3.24}]}, "badges": {"awards": [{"key": "week_streak:fede", "recorded": "2026-08-14", "type": "week_streak", "player": "fede", "name": "Fede", "date": "2026-08-14", "slot": 1}, {"key": "milestone:fede:5", "recorded": "2026-08-13", "type": "milestone", "tier": 5, "player": "fede", "name": "Fede", "date": "2026-08-13", "slot": 1}, {"key": "milestone:ana:5", "recorded": "2026-08-13", "type": "milestone", "tier": 5, "player": "ana", "name": "Ana", "date": "2026-08-13", "slot": 0}, {"key": "week_streak:ana", "recorded": "2026-08-06", "type": "week_streak", "player": "ana", "name": "Ana", "date": "2026-08-06", "slot": 0}, {"key": "champion:2026-07", "recorded": "2026-08-03", "type": "champion_month", "player": "ana", "name": "Ana", "date": "2026-07-31", "month": "2026-07", "pct": -6.18, "slot": 0}], "provisional": [{"type": "champion_month", "player": "ana", "name": "Ana", "date": "2026-08-14", "month": "2026-08", "pct": 11.42, "key": "champion:2026-08", "provisional": true, "slot": 0}], "record": {"ticker": "PLTR", "pct": 30.7, "date": "2026-08-04", "holders": [{"id": "ana", "name": "Ana"}], "recorded": "2026-08-04", "history": [{"ticker": "WDC", "pct": 16.09, "date": "2026-06-15", "holders": [], "recorded": "2026-07-23"}, {"ticker": "MU", "pct": 17.75, "date": "2026-07-30", "holders": [{"id": "fede", "name": "Fede"}], "recorded": "2026-07-30"}, {"ticker": "MU", "pct": 18.46, "date": "2026-07-30", "holders": [{"id": "fede", "name": "Fede"}], "recorded": "2026-07-30"}, {"ticker": "PLTR", "pct": 26.29, "date": "2026-08-04", "holders": [{"id": "ana", "name": "Ana"}], "recorded": "2026-08-04"}]}}};
+const UPDATED = "2026-08-14 20:31";
 
 // ==== idioma: inglés por defecto, japonés y francés opcionales ========
 // La selección se recuerda por dispositivo en localStorage. El selector solo
@@ -927,6 +963,11 @@ const I18N = {
     bestOfDay: "Best of the day",
     recentOps: "Latest trades",
     opBuy: "Buy", opSell: "Sell",
+    leagueNews: "League news",
+    newsCount: n => n + (n === 1 ? " headline" : " headlines"),
+    newsTickers: n => n + (n === 1 ? " holding" : " holdings"),
+    newsNote: "Headlines for the tickers held in the league, fetched when the " +
+      "page was built. Each one opens on its own outlet.",
     marketClosed: "Market closed",
     extPre: "Pre-market",
     extPost: "After hours",
@@ -1111,6 +1152,11 @@ const I18N = {
     bestOfDay: "本日のベスト",
     recentOps: "最新の取引",
     opBuy: "買い", opSell: "売り",
+    leagueNews: "リーグのニュース",
+    newsCount: n => n + "件の見出し",
+    newsTickers: n => n + "銘柄",
+    newsNote: "リーグの保有銘柄に関する見出しです。ページ生成時に取得したもので、" +
+      "各見出しは配信元のサイトで開きます。",
     marketClosed: "市場は休場",
     extPre: "プレマーケット",
     extPost: "時間外取引",
@@ -1293,6 +1339,11 @@ const I18N = {
     bestOfDay: "Meilleur du jour",
     recentOps: "Dernières opérations",
     opBuy: "Achat", opSell: "Vente",
+    leagueNews: "Actualités de la ligue",
+    newsCount: n => n + (n === 1 ? " titre" : " titres"),
+    newsTickers: n => n + (n === 1 ? " valeur" : " valeurs"),
+    newsNote: "Titres des valeurs détenues dans la ligue, récupérés lors de la " +
+      "génération de la page. Chacun s'ouvre sur son média.",
     marketClosed: "Marché fermé",
     extPre: "Avant-Bourse",
     extPost: "Après-Bourse",
@@ -2607,6 +2658,29 @@ function paintExtended() {
 }
 paintExtended();
 
+// ---- enlaces de noticias: siempre en otra ventana -------------------------
+// Un `target="_blank"` basta en el navegador, pero NO con la web instalada como
+// app (el manifest va en `display: standalone`): ahí el enlace se abre dentro
+// de la propia app, sin barra de direcciones ni botón de atrás, y quien entra a
+// leer una noticia se queda atrapado en ella. Cuando estamos en ese modo la
+// abrimos nosotros con `window.open`, que sí salta al navegador — llamado
+// dentro del propio click, que si no lo bloquea el navegador.
+const STANDALONE = (() => {
+  try {
+    return ["standalone", "fullscreen", "minimal-ui"].some(
+      m => window.matchMedia("(display-mode: " + m + ")").matches)
+      || window.navigator.standalone === true;
+  } catch (e) { return false; }
+})();
+function externalLink(href) {
+  const a = document.createElement("a");
+  a.href = href; a.target = "_blank"; a.rel = "noopener noreferrer";
+  if (STANDALONE) a.addEventListener("click", ev => {
+    ev.preventDefault();
+    window.open(href, "_blank", "noopener,noreferrer");
+  });
+  return a;
+}
 function newsRow(sym) {
   const q = encodeURIComponent(sym + " stock");
   const links = [
@@ -2616,13 +2690,99 @@ function newsRow(sym) {
   ];
   const box = h("div", "news");
   links.forEach(([label, href]) => {
-    const a = document.createElement("a");
-    a.href = href; a.target = "_blank"; a.rel = "noopener noreferrer";
+    const a = externalLink(href);
     a.innerHTML = label + ' <span class="ext">↗</span>';
     box.appendChild(a);
   });
   return box;
 }
+// Titulares descargados en el build (API de noticias de la liga) para los
+// valores que tiene alguien en cartera. Todo el texto entra por textContent:
+// viene de una API de terceros y nunca se interpreta como HTML.
+function newsListEl(items) {
+  const box = h("div", "newslist");
+  items.forEach(n => {
+    const a = externalLink(n.link);
+    a.className = "news-item";
+    const title = h("div", "nt"); title.textContent = n.title; a.appendChild(title);
+    if (n.desc) {
+      const d = h("div", "nd"); d.textContent = n.desc; a.appendChild(d);
+    }
+    const meta = h("div", "nm");
+    if (n.sym) {
+      const tk = h("span", "tk"); tk.textContent = n.sym; meta.appendChild(tk);
+    }
+    const bits = [];
+    if (n.source) bits.push(n.source);
+    if (n.at && /^\d{4}-\d{2}-\d{2}/.test(n.at)) bits.push(fmtDate(n.at.slice(0, 10)));
+    if (bits.length) meta.appendChild(document.createTextNode(bits.join(" · ")));
+    if (meta.childNodes.length) a.appendChild(meta);
+    box.appendChild(a);
+  });
+  return box;
+}
+// Titulares de varios valores a la vez (la cartera de un jugador): sin
+// repetidos y de más a menos reciente, marcando de qué valor es cada uno.
+function newsFor(syms, max) {
+  const seen = {}, out = [];
+  syms.forEach(sym => ((TICKERS[sym] || {}).news || []).forEach(n => {
+    if (seen[n.link]) return;
+    seen[n.link] = 1;
+    out.push(Object.assign({sym: sym}, n));
+  }));
+  out.sort((a, b) => (b.at || "").localeCompare(a.at || ""));
+  return max ? out.slice(0, max) : out;
+}
+// Sección de noticias: los titulares del build si los hay y, siempre, los
+// enlaces de búsqueda por símbolo (que no dependen de que la API respondiera).
+function newsSectionEl(title, items, sym) {
+  const sec = sectionEl(title, items.length ? newsListEl(items) : newsRow(sym));
+  if (items.length) sec.appendChild(newsRow(sym));
+  return sec;
+}
+// ---- noticias de la liga: módulo de portada -------------------------------
+// Los titulares de todos los valores que alguien tiene en cartera, mezclados de
+// más a menos reciente. Cada fila abre la noticia en su medio; el símbolo dice
+// de qué valor es (su ficha se abre desde la cartera, como siempre). Sin
+// noticias descargadas la tarjeta no se pinta: la portada no enseña huecos.
+const NEWS_HOME_MAX = 12;
+function paintNews() {
+  const card = document.getElementById("news-card");
+  const syms = (DATA.tickers || []).map(t => t.ticker);
+  const items = newsFor(syms, NEWS_HOME_MAX);
+  if (!items.length) { card.style.display = "none"; return; }
+  card.style.display = "";
+
+  const withNews = syms.filter(s => ((TICKERS[s] || {}).news || []).length).length;
+  document.getElementById("news-sub").textContent =
+    T.newsCount(items.length) + " \u00b7 " + T.newsTickers(withNews);
+  document.getElementById("news-note").textContent = T.newsNote;
+
+  const box = document.getElementById("news-feed");
+  box.innerHTML = "";
+  const rows = items.map(n => {
+    const row = externalLink(n.link);
+    row.className = "nw-row";
+    row.appendChild(tickerLogoEl(TICKERS[n.sym] || {ticker: n.sym}, 30));
+    const body = h("div", "nw-b");
+    const title = h("div", "nw-t"); title.textContent = n.title;
+    body.appendChild(title);
+    const meta = h("div", "nw-m");
+    const sym = h("span", "sym"); sym.textContent = n.sym;
+    meta.appendChild(sym);
+    const bits = [];
+    if (n.source) bits.push(n.source);
+    if (n.at && /^\d{4}-\d{2}-\d{2}/.test(n.at)) bits.push(fmtDate(n.at.slice(0, 10)));
+    if (bits.length)
+      meta.appendChild(document.createTextNode(" \u00b7 " + bits.join(" \u00b7 ")));
+    body.appendChild(meta);
+    row.appendChild(body);
+    box.appendChild(row);
+    return row;
+  });
+  collapseList(rows, box);
+}
+paintNews();
 // Botones «Comprar»/«Vender» que abren la app de Revolut en el detalle del
 // valor. Ambos llevan al mismo detalle; desde ahí se elige comprar o vender.
 function revolutRow(sym) {
@@ -2878,7 +3038,7 @@ function openTicker(sym) {
 
   if (t.peers && t.peers.length) root.appendChild(peersSectionEl(t.peers));
 
-  root.appendChild(sectionEl(T.news, newsRow(t.ticker)));
+  root.appendChild(newsSectionEl(T.news, t.news || [], t.ticker));
   root.appendChild(h("div", "mnote", T.tickerNote));
   showModal(root);
 }
@@ -2980,7 +3140,9 @@ function openPlayer(pid) {
   }
 
   if (p.holdings && p.holdings.length) {
-    root.appendChild(sectionEl(T.portfolioNews, newsRow(p.holdings[0].ticker)));
+    // Los titulares de toda su cartera, no solo los de su primera posición.
+    const syms = p.holdings.map(hh => hh.ticker);
+    root.appendChild(newsSectionEl(T.portfolioNews, newsFor(syms, 6), syms[0]));
   }
   showModal(root);
 }
