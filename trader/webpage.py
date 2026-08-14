@@ -239,9 +239,14 @@ _TEMPLATE = """<!doctype html>
      derecha), con el aire de abajo que el resto de widgets deja para su spark. */
   #best-card { padding-bottom: 18px; }
   #best-card .bestname { margin-top: 6px; }
+  /* «mejor del mes pasado»: mismo formato que el mejor del día (titular + %) y
+     un «ver más» al pie que abre la gráfica del mes en el segundo nivel. */
+  #month-prev-card .bestname { margin-top: 6px; }
+  #month-prev-card .more { margin-top: 14px; }
 
-  /* «ganador del mes»: tarjetas a ancho completo con la evolución de todos los
-     jugadores dentro del mes (cada uno con su color), no solo la del campeón. */
+  /* «ganador del mes»: el mes en curso va a ancho completo con la evolución de
+     todos los jugadores (cada uno con su color), no solo la del campeón; el mes
+     pasado se queda en titular y manda su gráfica al segundo nivel. */
   .mrow { display: grid; grid-template-columns: 1fr; gap: 12px; }
   .card.widget.month { padding-bottom: 18px; }
   .mhead { display: flex; align-items: flex-end; justify-content: space-between;
@@ -785,36 +790,21 @@ _TEMPLATE = """<!doctype html>
         <div class="mchart" id="month-cur-chart"></div>
         <div class="legend mlegend" id="month-cur-legend"></div>
       </section>
-      <section class="card widget month" id="month-prev-card">
+      <!-- el mes pasado ya está cerrado: en la portada basta con el titular
+           (quién ganó y con cuánto), igual que el «mejor del día». La gráfica de
+           todo el mes y el resto de jugadores viven detrás de «ver más». -->
+      <section class="card widget" id="month-prev-card">
         <div class="wlabel" id="month-prev-label"></div>
         <div class="mhead">
           <div class="mhead-l">
-            <div class="winnername"><span id="month-prev-player"></span><span class="trophy">🏆</span></div>
+            <div class="bestname"><span class="medal">🏆</span><span id="month-prev-player"></span></div>
           </div>
-          <div class="wbig sm"><span class="num" id="month-prev-val"></span></div>
+          <div class="wbig"><span class="num" id="month-prev-val"></span></div>
         </div>
-        <div class="mchart" id="month-prev-chart"></div>
-        <div class="legend mlegend" id="month-prev-legend"></div>
+        <button class="more" id="month-prev-more" type="button"></button>
       </section>
     </div>
   </div>
-
-  <!-- objetivo de la liga: cuánto lleva cada jugador de su meta y cuántos días
-       quedan para el 1 de agosto. El avance de un jugador solo se pinta si lo
-       publica (``show_goal``): es su valor de cartera en porcentaje. -->
-  <section class="card" id="goal-card" style="display:none">
-    <div class="goal-head">
-      <div class="goal-l">
-        <h2 data-i18n="goalTitle"></h2>
-        <div class="wsub muted" id="goal-fx" style="display:none"></div>
-      </div>
-      <div class="goal-count">
-        <span class="num" id="goal-days"></span>
-        <span class="lbl" id="goal-days-lbl"></span>
-      </div>
-    </div>
-    <div id="goal-list" style="margin-top:14px"></div>
-  </section>
 
   <!-- sesión extendida (pre-market / after-hours) de los valores de la liga.
        Solo se pinta cuando había una sesión extendida en curso al generar la
@@ -831,21 +821,6 @@ _TEMPLATE = """<!doctype html>
     </div>
     <div class="ext-list" id="ext-list"></div>
     <div class="wsub muted" id="ext-note" style="margin-top:10px"></div>
-  </section>
-
-  <section class="card" id="badges-card" style="display:none">
-    <h2 data-i18n="badgesTitle"></h2>
-    <div class="wsub muted" data-i18n="badgesSub" style="margin-top:2px"></div>
-    <section class="card widget record" id="record-card" style="display:none;margin-top:12px">
-      <div class="wlabel"><span data-i18n="recordTitle"></span><span id="record-date"></span></div>
-      <div class="wbig"><span class="num pos" id="record-val"></span><span class="record-tk" id="record-tk"></span></div>
-      <div class="bestname" id="record-holders"></div>
-      <div class="wsub muted" id="record-prev" style="margin-top:6px"></div>
-    </section>
-    <div id="badge-rail" class="badge-rail" style="margin-top:12px" tabindex="0"
-         role="group" data-i18n-aria="badgesRailAria"></div>
-    <div id="badge-nav" class="badge-nav" style="display:none"></div>
-    <div class="wsub muted" id="badge-empty" style="display:none;margin-top:8px" data-i18n="badgesEmpty"></div>
   </section>
 
   <section class="card" id="ops-card" style="display:none">
@@ -888,6 +863,40 @@ _TEMPLATE = """<!doctype html>
   <section class="card">
     <h2 data-i18n="dailyDetailTitle"></h2>
     <div id="detail" style="margin-top:4px"></div>
+  </section>
+
+  <!-- objetivo de la liga: cuánto lleva cada jugador de su meta y cuántos días
+       quedan para el 1 de agosto. El avance de un jugador solo se pinta si lo
+       publica (``show_goal``): es su valor de cartera en porcentaje. Va al final
+       de la página, junto a las insignias: son el palmarés de la liga, no el
+       titular del día. -->
+  <section class="card" id="goal-card" style="display:none">
+    <div class="goal-head">
+      <div class="goal-l">
+        <h2 data-i18n="goalTitle"></h2>
+        <div class="wsub muted" id="goal-fx" style="display:none"></div>
+      </div>
+      <div class="goal-count">
+        <span class="num" id="goal-days"></span>
+        <span class="lbl" id="goal-days-lbl"></span>
+      </div>
+    </div>
+    <div id="goal-list" style="margin-top:14px"></div>
+  </section>
+
+  <section class="card" id="badges-card" style="display:none">
+    <h2 data-i18n="badgesTitle"></h2>
+    <div class="wsub muted" data-i18n="badgesSub" style="margin-top:2px"></div>
+    <section class="card widget record" id="record-card" style="display:none;margin-top:12px">
+      <div class="wlabel"><span data-i18n="recordTitle"></span><span id="record-date"></span></div>
+      <div class="wbig"><span class="num pos" id="record-val"></span><span class="record-tk" id="record-tk"></span></div>
+      <div class="bestname" id="record-holders"></div>
+      <div class="wsub muted" id="record-prev" style="margin-top:6px"></div>
+    </section>
+    <div id="badge-rail" class="badge-rail" style="margin-top:12px" tabindex="0"
+         role="group" data-i18n-aria="badgesRailAria"></div>
+    <div id="badge-nav" class="badge-nav" style="display:none"></div>
+    <div class="wsub muted" id="badge-empty" style="display:none;margin-top:8px" data-i18n="badgesEmpty"></div>
   </section>
 </main>
 <div class="modal" id="modal" aria-hidden="true">
@@ -1016,6 +1025,9 @@ const I18N = {
     winnerOf: ml => "Winner of " + ml,
     monthChartAria: ml => "Return of every player during " + ml,
     lunchNote: "🍽️ Their turn to buy lunch",
+    monthSeeMore: "See how the month went",
+    monthEvolution: "How the month went",
+    monthRanking: "Month standings",
     aiBadge: "AI",
     insightsTitle: "League insights",
     aiLive: "automatic analysis",
@@ -1204,6 +1216,9 @@ const I18N = {
     winnerOf: ml => ml + "の優勝者",
     monthChartAria: ml => ml + "の全プレイヤーのリターン推移",
     lunchNote: "🍽️ ランチをおごる番",
+    monthSeeMore: "その月の推移を見る",
+    monthEvolution: "月間の推移",
+    monthRanking: "月間ランキング",
     aiBadge: "AI",
     insightsTitle: "リーグのインサイト",
     aiLive: "自動分析",
@@ -1392,6 +1407,9 @@ const I18N = {
     winnerOf: ml => "Vainqueur " + deMois(ml),
     monthChartAria: ml => "Rendement de chaque joueur en " + ml,
     lunchNote: "🍽️ C'est sa tournée pour le déjeuner",
+    monthSeeMore: "Voir le déroulé du mois",
+    monthEvolution: "Le déroulé du mois",
+    monthRanking: "Classement du mois",
     aiBadge: "IA",
     insightsTitle: "Analyses de la ligue",
     aiLive: "analyse automatique",
@@ -1839,6 +1857,10 @@ paintWidgets();
 // mes con su color: así se ve de un vistazo cómo va el resto y cuánta ventaja
 // lleva el campeón. El acumulado arranca en 0 el primer día del mes (es la
 // carrera *de ese mes*, no el acumulado de toda la liga).
+//
+// La gráfica solo va en el widget del mes en curso, que es la carrera viva. El
+// mes pasado ya está cerrado y se queda con el titular: su gráfica se dibuja en
+// el segundo nivel, al pulsar «ver más» (``openMonthDetail``).
 function monthChart(host, info) {
   const NSm = "http://www.w3.org/2000/svg";
   const mk = (tag, attrs) => { const e = document.createElementNS(NSm, tag);
@@ -1961,12 +1983,23 @@ function paintMonthly() {
     document.getElementById(key + "-player").textContent = info.name;
     const note = document.getElementById(key + "-note");
     if (note) note.textContent = T.lunchNote;
-    monthChart(document.getElementById(key + "-chart"), info);
-    monthLegend(document.getElementById(key + "-legend"), info);
+    // El widget del mes pasado no lleva gráfica: es un titular y su «ver más».
+    const chart = document.getElementById(key + "-chart");
+    if (chart) monthChart(chart, info);
+    const legend = document.getElementById(key + "-legend");
+    if (legend) monthLegend(legend, info);
     return true;
   };
   const hasCur = paint(m.current, "month-cur");
   const hasPrev = paint(m.previous, "month-prev");
+  // «ver más» del mes pasado: la gráfica de todos los jugadores y su
+  // clasificación se abren en el segundo nivel (``onclick`` y no
+  // ``addEventListener`` porque esta función se repinta al cambiar de tamaño).
+  const more = document.getElementById("month-prev-more");
+  if (more) {
+    more.textContent = T.monthSeeMore;
+    more.onclick = hasPrev ? () => openMonthDetail(m.previous) : null;
+  }
   const row = document.getElementById("month-row");
   row.style.display = (hasCur || hasPrev) ? "grid" : "none";
 }
@@ -3281,6 +3314,56 @@ function openDayDetail(pid, iso) {
   }
 
   showModal(root);
+}
+
+// ---- segundo nivel del mes pasado («ver más» del widget) ----
+// El widget de portada solo canta el titular (quién ganó y con cuánto); aquí
+// abajo está el detalle: la evolución de todos los jugadores dentro del mes y su
+// clasificación, con cada fila abriendo la ficha del jugador.
+function openMonthDetail(info) {
+  if (!info) return;
+  const ml = monthLabel(info.month, info.month_year);
+  const root = document.createElement("div");
+
+  const head = h("div", "mhead");
+  head.appendChild(monoEl(info.name, 46, css(SLOTS[info.slot % SLOTS.length])));
+  const title = h("div", "mtitle");
+  const t1 = h("div", "t1");
+  t1.appendChild(document.createTextNode(ml));
+  t1.appendChild(h("span", "mbadge" + (info.value >= 0 ? "" : " neg"), fmtPct(info.value)));
+  title.appendChild(t1);
+  title.appendChild(h("div", "t2", "🏆 " + info.name));
+  head.appendChild(title);
+  root.appendChild(head);
+
+  // La gráfica se pinta *después* de abrir la hoja: mide el ancho real de su
+  // contenedor y dentro del modal ese ancho no existe hasta estar en el DOM.
+  const chart = h("div", "mchart");
+  root.appendChild(sectionEl(T.monthEvolution, chart));
+
+  const series = info.series || [];
+  if (series.length) {
+    const list = document.createElement("div");
+    const rows = series.map((s, i) => {
+      const row = h("div", "holder-row clk");
+      row.dataset.player = s.id;
+      const nm = h("span", "nm");
+      const key = h("span", "key");
+      key.style.background = css(SLOTS[s.slot % SLOTS.length]);
+      nm.appendChild(key);
+      if (i === 0) nm.appendChild(document.createTextNode("🏆 "));
+      nm.appendChild(document.createTextNode(s.name));
+      row.appendChild(nm);
+      row.appendChild(h("span", "w " + (s.value >= 0 ? "pos" : "neg"), fmtPct(s.value)));
+      list.appendChild(row);
+      return row;
+    });
+    collapseList(rows, list);
+    root.appendChild(sectionEl(T.monthRanking, list));
+  }
+
+  showModal(root);
+  monthChart(chart, info);
 }
 
 // ---- apertura por delegación + cierre (backdrop / ✕ / Esc) ----

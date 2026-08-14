@@ -329,6 +329,37 @@ def test_monthly_previous_month_when_data():
     assert payload["monthly"]["previous"]["value"] == 3.0
 
 
+def test_previous_month_widget_is_a_headline_with_a_second_level(tmp_path):
+    """El mes pasado se queda en titular: su gráfica va tras «ver más»."""
+    fede = Player(player_id="fede", display_name="Fede")
+    series = [_day(date(2026, 7, 20), 0.03), _day(date(2026, 8, 3), 0.02)]
+    out = tmp_path / "index.html"
+    webpage.write_index([(fede, series)], out_path=str(out), today=date(2026, 8, 5))
+    html = out.read_text(encoding="utf-8")
+
+    # el widget sigue, pero sin gráfica ni leyenda dentro de la tarjeta
+    assert 'id="month-prev-card"' in html
+    assert 'id="month-prev-chart"' not in html
+    assert 'id="month-prev-legend"' not in html
+    # la del mes en curso, que es la carrera viva, se queda donde estaba
+    assert 'id="month-cur-chart"' in html
+    # y el detalle del mes pasado se abre desde el botón «ver más»
+    assert 'id="month-prev-more"' in html
+    assert "function openMonthDetail(info)" in html
+
+
+def test_goal_and_badges_close_the_page(tmp_path):
+    """Objetivo e insignias van al final, detrás del detalle diario."""
+    fede = Player(player_id="fede", display_name="Fede")
+    out = tmp_path / "index.html"
+    webpage.write_index([(fede, _series(6))], out_path=str(out))
+    html = out.read_text(encoding="utf-8")
+
+    last_module = html.index('id="wallets-card"')
+    assert last_module < html.index('id="goal-card"') < html.index('id="badges-card"')
+    assert html.index('id="badges-card"') < html.index("</main>")
+
+
 def test_monthly_none_when_no_competition_data():
     fede = Player(player_id="fede", display_name="Fede")
     # Serie de enero de 2026, anterior al inicio de la competición.
