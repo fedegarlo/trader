@@ -1,7 +1,7 @@
 {
   "display_name": "Fede",
   "currency": "USD",
-  "show_amounts": false,
+  "show_amounts": true,
   "goal": 14000,
-  "show_goal": false
+  "show_goal": true
 }
