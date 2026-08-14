@@ -61,12 +61,17 @@ agosto: es una meta que se renueva cada año) y ordena a los jugadores de más a
 menos avance.
 
 El porcentaje es el valor de la cartera al último cierre (posiciones + efectivo)
-sobre el objetivo de cada uno, así que **publicarlo es publicar ese importe**
-aunque sea en forma de %. Por eso es opt-in, como los importes: solo se pinta
-la barra de quien active `"show_goal": true` en su `player.json`. Quien no lo
-active sigue apareciendo en el módulo —están todos— pero con la barra en trama
-y sin cifra. El importe exacto (`5.000 € de 14.000 €`) necesita además
-`"show_amounts": true`. El objetivo se puede cambiar por jugador con `"goal"`.
+sobre el objetivo de cada uno, así que **publicar el avance es publicar ese
+importe**: «42,11 % de 14.000 €» son 5.895 € al céntimo. No es un porcentaje
+como el de la clasificación, donde la escala se cancela y no se deduce nada.
+
+Por eso el avance es **opt-in y por defecto está apagado**, incluso para quien
+tenga `show_amounts: true`: solo se pinta la barra de quien active
+`"show_goal": true` en su `player.json`. Quien no lo active sigue apareciendo
+en el módulo —están todos— pero con la barra en trama y sin ninguna cifra.
+`show_amounts: true` añade encima el importe escrito (`5.000 € de 14.000 €`),
+que a esas alturas ya no revela nada nuevo. El objetivo se cambia por jugador
+con `"goal"`.
 
 **El objetivo está en euros y las carteras se valoran en la divisa del
 extracto** (dólares, para los valores de EE. UU.), así que hay que convertir:

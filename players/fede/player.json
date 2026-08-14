@@ -3,5 +3,5 @@
   "currency": "USD",
   "show_amounts": false,
   "goal": 14000,
-  "show_goal": true
+  "show_goal": false
 }
