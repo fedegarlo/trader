@@ -17,11 +17,15 @@ cada día de mercado por una GitHub Action:
 
 La página es estática y autocontenida. Abre con la **clasificación**: una tabla
 tipo parrilla de F1 o tabla de liga (1º, 2º, 3º…, con el acumulado de cada
-jugador y el % de la última jornada), seguida del **mejor del día**, del
-**camino al objetivo** (ver [🎯 Camino al objetivo](#-camino-al-objetivo)), de
-las **noticias de la liga** (ver
+jugador y el % de la última jornada), seguida del **mejor del día**, de los
+**ganadores del mes** (el mes en curso con la evolución de todos los jugadores;
+el mes pasado, ya cerrado, solo con su titular y esa gráfica detrás de «ver
+más»), de las **noticias de la liga** (ver
 [📰 Noticias de los valores de la liga](#-noticias-de-los-valores-de-la-liga)) y
-del detalle diario. La liga se juega **desde el inicio**: la clasificación y el
+del detalle diario. La página cierra con el **camino al objetivo** (ver
+[🎯 Camino al objetivo](#-camino-al-objetivo)) y las **insignias**, que son el
+palmarés de la liga y no el titular del día. La liga se juega **desde el
+inicio**: la clasificación y el
 detalle diario cubren toda la competición; los campeones del mes actual y del
 anterior son **parciales** y se calculan aparte. Además, al **tocar un jugador**
 (fila de la clasificación, leyenda o su cartera) o un **ticker** (leyenda de
