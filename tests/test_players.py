@@ -56,3 +56,32 @@ def test_not_undecryptable_with_right_passphrase(tmp_path):
     assert player.decrypt_failures == 0
     assert player.undecryptable is False
     assert len(player.events) == 1
+
+
+def _config(tmp_path, player_id, config):
+    pdir = tmp_path / player_id
+    pdir.mkdir()
+    (pdir / "player.json").write_text(json.dumps(config), encoding="utf-8")
+    return str(tmp_path)
+
+
+def test_goal_defaults_to_the_league_target_and_stays_private():
+    player = players.Player(player_id="fede", display_name="Fede")
+    assert player.goal == players.DEFAULT_GOAL == 14000.0
+    assert player.show_goal is False
+
+
+def test_goal_config_read_from_player_json(tmp_path):
+    players_dir = _config(tmp_path, "fede", {
+        "display_name": "Fede", "goal": 20000, "show_goal": True,
+    })
+    player = players.load_player(players_dir, "fede", passphrase="x")
+    assert player.goal == 20000.0
+    assert player.show_goal is True
+
+
+def test_goal_falls_back_to_the_default_when_absent_or_zero(tmp_path):
+    players_dir = _config(tmp_path, "ana", {"display_name": "Ana", "goal": 0})
+    player = players.load_player(players_dir, "ana", passphrase="x")
+    assert player.goal == players.DEFAULT_GOAL
+    assert player.show_goal is False

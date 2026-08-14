@@ -65,12 +65,21 @@ en tu propia carpeta `players/<tu-id>/`.
    {
      "display_name": "Tu Nombre",
      "currency": "USD",
-     "show_amounts": false
+     "show_amounts": false,
+     "goal": 14000,
+     "show_goal": false
    }
    ```
 
    Con `show_amounts: false` el ranking público solo muestra porcentajes;
    tus importes no se publican.
+
+   `goal` es tu objetivo de la liga (14.000 por defecto: lo que quieres tener
+   entre inversiones y efectivo el 1 de agosto) y `show_goal` decide si tu
+   avance sale en el módulo **🎯 Camino al objetivo** de la web. Va aparte de
+   `show_amounts` a propósito: aunque solo se publique el porcentaje, un
+   «62 % de 14.000» deja adivinar el importe de tu cartera. Con
+   `show_goal: false` sigues apareciendo en el módulo, pero sin barra.
 2. Cifra tu extracto con la **frase compartida de la liga**:
 
    ```bash
@@ -110,7 +119,7 @@ and variables → Actions → *Variables*), un JSON `id → datos`:
 
 ```json
 {
-  "fede": { "email": "fede@icloud.com", "name": "Fede 🚀", "currency": "USD", "show_amounts": false },
+  "fede": { "email": "fede@icloud.com", "name": "Fede 🚀", "currency": "USD", "show_amounts": false, "goal": 14000, "show_goal": true },
   "ana":  { "email": "ana@gmail.com", "name": "Ana", "currency": "EUR", "show_amounts": true }
 }
 ```
