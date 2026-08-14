@@ -22,6 +22,7 @@ from . import badges as badges_mod
 from . import extended as extended_mod
 from . import fx as fx_mod
 from . import inbox as inbox_mod
+from . import news as news_mod
 from . import players as players_mod
 from . import report as report_mod
 from . import revolut_pdf, secretbox, webpage, yahoo
@@ -171,6 +172,15 @@ def cmd_ranking(args: argparse.Namespace) -> None:
     extended = extended_mod.ExtendedQuotes(
         offline=args.offline, session=session).fetch_all(allocation)
 
+    # Noticias de los valores que tienen los participantes de la liga: se piden
+    # a la API de noticias (POST, en lote) y se cachean por día. Solo viajan los
+    # símbolos, que ya son públicos en la web; si la API no responde se usa la
+    # caché y, si tampoco hay, la ficha se queda con los enlaces de búsqueda.
+    news = news_mod.NewsCache(
+        cache_dir=args.news_dir, offline=args.offline,
+        refresh=getattr(args, "refresh", False), endpoint=args.news_api,
+        limit=args.news_limit).fetch_all(sorted(allocation))
+
     # Insignias: se acumulan en un histórico (data/badges.json) que no se
     # recalcula desde cero, solo añade las nuevas y actualiza el récord de la
     # liga cuando alguien lo supera.
@@ -194,7 +204,7 @@ def cmd_ranking(args: argparse.Namespace) -> None:
     webpage.write_index(computed, out_path=args.html_out, pending=pending,
                         allocation=allocation, holdings=holdings,
                         prices=price_history, analysts=analysts,
-                        extended=extended,
+                        extended=extended, news=news,
                         contributions=contributions, badges=badges,
                         fx=fx_rates)
     with open(args.pending_out, "w", encoding="utf-8") as fh:
@@ -244,6 +254,14 @@ def main(argv: list[str] | None = None) -> None:
     p_rank.add_argument("--prices-dir", default="data/prices")
     p_rank.add_argument("--analysts-dir", default="data/analysts",
                         help="caché del consenso de analistas (Yahoo quoteSummary)")
+    p_rank.add_argument("--news-dir", default="data/news",
+                        help="caché de titulares por ticker (API de noticias)")
+    p_rank.add_argument("--news-api", default=None,
+                        help="endpoint de la API de noticias "
+                             f"(por defecto {news_mod.DEFAULT_ENDPOINT}, "
+                             "o la variable TRADER_NEWS_API)")
+    p_rank.add_argument("--news-limit", type=int, default=news_mod.DEFAULT_LIMIT,
+                        help="titulares por ticker (0 = sin noticias)")
     p_rank.add_argument("--public-dir", default="data/public")
     p_rank.add_argument("--badges-file", default="data/badges.json",
                         help="histórico acumulativo de insignias (badges)")

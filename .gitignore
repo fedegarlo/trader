@@ -5,6 +5,10 @@ players/**/*.csv
 # lista de extractos sin descifrar que genera `trader ranking` para la CI
 pending.json
 
+# caché de titulares: son de hoy y solo sirve de red de seguridad dentro del
+# mismo build; versionarla solo publicaría noticias viejas
+data/news/*.json
+
 __pycache__/
 *.pyc
 .pytest_cache/

@@ -27,12 +27,14 @@ cualquier tarta de cartera) se abre una **ficha de detalle**:
 
 - **Detalle del jugador**: estadísticas (acumulado, mejor y peor día, racha,
   jornadas), rentabilidad acumulada, su cartera con los logos de cada valor y
-  enlaces a noticias.
+  las **noticias de toda su cartera** (los titulares de sus valores, mezclados
+  de más a menos reciente y etiquetados con el símbolo de cada uno).
 - **Detalle del ticker**: logo y nombre de la empresa, peso en la liga, quién
   lo tiene, la variación de precio de la ventana con su mini-gráfica, la
   **recomendación de analistas** (consenso comprar/mantener/vender, reparto de
   opiniones, nº de analistas y precio objetivo con su recorrido), **valores
-  relacionados** y enlaces a noticias (Yahoo Finance, Google News, Finviz).
+  relacionados** y sus **noticias** (titular, entradilla, medio y fecha), con
+  los enlaces de búsqueda de siempre (Yahoo Finance, Google News, Finviz).
 - **Próximo paso del jugador**: en su ficha, una sugerencia orientativa de
   compra/venta sobre una de sus posiciones, elegida por la señal más marcada del
   consenso de analistas. Es informativa (no es una recomendación de inversión).
@@ -42,15 +44,43 @@ de la pantalla, con barra de agarre: se cierra deslizándola hacia abajo, tocand
 la barra, con la ✕ o pulsando fuera. En pantallas anchas se centra como diálogo.
 
 Los logos se piden en tiempo de vista a logo.dev (por dominio) con respaldo a
-un monograma de color si el servicio no responde, y las noticias son enlaces de
-búsqueda por símbolo: la página sigue sin exponer importes ni operaciones. El
-**consenso de analistas** se descarga en el build del ranking (Yahoo Finance,
-módulo `quoteSummary`) y se cachea en `data/analysts/<TICKER>.json` (versionado,
+un monograma de color si el servicio no responde: la página sigue sin exponer
+importes ni operaciones. El **consenso de analistas** se descarga en el build
+del ranking (Yahoo Finance, módulo `quoteSummary`) y se cachea en
+`data/analysts/<TICKER>.json` (versionado,
 igual que los precios); si Yahoo no responde, la sección simplemente no aparece
 (nunca se inventan cifras). La **cotización fuera de horario** (pre-market /
 after-hours) se descarga también en el build, del mismo `quoteSummary`, pero
 **no se cachea**: caduca en minutos, así que o hay dato fresco o no se enseña.
 Los valores relacionados están curados en `trader/tickers.py`.
+
+### 📰 Noticias de los valores de la liga
+
+Los titulares de los valores **que alguien tiene en cartera** se descargan
+también en el build (`trader/news.py`) de la API de noticias de la liga:
+
+```bash
+curl -X POST http://imprifyapp.com/api/trader/news \
+  -H 'Content-Type: application/json' \
+  -d '{"tickers":["AAPL","TSLA"],"timezone":"Europe/Madrid","limit":5}'
+```
+
+Se pide **una sola petición en lote** (troceada de 20 en 20 si la liga tiene
+muchos valores) con los símbolos de la cartera agregada, y de cada noticia se
+guarda titular, entradilla, enlace, medio y fecha. Lo que viaja a la API son
+**solo símbolos**, que ya son públicos en la propia página (el widget de cartera
+los enseña con su peso): nunca quién tiene qué, ni importes, ni operaciones.
+
+Todo es *best-effort* y con red debajo:
+
+- La respuesta se cachea en `data/news/<TICKER>.json` **por día** (no se
+  versiona: los titulares caducan). Si la API falla en un build, se sirve lo
+  cacheado; si no hay nada, la ficha se queda con los enlaces de búsqueda.
+- Solo se publican noticias con titular y con enlace `http(s)`. Como el texto
+  viene de fuera, la página lo pinta siempre como texto plano, nunca como HTML.
+- El endpoint se puede cambiar con `--news-api` o con la variable de entorno
+  `TRADER_NEWS_API`, y `--news-limit` fija cuántos titulares por valor
+  (`--news-limit 0` desactiva las noticias). Con `--offline` no se pide nada.
 
 Las **gráficas van suavizadas**: los puntos se unen con un spline cúbico
 monótono (Fritsch–Carlson) en vez de con segmentos rectos, así que se van los

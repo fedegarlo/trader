@@ -603,6 +603,18 @@ _TEMPLATE = """<!doctype html>
   }
   .news a:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--hair)); color: var(--accent); }
   .news a .ext { color: var(--muted); font-size: 11px; }
+  /* titulares descargados en el build (API de noticias de la liga) */
+  .newslist { display: flex; flex-direction: column; }
+  .newslist + .news { margin-top: 12px; }
+  .news-item { display: block; text-decoration: none; color: inherit;
+               padding: 10px 4px; border-top: 1px solid var(--hair); }
+  .news-item:first-child { border-top: none; padding-top: 2px; }
+  .news-item .nt { font-size: 13.5px; font-weight: 700; line-height: 1.35; }
+  .news-item:hover .nt { color: var(--accent); }
+  .news-item .nd { color: var(--ink-2); font-size: 12px; line-height: 1.4; margin-top: 3px; }
+  .news-item .nm { color: var(--muted); font-size: 11.5px; font-weight: 600; margin-top: 4px;
+                   display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .news-item .nm .tk { font-weight: 800; color: var(--ink-2); }
   /* operar en Revolut: botones comprar/vender que abren la app en el detalle del valor */
   .revolut { display: flex; gap: 10px; }
   .rev-btn {
@@ -2658,6 +2670,51 @@ function newsRow(sym) {
   });
   return box;
 }
+// Titulares descargados en el build (API de noticias de la liga) para los
+// valores que tiene alguien en cartera. Todo el texto entra por textContent:
+// viene de una API de terceros y nunca se interpreta como HTML.
+function newsListEl(items) {
+  const box = h("div", "newslist");
+  items.forEach(n => {
+    const a = document.createElement("a");
+    a.href = n.link; a.target = "_blank"; a.rel = "noopener noreferrer";
+    a.className = "news-item";
+    const title = h("div", "nt"); title.textContent = n.title; a.appendChild(title);
+    if (n.desc) {
+      const d = h("div", "nd"); d.textContent = n.desc; a.appendChild(d);
+    }
+    const meta = h("div", "nm");
+    if (n.sym) {
+      const tk = h("span", "tk"); tk.textContent = n.sym; meta.appendChild(tk);
+    }
+    const bits = [];
+    if (n.source) bits.push(n.source);
+    if (n.at && /^\\d{4}-\\d{2}-\\d{2}/.test(n.at)) bits.push(fmtDate(n.at.slice(0, 10)));
+    if (bits.length) meta.appendChild(document.createTextNode(bits.join(" · ")));
+    if (meta.childNodes.length) a.appendChild(meta);
+    box.appendChild(a);
+  });
+  return box;
+}
+// Titulares de varios valores a la vez (la cartera de un jugador): sin
+// repetidos y de más a menos reciente, marcando de qué valor es cada uno.
+function newsFor(syms, max) {
+  const seen = {}, out = [];
+  syms.forEach(sym => ((TICKERS[sym] || {}).news || []).forEach(n => {
+    if (seen[n.link]) return;
+    seen[n.link] = 1;
+    out.push(Object.assign({sym: sym}, n));
+  }));
+  out.sort((a, b) => (b.at || "").localeCompare(a.at || ""));
+  return max ? out.slice(0, max) : out;
+}
+// Sección de noticias: los titulares del build si los hay y, siempre, los
+// enlaces de búsqueda por símbolo (que no dependen de que la API respondiera).
+function newsSectionEl(title, items, sym) {
+  const sec = sectionEl(title, items.length ? newsListEl(items) : newsRow(sym));
+  if (items.length) sec.appendChild(newsRow(sym));
+  return sec;
+}
 // Botones «Comprar»/«Vender» que abren la app de Revolut en el detalle del
 // valor. Ambos llevan al mismo detalle; desde ahí se elige comprar o vender.
 function revolutRow(sym) {
@@ -2913,7 +2970,7 @@ function openTicker(sym) {
 
   if (t.peers && t.peers.length) root.appendChild(peersSectionEl(t.peers));
 
-  root.appendChild(sectionEl(T.news, newsRow(t.ticker)));
+  root.appendChild(newsSectionEl(T.news, t.news || [], t.ticker));
   root.appendChild(h("div", "mnote", T.tickerNote));
   showModal(root);
 }
@@ -3015,7 +3072,9 @@ function openPlayer(pid) {
   }
 
   if (p.holdings && p.holdings.length) {
-    root.appendChild(sectionEl(T.portfolioNews, newsRow(p.holdings[0].ticker)));
+    // Los titulares de toda su cartera, no solo los de su primera posición.
+    const syms = p.holdings.map(hh => hh.ticker);
+    root.appendChild(newsSectionEl(T.portfolioNews, newsFor(syms, 6), syms[0]));
   }
   showModal(root);
 }
@@ -3197,6 +3256,7 @@ def _ticker_details(
     price_days: int,
     analysts: dict[str, dict] | None = None,
     extended: dict[str, dict] | None = None,
+    news: dict[str, list[dict]] | None = None,
 ) -> list[dict]:
     """Detalle público por ticker para la vista de detalle de la web.
 
@@ -3214,6 +3274,7 @@ def _ticker_details(
     prices = prices or {}
     analysts = analysts or {}
     extended = extended or {}
+    news = news or {}
     out = []
     for item in weights:
         ticker = item["ticker"]
@@ -3258,6 +3319,9 @@ def _ticker_details(
         ext = extended.get(ticker)
         if ext:
             entry["ext"] = ext
+        headlines = news.get(ticker)
+        if headlines:
+            entry["news"] = headlines
         out.append(entry)
     return out
 
@@ -3596,6 +3660,7 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
                   prices: dict[str, list[tuple]] | None = None,
                   analysts: dict[str, dict] | None = None,
                   extended: dict[str, dict] | None = None,
+                  news: dict[str, list[dict]] | None = None,
                   contributions: dict[str, dict[date, dict[str, float]]] | None = None,
                   badges: dict | None = None,
                   fx: dict[str, float] | None = None,
@@ -3633,6 +3698,11 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
     after-hours, ver :mod:`trader.extended`): precios públicos de mercado, foto
     del momento del build, que alimentan la tarjeta de sesión extendida del
     dashboard y el detalle de cada valor.
+
+    ``news`` son los titulares por ticker (:mod:`trader.news`) de los valores
+    que tienen los participantes: viajan con su valor y la ficha de cada
+    jugador reúne los de su cartera. Son enlaces y titulares públicos, así que
+    no revelan nada de nadie.
     """
     today = today or date.today()
     now = now or datetime.now(timezone.utc)
@@ -3706,7 +3776,8 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
             "market": _market_snapshot(allocation, extended,
                                        int(now.timestamp())),
             "tickers": _ticker_details(allocation, holdings, order, names,
-                                       prices, price_days, analysts, extended),
+                                       prices, price_days, analysts, extended,
+                                       news),
             "monthly": _monthly_bests(computed, today, order),
             "dailyWinners": {
                 "month": today.month,
@@ -3747,6 +3818,7 @@ def write_index(
     prices: dict[str, list[tuple]] | None = None,
     analysts: dict[str, dict] | None = None,
     extended: dict[str, dict] | None = None,
+    news: dict[str, list[dict]] | None = None,
     contributions: dict[str, dict[date, dict[str, float]]] | None = None,
     badges: dict | None = None,
     fx: dict[str, float] | None = None,
@@ -3756,6 +3828,7 @@ def write_index(
                       pending=pending,
                       allocation=allocation, holdings=holdings,
                       prices=prices, analysts=analysts, extended=extended,
+                      news=news,
                       contributions=contributions, badges=badges, fx=fx,
                       today=today or date.today()),
         ensure_ascii=False)
