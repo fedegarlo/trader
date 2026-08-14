@@ -36,6 +36,14 @@
       "player": "ana",
       "name": "Ana",
       "date": "2026-08-13"
+    },
+    {
+      "key": "week_streak:fede",
+      "recorded": "2026-08-14",
+      "type": "week_streak",
+      "player": "fede",
+      "name": "Fede",
+      "date": "2026-08-14"
     }
   ],
   "record": {
