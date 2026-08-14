@@ -662,7 +662,8 @@ def test_goal_deadline_day_itself_still_counts():
     payload = webpage.build_payload(
         [(Player(player_id="fede", display_name="Fede"), _series(5))],
         today=date(2026, 8, 1))
-    assert payload["goal"] == {"target": 14000.0, "deadline": "2026-08-01", "days": 0}
+    assert payload["goal"] == {"target": 14000.0, "deadline": "2026-08-01",
+                               "days": 0, "fx": {}}
 
 
 def test_goal_progress_is_opt_in_per_player():
@@ -692,17 +693,45 @@ def test_goal_converts_the_portfolio_to_euros():
                                  fx={"USD": 1 / 1.1791})["players"][0]["goal"]
     assert round(goal["value"]) == 5000
     assert goal["pct"] == 35.71
-    # y se publica el cambio aplicado, que es justo lo que despistaba
     assert goal["currency"] == "USD"
-    assert round(goal["rate"], 4) == 0.8481
 
 
 def test_goal_in_euros_carries_no_exchange_rate():
     fede = Player(player_id="fede", display_name="Fede",
                   currency="EUR", show_goal=True)
-    goal = webpage.build_payload([(fede, _goal_series(7000.0))],
-                                 fx=_EUR)["players"][0]["goal"]
-    assert "rate" not in goal and "currency" not in goal
+    payload = webpage.build_payload([(fede, _goal_series(7000.0))], fx=_EUR)
+    assert "currency" not in payload["players"][0]["goal"]
+    assert payload["goal"]["fx"] == {}          # nada que convertir
+
+
+def test_exchange_rate_is_published_for_the_league_not_per_player():
+    """El cambio es un precio de mercado: va en la cabecera, no en el jugador.
+
+    Colgado de cada jugador desaparecía de la web en cuanto todos tenían su
+    avance en privado — justo el dato que explica cómo se cuenta el objetivo.
+    """
+    fede = Player(player_id="fede", display_name="Fede",
+                  currency="USD", show_goal=True)
+    payload = webpage.build_payload([(fede, _goal_series(5895.4))],
+                                    fx={"USD": 1 / 1.1791})
+    assert round(payload["goal"]["fx"]["USD"], 4) == 0.8481
+    assert "rate" not in payload["players"][0]["goal"]
+
+
+def test_exchange_rate_survives_everyone_going_private():
+    quiet = Player(player_id="ana", display_name="Ana", currency="USD")
+    payload = webpage.build_payload([(quiet, _goal_series(5895.4))],
+                                    fx={"USD": 1 / 1.1791})
+    assert "goal" not in payload["players"][0]      # sin avance publicado
+    assert round(payload["goal"]["fx"]["USD"], 4) == 0.8481   # pero sí el cambio
+
+
+def test_only_the_currencies_in_play_are_published():
+    fede = Player(player_id="fede", display_name="Fede", currency="USD")
+    payload = webpage.build_payload(
+        [(fede, _goal_series(1000.0))],
+        fx={"USD": 0.85, "GBP": 1.18, "EUR": 1.0})
+    assert set(payload["goal"]["fx"]) == {"USD"}   # ni GBP (nadie) ni EUR (1:1)
 
 
 def test_goal_without_exchange_rate_says_so_instead_of_guessing():

@@ -2412,15 +2412,13 @@ function paintGoal() {
   collapseList(painted, box);
 
   // Las carteras se valoran en la divisa del extracto y el objetivo está en
-  // euros: el cambio aplicado va en la cabecera (una vez por divisa, no
-  // repetido en cada fila) porque es justo lo que hace que un 42 % sea un 36 %.
-  const seen = new Map();
-  ranked.forEach(p => {
-    if (p.goal && p.goal.rate) seen.set(p.goal.currency, p.goal.rate);
-  });
+  // euros: el cambio aplicado va en la cabecera, una vez por divisa. Es de la
+  // liga y no de cada jugador, así que se enseña aunque todos tengan su avance
+  // en privado: es lo que explica cómo se cuenta el objetivo.
+  const rates = Object.entries(g.fx || {});
   const fxBox = document.getElementById("goal-fx");
-  fxBox.textContent = [...seen].map(([cur, r]) => T.goalFx(cur, r.toFixed(4))).join(" \\u00b7 ");
-  fxBox.style.display = seen.size ? "" : "none";
+  fxBox.textContent = rates.map(([cur, r]) => T.goalFx(cur, r.toFixed(4))).join(" \\u00b7 ");
+  fxBox.style.display = rates.length ? "" : "none";
 }
 paintGoal();
 
@@ -3248,10 +3246,7 @@ def _goal_progress(player: Player, series: list[DayResult],
     value = max(series[-1].end_value, 0.0) * rate   # en euros
     goal["pct"] = round(value / player.goal * 100, 2)
     if currency != "EUR":
-        # El cambio aplicado, visible en la web: es la diferencia entre «voy por
-        # el 42 %» y «voy por el 36 %», así que se enseña, no se esconde.
         goal["currency"] = currency
-        goal["rate"] = round(rate, 6)
     if player.show_amounts:
         goal["value"] = round(value, 2)
     return goal
@@ -3532,10 +3527,19 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
             entry["goal"] = goal
         players.append(entry)
     deadline = _goal_deadline(today)
+    # El cambio aplicado es de la liga, no de cada jugador: es un precio de
+    # mercado público, así que se publica aunque nadie enseñe su avance (si
+    # colgara de los jugadores, con todos en privado desaparecería de la web
+    # justo el dato que explica cómo se cuenta el objetivo).
+    goal_fx = {currency: round(rate, 6)
+               for currency, rate in sorted((fx or {}).items())
+               if currency != "EUR"
+               and currency in {(p.currency or "EUR").upper() for p, _ in computed}}
     return {"players": players, "pending": pending or [],
             "goal": {"target": DEFAULT_GOAL,
                      "deadline": deadline.isoformat(),
-                     "days": (deadline - today).days},
+                     "days": (deadline - today).days,
+                     "fx": goal_fx},
             "operations": _recent_operations(computed, order),
             "allocation": _allocation_weights(allocation),
             "market": _market_snapshot(allocation, extended,
