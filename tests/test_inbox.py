@@ -1,3 +1,4 @@
+import json
 import os
 from email.message import EmailMessage
 
@@ -405,3 +406,25 @@ def test_run_empty_env_vars_do_not_crash(monkeypatch):
         monkeypatch.setenv(var, "")
     summary = inbox.run("clave")   # sin credenciales -> sale limpio, sin excepción
     assert summary.ingested == []
+
+
+# ----- objetivo de la liga en el alta por email -----
+
+def test_parse_player_emails_reads_the_goal_config():
+    m = inbox.parse_player_emails(
+        '{"fede": {"email": "fede@icloud.com", "goal": 20000, "show_goal": true},'
+        ' "ana": "ana@gmail.com"}')
+    assert m["fede@icloud.com"].goal == 20000.0
+    assert m["fede@icloud.com"].show_goal is True
+    # por defecto, el objetivo de la liga y sin publicar el avance
+    assert m["ana@gmail.com"].goal == 14000.0
+    assert m["ana@gmail.com"].show_goal is False
+
+
+def test_new_player_json_carries_the_goal_config(tmp_path):
+    emails = inbox.parse_player_emails(
+        '{"fede": {"email": "fede@icloud.com", "name": "Fede", "goal": 20000,'
+        ' "show_goal": true}}')
+    inbox.process_message(_make_email(), emails, "clave-liga", str(tmp_path))
+    cfg = json.loads((tmp_path / "fede" / "player.json").read_text(encoding="utf-8"))
+    assert cfg["goal"] == 20000.0 and cfg["show_goal"] is True

@@ -3,7 +3,8 @@
 Cada jugador tiene un directorio ``players/<id>/`` con:
 
 * ``player.json`` — configuración pública (nombre a mostrar, divisa,
-  si se muestran importes en el ranking...).
+  si se muestran importes en el ranking, el objetivo de la liga y si se
+  publica su progreso...).
 * ``trades.csv.enc`` — extracto de Revolut cifrado (uno o varios ficheros
   ``*.csv.enc``; se concatenan).
 * opcionalmente ``*.csv`` en claro, solo para pruebas locales.
@@ -22,6 +23,10 @@ from dataclasses import dataclass, field
 from . import revolut, secretbox
 from .revolut import Event
 
+# Objetivo de la liga: llegar a 14.000 (entre inversiones y efectivo) antes del
+# 1 de agosto. Cada jugador puede fijar el suyo con ``"goal"`` en player.json.
+DEFAULT_GOAL = 14000.0
+
 
 @dataclass
 class Player:
@@ -29,6 +34,12 @@ class Player:
     display_name: str
     currency: str = "USD"
     show_amounts: bool = False
+    goal: float = DEFAULT_GOAL
+    # El progreso hacia el objetivo se calcula sobre el valor de la cartera, así
+    # que publicarlo es publicar ese importe (aunque sea en forma de %): por eso
+    # es opt-in, como ``show_amounts``. Sin activar, el jugador sale en el
+    # módulo pero con la barra oculta.
+    show_goal: bool = False
     events: list[Event] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
     enc_count: int = 0          # ficheros .csv.enc encontrados
@@ -71,6 +82,8 @@ def load_player(players_dir: str, player_id: str, passphrase: str | None = None)
         display_name=config.get("display_name", player_id),
         currency=config.get("currency", "USD"),
         show_amounts=bool(config.get("show_amounts", False)),
+        goal=float(config.get("goal") or DEFAULT_GOAL),
+        show_goal=bool(config.get("show_goal", False)),
     )
 
     passphrase = passphrase or passphrase_from_env(player_id)

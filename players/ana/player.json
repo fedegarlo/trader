@@ -1,5 +1,7 @@
 {
   "display_name": "Ana",
   "currency": "USD",
-  "show_amounts": false
+  "show_amounts": false,
+  "goal": 14000,
+  "show_goal": false
 }

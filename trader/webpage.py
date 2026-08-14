@@ -14,7 +14,7 @@ import json
 import os
 from datetime import date, datetime, time, timezone
 
-from .players import Player
+from .players import DEFAULT_GOAL, Player
 from .portfolio import CASH_KEY, DayResult
 from .revolut import BUY, SELL
 from .tickers import ticker_meta
@@ -25,6 +25,11 @@ from .tickers import ticker_meta
 # competición (ver ``rebase_from`` en portfolio.py), y también acota los
 # widgets de «mejor del mes».
 COMPETITION_START = date(2026, 7, 14)
+
+# El objetivo de la liga tiene fecha: el 1 de agosto. Es una meta que se
+# renueva cada año, así que la cuenta atrás mira siempre al **próximo** 1 de
+# agosto (el mismo día 1 todavía cuenta como plazo abierto, con 0 días).
+GOAL_MONTH, GOAL_DAY = 8, 1
 
 _TEMPLATE = """<!doctype html>
 <html lang="en">
@@ -257,6 +262,46 @@ _TEMPLATE = """<!doctype html>
   .wallet .donut-wrap { margin-top: 12px; }
 
   .pos { color: var(--up); } .neg { color: var(--down); }
+
+  /* objetivo de la liga: barra de avance por jugador + cuenta atrás */
+  .goal-head { display: flex; align-items: flex-start; justify-content: space-between;
+               gap: 10px 14px; }
+  .goal-head .goal-l { min-width: 0; flex: 1 1 auto; }
+  .goal-count { flex: none; text-align: right; line-height: 1.05; }
+  .goal-count .num { font-size: clamp(26px, 7vw, 32px); font-weight: 800;
+                     letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+  .goal-count .lbl { display: block; color: var(--muted); font-size: 12px;
+                     font-weight: 600; margin-top: 2px; }
+  .goal-row { border-top: 1px solid var(--hair); padding: 13px 4px 14px; border-radius: 10px; }
+  .goal-row:first-child { border-top: none; }
+  .goal-row.clk { cursor: pointer; }
+  .goal-row.clk:hover { background: var(--surface-2); }
+  .goal-row.clk:hover .nm { color: var(--accent); }
+  .goal-top { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+  .goal-top .nm { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .goal-top .pct { margin-left: auto; flex: none; font-weight: 800;
+                   font-variant-numeric: tabular-nums; }
+  .goal-top .pct.done { color: var(--s2); }
+  .goal-top .pct.hidden { color: var(--muted); font-weight: 600; }
+  .goal-bar { position: relative; height: 10px; border-radius: 999px; margin-top: 9px;
+              background: var(--surface-2); border: 1px solid var(--hair); overflow: hidden; }
+  .goal-bar > span { display: block; height: 100%; border-radius: 999px; min-width: 3px; }
+  /* sin permiso para publicar el avance: barra en trama, nunca a medias */
+  .goal-bar.priv { background: repeating-linear-gradient(115deg,
+      var(--grid) 0 6px, transparent 6px 12px); }
+  .goal-meta { color: var(--muted); font-size: 12.5px; font-weight: 600; margin-top: 7px;
+               font-variant-numeric: tabular-nums; }
+
+  /* listados largos: 5 filas y el resto detrás de «ver más». El !important no
+     es pereza: las filas que oculta traen su propio ``display`` (flex en las
+     operaciones, en la sesión extendida y en las insignias), con la misma
+     especificidad, así que sin él gana la que se declare más abajo. */
+  .xtra { display: none !important; }
+  .more { display: block; width: 100%; margin-top: 12px; padding: 9px 14px;
+          font: inherit; font-size: 13px; font-weight: 700; letter-spacing: -0.01em;
+          color: var(--ink-2); background: var(--surface-2); cursor: pointer;
+          border: 1px solid var(--ring); border-radius: 999px; }
+  .more:hover { color: var(--accent); }
 
   /* sesión extendida: pre-market / after-hours valor a valor. La página es
      estática, así que la cabecera lleva siempre la hora de la foto. */
@@ -620,6 +665,23 @@ _TEMPLATE = """<!doctype html>
     </div>
   </div>
 
+  <!-- objetivo de la liga: cuánto lleva cada jugador de su meta y cuántos días
+       quedan para el 1 de agosto. El avance de un jugador solo se pinta si lo
+       publica (``show_goal``): es su valor de cartera en porcentaje. -->
+  <section class="card" id="goal-card" style="display:none">
+    <div class="goal-head">
+      <div class="goal-l">
+        <h2 data-i18n="goalTitle"></h2>
+        <div class="wsub muted" id="goal-sub"></div>
+      </div>
+      <div class="goal-count">
+        <span class="num" id="goal-days"></span>
+        <span class="lbl" id="goal-days-lbl"></span>
+      </div>
+    </div>
+    <div id="goal-list" style="margin-top:14px"></div>
+  </section>
+
   <!-- sesión extendida (pre-market / after-hours) de los valores de la liga.
        Solo se pinta cuando había una sesión extendida en curso al generar la
        página y la foto sigue siendo reciente: la web es estática y no se
@@ -771,6 +833,19 @@ const I18N = {
     aiLive: "automatic analysis",
     ranking: "Standings",
     rankCols: ["#", "Player", "Cumulative %", "Last day %"],
+    goalTitle: "🎯 Road to the goal",
+    goalSub: (amount, d) => "Every player is chasing " + amount +
+      " in holdings and cash by " + d + ".",
+    goalDays: "days left",
+    goalDay: "day left",
+    goalToday: "last day",
+    goalOf: (value, target) => value + " of " + target,
+    goalLeft: amount => amount + " to go",
+    goalDone: "Goal reached 🎉",
+    goalHidden: "private",
+    goalHiddenNote: "Progress not published — this player keeps their amounts private.",
+    showMore: n => "Show " + n + " more",
+    showLess: "Show less",
     dailyTitle: ml => "🏅 Daily champion · " + ml,
     dailyCols: ["Date", "Champion", "Day %"],
     leagueWallet: "League portfolio",
@@ -940,6 +1015,18 @@ const I18N = {
     aiLive: "自動分析",
     ranking: "順位表",
     rankCols: ["#", "プレイヤー", "累積%", "前日比%"],
+    goalTitle: "🎯 目標までの道のり",
+    goalSub: (amount, d) => d + "までに保有株と現金で" + amount + "を目指します。",
+    goalDays: "日残り",
+    goalDay: "日残り",
+    goalToday: "最終日",
+    goalOf: (value, target) => target + "中" + value,
+    goalLeft: amount => "あと" + amount,
+    goalDone: "目標達成 🎉",
+    goalHidden: "非公開",
+    goalHiddenNote: "進捗は非公開です（金額を公開していないプレイヤー）。",
+    showMore: n => "さらに" + n + "件を表示",
+    showLess: "折りたたむ",
     dailyTitle: ml => "🏅 デイリー王者 · " + ml,
     dailyCols: ["日付", "王者", "当日%"],
     leagueWallet: "リーグのポートフォリオ",
@@ -1125,6 +1212,33 @@ const fmtPct = v => (v > 0 ? "+" : "") + v.toFixed(2) + "%";
 const fmtDate = iso => { const [y,m,d] = iso.split("-"); return d + "/" + m + "/" + y.slice(2); };
 const money = v => "$" + Number(v).toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2});
 const lastOf = p => p.days[p.days.length - 1];
+
+// ---- listados largos: 5 filas y el resto detrás de «ver más» --------------
+// Se aplica sobre filas ya pintadas (``div`` o ``tr``): las que sobran se
+// marcan ``.xtra`` (display:none) y el botón las despliega — y las vuelve a
+// plegar — de una vez. El botón se cuelga de ``host`` y no del propio listado
+// porque en las tablas no puede ir dentro del ``<table>``.
+const LIST_MAX = 5;
+function collapseList(rows, host) {
+  if (!host) return;
+  const old = host.querySelector(":scope > .more");
+  if (old) old.remove();  // por si el listado se vuelve a pintar
+  if (rows.length <= LIST_MAX) return;
+  const extra = rows.slice(LIST_MAX);
+  extra.forEach(r => r.classList.add("xtra"));
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "more";
+  btn.setAttribute("aria-expanded", "false");
+  btn.textContent = T.showMore(extra.length);
+  btn.addEventListener("click", () => {
+    const open = btn.getAttribute("aria-expanded") === "true";
+    extra.forEach(r => r.classList.toggle("xtra", open));
+    btn.setAttribute("aria-expanded", open ? "false" : "true");
+    btn.textContent = open ? T.showMore(extra.length) : T.showLess;
+  });
+  host.appendChild(btn);
+}
 
 // ---- índices para las vistas de detalle (ticker / jugador) ----
 const TICKERS = {}; (DATA.tickers || []).forEach(t => TICKERS[t.ticker] = t);
@@ -1411,7 +1525,7 @@ function paintDaily() {
     th.textContent = h; if (i === 1) th.className = "name"; head.appendChild(th);
   });
   const slotColor = s => css(SLOTS[s % SLOTS.length]);
-  rows.forEach(r => {
+  const trs = rows.map(r => {
     const tr = t.insertRow();
     // toda la fila abre el detalle del día del campeón (rentabilidad por valor
     // + el % del día del resto de jugadores)
@@ -1430,7 +1544,9 @@ function paintDaily() {
     const val = tr.insertCell();
     val.className = r.value >= 0 ? "pos" : "neg";
     val.textContent = fmtPct(r.value);
+    return tr;
   });
+  collapseList(trs, card);
 }
 paintDaily();
 
@@ -1495,7 +1611,7 @@ function paintBadges() {
   const grid = document.getElementById("badge-grid");
   grid.innerHTML = "";
   document.getElementById("badge-empty").style.display = awards.length ? "none" : "";
-  awards.forEach(b => {
+  const cards = awards.map(b => {
     const el = document.createElement("div");
     el.className = "badge" + (b.provisional ? " prov" : "");
     const ico = document.createElement("span");
@@ -1518,7 +1634,9 @@ function paintBadges() {
     }
     el.appendChild(box);
     grid.appendChild(el);
+    return el;
   });
+  collapseList(cards, card);
 }
 paintBadges();
 
@@ -1607,7 +1725,7 @@ function paintWallets() {
   card.style.display = "";
   const box = document.getElementById("wallets");
   box.innerHTML = "";
-  withHoldings.forEach(p => {
+  const wallets = withHoldings.map(p => {
     const wrap = document.createElement("div"); wrap.className = "wallet";
     const head = document.createElement("div"); head.className = "whead clk";
     head.dataset.player = p.id;
@@ -1621,7 +1739,9 @@ function paintWallets() {
     chart.innerHTML = donutHTML(p.holdings, 108);
     wrap.appendChild(head); wrap.appendChild(chart.firstChild);
     box.appendChild(wrap);
+    return wrap;
   });
+  collapseList(wallets, box);
 }
 paintWallets();
 
@@ -1809,7 +1929,7 @@ window.addEventListener("resize", () => {
     const head = t.insertRow();
     cols.forEach(c => { const th = document.createElement("th"); th.textContent = c; head.appendChild(th); });
     const money = v => "$" + v.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    [...p.days].reverse().forEach(dy => {
+    const trs = [...p.days].reverse().map(dy => {
       const tr = t.insertRow();
       // cada jornada abre su detalle: rentabilidad por valor de este jugador
       // ese día (+ el % del día del resto de jugadores)
@@ -1824,8 +1944,10 @@ window.addEventListener("resize", () => {
         const isPct = i >= cells.length - 2;
         if (isPct) td.className = c.startsWith("+") ? "pos" : (c.startsWith("-") ? "neg" : "");
       });
+      return tr;
     });
     over.appendChild(t); det.appendChild(over); box.appendChild(det);
+    collapseList(trs, det);
   });
   if (!ranked.length) box.textContent = T.noPlayersDot;
 }
@@ -1876,7 +1998,7 @@ function paintOperations() {
   card.style.display = "";
   const box = document.getElementById("ops-list");
   box.innerHTML = "";
-  ops.forEach(o => {
+  const rows = ops.map(o => {
     const row = h("div", "op-row");
     // Toda la fila es clicable: abre la ficha del valor (o la del jugador si el
     // valor no es abrible). El nombre del jugador, anidado con su propio
@@ -1905,9 +2027,82 @@ function paintOperations() {
 
     row.appendChild(h("span", "op-date", fmtDate(o.date)));
     box.appendChild(row);
+    return row;
   });
+  collapseList(rows, box);
 }
 paintOperations();
+
+// ---- objetivo de la liga: avance de cada jugador + cuenta atrás -----------
+// El avance es el valor de la cartera (inversiones + efectivo) sobre el
+// objetivo del jugador. Solo se pinta la barra de quien lo publica
+// (``show_goal`` en su player.json, porque el % deja adivinar el importe); del
+// resto sí sale la fila —están todos— pero con la barra en trama y sin dato.
+// El importe exacto necesita además ``show_amounts``.
+const goalMoney = v => new Intl.NumberFormat(LANG === "ja" ? "ja-JP" : "en-US",
+  {style: "currency", currency: "EUR", maximumFractionDigits: 0}).format(v);
+function paintGoal() {
+  const g = DATA.goal;
+  const card = document.getElementById("goal-card");
+  if (!g || !ranked.length) { card.style.display = "none"; return; }
+  card.style.display = "";
+  document.getElementById("goal-sub").textContent =
+    T.goalSub(goalMoney(g.target), fmtDate(g.deadline));
+  document.getElementById("goal-days").textContent = g.days;
+  document.getElementById("goal-days-lbl").textContent =
+    g.days === 0 ? T.goalToday : (g.days === 1 ? T.goalDay : T.goalDays);
+
+  // Primero quien más lleva; los que no publican avance, al final (empates y
+  // filas sin dato, por orden de clasificación).
+  const box = document.getElementById("goal-list");
+  box.innerHTML = "";
+  const rows = ranked.map((p, i) => ({p, i}))
+    .sort((a, b) => ((b.p.goal ? b.p.goal.pct : -1) - (a.p.goal ? a.p.goal.pct : -1)) ||
+                    (a.i - b.i));
+  const painted = rows.map(({p}) => {
+    const goal = p.goal || null;
+    const row = h("div", "goal-row clk");
+    row.dataset.player = p.id;
+
+    const top = h("div", "goal-top");
+    const key = h("span", "key"); key.style.background = colorOf(p);
+    top.appendChild(key);
+    const nm = h("span", "nm"); nm.textContent = p.name;
+    top.appendChild(nm);
+    const pct = h("span", "pct");
+    if (goal) {
+      pct.textContent = goal.pct.toFixed(1) + "%";
+      if (goal.pct >= 100) pct.classList.add("done");
+    } else {
+      pct.textContent = T.goalHidden;
+      pct.classList.add("hidden");
+    }
+    top.appendChild(pct);
+    row.appendChild(top);
+
+    const bar = h("div", "goal-bar" + (goal ? "" : " priv"));
+    if (goal) {
+      const fill = h("span");
+      fill.style.width = Math.max(0, Math.min(100, goal.pct)) + "%";
+      fill.style.background = colorOf(p);
+      bar.appendChild(fill);
+    }
+    row.appendChild(bar);
+
+    let meta = "";
+    if (!goal) meta = T.goalHiddenNote;
+    else if (goal.pct >= 100) meta = T.goalDone;
+    else if (goal.value != null)
+      meta = T.goalOf(goalMoney(goal.value), goalMoney(goal.target)) + " \\u00b7 " +
+             T.goalLeft(goalMoney(goal.target - goal.value));
+    if (meta) row.appendChild(h("div", "goal-meta", meta));
+
+    box.appendChild(row);
+    return row;
+  });
+  collapseList(painted, box);
+}
+paintGoal();
 
 // ---- sesión extendida: pre-market / after-hours valor a valor -------------
 // La web es estática: lo que se pinta es la foto que se tomó al generarla (el
@@ -1951,7 +2146,7 @@ function paintExtended() {
 
   const box = document.getElementById("ext-list");
   box.innerHTML = "";
-  rows.sort((a, b) => b.ext.pct - a.ext.pct).forEach(t => {
+  const painted = rows.sort((a, b) => b.ext.pct - a.ext.pct).map(t => {
     const row = h("div", "ext-row clk");
     row.dataset.ticker = t.ticker;
     row.appendChild(tickerLogoEl(t, 30));
@@ -1964,7 +2159,9 @@ function paintExtended() {
     row.appendChild(h("span", "pct " + (t.ext.pct >= 0 ? "pos" : "neg"),
                       fmtPct(t.ext.pct)));
     box.appendChild(row);
+    return row;
   });
+  collapseList(painted, box);
 }
 paintExtended();
 
@@ -2385,7 +2582,7 @@ function openDayDetail(pid, iso) {
   const bd = sd.bd || [];
   if (bd.length) {
     const list = document.createElement("div");
-    bd.forEach(x => {
+    const rows = bd.map(x => {
       const row = h("div", "holder-row");
       if (x.ticker && TICKERS[x.ticker]) { row.classList.add("clk"); row.dataset.ticker = x.ticker; }
       const nm = h("span", "nm");
@@ -2398,7 +2595,9 @@ function openDayDetail(pid, iso) {
       row.appendChild(nm);
       row.appendChild(h("span", "w " + (x.pct >= 0 ? "pos" : "neg"), fmtPct(x.pct)));
       list.appendChild(row);
+      return row;
     });
+    collapseList(rows, list);
     root.appendChild(sectionEl(T.dayByAsset, list));
   } else {
     root.appendChild(sectionEl(T.dayByAsset, h("div", "mnote", T.dayNoBreakdown)));
@@ -2687,6 +2886,37 @@ def _buy_sell_suggestion(holdings_weights: list[dict],
     return best
 
 
+def _goal_deadline(today: date) -> date:
+    """El próximo 1 de agosto, contando el de hoy si hoy es 1 de agosto."""
+    deadline = date(today.year, GOAL_MONTH, GOAL_DAY)
+    if deadline < today:
+        deadline = date(today.year + 1, GOAL_MONTH, GOAL_DAY)
+    return deadline
+
+
+def _goal_progress(player: Player, series: list[DayResult]) -> dict | None:
+    """Avance del jugador hacia su objetivo, o ``None`` si no lo publica.
+
+    El progreso se mide sobre el valor de la cartera al cierre del último día
+    calculado — inversiones **más** efectivo, que es justo lo que persigue el
+    objetivo — sobre el objetivo del jugador (``goal`` en su ``player.json``,
+    14.000 por defecto).
+
+    Como ese porcentaje deja adivinar el importe de la cartera, solo se publica
+    si el jugador lo activa con ``"show_goal": true``; el importe exacto,
+    además, sigue necesitando ``"show_amounts": true``. Sin ``show_goal`` esta
+    función devuelve ``None`` y el jugador aparece en el módulo sin barra.
+    """
+    if not player.show_goal or not series or player.goal <= 0:
+        return None
+    value = series[-1].end_value
+    goal = {"target": round(player.goal, 2),
+            "pct": round(max(value, 0.0) / player.goal * 100, 2)}
+    if player.show_amounts:
+        goal["value"] = round(value, 2)
+    return goal
+
+
 def _prev_month(year: int, month: int) -> tuple[int, int]:
     return (year - 1, 12) if month == 1 else (year, month - 1)
 
@@ -2896,6 +3126,10 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
     como pesos (%) para la sección «Carteras», que muestra el reparto de cada
     jugador sin revelar importes.
 
+    ``goal`` es el objetivo de la liga (importe y cuenta atrás al próximo 1 de
+    agosto), y cada jugador que lo publica (``show_goal``) lleva su propio
+    avance en ``players[].goal``; ver :func:`_goal_progress`.
+
     ``extended`` es la cotización fuera de horario por ticker (pre-market /
     after-hours, ver :mod:`trader.extended`): precios públicos de mercado, foto
     del momento del build, que alimentan la tarjeta de sesión extendida del
@@ -2950,8 +3184,15 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
         suggestion = _buy_sell_suggestion(holdings_w, analysts)
         if suggestion:
             entry["suggestion"] = suggestion
+        goal = _goal_progress(player, window)
+        if goal:
+            entry["goal"] = goal
         players.append(entry)
+    deadline = _goal_deadline(today)
     return {"players": players, "pending": pending or [],
+            "goal": {"target": DEFAULT_GOAL,
+                     "deadline": deadline.isoformat(),
+                     "days": (deadline - today).days},
             "operations": _recent_operations(computed, order),
             "allocation": _allocation_weights(allocation),
             "market": _market_snapshot(allocation, extended,

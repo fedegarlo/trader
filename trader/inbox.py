@@ -13,7 +13,7 @@ módulo, que:
    de correo es quien puede subir en su nombre — una frontera de seguridad
    equivalente a "tienes un token de GitHub".
 3. Mapea el remitente a un jugador con ``PLAYER_EMAILS`` (Variable del repo,
-   JSON ``id -> {email, name, currency, show_amounts}``).
+   JSON ``id -> {email, name, currency, show_amounts, goal, show_goal}``).
 4. Valida que el adjunto es un extracto de Revolut legible; si viene en PDF,
    lo convierte antes al CSV de la app (:mod:`trader.revolut_pdf`).
 5. **Cifra el CSV con la frase de la liga** (``TRADER_KEY``) y lo escribe en
@@ -47,6 +47,7 @@ from email.message import Message
 from email.utils import parseaddr
 
 from . import revolut, revolut_pdf, secretbox
+from .players import DEFAULT_GOAL
 
 # Cabecera que estampa el servidor receptor con el veredicto de autenticación.
 def _env(name: str) -> str | None:
@@ -70,6 +71,8 @@ class PlayerCfg:
     name: str
     currency: str = "USD"
     show_amounts: bool = False
+    goal: float = DEFAULT_GOAL
+    show_goal: bool = False
 
 
 # Estados en los que el correo viene de un jugador legítimo pero **no trae el
@@ -116,7 +119,8 @@ def parse_player_emails(raw: str | None) -> dict[str, PlayerCfg]:
 
         {
           "fede": {"email": "fede@icloud.com", "name": "Fede 🚀",
-                   "currency": "USD", "show_amounts": false},
+                   "currency": "USD", "show_amounts": false,
+                   "goal": 14000, "show_goal": true},
           "ana":  {"email": "ana@gmail.com", "name": "Ana", "currency": "EUR"}
         }
     """
@@ -136,6 +140,8 @@ def parse_player_emails(raw: str | None) -> dict[str, PlayerCfg]:
             name=str(cfg.get("name", player_id)),
             currency=str(cfg.get("currency", "USD")),
             show_amounts=bool(cfg.get("show_amounts", False)),
+            goal=float(cfg.get("goal") or DEFAULT_GOAL),
+            show_goal=bool(cfg.get("show_goal", False)),
         )
     return out
 
@@ -352,6 +358,8 @@ def write_extract(cfg: PlayerCfg, csv_text: str, passphrase: str,
                 "display_name": cfg.name,
                 "currency": cfg.currency,
                 "show_amounts": cfg.show_amounts,
+                "goal": cfg.goal,
+                "show_goal": cfg.show_goal,
             }, fh, ensure_ascii=False, indent=2)
             fh.write("\n")
 

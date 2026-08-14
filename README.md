@@ -17,7 +17,8 @@ cada día de mercado por una GitHub Action:
 
 La página es estática y autocontenida. Abre con la **clasificación**: una tabla
 tipo parrilla de F1 o tabla de liga (1º, 2º, 3º…, con el acumulado de cada
-jugador y el % de la última jornada), seguida del **mejor del día** y del
+jugador y el % de la última jornada), seguida del **mejor del día**, del
+**camino al objetivo** (ver [🎯 Camino al objetivo](#-camino-al-objetivo)) y del
 detalle diario. La liga se juega **desde el inicio**: la clasificación y el
 detalle diario cubren toda la competición; los campeones del mes actual y del
 anterior son **parciales** y se calculan aparte. Además, al **tocar un jugador**
@@ -50,6 +51,30 @@ igual que los precios); si Yahoo no responde, la sección simplemente no aparece
 after-hours) se descarga también en el build, del mismo `quoteSummary`, pero
 **no se cachea**: caduca en minutos, así que o hay dato fresco o no se enseña.
 Los valores relacionados están curados en `trader/tickers.py`.
+
+### 🎯 Camino al objetivo
+
+Un módulo con **todos los jugadores** y una barra de avance hacia el objetivo
+de la liga: **14.000 entre inversiones y efectivo antes del 1 de agosto**. La
+tarjeta lleva la cuenta atrás (los días que quedan para el próximo 1 de
+agosto: es una meta que se renueva cada año) y ordena a los jugadores de más a
+menos avance.
+
+El porcentaje es el valor de la cartera al último cierre (posiciones + efectivo)
+sobre el objetivo de cada uno, así que **publicarlo es publicar ese importe**
+aunque sea en forma de %. Por eso es opt-in, como los importes: solo se pinta
+la barra de quien active `"show_goal": true` en su `player.json`. Quien no lo
+active sigue apareciendo en el módulo —están todos— pero con la barra en trama
+y sin cifra. El importe exacto (`9.531 € de 14.000 €`) necesita además
+`"show_amounts": true`. El objetivo se puede cambiar por jugador con `"goal"`.
+
+### 📋 Listados largos
+
+Los listados que crecen con la liga —campeón de cada día, últimas operaciones,
+insignias, carteras, la sesión extendida, el detalle diario de cada jugador y
+el desglose por valor de una jornada— se pintan con **5 filas y un botón
+«ver más»** que despliega el resto (y vuelve a plegarlo). Así el móvil no se
+convierte en un scroll infinito según avanza la competición.
 
 ### 🌅🌙 Pre-market y after-hours
 
@@ -248,6 +273,9 @@ tests/                      pytest
 
 - Todo se calcula en la divisa del extracto; si mezclas acciones en USD y
   EUR en la misma cuenta, el tipo de cambio no se ajusta día a día.
+- Por lo mismo, el objetivo de 14.000 se compara con el valor de la cartera
+  **en la divisa del extracto**, sin convertir: la web lo rotula en € porque
+  así se planteó la meta, pero no hay cambio de divisa de por medio.
 - Los tickers deben existir en Yahoo Finance con el mismo símbolo que usa
   Revolut (para los principales de EE. UU. coincide).
 - Tipos de fila no reconocidos del extracto se ignoran con un aviso en el

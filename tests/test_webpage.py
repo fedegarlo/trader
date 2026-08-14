@@ -623,3 +623,99 @@ def test_player_suggestion_absent_without_analyst_data():
     holdings = {"fede": {"AAPL": 100.0}}
     payload = webpage.build_payload([(fede, _series(5))], holdings=holdings)
     assert "suggestion" not in payload["players"][0]
+
+
+# ---- objetivo de la liga (14.000 antes del 1 de agosto) --------------------
+
+def _goal_series(end_value: float) -> list[DayResult]:
+    """Una jornada cuyo cierre vale ``end_value`` (lo que mide el objetivo)."""
+    return [DayResult(
+        day=date(2026, 7, 14), start_value=end_value, end_value=end_value,
+        external_flow=0.0, pnl=0.0, daily_return=0.0, cumulative_return=0.0,
+    )]
+
+
+def test_goal_countdown_targets_the_next_first_of_august():
+    payload = webpage.build_payload(
+        [(Player(player_id="fede", display_name="Fede"), _series(5))],
+        today=date(2026, 8, 14))
+    goal = payload["goal"]
+    assert goal["deadline"] == "2027-08-01"
+    assert goal["days"] == (date(2027, 8, 1) - date(2026, 8, 14)).days
+    assert goal["target"] == 14000.0
+
+
+def test_goal_countdown_before_the_first_of_august_stays_this_year():
+    payload = webpage.build_payload(
+        [(Player(player_id="fede", display_name="Fede"), _series(5))],
+        today=date(2026, 7, 20))
+    assert payload["goal"]["deadline"] == "2026-08-01"
+    assert payload["goal"]["days"] == 12
+
+
+def test_goal_deadline_day_itself_still_counts():
+    payload = webpage.build_payload(
+        [(Player(player_id="fede", display_name="Fede"), _series(5))],
+        today=date(2026, 8, 1))
+    assert payload["goal"] == {"target": 14000.0, "deadline": "2026-08-01", "days": 0}
+
+
+def test_goal_progress_is_opt_in_per_player():
+    """Sin ``show_goal`` no se publica el avance: delata el valor de la cartera."""
+    quiet = Player(player_id="ana", display_name="Ana")
+    payload = webpage.build_payload([(quiet, _goal_series(7000.0))])
+    assert "goal" not in payload["players"][0]
+
+
+def test_goal_progress_published_when_opted_in():
+    fede = Player(player_id="fede", display_name="Fede", show_goal=True)
+    payload = webpage.build_payload([(fede, _goal_series(7000.0))])
+    # 7.000 de 14.000 = 50 %, y sin show_amounts no se publica el importe.
+    assert payload["players"][0]["goal"] == {"target": 14000.0, "pct": 50.0}
+
+
+def test_goal_progress_includes_the_amount_only_with_show_amounts():
+    fede = Player(player_id="fede", display_name="Fede",
+                  show_goal=True, show_amounts=True)
+    goal = webpage.build_payload([(fede, _goal_series(3500.0))])["players"][0]["goal"]
+    assert goal == {"target": 14000.0, "pct": 25.0, "value": 3500.0}
+
+
+def test_goal_progress_uses_the_players_own_target():
+    fede = Player(player_id="fede", display_name="Fede", goal=7000.0, show_goal=True)
+    goal = webpage.build_payload([(fede, _goal_series(3500.0))])["players"][0]["goal"]
+    assert goal["target"] == 7000.0 and goal["pct"] == 50.0
+
+
+def test_goal_progress_can_go_past_the_target():
+    fede = Player(player_id="fede", display_name="Fede", show_goal=True)
+    goal = webpage.build_payload([(fede, _goal_series(21000.0))])["players"][0]["goal"]
+    assert goal["pct"] == 150.0
+
+
+def test_goal_progress_never_goes_negative():
+    fede = Player(player_id="fede", display_name="Fede", show_goal=True)
+    goal = webpage.build_payload([(fede, _goal_series(-50.0))])["players"][0]["goal"]
+    assert goal["pct"] == 0.0
+
+
+def test_goal_module_reaches_the_html(tmp_path):
+    fede = Player(player_id="fede", display_name="Fede", show_goal=True)
+    out = tmp_path / "index.html"
+    webpage.write_index([(fede, _goal_series(7000.0))], out_path=str(out),
+                        today=date(2026, 8, 14))
+    html = out.read_text(encoding="utf-8")
+    assert "goal-card" in html and "paintGoal" in html
+    assert '"deadline": "2027-08-01"' in html or '"deadline":"2027-08-01"' in html
+
+
+def test_long_lists_collapse_to_five(tmp_path):
+    """Los listados largos se pintan a 5 y el resto va tras «ver más»."""
+    out = tmp_path / "index.html"
+    webpage.write_index([(Player(player_id="fede", display_name="Fede"), _series(9))],
+                        out_path=str(out))
+    html = out.read_text(encoding="utf-8")
+    assert "const LIST_MAX = 5;" in html
+    assert "function collapseList(rows, host)" in html
+    # y se aplica a cada listado que puede crecer
+    assert html.count("collapseList(") >= 8
