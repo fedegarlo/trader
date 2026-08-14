@@ -8,20 +8,22 @@ operaciones ni los importes de nadie** (los extractos se suben cifrados).
 📊 **El ranking se publica en dos formatos**, actualizados automáticamente
 cada día de mercado por una GitHub Action:
 
-- **Web con gráficas**: `docs/index.html`, servida con GitHub Pages en
+- **Web (clasificación y widgets)**: `docs/index.html`, servida con GitHub Pages en
   **https://fedegarlo.github.io/trader/** (ver [Ver en web](#ver-en-web)).
 - **Markdown**: [`docs/ranking.md`](docs/ranking.md), legible directamente
   en GitHub.
 
 ## Ver en web
 
-La página es estática y autocontenida (tabla de clasificación + gráfica de
-rentabilidad acumulada por jugador + detalle diario). La liga se juega **desde
-el inicio**: la gráfica principal, la diferencia entre el primero y el último y
-el detalle diario cubren toda la competición; los campeones del mes actual y
-del anterior son **parciales** y se calculan aparte. Además, al **tocar un
-jugador** (fila del ranking, leyenda o su cartera) o un **ticker** (leyenda de
-cualquier tarta de cartera) se abre una **ficha de detalle**:
+La página es estática y autocontenida. Abre con la **clasificación**: una tabla
+tipo parrilla de F1 o tabla de liga (1º, 2º, 3º…, con el acumulado de cada
+jugador, su **diferencia con el primero** en puntos porcentuales y el % de la
+última jornada), seguida del **mejor del día** y del detalle diario. La liga se
+juega **desde el inicio**: la clasificación y el detalle diario cubren toda la
+competición; los campeones del mes actual y del anterior son **parciales** y se
+calculan aparte. Además, al **tocar un jugador** (fila de la clasificación,
+leyenda o su cartera) o un **ticker** (leyenda de cualquier tarta de cartera) se
+abre una **ficha de detalle**:
 
 - **Detalle del jugador**: estadísticas (acumulado, mejor y peor día, racha,
   jornadas), rentabilidad acumulada, su cartera con los logos de cada valor y

@@ -1,9 +1,10 @@
 """Genera docs/index.html: dashboard estático para GitHub Pages.
 
 Autocontenido (datos embebidos, sin CDNs): tarjetas tipo widget al estilo
-Revolut (fondo aurora, gráficas de área con degradado, tipografía compacta),
-tabla de ranking + gráfica de rentabilidad acumulada por jugador con crosshair
-y tooltip. El color se asigna a cada jugador por orden alfabético de id
+Revolut (fondo aurora, gráficas de área con degradado, tipografía compacta) y,
+de primero, la clasificación en formato tabla (1º, 2º, 3º… con la diferencia
+de cada jugador respecto al líder, como una parrilla de F1 o una tabla de
+liga). El color se asigna a cada jugador por orden alfabético de id
 (estable: no cambia si cambia su posición en el ranking).
 """
 
@@ -149,6 +150,9 @@ _TEMPLATE = """<!doctype html>
   .card.warn { border-color: color-mix(in srgb, var(--s3) 55%, var(--ring)); background: color-mix(in srgb, var(--s3) 10%, var(--surface)); }
 
   /* widgets */
+  /* sin ``min-width: 0`` una tabla ancha estiraría su tarjeta y con ella toda
+     la página: así la clasificación se desplaza dentro de su propio ``.overx``. */
+  #widgets > * { min-width: 0; }
   .widget { position: relative; overflow: hidden; padding-bottom: 0; }
   /* interrogante: abre el modal que explica cómo se calcula la rentabilidad */
   .whelp { position: absolute; z-index: 3; top: 12px; right: 12px;
@@ -207,9 +211,10 @@ _TEMPLATE = """<!doctype html>
   .wsub.muted { color: var(--muted); font-weight: 500; }
   .wsub.treat { color: var(--ink-2); font-weight: 700; margin-top: 6px; }
   svg.spark { display: block; width: 100%; height: 100%; }
-  .wrow { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .wrow .card { padding-bottom: 18px; display: flex; flex-direction: column; }
-  .wrow .card.widget { padding-bottom: 0; }
+  /* «mejor del día»: tarjeta a ancho completo (nombre a la izquierda, % a la
+     derecha), con el aire de abajo que el resto de widgets deja para su spark. */
+  #best-card { padding-bottom: 18px; }
+  #best-card .bestname { margin-top: 6px; }
 
   /* «ganador del mes»: tarjetas a ancho completo con la evolución de todos los
      jugadores dentro del mes (cada uno con su color), no solo la del campeón. */
@@ -366,22 +371,32 @@ _TEMPLATE = """<!doctype html>
          vertical-align: middle; margin-right: 8px; }
   .big { font-weight: 700; }
 
-  /* gráfica multilínea */
-  .chartwrap { position: relative; margin-top: 12px; }
-  svg#chart { display: block; width: 100%; height: auto; touch-action: pan-y; }
+  /* clasificación tipo parrilla (F1 / liga): posición, jugador, acumulado y la
+     diferencia con el primero. La fila del líder va tintada con su color. */
+  #standings td.rank { font-size: 16px; }
+  #standings td.gap { color: var(--muted); font-weight: 600; }
+  #standings tr.lead td {
+    background: color-mix(in srgb, var(--lead, var(--accent)) 11%, transparent);
+  }
+  #standings tr.lead td:first-child { border-radius: 12px 0 0 12px; }
+  #standings tr.lead td:last-child { border-radius: 0 12px 12px 0; }
+  #standings td.empty { color: var(--muted); font-weight: 500; }
+  /* en el móvil la columna «desde» se cae: lo que importa es la posición, el
+     acumulado y la diferencia con el primero (la fecha sigue en su ficha). */
+  @media (max-width: 560px) {
+    #standings th:last-child, #standings td:not(.empty):last-child { display: none; }
+    #standings th, #standings td { padding: 9px 5px; font-size: 13.5px; }
+    /* los títulos se parten en dos líneas antes que obligar a desplazar la
+       tabla: los datos (que sí van en una línea) caben en la pantalla. */
+    #standings th { font-size: 11.5px; white-space: normal; }
+    #standings td.rank { font-size: 14px; }
+    #standings td.big { font-size: 14.5px; }
+  }
+
+  /* leyenda (widgets de mes) */
   .legend { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-top: 12px;
             font-size: 13px; font-weight: 600; color: var(--ink-2); }
   .legend span { display: inline-flex; align-items: center; }
-  .tip {
-    position: absolute; pointer-events: none; display: none; z-index: 2;
-    background: var(--card-solid); border: 1px solid var(--ring); border-radius: 14px;
-    padding: 9px 11px; font-size: 12.5px; box-shadow: 0 8px 24px -8px rgba(11,10,16,.35);
-    min-width: 152px;
-  }
-  .tip .d { color: var(--muted); margin-bottom: 5px; font-weight: 600; }
-  .tip .row { display: flex; align-items: center; gap: 7px; justify-content: space-between; }
-  .tip .row b { font-variant-numeric: tabular-nums; font-weight: 700; }
-  .tip .row .nm { color: var(--ink-2); display: inline-flex; align-items: center; font-weight: 500; }
 
   /* detalle */
   details { border-top: 1px solid var(--hair); }
@@ -596,7 +611,7 @@ _TEMPLATE = """<!doctype html>
   <div id="widgets" style="display:grid;gap:12px">
     <section class="card" id="hero-card" style="position:relative">
       <button class="whelp" id="hero-help" type="button" data-i18n-title="calcHelpAria">?</button>
-      <h2 data-i18n="cumTitle" style="padding-right:34px"></h2>
+      <h2 data-i18n="ranking" style="padding-right:34px"></h2>
       <div class="leader" id="leader-row">
         <div class="lead-l">
           <span class="lead-tag"><span class="lead-trophy">🏆</span><span data-i18n="leader"></span></span>
@@ -607,27 +622,15 @@ _TEMPLATE = """<!doctype html>
           <span class="delta" id="leader-delta"></span>
         </div>
       </div>
-      <div class="chartwrap">
-        <svg id="chart" viewBox="0 0 860 360" role="img" data-i18n-aria="cumChartAria"></svg>
-        <div class="tip" id="tip"></div>
-      </div>
-      <div class="legend" id="legend"></div>
+      <div class="overx" style="margin-top:12px"><table id="standings"></table></div>
     </section>
-    <div class="wrow">
-      <section class="card widget" id="best-card">
-        <div class="wlabel"><span data-i18n="bestOfDay"></span><span id="best-date"></span></div>
+    <section class="card widget" id="best-card">
+      <div class="wlabel"><span data-i18n="bestOfDay"></span><span id="best-date"></span></div>
+      <div class="mhead">
+        <div class="mhead-l"><div class="bestname" id="best-name"></div></div>
         <div class="wbig"><span class="num" id="best-val"></span></div>
-        <div class="bestname" id="best-name"></div>
-      </section>
-      <section class="card" id="gap-card">
-        <div class="wlabel" data-i18n="gapTitle"></div>
-        <div class="wbig sm"><span class="num" id="gap-val"></span></div>
-        <div style="margin-top:auto">
-          <div class="wsub" id="gap-top"></div>
-          <div class="wsub muted" id="gap-bot"></div>
-        </div>
-      </section>
-    </div>
+      </div>
+    </section>
     <div class="mrow" id="month-row" style="display:none">
       <section class="card widget month" id="month-cur-card">
         <div class="wlabel" id="month-cur-label"></div>
@@ -697,11 +700,6 @@ _TEMPLATE = """<!doctype html>
       <span class="ai-live"><span class="dot"></span><span data-i18n="aiLive"></span></span>
     </div>
     <div class="insights" id="insights"></div>
-  </section>
-
-  <section class="card">
-    <h2 data-i18n="ranking"></h2>
-    <div class="overx" style="margin-top:6px"><table id="ranking"></table></div>
   </section>
 
   <section class="card" id="daily-card" style="display:none">
@@ -804,7 +802,6 @@ const I18N = {
     extNote: "Prices outside regular trading hours (Yahoo Finance), captured " +
       "when the page was built — they don't count towards the standings until " +
       "the session closes.",
-    gapTitle: "1st–last gap · since the start",
     winnerOf: ml => "Winner of " + ml,
     monthChartAria: ml => "Return of every player during " + ml,
     lunchNote: "🍽️ Their turn to buy lunch",
@@ -812,7 +809,8 @@ const I18N = {
     insightsTitle: "League insights",
     aiLive: "automatic analysis",
     ranking: "Standings",
-    rankCols: ["#", "Player", "Cumulative %", "Last day %", "Since"],
+    rankCols: ["#", "Player", "Cumulative %", "Gap to 1st", "Last day %", "Since"],
+    gapLeader: "—",
     dailyTitle: ml => "🏅 Daily champion · " + ml,
     dailyCols: ["Date", "Champion", "Day %"],
     leagueWallet: "League portfolio",
@@ -832,7 +830,6 @@ const I18N = {
     badgeOn: d => "Earned " + d,
     badgeLive: "Live",
     cumTitle: "Cumulative return · since the start",
-    cumChartAria: "Cumulative return since the start of the league, by player",
     dailyDetailTitle: "Daily detail · since the start",
     detailAria: "Detail",
     dayByAsset: "Return by asset",
@@ -977,7 +974,6 @@ const I18N = {
     extLeague: "リーグ全体（加重平均）",
     extNote: "通常取引時間外の株価（Yahoo Finance）。ページ生成時点のスナップショット" +
       "です。セッションが終わるまで順位には反映されません。",
-    gapTitle: "首位と最下位の差 · 開始から",
     winnerOf: ml => ml + "の優勝者",
     monthChartAria: ml => ml + "の全プレイヤーのリターン推移",
     lunchNote: "🍽️ ランチをおごる番",
@@ -985,7 +981,8 @@ const I18N = {
     insightsTitle: "リーグのインサイト",
     aiLive: "自動分析",
     ranking: "順位表",
-    rankCols: ["#", "プレイヤー", "累積%", "前日比%", "開始"],
+    rankCols: ["#", "プレイヤー", "累積%", "首位差", "前日比%", "開始"],
+    gapLeader: "—",
     dailyTitle: ml => "🏅 デイリー王者 · " + ml,
     dailyCols: ["日付", "王者", "当日%"],
     leagueWallet: "リーグのポートフォリオ",
@@ -1005,7 +1002,6 @@ const I18N = {
     badgeOn: d => d + "獲得",
     badgeLive: "ライブ",
     cumTitle: "累積リターン · 開始から",
-    cumChartAria: "リーグ開始からのプレイヤー別の累積リターン推移",
     dailyDetailTitle: "日次詳細 · 開始から",
     detailAria: "詳細",
     dayByAsset: "銘柄別リターン",
@@ -1179,10 +1175,13 @@ const TICKERS = {}; (DATA.tickers || []).forEach(t => TICKERS[t.ticker] = t);
 const PLAYERS = {}; DATA.players.forEach(p => PLAYERS[p.id] = p);
 
 // ---- clasificación (ordenada por acumulado; el color sigue al jugador) ----
+// Se lee como una parrilla de F1 o una tabla de liga: primero, segundo,
+// tercero… con la diferencia de cada jugador respecto al primero en puntos
+// porcentuales (el líder marca el ritmo y lleva un guion).
 const ranked = [...DATA.players].sort((a, b) => lastOf(b).cum - lastOf(a).cum);
 const MEDALS = ["🥇","🥈","🥉"];
 {
-  const t = document.getElementById("ranking");
+  const t = document.getElementById("standings");
   const mk = (tag, cls, text) => { const el = document.createElement(tag);
     if (cls) el.className = cls; if (text !== undefined) el.textContent = text; return el; };
   const head = t.insertRow();
@@ -1190,16 +1189,26 @@ const MEDALS = ["🥇","🥈","🥉"];
     const th = document.createElement("th");
     th.textContent = h; if (i === 1) th.className = "name"; head.appendChild(th);
   });
+  if (!ranked.length) {
+    const empty = mk("td", "empty", T.noPlayers);
+    empty.colSpan = T.rankCols.length;
+    t.insertRow().appendChild(empty);
+  }
+  const topCum = ranked.length ? lastOf(ranked[0]).cum : 0;
   ranked.forEach((p, i) => {
     const last = lastOf(p);
     const tr = t.insertRow();
     tr.classList.add("clk"); tr.dataset.player = p.id;
+    if (i === 0) tr.classList.add("lead");
     tr.appendChild(mk("td", "rank", MEDALS[i] || String(i + 1)));
     const name = mk("td", "name");
     const key = mk("span", "key"); key.style.background = colorOf(p);
     name.appendChild(key); name.appendChild(document.createTextNode(p.name));
     tr.appendChild(name);
     tr.appendChild(mk("td", "big " + (last.cum >= 0 ? "pos" : "neg"), fmtPct(last.cum)));
+    const behind = topCum - last.cum;
+    tr.appendChild(mk("td", "gap", i === 0 || behind < 0.005
+      ? T.gapLeader : "-" + behind.toFixed(2) + T.pp));
     tr.appendChild(mk("td", last.day >= 0 ? "pos" : "neg", fmtPct(last.day)));
     tr.appendChild(mk("td", "", p.since || p.days[0].date));
   });
@@ -1237,11 +1246,18 @@ function sparkSVG(values, color, id, opts) {
     '</svg>';
 }
 function paintWidgets() {
-  if (!DATA.players.length) { document.getElementById("widgets").style.display = "none"; return; }
+  // Sin jugadores la clasificación ya enseña su propio mensaje vacío: solo se
+  // esconde lo que no tiene nada que contar (líder y mejor del día).
+  if (!DATA.players.length) {
+    document.getElementById("leader-row").style.display = "none";
+    document.getElementById("best-card").style.display = "none";
+    return;
+  }
 
-  // líder: quién va ganando y con qué rentabilidad acumulada
+  // líder: quién va ganando y con qué rentabilidad acumulada. El color se pone
+  // en la tarjeta para que lo hereden la banda del líder y su fila de la tabla.
   const leader = ranked[0], lc = lastOf(leader);
-  document.getElementById("leader-row").style.setProperty("--lead", colorOf(leader));
+  document.getElementById("hero-card").style.setProperty("--lead", colorOf(leader));
   document.getElementById("leader-key").style.background = colorOf(leader);
   document.getElementById("leader-name").textContent = leader.name;
   const lv = document.getElementById("leader-val");
@@ -1260,12 +1276,10 @@ function paintWidgets() {
   const bv = document.getElementById("best-val");
   const bn = document.getElementById("best-name");
   // Si todos los jugadores empatan a 0 en la jornada, el «mejor del día» no
-  // aporta nada (sería alguien con +0,00%): se oculta el widget y la diferencia
-  // 1º–último ocupa toda la fila.
+  // aporta nada (sería alguien con +0,00%): se oculta el widget.
   const allZeroDay = DATA.players.every(p => Math.abs(lastOf(p).day) < 0.005);
   if (allZeroDay) {
     bestCard.style.display = "none";
-    document.querySelector(".wrow").style.gridTemplateColumns = "1fr";
   } else {
     bestCard.style.display = "";
     // Con el mercado cerrado el widget NO se queda en blanco: sigue enseñando
@@ -1300,19 +1314,6 @@ function paintWidgets() {
       bn.appendChild(tag);
     }
   }
-
-  // diferencia 1º - último
-  const gapCard = document.getElementById("gap-card");
-  if (ranked.length < 2) {
-    gapCard.style.display = "none";
-    document.querySelector(".wrow").style.gridTemplateColumns = "1fr";
-    return;
-  }
-  const last = ranked[ranked.length - 1];
-  const gap = lastOf(ranked[0]).cum - lastOf(last).cum;
-  document.getElementById("gap-val").textContent = "+" + gap.toFixed(2) + T.pp;
-  document.getElementById("gap-top").textContent = "🥇 " + ranked[0].name + " · " + fmtPct(lastOf(ranked[0]).cum);
-  document.getElementById("gap-bot").textContent = last.name + " · " + fmtPct(lastOf(last).cum);
 }
 paintWidgets();
 
@@ -1835,39 +1836,7 @@ function paintInsights() {
 }
 paintInsights();
 
-// ---- gráfica de líneas: % acumulado ----
-const svg = document.getElementById("chart");
-const wrap = document.querySelector(".chartwrap");
-const NS = "http://www.w3.org/2000/svg";
-// Dimensiones en unidades del viewBox == px reales del contenedor, para que
-// el texto no se encoja al escalar en pantallas estrechas.
-let W = 860, H = 360;
-const M = {t: 16, r: 64, b: 30, l: 52};
-function computeSize() {
-  W = Math.max(300, Math.round(wrap.clientWidth || 860));
-  const narrow = W < 520;
-  H = narrow ? 300 : 360;
-  M.r = narrow ? 52 : 64;
-  M.l = narrow ? 48 : 52;
-  svg.setAttribute("viewBox", "0 0 " + W + " " + H);
-}
-const dates = DATA.players.length
-  ? DATA.players.map(p => p.days.map(d => d.date)).flat().filter((v,i,a) => a.indexOf(v) === i).sort()
-  : [];
-const byDate = {};
-DATA.players.forEach(p => { byDate[p.id] = {}; p.days.forEach(d => byDate[p.id][d.date] = d.cum); });
-
-let vmin = 0, vmax = 0;
-DATA.players.forEach(p => p.days.forEach(d => {
-  vmin = Math.min(vmin, d.cum); vmax = Math.max(vmax, d.cum); }));
-if (vmax === vmin) { vmax += 1; vmin -= 1; }
-const pad = (vmax - vmin) * 0.1; vmax += pad; vmin -= pad;
-
-const x = i => M.l + (dates.length < 2 ? 0.5 : i / (dates.length - 1)) * (W - M.l - M.r);
-const y = v => M.t + (1 - (v - vmin) / (vmax - vmin)) * (H - M.t - M.b);
-const el = (tag, attrs) => { const e = document.createElementNS(NS, tag);
-  for (const k in attrs) e.setAttribute(k, attrs[k]); return e; };
-
+// ---- utilidades de escala (las usan las gráficas de los widgets del mes) ----
 function niceTicks(lo, hi, n) {
   const span = hi - lo, step0 = span / n, mag = Math.pow(10, Math.floor(Math.log10(step0)));
   const step = [1,2,2.5,5,10].map(m => m * mag).find(s => span / s <= n) || 10 * mag;
@@ -1875,129 +1844,14 @@ function niceTicks(lo, hi, n) {
   return out;
 }
 
-function draw() {
-  computeSize();
-  while (svg.firstChild) svg.removeChild(svg.firstChild);
-  if (!DATA.players.length) {
-    const t = el("text", {x: W/2, y: H/2, "text-anchor": "middle", fill: css("--muted"), "font-size": 14});
-    t.textContent = T.noPlayers;
-    svg.appendChild(t); return;
-  }
-  // rejilla + eje Y
-  niceTicks(vmin, vmax, 6).forEach(v => {
-    const isZero = Math.abs(v) < 1e-9;
-    svg.appendChild(el("line", {x1: M.l, x2: W - M.r, y1: y(v), y2: y(v),
-      stroke: isZero ? css("--baseline") : css("--grid"), "stroke-width": 1}));
-    const t = el("text", {x: M.l - 8, y: y(v) + 4, "text-anchor": "end",
-      fill: css("--muted"), "font-size": 11.5, style: "font-variant-numeric:tabular-nums"});
-    t.textContent = (v > 0 ? "+" : "") + v.toFixed(Math.abs(v) < 10 && v % 1 ? 1 : 0) + "%";
-    svg.appendChild(t);
-  });
-  // eje X: tantas fechas como quepan (~1 cada 120px)
-  const nTicks = Math.max(3, Math.round((W - M.l - M.r) / 120));
-  const stepX = Math.max(1, Math.round(dates.length / nTicks));
-  dates.forEach((d, i) => {
-    const isLast = i === dates.length - 1;
-    // el último siempre; los intermedios solo si no se pegan al último
-    if (!isLast && (i % stepX !== 0 || dates.length - 1 - i < stepX * 0.6)) return;
-    const t = el("text", {x: x(i), y: H - 8, "text-anchor": "middle",
-      fill: css("--muted"), "font-size": 11.5});
-    t.textContent = fmtDate(d);
-    svg.appendChild(t);
-  });
-  // líneas + punto final
-  DATA.players.forEach(p => {
-    const c = colorOf(p);
-    const pts = dates.map((d, i) => byDate[p.id][d] === undefined ? null : [x(i), y(byDate[p.id][d])])
-      .filter(Boolean);
-    svg.appendChild(el("path", {
-      d: pts.map((pt, i) => (i ? "L" : "M") + pt[0].toFixed(1) + " " + pt[1].toFixed(1)).join(""),
-      fill: "none", stroke: c, "stroke-width": 2.4,
-      "stroke-linejoin": "round", "stroke-linecap": "round"}));
-    const end = pts[pts.length - 1];
-    svg.appendChild(el("circle", {cx: end[0], cy: end[1], r: 4, fill: c,
-      stroke: css("--card-solid"), "stroke-width": 2.5}));
-  });
-  // etiquetas directas al final (solo si no chocan; la leyenda siempre está)
-  if (DATA.players.length <= 4 && W >= 520) {
-    const ends = DATA.players.map(p => {
-      const lastDate = p.days[p.days.length-1].date;
-      return {v: p.days[p.days.length-1].cum, yy: y(byDate[p.id][lastDate])};
-    }).sort((a, b) => a.yy - b.yy);
-    const collide = ends.some((e, i) => i && e.yy - ends[i-1].yy < 14);
-    if (!collide) ends.forEach(e => {
-      const t = el("text", {x: W - M.r + 4, y: e.yy + 4, fill: css("--ink-2"),
-        "font-size": 11.5, style: "font-variant-numeric:tabular-nums;font-weight:600"});
-      t.textContent = fmtPct(e.v);
-      svg.appendChild(t);
-    });
-  }
-  // capa de crosshair
-  svg.appendChild(el("line", {id: "xhair", x1: 0, x2: 0, y1: M.t, y2: H - M.b,
-    stroke: css("--baseline"), "stroke-width": 1, visibility: "hidden"}));
-}
-draw();
+// Repintado ante cambios de tema o de tamaño: las gráficas de los widgets del
+// mes miden en px reales del contenedor, así que hay que rehacerlas.
 const mq = window.matchMedia("(prefers-color-scheme: dark)");
-if (mq.addEventListener) mq.addEventListener("change", () => { draw(); paintWidgets(); paintMonthly(); paintAllocation(); paintWallets(); paintInsights(); });
+if (mq.addEventListener) mq.addEventListener("change", () => { paintWidgets(); paintMonthly(); paintAllocation(); paintWallets(); paintInsights(); });
 let rafId;
 window.addEventListener("resize", () => {
   cancelAnimationFrame(rafId);
-  // las gráficas del mes también miden en px reales: hay que repintarlas
-  rafId = requestAnimationFrame(() => { draw(); paintMonthly(); });
-});
-
-// ---- leyenda ----
-{
-  const lg = document.getElementById("legend");
-  if (DATA.players.length >= 2) DATA.players.forEach(p => {
-    const s = document.createElement("span");
-    s.className = "clk"; s.dataset.player = p.id;
-    const key = document.createElement("span");
-    key.className = "key"; key.style.background = colorOf(p);
-    s.appendChild(key); s.appendChild(document.createTextNode(p.name));
-    lg.appendChild(s);
-  });
-}
-
-// ---- tooltip con crosshair ----
-const tip = document.getElementById("tip");
-function onMove(ev) {
-  if (!DATA.players.length) return;
-  const rect = svg.getBoundingClientRect();
-  const px = (ev.clientX - rect.left) * (W / rect.width);
-  const frac = (px - M.l) / (W - M.l - M.r);
-  const idx = Math.max(0, Math.min(dates.length - 1, Math.round(frac * (dates.length - 1))));
-  const d = dates[idx];
-  const xh = svg.querySelector("#xhair");
-  xh.setAttribute("x1", x(idx)); xh.setAttribute("x2", x(idx));
-  xh.setAttribute("visibility", "visible");
-
-  while (tip.firstChild) tip.removeChild(tip.firstChild);
-  const head = document.createElement("div"); head.className = "d";
-  head.textContent = fmtDate(d); tip.appendChild(head);
-  [...DATA.players].sort((a, b) => (byDate[b.id][d] ?? -1e9) - (byDate[a.id][d] ?? -1e9))
-    .forEach(p => {
-      const v = byDate[p.id][d];
-      if (v === undefined) return;
-      const row = document.createElement("div"); row.className = "row";
-      const nm = document.createElement("span"); nm.className = "nm";
-      const key = document.createElement("span"); key.className = "key";
-      key.style.background = colorOf(p);
-      nm.appendChild(key); nm.appendChild(document.createTextNode(p.name));
-      const val = document.createElement("b"); val.textContent = fmtPct(v);
-      row.appendChild(nm); row.appendChild(val); tip.appendChild(row);
-    });
-  tip.style.display = "block";
-  const wr = wrap.getBoundingClientRect();
-  const tx = (x(idx) / W) * wr.width;
-  tip.style.left = Math.min(tx + 14, wr.width - tip.offsetWidth - 4) + "px";
-  tip.style.top = Math.max(0, ev.clientY - wr.top - tip.offsetHeight - 12) + "px";
-}
-svg.addEventListener("pointermove", onMove);
-svg.addEventListener("pointerleave", () => {
-  tip.style.display = "none";
-  const xh = svg.querySelector("#xhair");
-  if (xh) xh.setAttribute("visibility", "hidden");
+  rafId = requestAnimationFrame(paintMonthly);
 });
 
 // ---- detalle diario (vista de tabla: los valores nunca dependen del hover) ----
@@ -3006,7 +2860,7 @@ def _drop_weekends(
 
     Los mercados cierran el fin de semana: no hay competición esos días (la
     rentabilidad diaria sería ~0), así que no deben mostrarse en ninguna vista
-    (gráfica, tablas, «mejor del día» ni «campeón de cada día»). El acumulado
+    (tablas, gráficas del mes, «mejor del día» ni «campeón de cada día»). El acumulado
     de cada jornada hábil ya es correcto, así que basta con descartar las filas
     del fin de semana sin recomponer nada.
     """
@@ -3084,8 +2938,9 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
     """Datos embebidos en la página. Respeta show_amounts por jugador.
 
     La liga se juega **desde el inicio**: por defecto (``last_days=0``) se
-    publica la serie completa de cada jugador, así que la gráfica del acumulado
-    y la diferencia entre el primero y el último cubren toda la competición. Los
+    publica la serie completa de cada jugador, así que la clasificación (con la
+    diferencia de cada uno con el primero) y el detalle diario cubren toda la
+    competición. Los
     campeones del mes actual y del anterior son parciales y se calculan aparte
     (``monthly``), sin recortar esta serie. ``last_days > 0`` recorta a esa
     ventana (útil en pruebas). El ``% acumulado`` de cada día es siempre el de
