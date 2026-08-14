@@ -799,11 +799,15 @@ def test_long_lists_collapse_to_five(tmp_path):
     assert html.count("collapseList(") >= 8
 
 
+def _lang_block(code: str) -> str:
+    """Cuerpo del bloque ``code`` de ``I18N`` (las traducciones de ese idioma)."""
+    blocks = webpage._TEMPLATE.split("const I18N = {", 1)[1].split("\nconst T = I18N", 1)[0]
+    return blocks.split("\n  %s: {\n" % code, 1)[1].split("\n  },\n", 1)[0]
+
+
 def _lang_keys(code: str) -> set[str]:
     """Nombres de clave del bloque ``code`` de ``I18N`` (incluidos los anidados)."""
-    blocks = webpage._TEMPLATE.split("const I18N = {", 1)[1].split("\nconst T = I18N", 1)[0]
-    body = blocks.split("\n  %s: {\n" % code, 1)[1].split("\n  },\n", 1)[0]
-    return set(re.findall(r"^\s+([A-Za-z]\w*):", body, re.M))
+    return set(re.findall(r"^\s+([A-Za-z]\w*):", _lang_block(code), re.M))
 
 
 def test_language_selector_offers_english_japanese_and_french():
@@ -829,3 +833,31 @@ def test_canada_banner_links_to_the_official_tourism_site():
     assert 'banner.href = T.caHref' in webpage._TEMPLATE
     for locale in ("en-ca", "ja-jp", "fr-fr"):
         assert 'https://travel.destinationcanada.com/' + locale in webpage._TEMPLATE
+
+
+def test_canada_banner_is_a_single_short_line_without_a_button():
+    """El banner es bajito: titular, una línea de texto y ya. Sin botón."""
+    assert "ccta" not in webpage._TEMPLATE and "caCta" not in webpage._TEMPLATE
+    # el subtítulo de cada idioma cabe en una línea (nada de párrafos)
+    for locale in ("en", "ja", "fr"):
+        sub = re.search(r'caSub: "([^"]*)"', _lang_block(locale)).group(1)
+        assert len(sub) <= 45, (locale, sub)
+
+
+def test_charts_are_drawn_with_smooth_monotone_curves():
+    """Las líneas se dibujan con curvas (C), no con segmentos rectos (L)."""
+    assert "function smoothD(pts)" in webpage._TEMPLATE
+    # las dos gráficas de líneas (el spark de las tarjetas y la del mes) pasan
+    # por el mismo suavizado, y ninguna arma ya el camino a base de "L"
+    calls = webpage._TEMPLATE.count("smoothD(pts)") - 1  # sin la definición
+    assert calls == 2
+    assert '(i ? "L" : "M")' not in webpage._TEMPLATE
+
+
+def test_players_use_the_warm_orange_and_brown_palette():
+    """Naranja, marrón y ocres: los colores de jugador son su propia familia."""
+    assert 'const SLOTS = ["--p1"' in webpage._TEMPLATE
+    # los ocho tonos están definidos en los tres bloques de tema (claro, oscuro
+    # por preferencia del sistema y oscuro forzado)
+    for slot in range(1, 9):
+        assert webpage._TEMPLATE.count("--p%d: #" % slot) == 3

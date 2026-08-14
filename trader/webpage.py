@@ -3,9 +3,11 @@
 Autocontenido (datos embebidos, sin CDNs): tarjetas tipo widget al estilo
 Revolut (fondo aurora, gráficas de área con degradado, tipografía compacta) y,
 de primero, la clasificación en formato tabla (1º, 2º, 3º… con su acumulado y
-el % de la última jornada, como una parrilla de F1 o una tabla de liga). El
-color se asigna a cada jugador por orden alfabético de id (estable: no cambia
-si cambia su posición en el ranking).
+el % de la última jornada, como una parrilla de F1 o una tabla de liga). Las
+líneas van suavizadas (spline cúbico monótono, sin sobreoscilación) y el color
+se asigna a cada jugador por orden alfabético de id (estable: no cambia si
+cambia su posición en el ranking) de una paleta cálida: naranja, marrón y
+ocres.
 """
 
 from __future__ import annotations
@@ -56,6 +58,11 @@ _TEMPLATE = """<!doctype html>
     --up-soft: rgba(22,103,224,0.14); --down-soft: rgba(214,31,143,0.14);
     --s1: #2a78d6; --s2: #1baf7a; --s3: #eda100; --s4: #008300;
     --s5: #4a3aa7; --s6: #e34948; --s7: #8a44cc; --s8: #eb6834;
+    /* paleta de jugadores: naranja y marrón para los dos primeros y, a partir
+       de ahí, tonos ocres (teja, oro viejo, cobre) para que todas las series
+       se lean como una misma familia de color. */
+    --p1: #e2670f; --p2: #7b4a21; --p3: #c08a12; --p4: #a63a1b;
+    --p5: #8a6a2c; --p6: #ef9b3d; --p7: #55381f; --p8: #b56a3a;
     --aura-1: #ffe4c2; --aura-2: #dcd4ff; --aura-3: #ffd6ea; --aura-base: #efeaf8;
   }
   @media (prefers-color-scheme: dark) {
@@ -72,6 +79,8 @@ _TEMPLATE = """<!doctype html>
       --up-soft: rgba(77,148,255,0.18); --down-soft: rgba(255,92,191,0.18);
       --s1: #3987e5; --s2: #199e70; --s3: #c98500; --s4: #008300;
       --s5: #9085e9; --s6: #e66767; --s7: #a86fe0; --s8: #d95926;
+      --p1: #ff9040; --p2: #a56b3f; --p3: #e6b93f; --p4: #e2664a;
+      --p5: #c2a466; --p6: #ffc487; --p7: #8d7460; --p8: #cf8248;
       --aura-1: #3a2c55; --aura-2: #232c4d; --aura-3: #4a2740; --aura-base: #0e0d13;
     }
   }
@@ -88,6 +97,8 @@ _TEMPLATE = """<!doctype html>
     --up-soft: rgba(77,148,255,0.18); --down-soft: rgba(255,92,191,0.18);
     --s1: #3987e5; --s2: #199e70; --s3: #c98500; --s4: #008300;
     --s5: #9085e9; --s6: #e66767; --s7: #a86fe0; --s8: #d95926;
+    --p1: #ff9040; --p2: #a56b3f; --p3: #e6b93f; --p4: #e2664a;
+    --p5: #c2a466; --p6: #ffc487; --p7: #8d7460; --p8: #cf8248;
     --aura-1: #3a2c55; --aura-2: #232c4d; --aura-3: #4a2740; --aura-base: #0e0d13;
   }
   * { box-sizing: border-box; margin: 0; }
@@ -293,24 +304,21 @@ _TEMPLATE = """<!doctype html>
   /* banner de Canadá: invita a visitar el país y enlaza a la web oficial de
      turismo (Destination Canada), en el idioma que esté activo. Colores fijos
      en claro y oscuro —el rojo de la bandera— porque son los de la marca. */
-  .ca-banner { display: flex; align-items: center; gap: 15px; margin: 12px 0;
-               padding: 15px 18px; border-radius: 26px; text-decoration: none;
+  .ca-banner { display: flex; align-items: center; gap: 12px; margin: 12px 0;
+               padding: 11px 14px; border-radius: 20px; text-decoration: none;
                color: #fff; background: linear-gradient(135deg, #e8112d, #c00d24);
                border: 1px solid rgba(11,10,16,0.10);
                box-shadow: 0 1px 1px rgba(11,10,16,0.05), 0 16px 32px -24px rgba(200,13,36,0.90); }
   .ca-banner:active { transform: translateY(1px); }
-  .ca-banner .cicon { flex: none; width: 60px; height: 60px; border-radius: 19px;
-                      display: grid; place-items: center; font-size: 32px; line-height: 1;
+  .ca-banner .cicon { flex: none; width: 42px; height: 42px; border-radius: 14px;
+                      display: grid; place-items: center; font-size: 24px; line-height: 1;
                       background: rgba(255,255,255,0.94);
                       box-shadow: 0 2px 6px rgba(11,10,16,0.16); }
   .ca-banner .ctext { flex: 1 1 0; min-width: 0; }
-  .ca-banner .cmain { display: block; font-size: 18px; font-weight: 800;
-                      letter-spacing: 0.01em; line-height: 1.25; }
-  .ca-banner .csub { display: block; margin-top: 4px; font-size: 13.5px;
-                     font-weight: 500; line-height: 1.35; color: rgba(255,255,255,0.90); }
-  .ca-banner .ccta { display: inline-block; margin-top: 8px; padding: 3px 11px;
-                     border-radius: 999px; background: rgba(255,255,255,0.95);
-                     color: #c00d24; font-size: 12px; font-weight: 800; letter-spacing: 0.01em; }
+  .ca-banner .cmain { display: block; font-size: 16px; font-weight: 800;
+                      letter-spacing: 0.01em; line-height: 1.2; }
+  .ca-banner .csub { display: block; margin-top: 2px; font-size: 13px;
+                     font-weight: 500; line-height: 1.3; color: rgba(255,255,255,0.90); }
   .ca-banner .carrow { flex: none; font-size: 20px; font-weight: 800; opacity: 0.85; }
 
   /* widget de cartera: gráfico de tarta (cada porción = su peso real) */
@@ -712,7 +720,6 @@ _TEMPLATE = """<!doctype html>
     <span class="ctext">
       <span class="cmain" data-i18n="caTitle"></span>
       <span class="csub" data-i18n="caSub"></span>
-      <span class="ccta" data-i18n="caCta"></span>
     </span>
     <span class="carrow" aria-hidden="true">→</span>
   </a>
@@ -917,9 +924,7 @@ const I18N = {
     mailBody: "attached are my positions in csv format",
     langAria: "Change language",
     caTitle: "Canada is calling",
-    caSub: "Rocky Mountains, northern lights and cities that feel like home — " +
-      "plan your trip on the official tourism site.",
-    caCta: "Plan your trip",
+    caSub: "Plan your trip on the official site.",
     caAria: "Visit Canada: official tourism website",
     caHref: "https://travel.destinationcanada.com/en-ca",
     allPlayers: "All players",
@@ -1103,8 +1108,7 @@ const I18N = {
     mailBody: "csv形式のポジションを添付します",
     langAria: "言語を切り替え",
     caTitle: "カナダへ行こう",
-    caSub: "ロッキー山脈、オーロラ、居心地のよい街。公式観光サイトで旅を計画しよう。",
-    caCta: "旅を計画する",
+    caSub: "公式サイトで旅を計画しよう。",
     caAria: "カナダ観光公式サイト",
     caHref: "https://travel.destinationcanada.com/ja-jp",
     allPlayers: "全プレイヤー",
@@ -1285,9 +1289,7 @@ const I18N = {
     mailBody: "ci-joint mes positions au format csv",
     langAria: "Changer de langue",
     caTitle: "Le Canada vous appelle",
-    caSub: "Rocheuses, aurores boréales et villes accueillantes — préparez " +
-      "votre voyage sur le site officiel du tourisme.",
-    caCta: "Préparer le voyage",
+    caSub: "Préparez votre voyage sur le site officiel.",
     caAria: "Visitez le Canada : site officiel du tourisme",
     caHref: "https://travel.destinationcanada.com/fr-fr",
     allPlayers: "Tous les joueurs",
@@ -1571,7 +1573,10 @@ const T = I18N[LANG];
   setHref();
   link.addEventListener("click", setHref);
 })();
-const SLOTS = ["--s1","--s2","--s3","--s4","--s5","--s6","--s7","--s8"];
+// Color de cada jugador: naranja el primero, marrón el segundo y ocres a
+// partir del tercero (ver ``--p1..--p8``). Es una familia aparte de ``--s*``,
+// que sigue reservado a los colores con significado (aviso, «conseguido»…).
+const SLOTS = ["--p1","--p2","--p3","--p4","--p5","--p6","--p7","--p8"];
 const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 const colorOf = p => css(SLOTS[p.slot % SLOTS.length]);
 const fmtPct = v => (v > 0 ? "+" : "") + v.toFixed(2) + "%";
@@ -1649,6 +1654,42 @@ if (DATA.pending && DATA.pending.length) {
   document.getElementById("pending-card").style.display = "";
 }
 
+// ---- curvas suaves ----
+// Une los puntos con un spline cúbico *monótono* (Fritsch–Carlson) en vez de
+// con segmentos rectos: se van los picos angulosos pero la curva no se inventa
+// subidas ni bajadas — entre dos puntos nunca se sale del rango de esos dos
+// puntos y en cada máximo o mínimo la pendiente es 0, así que el dibujo sigue
+// contando exactamente lo que dicen los datos.
+function smoothD(pts) {
+  const n = pts.length;
+  if (!n) return "";
+  const P = i => pts[i][0].toFixed(2) + " " + pts[i][1].toFixed(2);
+  if (n === 1) return "M" + P(0);
+  const dx = [], sl = [], m = [];
+  for (let i = 0; i < n - 1; i++) {
+    dx.push(pts[i + 1][0] - pts[i][0]);
+    sl.push(dx[i] === 0 ? 0 : (pts[i + 1][1] - pts[i][1]) / dx[i]);
+  }
+  m[0] = sl[0];
+  for (let i = 1; i < n - 1; i++) m[i] = sl[i - 1] * sl[i] <= 0 ? 0 : (sl[i - 1] + sl[i]) / 2;
+  m[n - 1] = sl[n - 2];
+  // recorte de las tangentes: es lo que garantiza que no haya sobreoscilación
+  for (let i = 0; i < n - 1; i++) {
+    if (sl[i] === 0) { m[i] = 0; m[i + 1] = 0; continue; }
+    const a = m[i] / sl[i], b = m[i + 1] / sl[i];
+    const h = Math.hypot(a, b);
+    if (h > 3) { m[i] = (3 * a / h) * sl[i]; m[i + 1] = (3 * b / h) * sl[i]; }
+  }
+  let d = "M" + P(0);
+  for (let i = 0; i < n - 1; i++) {
+    const t = dx[i] / 3;
+    d += " C" + (pts[i][0] + t).toFixed(2) + " " + (pts[i][1] + m[i] * t).toFixed(2) +
+      " " + (pts[i + 1][0] - t).toFixed(2) + " " + (pts[i + 1][1] - m[i + 1] * t).toFixed(2) +
+      " " + P(i + 1);
+  }
+  return d;
+}
+
 // ---- widgets tipo Revolut (gráficas de área con degradado) ----
 function sparkSVG(values, color, id, opts) {
   const W = 100, H = 40, pad = 3;
@@ -1659,10 +1700,10 @@ function sparkSVG(values, color, id, opts) {
   if (mx === mn) { mx += 1; mn -= 1; }
   const xs = i => values.length < 2 ? W / 2 : (i / (values.length - 1)) * W;
   const ys = v => pad + (1 - (v - mn) / (mx - mn)) * (H - 2 * pad);
-  const line = values.map((v, i) => (i ? "L" : "M") + xs(i).toFixed(2) + " " + ys(v).toFixed(2)).join(" ");
-  const area = "M" + xs(0).toFixed(2) + " " + H + " " +
-    values.map((v, i) => "L" + xs(i).toFixed(2) + " " + ys(v).toFixed(2)).join(" ") +
-    " L" + xs(values.length - 1).toFixed(2) + " " + H + " Z";
+  const pts = values.map((v, i) => [xs(i), ys(v)]);
+  const line = smoothD(pts);
+  const area = line + " L" + xs(values.length - 1).toFixed(2) + " " + H +
+    " L" + xs(0).toFixed(2) + " " + H + " Z";
   return '<svg class="spark" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-hidden="true">' +
     '<defs><linearGradient id="sg' + id + '" x1="0" y1="0" x2="0" y2="1">' +
     '<stop offset="0" stop-color="' + color + '" stop-opacity="0.34"/>' +
@@ -1807,7 +1848,7 @@ function monthChart(host, info) {
       ? null : [X(i), Y(s.cum[i])]).filter(Boolean);
     if (!pts.length) return;
     if (pts.length > 1) svg.appendChild(mk("path", {
-      d: pts.map((pt, i) => (i ? "L" : "M") + pt[0].toFixed(1) + " " + pt[1].toFixed(1)).join(""),
+      d: smoothD(pts),
       fill: "none", stroke: c, "stroke-width": si === 0 ? 2.8 : 2,
       opacity: si === 0 ? 1 : 0.85,
       "stroke-linejoin": "round", "stroke-linecap": "round"}));
