@@ -1920,19 +1920,20 @@ function monthChart(host, info) {
     t.textContent = fmtDate(d);
     svg.appendChild(t);
   });
-  // una línea por jugador, con su color; la del ganador va algo más gruesa
-  series.forEach((s, si) => {
+  // una línea por jugador, con su color y todas del mismo grosor: quien va
+  // ganando se lee por su posición en la gráfica (y por el 🏆 de la leyenda),
+  // no porque su trazo pese más que el de los demás.
+  series.forEach(s => {
     const c = css(SLOTS[s.slot % SLOTS.length]);
     const pts = dates.map((d, i) => s.cum[i] === null || s.cum[i] === undefined
       ? null : [X(i), Y(s.cum[i])]).filter(Boolean);
     if (!pts.length) return;
     if (pts.length > 1) svg.appendChild(mk("path", {
       d: smoothD(pts),
-      fill: "none", stroke: c, "stroke-width": si === 0 ? 2.8 : 2,
-      opacity: si === 0 ? 1 : 0.85,
+      fill: "none", stroke: c, "stroke-width": 2.4,
       "stroke-linejoin": "round", "stroke-linecap": "round"}));
     const end = pts[pts.length - 1];
-    svg.appendChild(mk("circle", {cx: end[0], cy: end[1], r: si === 0 ? 4 : 3.4, fill: c,
+    svg.appendChild(mk("circle", {cx: end[0], cy: end[1], r: 3.6, fill: c,
       stroke: css("--card-solid"), "stroke-width": 2.5}));
   });
   if (showEnds) ends.forEach(e => {
