@@ -871,6 +871,17 @@ def test_gains_are_green_and_losses_red():
         assert r > g and r > b and b <= g + 10, c
 
 
+def test_the_theme_accent_is_orange():
+    """El color de marca (botones, enlaces, estado activo) es naranja."""
+    accents = re.findall(r"--accent: (#[0-9a-f]{6});", webpage._TEMPLATE)
+    assert len(accents) == 3  # claro, oscuro del sistema y oscuro forzado
+    for c in accents:
+        r, g, b = (int(c[i:i + 2], 16) for i in (1, 3, 5))
+        # naranja: el rojo manda, el verde va a media altura y el azul casi no está
+        assert r > g > b, c
+        assert b < r // 3, c
+
+
 def test_players_use_the_warm_orange_and_brown_palette():
     """Naranja, marrón y ocres: los colores de jugador son su propia familia."""
     assert 'const SLOTS = ["--p1"' in webpage._TEMPLATE
