@@ -126,6 +126,9 @@ _TEMPLATE = """<!doctype html>
   .upload svg { display: block; }
   .upload:active { transform: translateY(1px); }
   .hbtns { flex: none; display: flex; align-items: center; gap: 10px; }
+  /* selector de idioma: el botón muestra el idioma activo y despliega el
+     menú con los tres disponibles (inglés, japonés y francés). */
+  .langwrap { position: relative; flex: none; }
   .lang {
     flex: none; border: 0; cursor: pointer; color: var(--accent);
     background: color-mix(in srgb, var(--accent) 14%, transparent);
@@ -134,6 +137,24 @@ _TEMPLATE = """<!doctype html>
     font-weight: 800; font-size: 15px; letter-spacing: 0.01em; line-height: 1;
   }
   .lang:active { transform: translateY(1px); }
+  .langmenu {
+    position: absolute; z-index: 40; top: calc(100% + 8px); right: 0;
+    min-width: 172px; padding: 6px; border-radius: 20px;
+    background: var(--card-solid); border: 1px solid var(--ring);
+    box-shadow: 0 1px 1px rgba(11,10,16,0.04), 0 18px 36px -20px rgba(11,10,16,0.55);
+    display: grid; gap: 2px;
+  }
+  .langmenu[hidden] { display: none; }
+  .langmenu button {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    width: 100%; padding: 10px 12px; border: 0; border-radius: 14px; cursor: pointer;
+    background: transparent; color: var(--ink); font-family: inherit;
+    font-size: 15px; font-weight: 700; letter-spacing: -0.01em; text-align: left;
+  }
+  .langmenu button:hover { background: var(--surface-2); }
+  .langmenu button[aria-checked="true"] { color: var(--accent); }
+  .langmenu .tick { font-size: 13px; font-weight: 800; opacity: 0; }
+  .langmenu button[aria-checked="true"] .tick { opacity: 1; }
   /* japonés: el título es más ancho (kana a cuerpo completo); se reduce y se
      fuerza a una sola línea para que no se parta en dos renglones */
   html[lang="ja"] h1 { font-size: clamp(22px, 6.4vw, 30px); white-space: nowrap; }
@@ -238,6 +259,29 @@ _TEMPLATE = """<!doctype html>
                  font-weight: 700; font-size: 13px; color: var(--ink); }
   .mbadge-chip.prov { border-style: dashed; }
   .mbadge-chip .i { font-size: 17px; line-height: 1; }
+
+  /* banner de Canadá: invita a visitar el país y enlaza a la web oficial de
+     turismo (Destination Canada), en el idioma que esté activo. Colores fijos
+     en claro y oscuro —el rojo de la bandera— porque son los de la marca. */
+  .ca-banner { display: flex; align-items: center; gap: 15px; margin: 12px 0;
+               padding: 15px 18px; border-radius: 26px; text-decoration: none;
+               color: #fff; background: linear-gradient(135deg, #e8112d, #c00d24);
+               border: 1px solid rgba(11,10,16,0.10);
+               box-shadow: 0 1px 1px rgba(11,10,16,0.05), 0 16px 32px -24px rgba(200,13,36,0.90); }
+  .ca-banner:active { transform: translateY(1px); }
+  .ca-banner .cicon { flex: none; width: 60px; height: 60px; border-radius: 19px;
+                      display: grid; place-items: center; font-size: 32px; line-height: 1;
+                      background: rgba(255,255,255,0.94);
+                      box-shadow: 0 2px 6px rgba(11,10,16,0.16); }
+  .ca-banner .ctext { flex: 1 1 0; min-width: 0; }
+  .ca-banner .cmain { display: block; font-size: 18px; font-weight: 800;
+                      letter-spacing: 0.01em; line-height: 1.25; }
+  .ca-banner .csub { display: block; margin-top: 4px; font-size: 13.5px;
+                     font-weight: 500; line-height: 1.35; color: rgba(255,255,255,0.90); }
+  .ca-banner .ccta { display: inline-block; margin-top: 8px; padding: 3px 11px;
+                     border-radius: 999px; background: rgba(255,255,255,0.95);
+                     color: #c00d24; font-size: 12px; font-weight: 800; letter-spacing: 0.01em; }
+  .ca-banner .carrow { flex: none; font-size: 20px; font-weight: 800; opacity: 0.85; }
 
   /* widget de cartera: gráfico de tarta (cada porción = su peso real) */
   .donut-wrap { display: flex; align-items: center; gap: 18px; margin-top: 16px; }
@@ -605,7 +649,11 @@ _TEMPLATE = """<!doctype html>
     <div class="hrow">
       <h1 data-i18n="appTitle">Trader League</h1>
       <div class="hbtns">
-        <button class="lang" id="lang-btn" type="button"><span id="lang-label"></span></button>
+        <div class="langwrap">
+          <button class="lang" id="lang-btn" type="button" aria-haspopup="true"
+                  aria-expanded="false" aria-controls="lang-menu"><span id="lang-label"></span></button>
+          <div class="langmenu" id="lang-menu" role="menu" hidden></div>
+        </div>
         <a class="upload" id="upload-mail" href="mailto:ligatrader26@gmail.com" data-i18n-title="sendPositions">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -624,6 +672,20 @@ _TEMPLATE = """<!doctype html>
     <h2 data-i18n="pendingTitle"></h2>
     <div class="wsub" id="pending" style="margin-top:6px"></div>
   </section>
+
+  <!-- banner de Canadá: enlaza a la web oficial de turismo (Destination
+       Canada). El texto se traduce con data-i18n y el enlace apunta a la
+       versión del sitio en el idioma activo (ver ``caHref``). -->
+  <a class="ca-banner" id="ca-banner" target="_blank" rel="noopener noreferrer"
+     data-i18n-aria="caAria">
+    <span class="cicon" aria-hidden="true">🍁</span>
+    <span class="ctext">
+      <span class="cmain" data-i18n="caTitle"></span>
+      <span class="csub" data-i18n="caSub"></span>
+      <span class="ccta" data-i18n="caCta"></span>
+    </span>
+    <span class="carrow" aria-hidden="true">→</span>
+  </a>
 
   <div id="widgets" style="display:grid;gap:12px">
     <section class="card" id="hero-card" style="position:relative">
@@ -759,14 +821,25 @@ _TEMPLATE = """<!doctype html>
 const DATA = __DATA__;
 const UPDATED = "__UPDATED__";
 
-// ==== idioma: inglés por defecto, japonés opcional ====================
-// La selección se recuerda por dispositivo en localStorage. El toggle solo
+// ==== idioma: inglés por defecto, japonés y francés opcionales ========
+// La selección se recuerda por dispositivo en localStorage. El selector solo
 // guarda la preferencia y recarga: toda la interfaz se pinta según ``LANG``.
+// ``LANGS`` es la lista de idiomas del selector, en el orden en que aparecen.
+const LANGS = [
+  {code: "en", label: "English", short: "EN", locale: "en-US", clock: "en-GB"},
+  {code: "ja", label: "日本語", short: "日本語", locale: "ja-JP", clock: "ja-JP",
+   manifest: "manifest-ja.webmanifest"},
+  {code: "fr", label: "Français", short: "FR", locale: "fr-FR", clock: "fr-FR",
+   manifest: "manifest-fr.webmanifest"},
+];
 const LANG = (() => {
-  try { const s = localStorage.getItem("lang"); if (s === "en" || s === "ja") return s; }
-  catch (e) {}
+  try {
+    const s = localStorage.getItem("lang");
+    if (LANGS.some(l => l.code === s)) return s;
+  } catch (e) {}
   return "en";
 })();
+const LANG_META = LANGS.find(l => l.code === LANG);
 document.documentElement.lang = LANG;
 
 const NBSP = String.fromCharCode(160);
@@ -774,10 +847,15 @@ const MONTHS = {
   en: ["January","February","March","April","May","June","July","August",
        "September","October","November","December"],
   ja: ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"],
+  fr: ["janvier","février","mars","avril","mai","juin","juillet","août",
+       "septembre","octobre","novembre","décembre"],
 };
 const monthLabel = (m, y) => LANG === "ja"
   ? y + "年" + MONTHS.ja[m - 1]
-  : MONTHS.en[m - 1] + " " + y;
+  : (MONTHS[LANG] || MONTHS.en)[m - 1] + " " + y;
+// francés: «de» se elide ante los meses que empiezan por vocal (d'avril,
+// d'août, d'octobre), así que el conector va junto a la etiqueta del mes.
+const deMois = ml => (/^[aeiouâéêîô]/i.test(ml) ? "d'" : "de ") + ml;
 
 const I18N = {
   en: {
@@ -785,8 +863,13 @@ const I18N = {
     eyebrow: "🏆 League · Revolut · updated " + UPDATED,
     sendPositions: "Send positions",
     mailBody: "attached are my positions in csv format",
-    langBtnLabel: "日本語",
-    langBtnAria: "Switch to Japanese",
+    langAria: "Change language",
+    caTitle: "Canada is calling",
+    caSub: "Rocky Mountains, northern lights and cities that feel like home — " +
+      "plan your trip on the official tourism site.",
+    caCta: "Plan your trip",
+    caAria: "Visit Canada: official tourism website",
+    caHref: "https://travel.destinationcanada.com/en-ca",
     allPlayers: "All players",
     periodAll: "Since the start",
     pendingTitle: "⏳ Awaiting passphrase",
@@ -971,8 +1054,12 @@ const I18N = {
     eyebrow: "🏆 リーグ · Revolut · 更新 " + UPDATED,
     sendPositions: "ポジションを送信",
     mailBody: "csv形式のポジションを添付します",
-    langBtnLabel: "EN",
-    langBtnAria: "英語に切り替え",
+    langAria: "言語を切り替え",
+    caTitle: "カナダへ行こう",
+    caSub: "ロッキー山脈、オーロラ、居心地のよい街。公式観光サイトで旅を計画しよう。",
+    caCta: "旅を計画する",
+    caAria: "カナダ観光公式サイト",
+    caHref: "https://travel.destinationcanada.com/ja-jp",
     allPlayers: "全プレイヤー",
     periodAll: "開始から",
     pendingTitle: "⏳ パスフレーズ待ち",
@@ -1148,6 +1235,200 @@ const I18N = {
       leagueLoaded: (tk, w) => "リーグ全体が" + tk + "を保有：合計の" + w + "。",
     },
   },
+  fr: {
+    appTitle: "Ligue des Traders",
+    eyebrow: "🏆 Ligue · Revolut · mis à jour " + UPDATED,
+    sendPositions: "Envoyer mes positions",
+    mailBody: "ci-joint mes positions au format csv",
+    langAria: "Changer de langue",
+    caTitle: "Le Canada vous appelle",
+    caSub: "Rocheuses, aurores boréales et villes accueillantes — préparez " +
+      "votre voyage sur le site officiel du tourisme.",
+    caCta: "Préparer le voyage",
+    caAria: "Visitez le Canada : site officiel du tourisme",
+    caHref: "https://travel.destinationcanada.com/fr-fr",
+    allPlayers: "Tous les joueurs",
+    periodAll: "Depuis le début",
+    pendingTitle: "⏳ En attente de la phrase secrète",
+    pendingText: n => n + " — le relevé est bien arrivé mais n'a pas pu être déchiffré. " +
+      "La phrase secrète n'est probablement pas celle de la ligue : renvoyez-le avec la bonne.",
+    calcHelpAria: "Comment le classement est calculé",
+    calc: {
+      title: "Comment le classement est calculé",
+      subtitle: "Rendement pondéré dans le temps — équitable quel que soit le montant",
+      qa: [
+        ["Les ventes sont-elles prises en compte ?",
+         "Oui — chaque achat et chaque vente est traité — mais une vente seule ne change pas votre rendement. Vendre ne fait que transformer des titres en liquidités à leur prix de marché : votre portefeuille vaut la même chose juste avant et juste après (hors frais). Ce que vous aviez déjà gagné reste acquis."],
+        ["Si je vends, est-ce que je garde ma performance ?",
+         "Oui. Votre rendement cumulé est préservé : vendre ne le remet jamais à zéro. Ensuite, vos liquidités cessent simplement de bouger — du cash qui dort rapporte 0 % par jour — donc vous conservez votre position mais vous arrêtez de grimper tant que vous ne réinvestissez pas."],
+        ["Qu'est-ce qui fait vraiment bouger le score, alors ?",
+         "Uniquement la variation de valeur de vos positions au jour le jour : le cours des titres et les dividendes. Les achats et les ventes ne font que déplacer de l'argent entre liquidités et titres, sans ajouter ni retirer de gains."],
+        ["Les dépôts ou les retraits aident-ils ?",
+         "Non. Les entrées et sorties d'argent sont neutralisées (Dietz simple) : ajouter du cash ne gonfle jamais le score. Tout le monde est comparé sur le <b>rendement en pourcentage</b>, pas sur le montant investi."],
+      ],
+      formulaLabel: "Les formules",
+      dailyLbl: "Jour",
+      dailyFormula: "r = (fin − début − flux) / (début + flux/2)",
+      cumLbl: "Total",
+      cumFormula: "∏ (1 + rₙ) − 1",
+      note: "C'est pour cela qu'une personne avec 100 € et une autre avec 10 000 € " +
+        "concourent à armes égales : ce qui compte, c'est le pourcentage, pas le montant.",
+    },
+    bestOfDay: "Meilleur du jour",
+    recentOps: "Dernières opérations",
+    opBuy: "Achat", opSell: "Vente",
+    marketClosed: "Marché fermé",
+    extPre: "Avant-Bourse",
+    extPost: "Après-Bourse",
+    extAt: t => "à " + t,
+    extHoldings: n => n + (n === 1 ? " position" : " positions"),
+    extSession: "Séance étendue",
+    extLeague: "Portefeuille de la ligue, pondéré",
+    extNote: "Cours hors séance ordinaire (Yahoo Finance), relevés au moment de " +
+      "la génération de la page — ils ne comptent pas au classement tant que la " +
+      "séance n'est pas close.",
+    winnerOf: ml => "Vainqueur " + deMois(ml),
+    monthChartAria: ml => "Rendement de chaque joueur en " + ml,
+    lunchNote: "🍽️ C'est sa tournée pour le déjeuner",
+    aiBadge: "IA",
+    insightsTitle: "Analyses de la ligue",
+    aiLive: "analyse automatique",
+    ranking: "Classement",
+    rankCols: ["#", "Joueur", "% cumulé", "% du dernier jour"],
+    goalTitle: "🎯 En route vers l'objectif",
+    goalSub: (amount, d) => "Chaque joueur vise " + amount +
+      " en titres et liquidités d'ici au " + d + ".",
+    goalDays: "jours restants",
+    goalDay: "jour restant",
+    goalToday: "dernier jour",
+    goalOf: (value, target) => value + " sur " + target,
+    goalLeft: amount => "encore " + amount,
+    goalDone: "Objectif atteint 🎉",
+    goalHidden: "privé",
+    goalHiddenNote: "Progression non publiée — ce joueur garde ses montants privés.",
+    goalFx: (cur, rate) => "Montants convertis à 1 " + cur + " = " + rate + " €.",
+    goalNoFx: cur => "Pas de taux " + cur + "/EUR à la génération — la progression " +
+      "ne peut pas être convertie, elle n'est donc pas affichée plutôt que fausse.",
+    showMore: n => "Voir " + n + " de plus",
+    showLess: "Voir moins",
+    dailyTitle: ml => "🏅 Champion du jour · " + ml,
+    dailyCols: ["Date", "Champion", "% du jour"],
+    leagueWallet: "Portefeuille de la ligue",
+    walletsTitle: "Portefeuilles par joueur",
+    badgesTitle: "🎖️ Badges",
+    badgesSub: "Les trophées s'accumulent avec le temps — une fois gagnés, ils restent.",
+    badgesEmpty: "Pas encore de badges — ils arriveront quand la ligue s'échauffera.",
+    recordTitle: "🚀 Plus forte hausse en une séance",
+    recordHeld: names => "Détenu par " + names,
+    recordPrev: (pct, tk, d) => "Record précédent : " + tk + " " + pct + " · " + d,
+    badgeChamp: ml => "Champion " + deMois(ml),
+    badgeChampProv: ml => "En tête en " + ml,
+    badgeWeek: "Une semaine dans le vert",
+    badgeMilestone: t => "+" + t + " % atteints",
+    badgeMonths: n => n + " mois gagnés d'affilée",
+    badgeChampMeta: pct => "Mois " + pct,
+    badgeOn: d => "Obtenu le " + d,
+    badgeLive: "En direct",
+    cumTitle: "Rendement cumulé · depuis le début",
+    dailyDetailTitle: "Détail quotidien · depuis le début",
+    detailAria: "Détail",
+    dayByAsset: "Rendement par actif",
+    dayOthers: "Autres joueurs",
+    dayCash: "Liquidités · frais",
+    dayNoBreakdown: "Pas de détail par actif pour cette séance.",
+    footer: "Rendement quotidien avec la méthode Dietz simple (les dépôts et retraits " +
+      "ne comptent pas comme des gains) ; cumul par capitalisation géométrique " +
+      "(rendement pondéré dans le temps). Données : relevés Revolut chiffrés · " +
+      "cours de clôture de Yahoo Finance · logos par " +
+      "<a href=\\"https://logo.dev\\" target=\\"_blank\\" rel=\\"noopener noreferrer\\">Logo.dev</a>.",
+    assets: n => n === 1 ? "actif" : "actifs",
+    others: "Autres",
+    donutAria: "Répartition du portefeuille par poids",
+    allocInsight: (tk, w) => "📊 Plus grosse position · " + tk +
+      ' <span class="muted">· ' + w + " du total</span>",
+    walletTop: (tk, w) => "Plus grosse · " + tk + " " + w,
+    noPlayers: "Aucun joueur avec des données pour l'instant",
+    noPlayersDot: "Aucun joueur avec des données pour l'instant.",
+    detailColsFull: ["Date","Début","Fin","Flux ext.","P&L du jour","% du jour","% cumulé"],
+    detailColsSimple: ["Date","% du jour","% cumulé"],
+    buy: "Acheter", sell: "Vendre",
+    recBuckets: ["Achat fort","Achat","Conserver","Vente","Vente forte"],
+    analystRec: "Recommandation des analystes",
+    analysts: n => n + (n === 1 ? " analyste" : " analystes"),
+    avg: v => "moy. " + v + "/5",
+    priceTarget: m => "🎯 Objectif de cours " + m,
+    rangeLabel: (lo, hi) => "· fourchette " + lo + "–" + hi,
+    relatedTickers: "Valeurs liées",
+    nextBuy: "Renforcer", nextTrim: "Alléger",
+    nextTitle: (tk, buy) => buy ? "Renforcer " + tk : "Alléger " + tk,
+    consensusBit: l => "consensus " + l.toLowerCase(),
+    targetBit: pct => "objectif " + pct,
+    ofPortfolio: w => w + " de son portefeuille",
+    nextDisclaimer: "💡 Piste fondée sur le consensus des analystes (Yahoo Finance). " +
+      "Ceci n'est pas un conseil en investissement.",
+    close: "Fermer",
+    weightInLeague: "Poids dans la ligue",
+    heldBy: "Détenu par",
+    playersCount: n => n + (n === 1 ? " joueur" : " joueurs"),
+    variation: "Variation",
+    tradeOnRevolut: "Négocier sur Revolut",
+    revNote: tk => "Ouvrez la fiche de " + tk + " dans l'app Revolut pour acheter ou vendre.",
+    priceRange: (a, b) => "Cours · " + a + " → " + b,
+    whoHasIt: "Qui le détient",
+    news: "Actualités",
+    tickerNote: 'Logo : <a href="https://logo.dev" target="_blank" rel="noopener noreferrer">logo.dev</a> · ' +
+      "cours et consensus des analystes : Yahoo Finance · à titre informatif, " +
+      "ceci n'est pas un conseil en investissement.",
+    since: d => "Depuis le " + d,
+    nextStep: "Prochaine étape",
+    cumPct: "% cumulé",
+    bestDayTile: "Meilleur jour",
+    worstDayTile: "Pire jour",
+    lastDayPct: "% du dernier jour",
+    streak: "Série",
+    streakLabel: (sign, n) => sign > 0 ? (n === 1 ? "jour dans le vert" : "jours dans le vert")
+      : (sign < 0 ? (n === 1 ? "jour dans le rouge" : "jours dans le rouge") : "série"),
+    sessions: "Séances",
+    portfolioCount: n => "Portefeuille (" + n + (n === 1 ? " position)" : " positions)"),
+    recentSessions: "Séances récentes",
+    portfolioNews: "Actualités du portefeuille",
+    points: v => Math.abs(v).toFixed(2) + NBSP + "points",
+    ins: {
+      leaderFire: (a, g, b) => a + " est en feu — " + g + " d'avance sur " + b + ".",
+      leaderPullAway: a => a + " prend le large en tête.",
+      leaderLeads: (a, p) => a + " mène la ligue avec " + p + " en cumulé.",
+      leaderHelm: a => a + " tient la barre et ne la lâche plus.",
+      leaderUnstoppable: (a, p) => "Personne n'arrête " + a + " aujourd'hui — " + p + " sur la séance.",
+      leaderPerfect: (a, p) => "Journée parfaite pour " + a + " : aussi la meilleure séance (" + p + ").",
+      leaderGreenStreak: (a, s) => a + " enchaîne " + s + " séances de suite dans le vert.",
+      raceFinish: (a, g, b) => "Si c'était une course, " + a + " verrait déjà la ligne d'arrivée : " + g + " sur " + b + ".",
+      overallGap: (a, b, g) => "De " + a + " à " + b + " il y a " + g + " au classement général.",
+      leaderDefends: (a, b) => a + " défend la tête pendant que " + b + " pousse derrière.",
+      pulse: (a, b) => "Le duel entre " + a + " et " + b + " fait vivre la ligue.",
+      bestSession: (a, p) => a + " signe la meilleure séance de la ligue : " + p + ".",
+      worstDrop: (a, p) => a + " encaisse la plus grosse baisse du jour : " + p + ".",
+      allRed: () => "Une séance à oublier : toute la ligue termine dans le rouge aujourd'hui.",
+      allGreen: () => "Vent dans le dos : toute la ligue termine dans le vert aujourd'hui.",
+      surprise: (a, p) => a + " est la surprise du jour, en envolée de " + p + ".",
+      deflate: (a, p) => a + " se dégonfle aujourd'hui : " + p + " sur la séance.",
+      backToGreen: (a, p) => a + " repasse dans le vert après une mauvaise passe : " + p + ".",
+      duelTop: (a, b, g) => "Duel en tête : " + a + " et " + b + " séparés par seulement " + g + ".",
+      photoFinish: (a, b, g) => "Photo-finish entre " + a + " et " + b + " : " + g + " d'écart.",
+      cutsGround: (lo, up, g) => lo + " revient sur " + up + " : " + g + " aujourd'hui.",
+      redStreak: (a, s) => a + " enchaîne " + s + " séances dans le rouge. Il est temps de réagir.",
+      holdsFirm: (a, s) => a + " tient bon : " + s + " séances positives d'affilée.",
+      onARoll: (a, g) => a + " est lancé : " + g + " depuis le début de la ligue.",
+      sharp: (a, g, k) => a + " est affûté : " + g + " des " + k + " dernières séances dans le vert.",
+      needsReact: (a, p) => a + " doit réagir : " + p + " en cumulé.",
+      signsOfLife: (a, p) => a + " donne signe de vie : " + p + " aujourd'hui depuis le bas du tableau.",
+      bottomEarly: a => a + " ferme la marche, mais la ligue ne fait que commencer.",
+      rollercoaster: (a, g) => a + " est sur des montagnes russes : " + g + " d'amplitude depuis le début.",
+      allIn: (a, tk) => a + " mise tout sur " + tk + " : 100 % du portefeuille.",
+      concentrates: (a, w, tk) => a + " concentre le risque : " + w + " sur " + tk + ".",
+      mostDiversified: (a, n) => a + " est le plus diversifié : " + n + " positions.",
+      leagueLoaded: (tk, w) => "Toute la ligue est chargée en " + tk + " : " + w + " de l'ensemble.",
+    },
+  },
 };
 const T = I18N[LANG];
 
@@ -1172,28 +1453,68 @@ const T = I18N[LANG];
   document.title = "🏆 " + T.appTitle;
   const titleMeta = document.getElementById("app-title-meta");
   if (titleMeta) titleMeta.setAttribute("content", T.appTitle);
-  // el nombre de la app instalada (Android) sale del manifest: en japonés se
-  // apunta a un manifest propio con el nombre traducido
-  if (LANG === "ja") {
+  // el nombre de la app instalada (Android) sale del manifest: cada idioma con
+  // nombre traducido apunta a un manifest propio
+  if (LANG_META && LANG_META.manifest) {
     const ml = document.getElementById("manifest-link");
-    if (ml) ml.setAttribute("href", "manifest-ja.webmanifest");
+    if (ml) ml.setAttribute("href", LANG_META.manifest);
   }
 })();
 
-// ---- toggle de idioma (reemplaza al botón de refresco): guarda la ----
-// preferencia por dispositivo en localStorage y recarga para repintar todo.
+// ---- selector de idioma: el botón muestra el idioma activo y despliega ----
+// el menú con los tres. Al elegir se guarda la preferencia por dispositivo en
+// localStorage y se recarga para repintar toda la página.
 (() => {
   const btn = document.getElementById("lang-btn");
-  if (!btn) return;
+  const menu = document.getElementById("lang-menu");
+  if (!btn || !menu) return;
   const label = document.getElementById("lang-label");
-  if (label) label.textContent = T.langBtnLabel;
-  btn.title = T.langBtnAria;
-  btn.setAttribute("aria-label", T.langBtnAria);
-  btn.addEventListener("click", () => {
-    const next = LANG === "ja" ? "en" : "ja";
-    try { localStorage.setItem("lang", next); } catch (e) {}
-    location.reload();
+  if (label) label.textContent = (LANG_META || LANGS[0]).short;
+  btn.title = T.langAria;
+  btn.setAttribute("aria-label", T.langAria);
+  menu.setAttribute("aria-label", T.langAria);
+
+  LANGS.forEach(l => {
+    const item = document.createElement("button");
+    item.type = "button";
+    item.setAttribute("role", "menuitemradio");
+    item.setAttribute("aria-checked", l.code === LANG ? "true" : "false");
+    item.lang = l.code;
+    item.innerHTML = '<span></span><span class="tick" aria-hidden="true">✓</span>';
+    item.firstChild.textContent = l.label;
+    item.addEventListener("click", () => {
+      if (l.code !== LANG) {
+        try { localStorage.setItem("lang", l.code); } catch (e) {}
+        location.reload();
+      } else { close(); }
+    });
+    menu.appendChild(item);
   });
+
+  const open = () => {
+    menu.hidden = false;
+    btn.setAttribute("aria-expanded", "true");
+    document.addEventListener("click", onOutside, true);
+    document.addEventListener("keydown", onKey);
+  };
+  function close() {
+    menu.hidden = true;
+    btn.setAttribute("aria-expanded", "false");
+    document.removeEventListener("click", onOutside, true);
+    document.removeEventListener("keydown", onKey);
+  }
+  function onOutside(ev) {
+    if (!menu.contains(ev.target) && ev.target !== btn && !btn.contains(ev.target)) close();
+  }
+  function onKey(ev) { if (ev.key === "Escape") { close(); btn.focus(); } }
+  btn.addEventListener("click", () => { menu.hidden ? open() : close(); });
+})();
+
+// ---- banner de Canadá: enlaza a la web oficial de turismo en el idioma ----
+// activo (el texto ya lo pintan los ``data-i18n``).
+(() => {
+  const banner = document.getElementById("ca-banner");
+  if (banner) banner.href = T.caHref;
 })();
 
 // ---- enlace de envío de posiciones por correo ----
@@ -2046,7 +2367,7 @@ paintOperations();
 // (``show_goal`` en su player.json, porque el % deja adivinar el importe); del
 // resto sí sale la fila —están todos— pero con la barra en trama y sin dato.
 // El importe exacto necesita además ``show_amounts``.
-const goalMoney = v => new Intl.NumberFormat(LANG === "ja" ? "ja-JP" : "en-US",
+const goalMoney = v => new Intl.NumberFormat(LANG_META.locale,
   {style: "currency", currency: "EUR", maximumFractionDigits: 0}).format(v);
 function paintGoal() {
   const g = DATA.goal;
@@ -2140,7 +2461,7 @@ function extMoney(v, cur) {
   return CUR_SYM[cur] ? CUR_SYM[cur] + n : n + (cur ? " " + cur : "");
 }
 function fmtClock(epoch) {
-  return new Intl.DateTimeFormat(LANG === "ja" ? "ja-JP" : "en-GB", {
+  return new Intl.DateTimeFormat(LANG_META.clock, {
     timeZone: "Europe/Madrid", hour: "2-digit", minute: "2-digit", hourCycle: "h23",
   }).format(new Date(epoch * 1000));
 }
