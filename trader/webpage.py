@@ -2756,16 +2756,33 @@ function newsListEl(items) {
   });
   return box;
 }
-// Titulares de varios valores a la vez (la cartera de un jugador): sin
-// repetidos y de más a menos reciente, marcando de qué valor es cada uno.
+// Titulares de varios valores a la vez (la portada, la cartera de un jugador):
+// sin repetidos y **repartidos por valor**, marcando de qué valor es cada uno.
+//
+// Se van cogiendo por rondas: el titular más reciente de cada valor, luego el
+// segundo de cada uno, y así. Ordenar solo por fecha llenaba las primeras filas
+// con la misma empresa —la que hubiera publicado más ese día— y quien no
+// desplegara la lista no veía a nadie más. Dentro de cada ronda sí manda la
+// fecha, así que lo más fresco sigue saliendo antes.
 function newsFor(syms, max) {
-  const seen = {}, out = [];
-  syms.forEach(sym => ((TICKERS[sym] || {}).news || []).forEach(n => {
-    if (seen[n.link]) return;
-    seen[n.link] = 1;
-    out.push(Object.assign({sym: sym}, n));
-  }));
-  out.sort((a, b) => (b.at || "").localeCompare(a.at || ""));
+  const seen = {}, queues = [];
+  syms.forEach(sym => {
+    const queue = [];
+    ((TICKERS[sym] || {}).news || []).forEach(n => {
+      if (seen[n.link]) return;
+      seen[n.link] = 1;
+      queue.push(Object.assign({sym: sym}, n));
+    });
+    queue.sort((a, b) => (b.at || "").localeCompare(a.at || ""));
+    if (queue.length) queues.push(queue);
+  });
+  const out = [];
+  while (queues.length && (!max || out.length < max)) {
+    queues.sort((a, b) => (b[0].at || "").localeCompare(a[0].at || ""));
+    queues.forEach(q => out.push(q.shift()));
+    for (let i = queues.length - 1; i >= 0; i--)
+      if (!queues[i].length) queues.splice(i, 1);
+  }
   return max ? out.slice(0, max) : out;
 }
 // Sección de noticias: los titulares del build si los hay y, siempre, los

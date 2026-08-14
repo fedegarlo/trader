@@ -463,6 +463,20 @@ def test_player_news_gather_the_whole_portfolio():
     assert "newsFor(syms, 6)" in webpage._TEMPLATE
 
 
+def test_news_of_several_tickers_are_dealt_in_rounds():
+    """Una cola por valor y una ronda cada vez: sin esto las primeras filas se
+    llenaban con la empresa que más hubiera publicado ese día."""
+    snippet = webpage._TEMPLATE.split("function newsFor(", 1)[1].split(
+        "function newsSectionEl", 1)[0]
+    # una cola por valor, y de cada ronda sale un titular de cada una
+    assert "queues.push(queue)" in snippet
+    assert "queues.forEach(q => out.push(q.shift()))" in snippet
+    # dentro de la ronda manda la fecha (lo más fresco primero)
+    assert 'queues.sort((a, b) => (b[0].at || "").localeCompare(a[0].at || ""))' in snippet
+    # y las colas que se vacían salen del reparto
+    assert "queues.splice(i, 1)" in snippet
+
+
 def test_news_titles_are_never_injected_as_html():
     """Los textos vienen de una API de terceros: solo textContent, nunca innerHTML."""
     snippet = webpage._TEMPLATE.split("function newsListEl(items)", 1)[1].split(

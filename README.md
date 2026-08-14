@@ -29,8 +29,9 @@ cualquier tarta de cartera) se abre una **ficha de detalle**:
 
 - **Detalle del jugador**: estadísticas (acumulado, mejor y peor día, racha,
   jornadas), rentabilidad acumulada, su cartera con los logos de cada valor y
-  las **noticias de toda su cartera** (los titulares de sus valores, mezclados
-  de más a menos reciente y etiquetados con el símbolo de cada uno).
+  las **noticias de toda su cartera** (los titulares de sus valores, repartidos
+  por rondas para que no salgan todos de la misma empresa y etiquetados con el
+  símbolo de cada uno).
 - **Detalle del ticker**: logo y nombre de la empresa, peso en la liga, quién
   lo tiene, la variación de precio de la ventana con su mini-gráfica, la
   **recomendación de analistas** (consenso comprar/mantener/vender, reparto de
@@ -59,9 +60,12 @@ Los valores relacionados están curados en `trader/tickers.py`.
 ### 📰 Noticias de los valores de la liga
 
 La portada lleva un módulo **«Noticias de la liga»** con los últimos titulares
-de todos los valores que hay en cartera, mezclados de más a menos reciente: cada
-fila lleva el logo y el símbolo del valor, el medio y la fecha, y abre la
-noticia en su medio. Como el resto de listados, enseña cinco y el resto detrás
+de todos los valores que hay en cartera: cada fila lleva el logo y el símbolo
+del valor, el medio y la fecha, y abre la noticia en su medio. Los titulares se
+reparten **por rondas** —el más reciente de cada valor, luego el segundo de cada
+uno…— en vez de ordenarlos solo por fecha: así las primeras filas no se llenan
+con la empresa que más haya publicado ese día y se ven varias sin desplegar
+(dentro de cada ronda sí manda la fecha). Como el resto de listados, enseña cinco y el resto detrás
 de «ver más»; si no se ha podido descargar nada, la tarjeta no aparece.
 
 Los titulares de los valores **que alguien tiene en cartera** se descargan
