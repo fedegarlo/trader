@@ -1,5 +1,7 @@
 """La página embebe la serie completa de cada jugador (la liga es desde el inicio)."""
 
+import os
+import re
 from datetime import date, datetime, timedelta, timezone
 
 from trader import webpage
@@ -766,3 +768,35 @@ def test_long_lists_collapse_to_five(tmp_path):
     assert "function collapseList(rows, host)" in html
     # y se aplica a cada listado que puede crecer
     assert html.count("collapseList(") >= 8
+
+
+def _lang_keys(code: str) -> set[str]:
+    """Nombres de clave del bloque ``code`` de ``I18N`` (incluidos los anidados)."""
+    blocks = webpage._TEMPLATE.split("const I18N = {", 1)[1].split("\nconst T = I18N", 1)[0]
+    body = blocks.split("\n  %s: {\n" % code, 1)[1].split("\n  },\n", 1)[0]
+    return set(re.findall(r"^\s+([A-Za-z]\w*):", body, re.M))
+
+
+def test_language_selector_offers_english_japanese_and_french():
+    assert '{code: "en"' in webpage._TEMPLATE
+    assert '{code: "ja"' in webpage._TEMPLATE
+    assert '{code: "fr"' in webpage._TEMPLATE
+    # el selector se pinta a partir de esa lista, no de un toggle de dos
+    assert 'LANGS.forEach(l => {' in webpage._TEMPLATE
+    # cada idioma con nombre propio tiene su manifest (nombre de la app)
+    assert os.path.exists("docs/manifest-ja.webmanifest")
+    assert os.path.exists("docs/manifest-fr.webmanifest")
+
+
+def test_french_translates_every_string():
+    """El francés cubre exactamente las mismas claves que el inglés."""
+    en = _lang_keys("en")
+    assert "appTitle" in en and "footer" in en  # el bloque se ha leído bien
+    assert _lang_keys("fr") == en == _lang_keys("ja")
+
+
+def test_canada_banner_links_to_the_official_tourism_site():
+    assert 'id="ca-banner"' in webpage._TEMPLATE
+    assert 'banner.href = T.caHref' in webpage._TEMPLATE
+    for locale in ("en-ca", "ja-jp", "fr-fr"):
+        assert 'https://travel.destinationcanada.com/' + locale in webpage._TEMPLATE
