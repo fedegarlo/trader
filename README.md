@@ -83,9 +83,11 @@ sin hacerlo, una cartera de 5.895 $ salía al 42 % de 14.000 € cuando de verda
 va por el 36 %. El cambio se descarga de Yahoo (`EURUSD=X` y equivalentes) en
 el build y se cachea y versiona como un precio más
 ([`trader/fx.py`](trader/fx.py)); la tarjeta enseña el cambio aplicado bajo el
-título (`1 USD = 0,8481 €`), que es lo único que se escribe ahí. Es la
-**única** parte del proyecto que toca divisas — la clasificación va en
-porcentaje y ahí la divisa se cancela. Si Yahoo no responde y no hay
+título (`1 USD = 0,8651 €`), que es lo único que se escribe ahí. Ese cambio es
+de la liga, no de cada jugador —es un precio de mercado público—, así que sale
+**aunque todos tengan su avance en privado**: es lo que explica cómo se cuenta
+el objetivo. Es la **única** parte del proyecto que toca divisas — la
+clasificación va en porcentaje y ahí la divisa se cancela. Si Yahoo no responde y no hay
 caché, el módulo dice que no hay cambio en vez de enseñar un avance
 equivocado.
 
