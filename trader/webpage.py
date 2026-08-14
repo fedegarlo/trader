@@ -54,8 +54,11 @@ _TEMPLATE = """<!doctype html>
     --grid: rgba(11,10,16,0.08); --baseline: rgba(11,10,16,0.20);
     --ring: rgba(11,10,16,0.07); --hair: rgba(11,10,16,0.06);
     --accent: #1f6bff;
-    --up: #1667e0; --down: #d61f8f;
-    --up-soft: rgba(22,103,224,0.14); --down-soft: rgba(214,31,143,0.14);
+    /* ganancias en verde y pérdidas en rojo (el código de color de toda la
+       vida en bolsa). El rojo tira a carmín, no a teja, para que no se
+       confunda con el naranja de la paleta de jugadores. */
+    --up: #0a7a3f; --down: #d92027;
+    --up-soft: rgba(10,122,63,0.14); --down-soft: rgba(217,32,39,0.14);
     --s1: #2a78d6; --s2: #1baf7a; --s3: #eda100; --s4: #008300;
     --s5: #4a3aa7; --s6: #e34948; --s7: #8a44cc; --s8: #eb6834;
     /* paleta de jugadores: naranja y marrón para los dos primeros y, a partir
@@ -75,8 +78,8 @@ _TEMPLATE = """<!doctype html>
       --grid: rgba(255,255,255,0.09); --baseline: rgba(255,255,255,0.22);
       --ring: rgba(255,255,255,0.10); --hair: rgba(255,255,255,0.07);
       --accent: #5b9bff;
-      --up: #4d94ff; --down: #ff5cbf;
-      --up-soft: rgba(77,148,255,0.18); --down-soft: rgba(255,92,191,0.18);
+      --up: #37c978; --down: #fa5252;
+      --up-soft: rgba(55,201,120,0.18); --down-soft: rgba(250,82,82,0.18);
       --s1: #3987e5; --s2: #199e70; --s3: #c98500; --s4: #008300;
       --s5: #9085e9; --s6: #e66767; --s7: #a86fe0; --s8: #d95926;
       --p1: #ff9040; --p2: #a56b3f; --p3: #e6b93f; --p4: #e2664a;
@@ -93,8 +96,8 @@ _TEMPLATE = """<!doctype html>
     --grid: rgba(255,255,255,0.09); --baseline: rgba(255,255,255,0.22);
     --ring: rgba(255,255,255,0.10); --hair: rgba(255,255,255,0.07);
     --accent: #5b9bff;
-    --up: #4d94ff; --down: #ff5cbf;
-    --up-soft: rgba(77,148,255,0.18); --down-soft: rgba(255,92,191,0.18);
+    --up: #37c978; --down: #fa5252;
+    --up-soft: rgba(55,201,120,0.18); --down-soft: rgba(250,82,82,0.18);
     --s1: #3987e5; --s2: #199e70; --s3: #c98500; --s4: #008300;
     --s5: #9085e9; --s6: #e66767; --s7: #a86fe0; --s8: #d95926;
     --p1: #ff9040; --p2: #a56b3f; --p3: #e6b93f; --p4: #e2664a;
@@ -2679,8 +2682,10 @@ function tileEl(k, v, cls) {
   return t;
 }
 
-// Reparto de opiniones: buckets de compra→venta con color propio (verde→rojo),
-// independiente del azul/rosa de subida/bajada de la liga.
+// Reparto de opiniones: buckets de compra→venta con su propia rampa de cinco
+// pasos (verde→ámbar→rojo, con el gris del «mantener» en medio). Comparte el
+// idioma de color con la liga —verde bien, rojo mal— pero no sus variables:
+// aquí hacen falta los tonos intermedios, que --up y --down no tienen.
 const REC_BUCKETS = [
   ["strongBuy", T.recBuckets[0], "#15a34a"],
   ["buy", T.recBuckets[1], "#22c55e"],

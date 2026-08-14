@@ -854,6 +854,23 @@ def test_charts_are_drawn_with_smooth_monotone_curves():
     assert '(i ? "L" : "M")' not in webpage._TEMPLATE
 
 
+def test_gains_are_green_and_losses_red():
+    """Verde arriba y rojo abajo, en los tres bloques de tema."""
+    ups = re.findall(r"--up: (#[0-9a-f]{6});", webpage._TEMPLATE)
+    downs = re.findall(r"--down: (#[0-9a-f]{6});", webpage._TEMPLATE)
+    assert len(ups) == len(downs) == 3
+
+    def rgb(c):
+        return tuple(int(c[i:i + 2], 16) for i in (1, 3, 5))
+
+    for c in ups:  # el verde manda: más verde que rojo y que azul
+        r, g, b = rgb(c)
+        assert g > r and g > b, c
+    for c in downs:  # el rojo manda, y sin azul de sobra (carmín, no rosa)
+        r, g, b = rgb(c)
+        assert r > g and r > b and b <= g + 10, c
+
+
 def test_players_use_the_warm_orange_and_brown_palette():
     """Naranja, marrón y ocres: los colores de jugador son su propia familia."""
     assert 'const SLOTS = ["--p1"' in webpage._TEMPLATE
