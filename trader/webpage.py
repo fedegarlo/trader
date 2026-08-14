@@ -53,7 +53,10 @@ _TEMPLATE = """<!doctype html>
     --card-solid: #f6f4fb;
     --grid: rgba(11,10,16,0.08); --baseline: rgba(11,10,16,0.20);
     --ring: rgba(11,10,16,0.07); --hair: rgba(11,10,16,0.06);
-    --accent: #1f6bff;
+    /* naranja de marca: tiñe botones, enlaces y estados activos. Tono
+       profundo para que el blanco encima del botón y el texto de los
+       enlaces se lean sobre el fondo claro. */
+    --accent: #c45400;
     /* ganancias en verde y pérdidas en rojo (el código de color de toda la
        vida en bolsa). El rojo tira a carmín, no a teja, para que no se
        confunda con el naranja de la paleta de jugadores. */
@@ -77,7 +80,7 @@ _TEMPLATE = """<!doctype html>
       --card-solid: #1b1a22;
       --grid: rgba(255,255,255,0.09); --baseline: rgba(255,255,255,0.22);
       --ring: rgba(255,255,255,0.10); --hair: rgba(255,255,255,0.07);
-      --accent: #5b9bff;
+      --accent: #ea6d10;
       --up: #37c978; --down: #fa5252;
       --up-soft: rgba(55,201,120,0.18); --down-soft: rgba(250,82,82,0.18);
       --s1: #3987e5; --s2: #199e70; --s3: #c98500; --s4: #008300;
@@ -95,7 +98,7 @@ _TEMPLATE = """<!doctype html>
     --card-solid: #1b1a22;
     --grid: rgba(255,255,255,0.09); --baseline: rgba(255,255,255,0.22);
     --ring: rgba(255,255,255,0.10); --hair: rgba(255,255,255,0.07);
-    --accent: #5b9bff;
+    --accent: #ea6d10;
     --up: #37c978; --down: #fa5252;
     --up-soft: rgba(55,201,120,0.18); --down-soft: rgba(250,82,82,0.18);
     --s1: #3987e5; --s2: #199e70; --s3: #c98500; --s4: #008300;
@@ -447,7 +450,7 @@ _TEMPLATE = """<!doctype html>
   .ai-badge {
     font-size: 11px; font-weight: 800; letter-spacing: 0.06em; color: #fff;
     padding: 3px 8px; border-radius: 999px;
-    background: linear-gradient(120deg, var(--s7), var(--accent));
+    background: linear-gradient(120deg, var(--s3), var(--accent));
     box-shadow: 0 5px 14px -6px color-mix(in srgb, var(--accent) 70%, transparent);
   }
   .ai-title { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; }
