@@ -52,6 +52,15 @@ after-hours) se descarga también en el build, del mismo `quoteSummary`, pero
 **no se cachea**: caduca en minutos, así que o hay dato fresco o no se enseña.
 Los valores relacionados están curados en `trader/tickers.py`.
 
+Las **gráficas van suavizadas**: los puntos se unen con un spline cúbico
+monótono (Fritsch–Carlson) en vez de con segmentos rectos, así que se van los
+picos angulosos sin que la curva se invente subidas ni bajadas —entre dos días
+nunca sale del rango de esos dos días, y en cada máximo o mínimo la pendiente
+es 0—. El **color de cada jugador** sale de una paleta cálida: naranja el
+primero, marrón el segundo y tonos ocres (teja, oro viejo, cobre) a partir del
+tercero. Se asigna por orden alfabético de id, así que no cambia si cambia la
+clasificación.
+
 ### 🎯 Camino al objetivo
 
 Un módulo con **todos los jugadores** y una barra de avance hacia el objetivo
