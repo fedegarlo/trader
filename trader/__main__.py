@@ -20,6 +20,7 @@ from datetime import date, timedelta
 from . import analysts as analysts_mod
 from . import badges as badges_mod
 from . import extended as extended_mod
+from . import fx as fx_mod
 from . import inbox as inbox_mod
 from . import players as players_mod
 from . import report as report_mod
@@ -178,12 +179,24 @@ def cmd_ranking(args: argparse.Namespace) -> None:
                                              price_history=price_history)
     badges_mod.save_store(store, args.badges_file)
 
+    # Cambio a euros para el módulo del objetivo: es lo único del proyecto que
+    # compara importes (14.000 €) con carteras valoradas en la divisa del
+    # extracto. Se cachea y versiona como un precio más; si Yahoo no responde y
+    # no hay caché, el módulo lo dice en vez de enseñar un avance equivocado.
+    fx_rates = fx_mod.rates_to_eur(
+        prices, {player.currency for player, _ in computed}, date.today())
+    for currency in sorted({player.currency for player, _ in computed}):
+        if currency.upper() != "EUR" and currency.upper() not in fx_rates:
+            print(f"AVISO: sin cambio {currency}->EUR, el objetivo no se puede "
+                  "convertir (el módulo lo indicará)", file=sys.stderr)
+
     content = report_mod.write_ranking(computed, out_path=args.out)
     webpage.write_index(computed, out_path=args.html_out, pending=pending,
                         allocation=allocation, holdings=holdings,
                         prices=price_history, analysts=analysts,
                         extended=extended,
-                        contributions=contributions, badges=badges)
+                        contributions=contributions, badges=badges,
+                        fx=fx_rates)
     with open(args.pending_out, "w", encoding="utf-8") as fh:
         json.dump(pending, fh, ensure_ascii=False)
     print(content)

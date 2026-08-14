@@ -673,6 +673,7 @@ _TEMPLATE = """<!doctype html>
       <div class="goal-l">
         <h2 data-i18n="goalTitle"></h2>
         <div class="wsub muted" id="goal-sub"></div>
+        <div class="wsub muted" id="goal-fx" style="display:none"></div>
       </div>
       <div class="goal-count">
         <span class="num" id="goal-days"></span>
@@ -844,6 +845,9 @@ const I18N = {
     goalDone: "Goal reached 🎉",
     goalHidden: "private",
     goalHiddenNote: "Progress not published — this player keeps their amounts private.",
+    goalFx: (cur, rate) => "Amounts converted at 1 " + cur + " = " + rate + " €.",
+    goalNoFx: cur => "No " + cur + "/EUR rate at build time — progress can't be " +
+      "converted, so it isn't shown rather than shown wrong.",
     showMore: n => "Show " + n + " more",
     showLess: "Show less",
     dailyTitle: ml => "🏅 Daily champion · " + ml,
@@ -1025,6 +1029,9 @@ const I18N = {
     goalDone: "目標達成 🎉",
     goalHidden: "非公開",
     goalHiddenNote: "進捗は非公開です（金額を公開していないプレイヤー）。",
+    goalFx: (cur, rate) => "1 " + cur + " = " + rate + " € で換算しています。",
+    goalNoFx: cur => "生成時に" + cur + "/EURのレートが取得できませんでした。誤った進捗を" +
+      "出さないため非表示にしています。",
     showMore: n => "さらに" + n + "件を表示",
     showLess: "折りたたむ",
     dailyTitle: ml => "🏅 デイリー王者 · " + ml,
@@ -2060,7 +2067,9 @@ function paintGoal() {
     .sort((a, b) => ((b.p.goal ? b.p.goal.pct : -1) - (a.p.goal ? a.p.goal.pct : -1)) ||
                     (a.i - b.i));
   const painted = rows.map(({p}) => {
-    const goal = p.goal || null;
+    // ``goal`` sin ``pct`` (noFx) es «no se pudo convertir a euros»: se trata
+    // como sin dato, pero con su propia explicación.
+    const goal = (p.goal && p.goal.pct != null) ? p.goal : null;
     const row = h("div", "goal-row clk");
     row.dataset.player = p.id;
 
@@ -2089,18 +2098,30 @@ function paintGoal() {
     }
     row.appendChild(bar);
 
-    let meta = "";
-    if (!goal) meta = T.goalHiddenNote;
-    else if (goal.pct >= 100) meta = T.goalDone;
+    const meta = [];
+    if (!goal) meta.push(p.goal && p.goal.noFx
+      ? T.goalNoFx(p.goal.currency || "") : T.goalHiddenNote);
+    else if (goal.pct >= 100) meta.push(T.goalDone);
     else if (goal.value != null)
-      meta = T.goalOf(goalMoney(goal.value), goalMoney(goal.target)) + " \\u00b7 " +
-             T.goalLeft(goalMoney(goal.target - goal.value));
-    if (meta) row.appendChild(h("div", "goal-meta", meta));
+      meta.push(T.goalOf(goalMoney(goal.value), goalMoney(goal.target)) + " \\u00b7 " +
+                T.goalLeft(goalMoney(goal.target - goal.value)));
+    if (meta.length) row.appendChild(h("div", "goal-meta", meta.join(" \\u00b7 ")));
 
     box.appendChild(row);
     return row;
   });
   collapseList(painted, box);
+
+  // Las carteras se valoran en la divisa del extracto y el objetivo está en
+  // euros: el cambio aplicado va en la cabecera (una vez por divisa, no
+  // repetido en cada fila) porque es justo lo que hace que un 42 % sea un 36 %.
+  const seen = new Map();
+  ranked.forEach(p => {
+    if (p.goal && p.goal.rate) seen.set(p.goal.currency, p.goal.rate);
+  });
+  const fxBox = document.getElementById("goal-fx");
+  fxBox.textContent = [...seen].map(([cur, r]) => T.goalFx(cur, r.toFixed(4))).join(" \\u00b7 ");
+  fxBox.style.display = seen.size ? "" : "none";
 }
 paintGoal();
 
@@ -2894,24 +2915,44 @@ def _goal_deadline(today: date) -> date:
     return deadline
 
 
-def _goal_progress(player: Player, series: list[DayResult]) -> dict | None:
+def _goal_progress(player: Player, series: list[DayResult],
+                   fx: dict[str, float] | None) -> dict | None:
     """Avance del jugador hacia su objetivo, o ``None`` si no lo publica.
 
     El progreso se mide sobre el valor de la cartera al cierre del último día
     calculado — inversiones **más** efectivo, que es justo lo que persigue el
-    objetivo — sobre el objetivo del jugador (``goal`` en su ``player.json``,
+    objetivo — contra el objetivo del jugador (``goal`` en su ``player.json``,
     14.000 por defecto).
 
-    Como ese porcentaje deja adivinar el importe de la cartera, solo se publica
+    El objetivo está **en euros** y la cartera se valora en la divisa del
+    extracto (dólares, para los valores de EE. UU.), así que hay que convertir:
+    sin hacerlo, una cartera de 5.895 $ salía al 42 % de 14.000 € cuando en
+    realidad va por el 36 %. ``fx`` trae el cambio a euros por divisa (ver
+    :mod:`trader.fx`); si falta el de este jugador se devuelve
+    ``{"noFx": True}`` — el módulo dirá que no hay cambio en vez de enseñar un
+    porcentaje equivocado.
+
+    Como el porcentaje deja adivinar el importe de la cartera, solo se publica
     si el jugador lo activa con ``"show_goal": true``; el importe exacto,
     además, sigue necesitando ``"show_amounts": true``. Sin ``show_goal`` esta
     función devuelve ``None`` y el jugador aparece en el módulo sin barra.
     """
     if not player.show_goal or not series or player.goal <= 0:
         return None
-    value = series[-1].end_value
-    goal = {"target": round(player.goal, 2),
-            "pct": round(max(value, 0.0) / player.goal * 100, 2)}
+    goal = {"target": round(player.goal, 2)}
+    currency = (player.currency or "EUR").upper()
+    rate = (fx or {}).get(currency)
+    if rate is None:
+        goal["noFx"] = True
+        goal["currency"] = currency
+        return goal
+    value = max(series[-1].end_value, 0.0) * rate   # en euros
+    goal["pct"] = round(value / player.goal * 100, 2)
+    if currency != "EUR":
+        # El cambio aplicado, visible en la web: es la diferencia entre «voy por
+        # el 42 %» y «voy por el 36 %», así que se enseña, no se esconde.
+        goal["currency"] = currency
+        goal["rate"] = round(rate, 6)
     if player.show_amounts:
         goal["value"] = round(value, 2)
     return goal
@@ -3102,6 +3143,7 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
                   extended: dict[str, dict] | None = None,
                   contributions: dict[str, dict[date, dict[str, float]]] | None = None,
                   badges: dict | None = None,
+                  fx: dict[str, float] | None = None,
                   today: date | None = None,
                   now: datetime | None = None) -> dict:
     """Datos embebidos en la página. Respeta show_amounts por jugador.
@@ -3128,7 +3170,9 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
 
     ``goal`` es el objetivo de la liga (importe y cuenta atrás al próximo 1 de
     agosto), y cada jugador que lo publica (``show_goal``) lleva su propio
-    avance en ``players[].goal``; ver :func:`_goal_progress`.
+    avance en ``players[].goal``; ver :func:`_goal_progress`. ``fx`` es el
+    cambio a euros por divisa (:mod:`trader.fx`), que hace falta porque el
+    objetivo está en euros y las carteras se valoran en la divisa del extracto.
 
     ``extended`` es la cotización fuera de horario por ticker (pre-market /
     after-hours, ver :mod:`trader.extended`): precios públicos de mercado, foto
@@ -3184,7 +3228,7 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
         suggestion = _buy_sell_suggestion(holdings_w, analysts)
         if suggestion:
             entry["suggestion"] = suggestion
-        goal = _goal_progress(player, window)
+        goal = _goal_progress(player, window, fx)
         if goal:
             entry["goal"] = goal
         players.append(entry)
@@ -3241,13 +3285,14 @@ def write_index(
     extended: dict[str, dict] | None = None,
     contributions: dict[str, dict[date, dict[str, float]]] | None = None,
     badges: dict | None = None,
+    fx: dict[str, float] | None = None,
 ) -> str:
     payload = json.dumps(
         build_payload(computed, last_days=last_days, price_days=price_days,
                       pending=pending,
                       allocation=allocation, holdings=holdings,
                       prices=prices, analysts=analysts, extended=extended,
-                      contributions=contributions, badges=badges,
+                      contributions=contributions, badges=badges, fx=fx,
                       today=today or date.today()),
         ensure_ascii=False)
     payload = payload.replace("</", "<\\/")  # nunca cerrar el <script> desde los datos

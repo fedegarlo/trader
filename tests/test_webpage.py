@@ -627,6 +627,9 @@ def test_player_suggestion_absent_without_analyst_data():
 
 # ---- objetivo de la liga (14.000 antes del 1 de agosto) --------------------
 
+_EUR = {"EUR": 1.0}
+
+
 def _goal_series(end_value: float) -> list[DayResult]:
     """Una jornada cuyo cierre vale ``end_value`` (lo que mide el objetivo)."""
     return [DayResult(
@@ -663,47 +666,91 @@ def test_goal_deadline_day_itself_still_counts():
 def test_goal_progress_is_opt_in_per_player():
     """Sin ``show_goal`` no se publica el avance: delata el valor de la cartera."""
     quiet = Player(player_id="ana", display_name="Ana")
-    payload = webpage.build_payload([(quiet, _goal_series(7000.0))])
+    payload = webpage.build_payload([(quiet, _goal_series(7000.0))], fx=_EUR)
     assert "goal" not in payload["players"][0]
 
 
 def test_goal_progress_published_when_opted_in():
-    fede = Player(player_id="fede", display_name="Fede", show_goal=True)
-    payload = webpage.build_payload([(fede, _goal_series(7000.0))])
-    # 7.000 de 14.000 = 50 %, y sin show_amounts no se publica el importe.
+    fede = Player(player_id="fede", display_name="Fede",
+                  currency="EUR", show_goal=True)
+    payload = webpage.build_payload([(fede, _goal_series(7000.0))], fx=_EUR)
+    # 7.000 € de 14.000 € = 50 %, y sin show_amounts no se publica el importe.
     assert payload["players"][0]["goal"] == {"target": 14000.0, "pct": 50.0}
 
 
-def test_goal_progress_includes_the_amount_only_with_show_amounts():
+def test_goal_converts_the_portfolio_to_euros():
+    """El objetivo está en euros y la cartera se valora en dólares: se convierte.
+
+    5.895 $ al cambio 1 $ = 0,848 € son 5.000 €, o sea el 36 % de 14.000 € —
+    no el 42 % que salía comparando dólares contra euros.
+    """
     fede = Player(player_id="fede", display_name="Fede",
+                  currency="USD", show_goal=True, show_amounts=True)
+    goal = webpage.build_payload([(fede, _goal_series(5895.4))],
+                                 fx={"USD": 1 / 1.1791})["players"][0]["goal"]
+    assert round(goal["value"]) == 5000
+    assert goal["pct"] == 35.71
+    # y se publica el cambio aplicado, que es justo lo que despistaba
+    assert goal["currency"] == "USD"
+    assert round(goal["rate"], 4) == 0.8481
+
+
+def test_goal_in_euros_carries_no_exchange_rate():
+    fede = Player(player_id="fede", display_name="Fede",
+                  currency="EUR", show_goal=True)
+    goal = webpage.build_payload([(fede, _goal_series(7000.0))],
+                                 fx=_EUR)["players"][0]["goal"]
+    assert "rate" not in goal and "currency" not in goal
+
+
+def test_goal_without_exchange_rate_says_so_instead_of_guessing():
+    """Sin cambio no se enseña un porcentaje inventado: se dice que falta."""
+    fede = Player(player_id="fede", display_name="Fede",
+                  currency="USD", show_goal=True, show_amounts=True)
+    goal = webpage.build_payload([(fede, _goal_series(5895.4))],
+                                 fx={})["players"][0]["goal"]
+    assert goal == {"target": 14000.0, "noFx": True, "currency": "USD"}
+    assert "pct" not in goal and "value" not in goal
+
+
+def test_goal_progress_includes_the_amount_only_with_show_amounts():
+    fede = Player(player_id="fede", display_name="Fede", currency="EUR",
                   show_goal=True, show_amounts=True)
-    goal = webpage.build_payload([(fede, _goal_series(3500.0))])["players"][0]["goal"]
+    goal = webpage.build_payload([(fede, _goal_series(3500.0))],
+                                 fx=_EUR)["players"][0]["goal"]
     assert goal == {"target": 14000.0, "pct": 25.0, "value": 3500.0}
 
 
 def test_goal_progress_uses_the_players_own_target():
-    fede = Player(player_id="fede", display_name="Fede", goal=7000.0, show_goal=True)
-    goal = webpage.build_payload([(fede, _goal_series(3500.0))])["players"][0]["goal"]
+    fede = Player(player_id="fede", display_name="Fede", currency="EUR",
+                  goal=7000.0, show_goal=True)
+    goal = webpage.build_payload([(fede, _goal_series(3500.0))],
+                                 fx=_EUR)["players"][0]["goal"]
     assert goal["target"] == 7000.0 and goal["pct"] == 50.0
 
 
 def test_goal_progress_can_go_past_the_target():
-    fede = Player(player_id="fede", display_name="Fede", show_goal=True)
-    goal = webpage.build_payload([(fede, _goal_series(21000.0))])["players"][0]["goal"]
+    fede = Player(player_id="fede", display_name="Fede",
+                  currency="EUR", show_goal=True)
+    goal = webpage.build_payload([(fede, _goal_series(21000.0))],
+                                 fx=_EUR)["players"][0]["goal"]
     assert goal["pct"] == 150.0
 
 
 def test_goal_progress_never_goes_negative():
-    fede = Player(player_id="fede", display_name="Fede", show_goal=True)
-    goal = webpage.build_payload([(fede, _goal_series(-50.0))])["players"][0]["goal"]
+    fede = Player(player_id="fede", display_name="Fede",
+                  currency="EUR", show_goal=True)
+    goal = webpage.build_payload([(fede, _goal_series(-50.0))],
+                                 fx=_EUR)["players"][0]["goal"]
     assert goal["pct"] == 0.0
 
 
 def test_goal_module_reaches_the_html(tmp_path):
-    fede = Player(player_id="fede", display_name="Fede", show_goal=True)
+    fede = Player(player_id="fede", display_name="Fede",
+                  currency="EUR", show_goal=True)
     out = tmp_path / "index.html"
     webpage.write_index([(fede, _goal_series(7000.0))], out_path=str(out),
-                        today=date(2026, 8, 14))
+                        today=date(2026, 8, 14), fx=_EUR)
     html = out.read_text(encoding="utf-8")
     assert "goal-card" in html and "paintGoal" in html
     assert '"deadline": "2027-08-01"' in html or '"deadline":"2027-08-01"' in html

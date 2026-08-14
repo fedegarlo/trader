@@ -65,8 +65,19 @@ sobre el objetivo de cada uno, así que **publicarlo es publicar ese importe**
 aunque sea en forma de %. Por eso es opt-in, como los importes: solo se pinta
 la barra de quien active `"show_goal": true` en su `player.json`. Quien no lo
 active sigue apareciendo en el módulo —están todos— pero con la barra en trama
-y sin cifra. El importe exacto (`9.531 € de 14.000 €`) necesita además
+y sin cifra. El importe exacto (`5.000 € de 14.000 €`) necesita además
 `"show_amounts": true`. El objetivo se puede cambiar por jugador con `"goal"`.
+
+**El objetivo está en euros y las carteras se valoran en la divisa del
+extracto** (dólares, para los valores de EE. UU.), así que hay que convertir:
+sin hacerlo, una cartera de 5.895 $ salía al 42 % de 14.000 € cuando de verdad
+va por el 36 %. El cambio se descarga de Yahoo (`EURUSD=X` y equivalentes) en
+el build y se cachea y versiona como un precio más
+([`trader/fx.py`](trader/fx.py)); la tarjeta enseña el cambio aplicado bajo el
+título. Es la **única** parte del proyecto que toca divisas — la clasificación
+va en porcentaje y ahí la divisa se cancela. Si Yahoo no responde y no hay
+caché, el módulo dice que no hay cambio en vez de enseñar un avance
+equivocado.
 
 ### 📋 Listados largos
 
@@ -257,6 +268,7 @@ data/prices/                caché de precios de cierre (se versiona; reproducib
 data/badges.json            histórico acumulativo de insignias (badges)
 data/analysts/              caché del consenso de analistas por ticker (Yahoo quoteSummary)
 trader/extended.py          cotización fuera de horario (pre-market / after-hours), sin caché
+trader/fx.py                cambio a euros para el objetivo de la liga (cacheado en data/prices/)
 trader/yahoo.py             sesión anónima de Yahoo (cookie + crumb) compartida
 data/public/                series diarias públicas en JSON (para gráficas)
 docs/index.html             la web del ranking 🏆 (GitHub Pages)
@@ -273,9 +285,10 @@ tests/                      pytest
 
 - Todo se calcula en la divisa del extracto; si mezclas acciones en USD y
   EUR en la misma cuenta, el tipo de cambio no se ajusta día a día.
-- Por lo mismo, el objetivo de 14.000 se compara con el valor de la cartera
-  **en la divisa del extracto**, sin convertir: la web lo rotula en € porque
-  así se planteó la meta, pero no hay cambio de divisa de por medio.
+- La excepción es el **objetivo de la liga**, que sí convierte a euros el valor
+  de la cartera (un cambio al cierre, ver [🎯 Camino al objetivo](#-camino-al-objetivo)):
+  ahí se compara un importe, no un porcentaje, y la divisa cambia el resultado.
+  Sigue siendo una conversión al cambio del día, no un histórico día a día.
 - Los tickers deben existir en Yahoo Finance con el mismo símbolo que usa
   Revolut (para los principales de EE. UU. coincide).
 - Tipos de fila no reconocidos del extracto se ignoran con un aviso en el
