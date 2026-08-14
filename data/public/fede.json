@@ -2,122 +2,214 @@
   "player": "fede",
   "display_name": "Fede",
   "currency": "USD",
-  "show_amounts": false,
+  "show_amounts": true,
   "days": [
     {
       "date": "2026-07-14",
       "daily_return_pct": 1.7906,
-      "cumulative_return_pct": 1.7906
+      "cumulative_return_pct": 1.7906,
+      "start_value": 1045.04,
+      "end_value": 1670.52,
+      "external_flow": 601.39,
+      "pnl": 24.1
     },
     {
       "date": "2026-07-15",
       "daily_return_pct": -4.8532,
-      "cumulative_return_pct": -3.1496
+      "cumulative_return_pct": -3.1496,
+      "start_value": 1670.52,
+      "end_value": 2050.33,
+      "external_flow": 472.34,
+      "pnl": -92.54
     },
     {
       "date": "2026-07-16",
       "daily_return_pct": -4.961,
-      "cumulative_return_pct": -7.9543
+      "cumulative_return_pct": -7.9543,
+      "start_value": 2050.33,
+      "end_value": 1948.61,
+      "external_flow": 0.0,
+      "pnl": -101.72
     },
     {
       "date": "2026-07-17",
       "daily_return_pct": -0.2142,
-      "cumulative_return_pct": -8.1514
+      "cumulative_return_pct": -8.1514,
+      "start_value": 1948.61,
+      "end_value": 2493.85,
+      "external_flow": 550.0,
+      "pnl": -4.76
     },
     {
       "date": "2026-07-20",
       "daily_return_pct": 1.2635,
-      "cumulative_return_pct": -6.9909
+      "cumulative_return_pct": -6.9909,
+      "start_value": 2493.85,
+      "end_value": 2525.36,
+      "external_flow": 0.0,
+      "pnl": 31.51
     },
     {
       "date": "2026-07-21",
       "daily_return_pct": 6.743,
-      "cumulative_return_pct": -0.7194
+      "cumulative_return_pct": -0.7194,
+      "start_value": 2525.36,
+      "end_value": 3315.85,
+      "external_flow": 599.98,
+      "pnl": 190.51
     },
     {
       "date": "2026-07-22",
       "daily_return_pct": 0.1256,
-      "cumulative_return_pct": -0.5947
+      "cumulative_return_pct": -0.5947,
+      "start_value": 3315.85,
+      "end_value": 3320.01,
+      "external_flow": 0.0,
+      "pnl": 4.16
     },
     {
       "date": "2026-07-23",
       "daily_return_pct": -0.0547,
-      "cumulative_return_pct": -0.6491
+      "cumulative_return_pct": -0.6491,
+      "start_value": 3320.01,
+      "end_value": 3318.2,
+      "external_flow": 0.0,
+      "pnl": -1.82
     },
     {
       "date": "2026-07-24",
       "daily_return_pct": -3.9736,
-      "cumulative_return_pct": -4.5969
+      "cumulative_return_pct": -4.5969,
+      "start_value": 3318.2,
+      "end_value": 3186.34,
+      "external_flow": 0.0,
+      "pnl": -131.85
     },
     {
       "date": "2026-07-27",
       "daily_return_pct": -3.2713,
-      "cumulative_return_pct": -7.7178
+      "cumulative_return_pct": -7.7178,
+      "start_value": 3186.34,
+      "end_value": 3082.11,
+      "external_flow": 0.0,
+      "pnl": -104.23
     },
     {
       "date": "2026-07-28",
       "daily_return_pct": -3.9942,
-      "cumulative_return_pct": -11.4038
+      "cumulative_return_pct": -11.4038,
+      "start_value": 3082.11,
+      "end_value": 2959.0,
+      "external_flow": 0.0,
+      "pnl": -123.11
     },
     {
       "date": "2026-07-29",
       "daily_return_pct": -4.1922,
-      "cumulative_return_pct": -15.1179
+      "cumulative_return_pct": -15.1179,
+      "start_value": 2959.0,
+      "end_value": 2834.96,
+      "external_flow": 0.0,
+      "pnl": -124.05
     },
     {
       "date": "2026-07-30",
       "daily_return_pct": 9.6265,
-      "cumulative_return_pct": -6.9468
+      "cumulative_return_pct": -6.9468,
+      "start_value": 2834.96,
+      "end_value": 3107.86,
+      "external_flow": 0.0,
+      "pnl": 272.91
     },
     {
       "date": "2026-07-31",
       "daily_return_pct": -0.3492,
-      "cumulative_return_pct": -7.2717
+      "cumulative_return_pct": -7.2717,
+      "start_value": 3107.86,
+      "end_value": 3097.01,
+      "external_flow": 0.0,
+      "pnl": -10.85
     },
     {
       "date": "2026-08-03",
       "daily_return_pct": 0.1301,
-      "cumulative_return_pct": -7.151
+      "cumulative_return_pct": -7.151,
+      "start_value": 3097.01,
+      "end_value": 4244.63,
+      "external_flow": 1142.85,
+      "pnl": 4.77
     },
     {
       "date": "2026-08-04",
       "daily_return_pct": 3.3692,
-      "cumulative_return_pct": -4.0228
+      "cumulative_return_pct": -4.0228,
+      "start_value": 4244.63,
+      "end_value": 4387.64,
+      "external_flow": 0.0,
+      "pnl": 143.01
     },
     {
       "date": "2026-08-05",
       "daily_return_pct": -0.92,
-      "cumulative_return_pct": -4.9057
+      "cumulative_return_pct": -4.9057,
+      "start_value": 4387.64,
+      "end_value": 4852.45,
+      "external_flow": 507.51,
+      "pnl": -42.7
     },
     {
       "date": "2026-08-06",
       "daily_return_pct": -2.3317,
-      "cumulative_return_pct": -7.123
+      "cumulative_return_pct": -7.123,
+      "start_value": 4852.45,
+      "end_value": 4790.19,
+      "external_flow": 51.48,
+      "pnl": -113.74
     },
     {
       "date": "2026-08-07",
       "daily_return_pct": -1.9376,
-      "cumulative_return_pct": -8.9226
+      "cumulative_return_pct": -8.9226,
+      "start_value": 4790.19,
+      "end_value": 4697.38,
+      "external_flow": 0.0,
+      "pnl": -92.81
     },
     {
       "date": "2026-08-10",
       "daily_return_pct": 0.3525,
-      "cumulative_return_pct": -8.6015
+      "cumulative_return_pct": -8.6015,
+      "start_value": 4697.38,
+      "end_value": 4702.33,
+      "external_flow": -11.58,
+      "pnl": 16.54
     },
     {
       "date": "2026-08-11",
       "daily_return_pct": 1.9709,
-      "cumulative_return_pct": -6.8002
+      "cumulative_return_pct": -6.8002,
+      "start_value": 4702.33,
+      "end_value": 4795.01,
+      "external_flow": 0.0,
+      "pnl": 92.68
     },
     {
       "date": "2026-08-12",
       "daily_return_pct": 4.737,
-      "cumulative_return_pct": -2.3854
+      "cumulative_return_pct": -2.3854,
+      "start_value": 4795.01,
+      "end_value": 5022.15,
+      "external_flow": 0.0,
+      "pnl": 227.14
     },
     {
       "date": "2026-08-13",
       "daily_return_pct": 5.6518,
-      "cumulative_return_pct": 3.1316
+      "cumulative_return_pct": 3.1316,
+      "start_value": 5022.15,
+      "end_value": 5895.95,
+      "external_flow": 573.75,
+      "pnl": 300.05
     }
   ]
 }
