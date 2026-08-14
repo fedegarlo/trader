@@ -18,8 +18,10 @@ cada día de mercado por una GitHub Action:
 La página es estática y autocontenida. Abre con la **clasificación**: una tabla
 tipo parrilla de F1 o tabla de liga (1º, 2º, 3º…, con el acumulado de cada
 jugador y el % de la última jornada), seguida del **mejor del día**, del
-**camino al objetivo** (ver [🎯 Camino al objetivo](#-camino-al-objetivo)) y del
-detalle diario. La liga se juega **desde el inicio**: la clasificación y el
+**camino al objetivo** (ver [🎯 Camino al objetivo](#-camino-al-objetivo)), de
+las **noticias de la liga** (ver
+[📰 Noticias de los valores de la liga](#-noticias-de-los-valores-de-la-liga)) y
+del detalle diario. La liga se juega **desde el inicio**: la clasificación y el
 detalle diario cubren toda la competición; los campeones del mes actual y del
 anterior son **parciales** y se calculan aparte. Además, al **tocar un jugador**
 (fila de la clasificación, leyenda o su cartera) o un **ticker** (leyenda de
@@ -56,8 +58,14 @@ Los valores relacionados están curados en `trader/tickers.py`.
 
 ### 📰 Noticias de los valores de la liga
 
+La portada lleva un módulo **«Noticias de la liga»** con los últimos titulares
+de todos los valores que hay en cartera, mezclados de más a menos reciente: cada
+fila lleva el logo y el símbolo del valor, el medio y la fecha, y abre la
+noticia en su medio. Como el resto de listados, enseña cinco y el resto detrás
+de «ver más»; si no se ha podido descargar nada, la tarjeta no aparece.
+
 Los titulares de los valores **que alguien tiene en cartera** se descargan
-también en el build (`trader/news.py`) de la API de noticias de la liga:
+en el build (`trader/news.py`) de la API de noticias de la liga:
 
 ```bash
 curl -X POST http://imprifyapp.com/api/trader/news \

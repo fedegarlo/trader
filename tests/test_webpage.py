@@ -471,6 +471,35 @@ def test_news_titles_are_never_injected_as_html():
     assert "title.textContent = n.title" in snippet
 
 
+def test_home_has_a_news_card_fed_by_every_ticker():
+    """El módulo de portada mezcla los titulares de todos los valores."""
+    assert 'id="news-card"' in webpage._TEMPLATE
+    assert "paintNews();" in webpage._TEMPLATE
+    snippet = webpage._TEMPLATE.split("function paintNews()", 1)[1].split(
+        "paintNews();", 1)[0]
+    assert "(DATA.tickers || []).map(t => t.ticker)" in snippet
+    assert "newsFor(syms, NEWS_HOME_MAX)" in snippet
+    assert "collapseList(rows, box)" in snippet  # 5 filas y el resto tras «ver más»
+
+
+def test_home_news_card_hides_itself_without_news():
+    snippet = webpage._TEMPLATE.split("function paintNews()", 1)[1].split(
+        "paintNews();", 1)[0]
+    assert 'if (!items.length) { card.style.display = "none"; return; }' in snippet
+
+
+def test_home_news_card_is_translated_in_every_language():
+    for key in ("leagueNews", "newsCount", "newsTickers", "newsNote"):
+        assert webpage._TEMPLATE.count(key + ":") == 3, key
+
+
+def test_home_news_rows_open_the_article_in_a_new_tab():
+    snippet = webpage._TEMPLATE.split("function paintNews()", 1)[1].split(
+        "paintNews();", 1)[0]
+    assert 'row.href = n.link; row.target = "_blank"; row.rel = "noopener noreferrer"' in snippet
+    assert "innerHTML" not in snippet.replace("box.innerHTML = \"\";", "")
+
+
 def test_search_links_survive_without_downloaded_news():
     """Sin titulares (API caída) la sección se queda con los enlaces de siempre."""
     snippet = webpage._TEMPLATE.split("function newsSectionEl(", 1)[1].split(

@@ -445,6 +445,23 @@ _TEMPLATE = """<!doctype html>
              font-variant-numeric: tabular-nums; }
   .op-tk.clk:hover .sym, .op-name.clk:hover .nm { color: var(--accent); }
 
+  /* widget de noticias de la liga (titulares de los valores en cartera) */
+  .nw-row { display: flex; align-items: flex-start; gap: 10px; padding: 11px 4px;
+            border-top: 1px solid var(--hair); border-radius: 10px;
+            text-decoration: none; color: inherit; }
+  .nw-row:first-child { border-top: none; }
+  .nw-row:hover { background: var(--surface-2); }
+  .nw-row:hover .nw-t { color: var(--accent); }
+  .nw-row .logo, .nw-row .mono { width: 30px; height: 30px; flex: none; }
+  .nw-b { min-width: 0; }
+  .nw-t { font-size: 13.5px; font-weight: 700; line-height: 1.35;
+          /* dos líneas como mucho: el titular no puede comerse la tarjeta */
+          display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+          overflow: hidden; }
+  .nw-m { color: var(--muted); font-size: 11.5px; font-weight: 600; margin-top: 4px;
+          overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .nw-m .sym { color: var(--ink-2); font-weight: 800; }
+
   /* insights generados por IA */
   .ai-head { display: flex; align-items: center; gap: 9px; }
   .ai-badge {
@@ -836,6 +853,13 @@ _TEMPLATE = """<!doctype html>
     <div id="ops-list" style="margin-top:8px"></div>
   </section>
 
+  <section class="card" id="news-card" style="display:none">
+    <div class="wlabel"><span data-i18n="leagueNews"></span></div>
+    <div class="wsub muted" id="news-sub"></div>
+    <div id="news-feed" style="margin-top:8px"></div>
+    <div class="wsub muted" id="news-note" style="margin-top:10px"></div>
+  </section>
+
   <section class="card" id="insights-card" style="display:none">
     <div class="ai-head">
       <span class="ai-badge" data-i18n="aiBadge"></span>
@@ -974,6 +998,11 @@ const I18N = {
     bestOfDay: "Best of the day",
     recentOps: "Latest trades",
     opBuy: "Buy", opSell: "Sell",
+    leagueNews: "League news",
+    newsCount: n => n + (n === 1 ? " headline" : " headlines"),
+    newsTickers: n => n + (n === 1 ? " holding" : " holdings"),
+    newsNote: "Headlines for the tickers held in the league, fetched when the " +
+      "page was built. Each one opens on its own outlet.",
     marketClosed: "Market closed",
     extPre: "Pre-market",
     extPost: "After hours",
@@ -1158,6 +1187,11 @@ const I18N = {
     bestOfDay: "本日のベスト",
     recentOps: "最新の取引",
     opBuy: "買い", opSell: "売り",
+    leagueNews: "リーグのニュース",
+    newsCount: n => n + "件の見出し",
+    newsTickers: n => n + "銘柄",
+    newsNote: "リーグの保有銘柄に関する見出しです。ページ生成時に取得したもので、" +
+      "各見出しは配信元のサイトで開きます。",
     marketClosed: "市場は休場",
     extPre: "プレマーケット",
     extPost: "時間外取引",
@@ -1340,6 +1374,11 @@ const I18N = {
     bestOfDay: "Meilleur du jour",
     recentOps: "Dernières opérations",
     opBuy: "Achat", opSell: "Vente",
+    leagueNews: "Actualités de la ligue",
+    newsCount: n => n + (n === 1 ? " titre" : " titres"),
+    newsTickers: n => n + (n === 1 ? " valeur" : " valeurs"),
+    newsNote: "Titres des valeurs détenues dans la ligue, récupérés lors de la " +
+      "génération de la page. Chacun s'ouvre sur son média.",
     marketClosed: "Marché fermé",
     extPre: "Avant-Bourse",
     extPost: "Après-Bourse",
@@ -2715,6 +2754,50 @@ function newsSectionEl(title, items, sym) {
   if (items.length) sec.appendChild(newsRow(sym));
   return sec;
 }
+// ---- noticias de la liga: módulo de portada -------------------------------
+// Los titulares de todos los valores que alguien tiene en cartera, mezclados de
+// más a menos reciente. Cada fila abre la noticia en su medio; el símbolo dice
+// de qué valor es (su ficha se abre desde la cartera, como siempre). Sin
+// noticias descargadas la tarjeta no se pinta: la portada no enseña huecos.
+const NEWS_HOME_MAX = 12;
+function paintNews() {
+  const card = document.getElementById("news-card");
+  const syms = (DATA.tickers || []).map(t => t.ticker);
+  const items = newsFor(syms, NEWS_HOME_MAX);
+  if (!items.length) { card.style.display = "none"; return; }
+  card.style.display = "";
+
+  const withNews = syms.filter(s => ((TICKERS[s] || {}).news || []).length).length;
+  document.getElementById("news-sub").textContent =
+    T.newsCount(items.length) + " \\u00b7 " + T.newsTickers(withNews);
+  document.getElementById("news-note").textContent = T.newsNote;
+
+  const box = document.getElementById("news-feed");
+  box.innerHTML = "";
+  const rows = items.map(n => {
+    const row = document.createElement("a");
+    row.className = "nw-row";
+    row.href = n.link; row.target = "_blank"; row.rel = "noopener noreferrer";
+    row.appendChild(tickerLogoEl(TICKERS[n.sym] || {ticker: n.sym}, 30));
+    const body = h("div", "nw-b");
+    const title = h("div", "nw-t"); title.textContent = n.title;
+    body.appendChild(title);
+    const meta = h("div", "nw-m");
+    const sym = h("span", "sym"); sym.textContent = n.sym;
+    meta.appendChild(sym);
+    const bits = [];
+    if (n.source) bits.push(n.source);
+    if (n.at && /^\\d{4}-\\d{2}-\\d{2}/.test(n.at)) bits.push(fmtDate(n.at.slice(0, 10)));
+    if (bits.length)
+      meta.appendChild(document.createTextNode(" \\u00b7 " + bits.join(" \\u00b7 ")));
+    body.appendChild(meta);
+    row.appendChild(body);
+    box.appendChild(row);
+    return row;
+  });
+  collapseList(rows, box);
+}
+paintNews();
 // Botones «Comprar»/«Vender» que abren la app de Revolut en el detalle del
 // valor. Ambos llevan al mismo detalle; desde ahí se elige comprar o vender.
 function revolutRow(sym) {
