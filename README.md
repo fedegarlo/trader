@@ -86,6 +86,11 @@ Todo es *best-effort* y con red debajo:
   cacheado; si no hay nada, la ficha se queda con los enlaces de búsqueda.
 - Solo se publican noticias con titular y con enlace `http(s)`. Como el texto
   viene de fuera, la página lo pinta siempre como texto plano, nunca como HTML.
+- **Las noticias se abren siempre en otra ventana**, también con la web
+  instalada como app: ahí un `target="_blank"` se abriría *dentro* de la app
+  —sin barra de direcciones ni botón de atrás— así que en modo `standalone` el
+  enlace lo abre `window.open`, que salta al navegador. El ranking se queda
+  donde estaba.
 - El endpoint se puede cambiar con `--news-api` o con la variable de entorno
   `TRADER_NEWS_API`, y `--news-limit` fija cuántos titulares por valor
   (`--news-limit 0` desactiva las noticias). Con `--offline` no se pide nada.

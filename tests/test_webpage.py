@@ -493,11 +493,30 @@ def test_home_news_card_is_translated_in_every_language():
         assert webpage._TEMPLATE.count(key + ":") == 3, key
 
 
-def test_home_news_rows_open_the_article_in_a_new_tab():
+def test_home_news_rows_open_the_article_in_another_window():
     snippet = webpage._TEMPLATE.split("function paintNews()", 1)[1].split(
         "paintNews();", 1)[0]
-    assert 'row.href = n.link; row.target = "_blank"; row.rel = "noopener noreferrer"' in snippet
+    assert "externalLink(n.link)" in snippet
     assert "innerHTML" not in snippet.replace("box.innerHTML = \"\";", "")
+
+
+def test_every_news_link_goes_through_external_link():
+    """Titulares y enlaces de búsqueda: todos salen a otra ventana."""
+    for fn in ("function newsRow(sym)", "function newsListEl(items)"):
+        snippet = webpage._TEMPLATE.split(fn, 1)[1].split("\nfunction ", 1)[0]
+        assert "externalLink(" in snippet
+        assert 'target = "_blank"' not in snippet  # lo pone externalLink
+
+
+def test_external_links_escape_the_installed_app():
+    """Instalada como app (standalone) un _blank se abre dentro: window.open."""
+    snippet = webpage._TEMPLATE.split("function externalLink(href)", 1)[1].split(
+        "function newsRow(", 1)[0]
+    assert 'a.target = "_blank"; a.rel = "noopener noreferrer"' in snippet
+    assert "ev.preventDefault()" in snippet
+    assert 'window.open(href, "_blank", "noopener,noreferrer")' in snippet
+    assert "if (STANDALONE)" in snippet  # en el navegador manda el target
+    assert "window.navigator.standalone === true" in webpage._TEMPLATE  # iOS
 
 
 def test_search_links_survive_without_downloaded_news():

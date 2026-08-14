@@ -2693,6 +2693,29 @@ function paintExtended() {
 }
 paintExtended();
 
+// ---- enlaces de noticias: siempre en otra ventana -------------------------
+// Un `target="_blank"` basta en el navegador, pero NO con la web instalada como
+// app (el manifest va en `display: standalone`): ahí el enlace se abre dentro
+// de la propia app, sin barra de direcciones ni botón de atrás, y quien entra a
+// leer una noticia se queda atrapado en ella. Cuando estamos en ese modo la
+// abrimos nosotros con `window.open`, que sí salta al navegador — llamado
+// dentro del propio click, que si no lo bloquea el navegador.
+const STANDALONE = (() => {
+  try {
+    return ["standalone", "fullscreen", "minimal-ui"].some(
+      m => window.matchMedia("(display-mode: " + m + ")").matches)
+      || window.navigator.standalone === true;
+  } catch (e) { return false; }
+})();
+function externalLink(href) {
+  const a = document.createElement("a");
+  a.href = href; a.target = "_blank"; a.rel = "noopener noreferrer";
+  if (STANDALONE) a.addEventListener("click", ev => {
+    ev.preventDefault();
+    window.open(href, "_blank", "noopener,noreferrer");
+  });
+  return a;
+}
 function newsRow(sym) {
   const q = encodeURIComponent(sym + " stock");
   const links = [
@@ -2702,8 +2725,7 @@ function newsRow(sym) {
   ];
   const box = h("div", "news");
   links.forEach(([label, href]) => {
-    const a = document.createElement("a");
-    a.href = href; a.target = "_blank"; a.rel = "noopener noreferrer";
+    const a = externalLink(href);
     a.innerHTML = label + ' <span class="ext">↗</span>';
     box.appendChild(a);
   });
@@ -2715,8 +2737,7 @@ function newsRow(sym) {
 function newsListEl(items) {
   const box = h("div", "newslist");
   items.forEach(n => {
-    const a = document.createElement("a");
-    a.href = n.link; a.target = "_blank"; a.rel = "noopener noreferrer";
+    const a = externalLink(n.link);
     a.className = "news-item";
     const title = h("div", "nt"); title.textContent = n.title; a.appendChild(title);
     if (n.desc) {
@@ -2775,9 +2796,8 @@ function paintNews() {
   const box = document.getElementById("news-feed");
   box.innerHTML = "";
   const rows = items.map(n => {
-    const row = document.createElement("a");
+    const row = externalLink(n.link);
     row.className = "nw-row";
-    row.href = n.link; row.target = "_blank"; row.rel = "noopener noreferrer";
     row.appendChild(tickerLogoEl(TICKERS[n.sym] || {ticker: n.sym}, 30));
     const body = h("div", "nw-b");
     const title = h("div", "nw-t"); title.textContent = n.title;
