@@ -77,10 +77,15 @@ en tu propia carpeta `players/<tu-id>/`.
    `goal` es tu objetivo de la liga **en euros** (14.000 por defecto: lo que
    quieres tener entre inversiones y efectivo el 1 de agosto; si tu cartera va
    en otra divisa se convierte al cambio del día) y `show_goal` decide si tu
-   avance sale en el módulo **🎯 Camino al objetivo** de la web. Va aparte de
-   `show_amounts` a propósito: aunque solo se publique el porcentaje, un
-   «62 % de 14.000» deja adivinar el importe de tu cartera. Con
-   `show_goal: false` sigues apareciendo en el módulo, pero sin barra.
+   avance sale en el módulo **🎯 Camino al objetivo** de la web.
+
+   > ⚠️ **`show_goal: true` publica el valor de tu cartera**, aunque tengas
+   > `show_amounts: false`. No es que «deje adivinar»: un «42,11 % de 14.000 €»
+   > son 5.895 € al céntimo, y con el cambio que enseña la tarjeta se
+   > reconstruye también en la divisa del extracto. Actívalo solo si te parece
+   > bien que tu patrimonio invertido sea público — el repo lo es. Con
+   > `show_goal: false` (el valor por defecto) sigues apareciendo en el módulo,
+   > pero con la barra en trama y sin ninguna cifra.
 2. Cifra tu extracto con la **frase compartida de la liga**:
 
    ```bash
