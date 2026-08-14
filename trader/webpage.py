@@ -2,10 +2,10 @@
 
 Autocontenido (datos embebidos, sin CDNs): tarjetas tipo widget al estilo
 Revolut (fondo aurora, gráficas de área con degradado, tipografía compacta) y,
-de primero, la clasificación en formato tabla (1º, 2º, 3º… con la diferencia
-de cada jugador respecto al líder, como una parrilla de F1 o una tabla de
-liga). El color se asigna a cada jugador por orden alfabético de id
-(estable: no cambia si cambia su posición en el ranking).
+de primero, la clasificación en formato tabla (1º, 2º, 3º… con su acumulado y
+el % de la última jornada, como una parrilla de F1 o una tabla de liga). El
+color se asigna a cada jugador por orden alfabético de id (estable: no cambia
+si cambia su posición en el ranking).
 """
 
 from __future__ import annotations
@@ -191,8 +191,6 @@ _TEMPLATE = """<!doctype html>
   .lead-name { display: inline-flex; align-items: center; gap: 8px; font-size: 19px; font-weight: 800;
                letter-spacing: -0.02em; min-width: 0; }
   .lead-name > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .lead-name .key { width: 11px; height: 11px; flex: none;
-                    box-shadow: 0 0 0 3px color-mix(in srgb, var(--lead, var(--accent)) 22%, transparent); }
   .leader .lval { font-size: clamp(24px, 7vw, 30px); font-weight: 800; letter-spacing: -0.035em;
                   line-height: 1.02; }
   .leader .delta { font-size: 13px; font-weight: 700; }
@@ -371,26 +369,20 @@ _TEMPLATE = """<!doctype html>
          vertical-align: middle; margin-right: 8px; }
   .big { font-weight: 700; }
 
-  /* clasificación tipo parrilla (F1 / liga): posición, jugador, acumulado y la
-     diferencia con el primero. La fila del líder va tintada con su color. */
+  /* clasificación tipo parrilla (F1 / liga): posición, jugador, acumulado y el
+     % de la última jornada. La fila del líder va tintada con su color. */
   #standings td.rank { font-size: 16px; }
-  #standings td.gap { color: var(--muted); font-weight: 600; }
   #standings tr.lead td {
     background: color-mix(in srgb, var(--lead, var(--accent)) 11%, transparent);
   }
   #standings tr.lead td:first-child { border-radius: 12px 0 0 12px; }
   #standings tr.lead td:last-child { border-radius: 0 12px 12px 0; }
   #standings td.empty { color: var(--muted); font-weight: 500; }
-  /* en el móvil la columna «desde» se cae: lo que importa es la posición, el
-     acumulado y la diferencia con el primero (la fecha sigue en su ficha). */
   @media (max-width: 560px) {
-    #standings th:last-child, #standings td:not(.empty):last-child { display: none; }
-    #standings th, #standings td { padding: 9px 5px; font-size: 13.5px; }
+    #standings th, #standings td { padding: 9px 6px; }
     /* los títulos se parten en dos líneas antes que obligar a desplazar la
        tabla: los datos (que sí van en una línea) caben en la pantalla. */
-    #standings th { font-size: 11.5px; white-space: normal; }
-    #standings td.rank { font-size: 14px; }
-    #standings td.big { font-size: 14.5px; }
+    #standings th { white-space: normal; }
   }
 
   /* leyenda (widgets de mes) */
@@ -615,7 +607,7 @@ _TEMPLATE = """<!doctype html>
       <div class="leader" id="leader-row">
         <div class="lead-l">
           <span class="lead-tag"><span class="lead-trophy">🏆</span><span data-i18n="leader"></span></span>
-          <span class="lead-name"><span class="key" id="leader-key"></span><span id="leader-name"></span></span>
+          <span class="lead-name"><span id="leader-name"></span></span>
         </div>
         <div class="lead-r">
           <span class="num lval" id="leader-val"></span>
@@ -809,8 +801,7 @@ const I18N = {
     insightsTitle: "League insights",
     aiLive: "automatic analysis",
     ranking: "Standings",
-    rankCols: ["#", "Player", "Cumulative %", "Gap to 1st", "Last day %", "Since"],
-    gapLeader: "—",
+    rankCols: ["#", "Player", "Cumulative %", "Last day %"],
     dailyTitle: ml => "🏅 Daily champion · " + ml,
     dailyCols: ["Date", "Champion", "Day %"],
     leagueWallet: "League portfolio",
@@ -840,7 +831,6 @@ const I18N = {
       "as gains); cumulative by geometric compounding (time-weighted return). " +
       "Data: encrypted Revolut statements · closing prices from Yahoo Finance · " +
       "logos by <a href=\\"https://logo.dev\\" target=\\"_blank\\" rel=\\"noopener noreferrer\\">Logo.dev</a>.",
-    pp: "\\u00a0pp",
     assets: n => n === 1 ? "asset" : "assets",
     others: "Others",
     donutAria: "Portfolio breakdown by weight",
@@ -981,8 +971,7 @@ const I18N = {
     insightsTitle: "リーグのインサイト",
     aiLive: "自動分析",
     ranking: "順位表",
-    rankCols: ["#", "プレイヤー", "累積%", "首位差", "前日比%", "開始"],
-    gapLeader: "—",
+    rankCols: ["#", "プレイヤー", "累積%", "前日比%"],
     dailyTitle: ml => "🏅 デイリー王者 · " + ml,
     dailyCols: ["日付", "王者", "当日%"],
     leagueWallet: "リーグのポートフォリオ",
@@ -1011,7 +1000,6 @@ const I18N = {
     footer: "日次リターンはシンプルDietz法（入出金は損益に含めない）、累積は幾何連鎖" +
       "（時間加重収益率）。データ：暗号化されたRevolut明細 · Yahoo Financeの終値 · " +
       "ロゴは <a href=\\"https://logo.dev\\" target=\\"_blank\\" rel=\\"noopener noreferrer\\">Logo.dev</a>。",
-    pp: "\\u00a0pp",
     assets: n => "銘柄",
     others: "その他",
     donutAria: "重み付けによるポートフォリオ内訳",
@@ -1174,10 +1162,10 @@ const lastOf = p => p.days[p.days.length - 1];
 const TICKERS = {}; (DATA.tickers || []).forEach(t => TICKERS[t.ticker] = t);
 const PLAYERS = {}; DATA.players.forEach(p => PLAYERS[p.id] = p);
 
-// ---- clasificación (ordenada por acumulado; el color sigue al jugador) ----
+// ---- clasificación (ordenada por acumulado) ----
 // Se lee como una parrilla de F1 o una tabla de liga: primero, segundo,
-// tercero… con la diferencia de cada jugador respecto al primero en puntos
-// porcentuales (el líder marca el ritmo y lleva un guion).
+// tercero… con el acumulado de cada jugador y el % de la última jornada. En el
+// móvil no sobra ni una columna, así que solo van esos cuatro datos.
 const ranked = [...DATA.players].sort((a, b) => lastOf(b).cum - lastOf(a).cum);
 const MEDALS = ["🥇","🥈","🥉"];
 {
@@ -1194,23 +1182,15 @@ const MEDALS = ["🥇","🥈","🥉"];
     empty.colSpan = T.rankCols.length;
     t.insertRow().appendChild(empty);
   }
-  const topCum = ranked.length ? lastOf(ranked[0]).cum : 0;
   ranked.forEach((p, i) => {
     const last = lastOf(p);
     const tr = t.insertRow();
     tr.classList.add("clk"); tr.dataset.player = p.id;
     if (i === 0) tr.classList.add("lead");
     tr.appendChild(mk("td", "rank", MEDALS[i] || String(i + 1)));
-    const name = mk("td", "name");
-    const key = mk("span", "key"); key.style.background = colorOf(p);
-    name.appendChild(key); name.appendChild(document.createTextNode(p.name));
-    tr.appendChild(name);
+    tr.appendChild(mk("td", "name", p.name));
     tr.appendChild(mk("td", "big " + (last.cum >= 0 ? "pos" : "neg"), fmtPct(last.cum)));
-    const behind = topCum - last.cum;
-    tr.appendChild(mk("td", "gap", i === 0 || behind < 0.005
-      ? T.gapLeader : "-" + behind.toFixed(2) + T.pp));
     tr.appendChild(mk("td", last.day >= 0 ? "pos" : "neg", fmtPct(last.day)));
-    tr.appendChild(mk("td", "", p.since || p.days[0].date));
   });
 }
 
@@ -1258,7 +1238,6 @@ function paintWidgets() {
   // en la tarjeta para que lo hereden la banda del líder y su fila de la tabla.
   const leader = ranked[0], lc = lastOf(leader);
   document.getElementById("hero-card").style.setProperty("--lead", colorOf(leader));
-  document.getElementById("leader-key").style.background = colorOf(leader);
   document.getElementById("leader-name").textContent = leader.name;
   const lv = document.getElementById("leader-val");
   lv.textContent = fmtPct(lc.cum); lv.className = "num lval " + (lc.cum >= 0 ? "pos" : "neg");
@@ -2945,7 +2924,7 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
     (``monthly``), sin recortar esta serie. ``last_days > 0`` recorta a esa
     ventana (útil en pruebas). El ``% acumulado`` de cada día es siempre el de
     siempre (desde el inicio real), y ``since`` guarda la fecha de inicio real
-    para la columna «Desde» de la clasificación.
+    que se enseña en la ficha de cada jugador.
 
     ``price_days`` es otra cosa: la ventana de la mini-serie de precios del
     detalle de cada ticker (contexto de mercado del valor, no de la liga).
