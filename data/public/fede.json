@@ -222,12 +222,12 @@
     },
     {
       "date": "2026-08-17",
-      "daily_return_pct": 3.9281,
-      "cumulative_return_pct": 6.2657,
+      "daily_return_pct": 3.4439,
+      "cumulative_return_pct": 5.7705,
       "start_value": 5845.51,
-      "end_value": 6075.12,
+      "end_value": 6046.82,
       "external_flow": 0.0,
-      "pnl": 229.62
+      "pnl": 201.31
     }
   ]
 }
