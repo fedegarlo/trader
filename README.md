@@ -20,7 +20,9 @@ tipo parrilla de F1 o tabla de liga (1º, 2º, 3º…, con el acumulado de cada
 jugador y el % de la última jornada), seguida del **mejor del día**, de los
 **ganadores del mes** (el mes en curso con la evolución de todos los jugadores;
 el mes pasado, ya cerrado, solo con su titular y esa gráfica detrás de «ver
-más»), de las **noticias de la liga** (ver
+más»; los dos con la **categoría del restaurante** que le toca pagar al
+ganador, ver [🍽️ Quién invita y **dónde**](#-quién-invita-y-dónde)), de las
+**noticias de la liga** (ver
 [📰 Noticias de los valores de la liga](#-noticias-de-los-valores-de-la-liga)) y
 del detalle diario. La página cierra con el **camino al objetivo** (ver
 [🎯 Camino al objetivo](#-camino-al-objetivo)) y las **insignias**, que son el
@@ -150,6 +152,36 @@ el objetivo. Es la **única** parte del proyecto que toca divisas — la
 clasificación va en porcentaje y ahí la divisa se cancela. Si Yahoo no responde y no hay
 caché, el módulo dice que no hay cambio en vez de enseñar un avance
 equivocado.
+
+### 🍽️ Quién invita y **dónde**
+
+El ganador del mes paga la comida, y **su propia rentabilidad decide el precio
+del sitio**: cuanto mejor le haya ido, más caro es el restaurante; un mes en
+rojo se salda con unas cañas. Los dos widgets del mes cantan la **categoría**
+junto a quién invita — el del mes en curso en condicional (la categoría se
+mueve con la rentabilidad hasta que el mes cierre) y el del mes pasado ya en
+firme.
+
+La **interrogación** de cada tarjeta —la misma que explica el cálculo en la
+clasificación— abre la escala entera en una tabla, con el precio orientativo
+por persona y unos restaurantes de Madrid como vara de medir:
+
+| Rentabilidad del mes | Categoría | ≈ / persona | Ejemplos en Madrid |
+| --- | --- | --- | --- |
+| menos de 0 % | € Cañas y tapas | 15 € | El Tigre · Casa Julio · Bar Santurce |
+| 0 % – +2,5 % | €€ Taberna de barrio | 30 € | La Ardosa · La Musa · La Carmencita |
+| +2,5 % – +5 % | €€€ Mantel y postre | 55 € | Casa Lucio · Sala de Despiece · Ten con Ten |
+| +5 % – +10 % | €€€€ Alta cocina | 110 € | Sacha · Horcher · Kabuki |
+| +10 % o más | €€€€€ Estrellas Michelin | 200 € + | DiverXO · Coque · DSTAgE |
+
+Los cortes son **cerrados por abajo** (justo en el umbral ya se sube de
+peldaño) y se aplican sobre el mismo porcentaje que enseña el widget, así que
+el número y el tramo nunca se contradicen. Los precios son orientativos por
+persona (bebida incluida) y los restaurantes solo un ejemplo de a qué juega
+cada escalón. El baremo vive en `TREAT_TIERS`
+([`trader/webpage.py`](trader/webpage.py)) y viaja entero a la página, así que
+se cambia en un sitio; los nombres de cada peldaño se traducen a los tres
+idiomas de la web.
 
 ### 📋 Listados largos
 
