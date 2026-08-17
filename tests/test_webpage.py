@@ -85,6 +85,40 @@ def _july(pid, name, rows):
     return (player, series)
 
 
+def test_player_months_compose_the_daily_returns():
+    computed = [_july("fede", "Fede", [
+        (date(2026, 7, 14), 0.02),
+        (date(2026, 7, 15), 0.01),
+        (date(2026, 8, 3), -0.01),
+    ])]
+    months = webpage.build_payload(
+        computed, today=date(2026, 8, 3))["players"][0]["months"]
+    # Un mes por fila, del más reciente al más antiguo, con la composición de
+    # los % diarios del mes (1,02 × 1,01 − 1 = +3,02 % en julio).
+    assert [(m["month_year"], m["month"], m["ret"]) for m in months] == [
+        (2026, 8, -1.0),
+        (2026, 7, 3.02),
+    ]
+    # El acumulado de cada fila es el del cierre de ese mes.
+    assert [m["cum"] for m in months] == [-1.0, 1.0]
+
+
+def test_player_months_never_carry_amounts():
+    # El detalle mensual es solo rentabilidad, también para quien publica sus
+    # importes (esos siguen viajando en ``days`` para su propia ficha).
+    player = Player(player_id="fede", display_name="Fede", show_amounts=True)
+    p = webpage.build_payload([(player, _series(3))])["players"][0]
+    assert p["amounts"] is True and "start" in p["days"][0]
+    assert all(set(m) == {"month", "month_year", "ret", "cum"} for m in p["months"])
+
+
+def test_player_months_follow_the_published_window():
+    player = Player(player_id="fede", display_name="Fede")
+    p = webpage.build_payload([(player, _series(45))], last_days=7)["players"][0]
+    assert {(m["month_year"], m["month"]) for m in p["months"]} == {
+        (int(d["date"][:4]), int(d["date"][5:7])) for d in p["days"]}
+
+
 def test_daily_winners_picks_best_each_day():
     computed = [
         _july("fede", "Fede", [

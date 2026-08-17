@@ -24,11 +24,13 @@ más»; los dos con la **categoría del restaurante** que le toca pagar al
 ganador, ver [🍽️ Quién invita y **dónde**](#-quién-invita-y-dónde)), de las
 **noticias de la liga** (ver
 [📰 Noticias de los valores de la liga](#-noticias-de-los-valores-de-la-liga)) y
-del detalle diario. La página cierra con el **camino al objetivo** (ver
+del **detalle mensual** (por jugador, una fila por mes con la rentabilidad de
+ese mes y el acumulado a su cierre: **solo rentabilidad**, sin importes). La
+página cierra con el **camino al objetivo** (ver
 [🎯 Camino al objetivo](#-camino-al-objetivo)) y las **insignias**, que son el
 palmarés de la liga y no el titular del día. La liga se juega **desde el
 inicio**: la clasificación y el
-detalle diario cubren toda la competición; los campeones del mes actual y del
+detalle mensual cubren toda la competición; los campeones del mes actual y del
 anterior son **parciales** y se calculan aparte. Además, al **tocar un jugador**
 (fila de la clasificación, leyenda o su cartera) o un **ticker** (leyenda de
 cualquier tarta de cartera) se abre una **ficha de detalle**:
@@ -186,7 +188,7 @@ idiomas de la web.
 ### 📋 Listados largos
 
 Los listados que crecen con la liga —campeón de cada día, últimas operaciones,
-insignias, carteras, la sesión extendida, el detalle diario de cada jugador y
+insignias, carteras, la sesión extendida, el detalle mensual de cada jugador y
 el desglose por valor de una jornada— se pintan con **5 filas y un botón
 «ver más»** que despliega el resto (y vuelve a plegarlo). Así el móvil no se
 convierte en un scroll infinito según avanza la competición.
