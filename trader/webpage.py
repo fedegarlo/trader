@@ -942,7 +942,7 @@ _TEMPLATE = """<!doctype html>
   </section>
 
   <section class="card">
-    <h2 data-i18n="dailyDetailTitle"></h2>
+    <h2 data-i18n="monthlyDetailTitle"></h2>
     <div id="detail" style="margin-top:4px"></div>
   </section>
 
@@ -1162,7 +1162,7 @@ const I18N = {
     badgeOn: d => "Earned " + d,
     badgeLive: "Live",
     cumTitle: "Cumulative return · since the start",
-    dailyDetailTitle: "Daily detail · since the start",
+    monthlyDetailTitle: "Monthly detail · since the start",
     detailAria: "Detail",
     dayByAsset: "Return by asset",
     dayOthers: "Rest of players",
@@ -1180,8 +1180,7 @@ const I18N = {
     walletTop: (tk, w) => "Largest · " + tk + " " + w,
     noPlayers: "No players with data yet",
     noPlayersDot: "No players with data yet.",
-    detailColsFull: ["Date","Start","End","Ext. flow","Day P&L","Day %","Cumulative %"],
-    detailColsSimple: ["Date","Day %","Cumulative %"],
+    detailCols: ["Month","Month %","Cumulative %"],
     buy: "Buy", sell: "Sell",
     recBuckets: ["Strong buy","Buy","Hold","Sell","Strong sell"],
     analystRec: "Analyst recommendation",
@@ -1369,7 +1368,7 @@ const I18N = {
     badgeOn: d => d + "獲得",
     badgeLive: "ライブ",
     cumTitle: "累積リターン · 開始から",
-    dailyDetailTitle: "日次詳細 · 開始から",
+    monthlyDetailTitle: "月次詳細 · 開始から",
     detailAria: "詳細",
     dayByAsset: "銘柄別リターン",
     dayOthers: "他のプレイヤー",
@@ -1386,8 +1385,7 @@ const I18N = {
     walletTop: (tk, w) => "最大 · " + tk + " " + w,
     noPlayers: "データのあるプレイヤーはまだいません",
     noPlayersDot: "データのあるプレイヤーはまだいません。",
-    detailColsFull: ["日付","開始","終了","外部フロー","当日損益","当日%","累積%"],
-    detailColsSimple: ["日付","当日%","累積%"],
+    detailCols: ["月","月間%","累積%"],
     buy: "買う", sell: "売る",
     recBuckets: ["強い買い","買い","中立","売り","強い売り"],
     analystRec: "アナリスト評価",
@@ -1578,7 +1576,7 @@ const I18N = {
     badgeOn: d => "Obtenu le " + d,
     badgeLive: "En direct",
     cumTitle: "Rendement cumulé · depuis le début",
-    dailyDetailTitle: "Détail quotidien · depuis le début",
+    monthlyDetailTitle: "Détail mensuel · depuis le début",
     detailAria: "Détail",
     dayByAsset: "Rendement par actif",
     dayOthers: "Autres joueurs",
@@ -1597,8 +1595,7 @@ const I18N = {
     walletTop: (tk, w) => "Plus grosse · " + tk + " " + w,
     noPlayers: "Aucun joueur avec des données pour l'instant",
     noPlayersDot: "Aucun joueur avec des données pour l'instant.",
-    detailColsFull: ["Date","Début","Fin","Flux ext.","P&L du jour","% du jour","% cumulé"],
-    detailColsSimple: ["Date","% du jour","% cumulé"],
+    detailCols: ["Mois","% du mois","% cumulé"],
     buy: "Acheter", sell: "Vendre",
     recBuckets: ["Achat fort","Achat","Conserver","Vente","Vente forte"],
     analystRec: "Recommandation des analystes",
@@ -2652,7 +2649,10 @@ window.addEventListener("resize", () => {
   rafId = requestAnimationFrame(paintMonthly);
 });
 
-// ---- detalle diario (vista de tabla: los valores nunca dependen del hover) ----
+// ---- detalle mensual (vista de tabla: los valores nunca dependen del hover) ----
+// Un mes por fila —del más reciente al más antiguo— con la rentabilidad de ese
+// mes y el acumulado a su cierre. Solo rentabilidad: ni importes ni flujos,
+// tampoco para quien publica los suyos (eso sigue en su ficha de jugador).
 {
   const box = document.getElementById("detail");
   ranked.forEach(p => {
@@ -2664,20 +2664,13 @@ window.addEventListener("resize", () => {
     det.appendChild(sum);
     const over = document.createElement("div"); over.className = "overx";
     const t = document.createElement("table");
-    const cols = p.amounts ? T.detailColsFull : T.detailColsSimple;
     const head = t.insertRow();
-    cols.forEach(c => { const th = document.createElement("th"); th.textContent = c; head.appendChild(th); });
-    const money = v => "$" + v.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    const trs = [...p.days].reverse().map(dy => {
+    T.detailCols.forEach(c => {
+      const th = document.createElement("th"); th.textContent = c; head.appendChild(th);
+    });
+    const trs = (p.months || []).map(mo => {
       const tr = t.insertRow();
-      // cada jornada abre su detalle: rentabilidad por valor de este jugador
-      // ese día (+ el % del día del resto de jugadores)
-      tr.classList.add("clk");
-      tr.dataset.dayPlayer = p.id;
-      tr.dataset.dayDate = dy.date;
-      const cells = p.amounts
-        ? [dy.date, money(dy.start), money(dy.end), money(dy.flow), money(dy.pnl), fmtPct(dy.day), fmtPct(dy.cum)]
-        : [dy.date, fmtPct(dy.day), fmtPct(dy.cum)];
+      const cells = [monthLabel(mo.month, mo.month_year), fmtPct(mo.ret), fmtPct(mo.cum)];
       cells.forEach((c, i) => {
         const td = tr.insertCell(); td.textContent = c;
         const isPct = i >= cells.length - 2;
@@ -3469,7 +3462,7 @@ function openPlayer(pid) {
   showModal(root);
 }
 
-// ---- detalle de una jornada (campeón del día / fila del detalle diario) ----
+// ---- detalle de una jornada (campeón del día) ----
 // Índice fecha -> { id de jugador -> su jornada }, para reunir en un vistazo la
 // rentabilidad de cada jugador ese día sin recorrer todo el dataset al abrir.
 const DAY_INDEX = {};
@@ -3479,8 +3472,8 @@ DATA.players.forEach(p => (p.days || []).forEach(d => {
 
 // Muestra la rentabilidad de cada valor del jugador esa jornada (los % suman el
 // «% del día») y, debajo, el % del día del resto de jugadores. ``pid`` es el
-// jugador protagonista (el campeón, o el propio jugador en el detalle diario);
-// si falta o no tiene datos ese día, se toma el mejor de la jornada.
+// jugador protagonista (el campeón del día); si falta o no tiene datos ese
+// día, se toma el mejor de la jornada.
 function openDayDetail(pid, iso) {
   const perPlayer = DAY_INDEX[iso] || {};
   let subject = PLAYERS[pid];
@@ -3605,7 +3598,7 @@ function openMonthDetail(info) {
 
 // ---- apertura por delegación + cierre (backdrop / ✕ / Esc) ----
 document.addEventListener("click", ev => {
-  // detalle de una jornada (campeón del día / fila del detalle diario)
+  // detalle de una jornada (campeón del día)
   const dd = ev.target.closest("[data-day-date]");
   if (dd && dd.dataset.dayDate) {
     openDayDetail(dd.dataset.dayPlayer || "", dd.dataset.dayDate); return;
@@ -3917,6 +3910,32 @@ def _goal_progress(player: Player, series: list[DayResult],
     return goal
 
 
+def _player_months(rows: list[DayResult]) -> list[dict]:
+    """Rentabilidad mes a mes de un jugador, del más reciente al más antiguo.
+
+    Es lo que pinta el **detalle mensual**: ``ret`` es la composición de los %
+    diarios dentro del mes (∏(1+rₙ)−1, igual que el acumulado) y ``cum`` el
+    acumulado desde el inicio al cierre del mes. Solo rentabilidad: aquí no
+    viaja ningún importe, ni siquiera de quien publica los suyos.
+    """
+    by_month: dict[tuple[int, int], list[DayResult]] = {}
+    for row in rows:
+        by_month.setdefault((row.day.year, row.day.month), []).append(row)
+
+    out = []
+    for (year, month), items in sorted(by_month.items(), reverse=True):
+        factor = 1.0
+        for row in items:
+            factor *= 1.0 + row.daily_return
+        out.append({
+            "month": month,
+            "month_year": year,
+            "ret": round((factor - 1.0) * 100, 4),
+            "cum": round(max(items, key=lambda r: r.day).cumulative_return * 100, 4),
+        })
+    return out
+
+
 def _prev_month(year: int, month: int) -> tuple[int, int]:
     return (year - 1, 12) if month == 1 else (year, month - 1)
 
@@ -4117,7 +4136,8 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
 
     La liga se juega **desde el inicio**: por defecto (``last_days=0``) se
     publica la serie completa de cada jugador, así que la clasificación (con la
-    diferencia de cada uno con el primero) y el detalle diario cubren toda la
+    diferencia de cada uno con el primero) y el detalle mensual
+    (``players[].months``, la serie diaria resumida mes a mes) cubren toda la
     competición. Los
     campeones del mes actual y del anterior son parciales y se calculan aparte
     (``monthly``), sin recortar esta serie. ``last_days > 0`` recorta a esa
@@ -4200,6 +4220,7 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
             "amounts": player.show_amounts,
             "since": series[0].day.isoformat(),
             "days": days,
+            "months": _player_months(window),
             "holdings": holdings_w,
         }
         suggestion = _buy_sell_suggestion(holdings_w, analysts)
