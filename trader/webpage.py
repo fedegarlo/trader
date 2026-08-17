@@ -33,6 +33,53 @@ COMPETITION_START = date(2026, 7, 14)
 # agosto (el mismo día 1 todavía cuenta como plazo abierto, con 0 días).
 GOAL_MONTH, GOAL_DAY = 8, 1
 
+# Quién invita y **dónde**: el ganador del mes paga la comida, y su propia
+# rentabilidad decide el precio del sitio. Cuanto mejor le haya ido, más caro
+# es el restaurante; un mes en rojo se salda con unas cañas.
+#
+# La escala vive aquí (y viaja entera al payload, ``treatScale``) para que la
+# página, el README y las pruebas hablen del mismo baremo. Cada peldaño lleva:
+#
+# - ``min``: rentabilidad mensual (en %) a partir de la cual se entra en él;
+#   ``None`` es el primero, el de los meses en negativo.
+# - ``euros``: los € de la categoría, como en cualquier guía.
+# - ``price``: precio orientativo por persona (en euros, bebida incluida); en
+#   el último peldaño se lee como «a partir de».
+# - ``places``: restaurantes de Madrid de ejemplo, solo como referencia de a
+#   qué precio juega cada escalón.
+#
+# El nombre de cada peldaño se traduce en el cliente (``treatTiers``): aquí no
+# hay texto que traducir, solo el baremo.
+TREAT_TIERS: list[dict] = [
+    {"min": None, "euros": "€", "price": 15,
+     "places": ["El Tigre", "Casa Julio", "Bar Santurce"]},
+    {"min": 0.0, "euros": "€€", "price": 30,
+     "places": ["La Ardosa", "La Musa", "La Carmencita"]},
+    {"min": 2.5, "euros": "€€€", "price": 55,
+     "places": ["Casa Lucio", "Sala de Despiece", "Ten con Ten"]},
+    {"min": 5.0, "euros": "€€€€", "price": 110,
+     "places": ["Sacha", "Horcher", "Kabuki"]},
+    {"min": 10.0, "euros": "€€€€€", "price": 200,
+     "places": ["DiverXO", "Coque", "DSTAgE"]},
+]
+
+
+def treat_tier(value: float | None) -> int | None:
+    """Peldaño de :data:`TREAT_TIERS` que le toca a una rentabilidad mensual.
+
+    ``value`` va en porcentaje (el mismo que se pinta en el widget), así que el
+    tramo y el número que se enseña nunca se contradicen. Devuelve ``None`` si
+    no hay dato.
+    """
+    if value is None:
+        return None
+    tier = 0
+    for i, step in enumerate(TREAT_TIERS):
+        if step["min"] is not None and value >= step["min"]:
+            tier = i
+    return tier
+
+
 _TEMPLATE = """<!doctype html>
 <html lang="en">
 <head>
@@ -209,7 +256,7 @@ _TEMPLATE = """<!doctype html>
            transition: color .12s ease, border-color .12s ease; }
   .whelp:hover { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, var(--hair)); }
   .whelp:active { transform: translateY(1px); }
-  #hero-card .wlabel { padding-right: 34px; }
+  #hero-card .wlabel, #month-cur-card .wlabel, #month-prev-card .wlabel { padding-right: 34px; }
   .wlabel { color: var(--ink-2); font-size: 14px; font-weight: 600; }
   .wbig { font-size: clamp(26px, 8vw, 34px); font-weight: 800; letter-spacing: -0.035em; line-height: 1.1; margin-top: 3px; display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; }
   .wbig.sm { font-size: clamp(22px, 6.6vw, 28px); white-space: nowrap; }
@@ -233,7 +280,19 @@ _TEMPLATE = """<!doctype html>
                 display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .winnername .trophy { font-size: 22px; line-height: 1; }
   .wsub.muted { color: var(--muted); font-weight: 500; }
-  .wsub.treat { color: var(--ink-2); font-weight: 700; margin-top: 6px; }
+  .wsub.treat { color: var(--ink-2); font-weight: 700; margin-top: 6px;
+                display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+  /* categoría del restaurante: la rentabilidad del mes decide lo caro que es
+     el sitio donde invita el ganador. El chip cuelga de la frase («le toca
+     invitar a…») y abre la misma escala que la ? de la tarjeta. */
+  .tchip { display: inline-flex; align-items: center; gap: 7px; cursor: pointer;
+           font: inherit; font-size: 12.5px; font-weight: 700; color: var(--ink);
+           padding: 3px 10px; border-radius: 999px;
+           background: var(--surface-2); border: 1px solid var(--hair);
+           transition: border-color .12s ease; }
+  .tchip:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--hair)); }
+  .tchip:active { transform: translateY(1px); }
+  .tchip .eur { color: var(--accent); font-weight: 800; letter-spacing: 0.04em; }
   svg.spark { display: block; width: 100%; height: 100%; }
   /* «mejor del día»: tarjeta a ancho completo (nombre a la izquierda, % a la
      derecha), con el aire de abajo que el resto de widgets deja para su spark. */
@@ -663,6 +722,21 @@ _TEMPLATE = """<!doctype html>
              white-space: nowrap; font-variant-numeric: tabular-nums; }
   .formula + .formula { margin-top: 8px; }
   .formula .lbl { color: var(--muted); font-weight: 700; margin-right: 8px; }
+  /* escala del restaurante (la ? de los widgets del mes): un peldaño por fila
+     —tramo de rentabilidad, categoría con sus ejemplos de Madrid y precio por
+     persona— con el escalón en el que se está ahora resaltado. */
+  .scale td { vertical-align: top; font-size: 13.5px; font-weight: 700; color: var(--ink); }
+  .scale th:first-child, .scale td:first-child { padding-left: 0; }
+  .scale th:last-child, .scale td:last-child { padding-right: 0; }
+  .scale .rng, .scale .price { white-space: nowrap; }
+  .scale .where { text-align: left; }
+  .scale .eur { color: var(--accent); font-weight: 800; letter-spacing: 0.04em; margin-right: 7px; }
+  .scale .ex { display: block; color: var(--muted); font-size: 12px; font-weight: 500;
+               margin-top: 3px; line-height: 1.4; }
+  .scale tr.on td { background: color-mix(in srgb, var(--accent) 11%, transparent); }
+  .scale tr.on td:first-child { border-radius: 12px 0 0 12px; }
+  .scale tr.on td:last-child { border-radius: 0 12px 12px 0; }
+  .scale tr.on .rng { color: var(--accent); font-weight: 800; }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; }
   .chip-tk { display: inline-flex; align-items: center; gap: 7px; cursor: pointer;
              background: var(--surface-2); border: 1px solid var(--hair);
@@ -778,15 +852,20 @@ _TEMPLATE = """<!doctype html>
       </div>
     </section>
     <div class="mrow" id="month-row" style="display:none">
+      <!-- la interrogación de cada mes abre la escala del restaurante: qué
+           categoría de sitio paga el ganador según su rentabilidad. -->
       <section class="card widget month" id="month-cur-card">
+        <button class="whelp" id="month-cur-help" type="button" data-i18n-title="treatHelpAria">?</button>
         <div class="wlabel" id="month-cur-label"></div>
         <div class="mhead">
           <div class="mhead-l">
             <div class="winnername"><span id="month-cur-player"></span><span class="trophy">🏆</span></div>
-            <div class="wsub treat" id="month-cur-note"></div>
           </div>
           <div class="wbig sm"><span class="num" id="month-cur-val"></span></div>
         </div>
+        <!-- quién invita y dónde va a ancho completo, bajo el titular: la
+             frase con su chip no cabe junto al nombre sin descolgar el %. -->
+        <div class="wsub treat" id="month-cur-note"></div>
         <div class="mchart" id="month-cur-chart"></div>
         <div class="legend mlegend" id="month-cur-legend"></div>
       </section>
@@ -794,6 +873,7 @@ _TEMPLATE = """<!doctype html>
            (quién ganó y con cuánto), igual que el «mejor del día». La gráfica de
            todo el mes y el resto de jugadores viven detrás de «ver más». -->
       <section class="card widget" id="month-prev-card">
+        <button class="whelp" id="month-prev-help" type="button" data-i18n-title="treatHelpAria">?</button>
         <div class="wlabel" id="month-prev-label"></div>
         <div class="mhead">
           <div class="mhead-l">
@@ -801,6 +881,7 @@ _TEMPLATE = """<!doctype html>
           </div>
           <div class="wbig"><span class="num" id="month-prev-val"></span></div>
         </div>
+        <div class="wsub treat" id="month-prev-note"></div>
         <button class="more" id="month-prev-more" type="button"></button>
       </section>
     </div>
@@ -1024,7 +1105,25 @@ const I18N = {
       "the session closes.",
     winnerOf: ml => "Winner of " + ml,
     monthChartAria: ml => "Return of every player during " + ml,
-    lunchNote: "🍽️ Their turn to buy lunch",
+    lunchNote: "🍽️ Their turn to buy lunch, at",
+    lunchNoteLive: "🍽️ As things stand, they're buying at",
+    treatHelpAria: "How the restaurant tier is decided",
+    treatTitle: "Who pays, and where",
+    treatSubtitle: "The better the month, the pricier the table",
+    treatIntro: "Whoever wins the month buys lunch — and their own return picks " +
+      "the restaurant. Every step up the scale is a pricier table, and a month " +
+      "in the red is settled with beers and tapas. While the month is still " +
+      "running the tier moves with the leader: a good week upgrades the table, " +
+      "a bad one sends everyone back to the bar.",
+    treatScaleLbl: "The scale",
+    treatCols: ["The month", "Where they take you", "≈ / person"],
+    treatTiers: ["Beers and tapas", "Neighbourhood tavern",
+                 "Tablecloth and dessert", "Fine dining", "Michelin stars"],
+    treatUnder: p => "below " + p,
+    treatFrom: p => p + " or better",
+    treatPlus: m => m + "+",
+    treatNote: "Prices are a rough guide per person, drinks in. The Madrid places " +
+      "are only examples of each step — a yardstick, not a booking.",
     monthSeeMore: "See how the month went",
     monthEvolution: "How the month went",
     monthRanking: "Month standings",
@@ -1215,7 +1314,23 @@ const I18N = {
       "です。セッションが終わるまで順位には反映されません。",
     winnerOf: ml => ml + "の優勝者",
     monthChartAria: ml => ml + "の全プレイヤーのリターン推移",
-    lunchNote: "🍽️ ランチをおごる番",
+    lunchNote: "🍽️ ランチをおごる番。お店は",
+    lunchNoteLive: "🍽️ 今のところ、おごるお店は",
+    treatHelpAria: "お店のランクの決まり方",
+    treatTitle: "誰が、どこでおごるか",
+    treatSubtitle: "月の成績が良いほど、お店は高くなる",
+    treatIntro: "月の優勝者がランチをおごり、その月のリターンがお店を決めます。" +
+      "段が上がるほど高い店になり、マイナスで終わった月はビールとタパスで手打ち。" +
+      "月の途中はトップの成績に合わせてランクも動くので、好調な一週間で店の格が上がります。",
+    treatScaleLbl: "ランクの目安",
+    treatCols: ["その月", "行き先", "1人あたり"],
+    treatTiers: ["ビールとタパス", "町の食堂", "ちゃんとした一皿",
+                 "高級レストラン", "ミシュランの星"],
+    treatUnder: p => p + "未満",
+    treatFrom: p => p + "以上",
+    treatPlus: m => m + "〜",
+    treatNote: "価格は1人あたりの目安（飲み物込み）。マドリードのお店は各ランクの例で、" +
+      "実際の予約先ではありません。",
     monthSeeMore: "その月の推移を見る",
     monthEvolution: "月間の推移",
     monthRanking: "月間ランキング",
@@ -1406,7 +1521,25 @@ const I18N = {
       "séance n'est pas close.",
     winnerOf: ml => "Vainqueur " + deMois(ml),
     monthChartAria: ml => "Rendement de chaque joueur en " + ml,
-    lunchNote: "🍽️ C'est sa tournée pour le déjeuner",
+    lunchNote: "🍽️ La tournée du déjeuner, et ce sera",
+    lunchNoteLive: "🍽️ Au rythme actuel, ce serait",
+    treatHelpAria: "Comment se décide la catégorie du restaurant",
+    treatTitle: "Qui invite, et où",
+    treatSubtitle: "Meilleur est le mois, plus la table est chère",
+    treatIntro: "Qui gagne le mois offre le déjeuner — et sa propre performance " +
+      "choisit le restaurant. Chaque échelon monte d'un cran le prix de la " +
+      "table, et un mois dans le rouge se solde par des bières et des tapas. " +
+      "Tant que le mois court, la catégorie suit le leader : une bonne semaine " +
+      "fait gagner une table, une mauvaise renvoie tout le monde au comptoir.",
+    treatScaleLbl: "Le barème",
+    treatCols: ["Le mois", "Où l'on t'emmène", "≈ / pers."],
+    treatTiers: ["Bières et tapas", "Bistrot de quartier", "Nappe et dessert",
+                 "Grande table", "Étoilé Michelin"],
+    treatUnder: p => "moins de " + p,
+    treatFrom: p => p + " ou mieux",
+    treatPlus: m => m + " et plus",
+    treatNote: "Prix indicatifs par personne, boissons comprises. Les adresses " +
+      "madrilènes ne sont que des exemples de chaque échelon, pas une réservation.",
     monthSeeMore: "Voir le déroulé du mois",
     monthEvolution: "Le déroulé du mois",
     monthRanking: "Classement du mois",
@@ -1852,6 +1985,45 @@ function paintWidgets() {
 }
 paintWidgets();
 
+// ---- categoría del restaurante: quién invita y **dónde** -----------------
+// El ganador del mes paga la comida y su propia rentabilidad decide el precio
+// del sitio: cuanto mejor el mes, más caro el restaurante. La escala llega del
+// build (``treatScale``: tramo, € de la categoría, precio orientativo por
+// persona y restaurantes de Madrid de ejemplo) y cada mes trae su peldaño
+// (``treat``). Aquí se pinta el chip del widget; la tabla entera vive detrás de
+// la interrogación (``openTreatHelp``).
+//
+// Se declara antes que ``paintMonthly`` a propósito: esa función se ejecuta al
+// cargar y necesita la escala ya disponible.
+const TREAT_SCALE = DATA.treatScale || [];
+const treatMoney = v => new Intl.NumberFormat(LANG_META.locale,
+  {style: "currency", currency: "EUR", maximumFractionDigits: 0}).format(v);
+// Los cortes de la escala son redondos (0 %, 2,5 %, 5 %, 10 %): se enseñan con
+// un decimal solo cuando lo tienen, no con los dos del resto de la página.
+const treatPct = v => (v > 0 ? "+" : "") + (v % 1 ? v.toFixed(1) : v.toFixed(0)) + "%";
+function treatRange(i) {
+  const lo = TREAT_SCALE[i].min;
+  const hi = i + 1 < TREAT_SCALE.length ? TREAT_SCALE[i + 1].min : null;
+  if (lo === null || lo === undefined) return T.treatUnder(treatPct(hi));
+  if (hi === null || hi === undefined) return T.treatFrom(treatPct(lo));
+  return treatPct(lo) + " – " + treatPct(hi);
+}
+// Chip «€€€ categoría» que remata la frase de quién invita. Va con
+// ``createElement`` y no con el ayudante ``h`` porque este bloque corre antes
+// de que ese ayudante exista.
+function treatChip(tier) {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.className = "tchip";
+  const eur = document.createElement("span");
+  eur.className = "eur"; eur.textContent = TREAT_SCALE[tier].euros;
+  b.appendChild(eur);
+  b.appendChild(document.createTextNode(T.treatTiers[tier]));
+  b.setAttribute("aria-label", T.treatHelpAria);
+  b.title = T.treatHelpAria;
+  return b;
+}
+
 // ---- widgets «mejor del mes»: este mes y el mes pasado (si hay datos) ----
 // Aunque el titular sea el ganador, la gráfica pinta a todos los jugadores del
 // mes con su color: así se ve de un vistazo cómo va el resto y cuánta ventaja
@@ -1974,6 +2146,10 @@ function paintMonthly() {
   const m = DATA.monthly || {};
   const paint = (info, key) => {
     const card = document.getElementById(key + "-card");
+    // la interrogación abre la escala del restaurante de *ese* mes (con su
+    // peldaño resaltado), así que se recuelga en cada repintado
+    const help = document.getElementById(key + "-help");
+    if (help) help.onclick = info ? () => openTreatHelp(info) : null;
     if (!info) { card.style.display = "none"; return false; }
     card.style.display = "";
     document.getElementById(key + "-label").textContent =
@@ -1982,8 +2158,20 @@ function paintMonthly() {
     val.textContent = fmtPct(info.value);
     val.className = "num " + (info.value >= 0 ? "pos" : "neg");
     document.getElementById(key + "-player").textContent = info.name;
+    // Quién invita y dónde: el mes en curso va en condicional (la categoría se
+    // mueve con la rentabilidad hasta que el mes cierre); la del mes pasado ya
+    // es firme. El chip abre la escala completa, igual que la interrogación.
     const note = document.getElementById(key + "-note");
-    if (note) note.textContent = T.lunchNote;
+    if (note) {
+      const live = key === "month-cur";
+      note.innerHTML = "";
+      note.appendChild(document.createTextNode(live ? T.lunchNoteLive : T.lunchNote));
+      if (TREAT_SCALE[info.treat]) {
+        const chip = treatChip(info.treat);
+        chip.onclick = () => openTreatHelp(info);
+        note.appendChild(chip);
+      }
+    }
     // El widget del mes pasado no lleva gráfica: es un titular y su «ver más».
     const chart = document.getElementById(key + "-chart");
     if (chart) monthChart(chart, info);
@@ -3057,6 +3245,54 @@ function openLeaderHelp() {
 const heroHelp = document.getElementById("hero-help");
 if (heroHelp) heroHelp.addEventListener("click", openLeaderHelp);
 
+// ---- la escala del restaurante (interrogante de los widgets del mes) ----
+// El widget solo canta la categoría; aquí está el baremo entero: qué
+// rentabilidad mensual da derecho a qué clase de sitio, con un precio
+// orientativo por persona y unos restaurantes de Madrid como vara de medir. La
+// fila del peldaño en el que está ese mes va resaltada.
+function openTreatHelp(info) {
+  const root = document.createElement("div");
+
+  const head = h("div", "mhead");
+  const title = h("div", "mtitle");
+  title.appendChild(h("div", "t1", T.treatTitle));
+  title.appendChild(h("div", "t2", T.treatSubtitle));
+  head.appendChild(title);
+  root.appendChild(head);
+
+  root.appendChild(h("div", "mtext", T.treatIntro));
+
+  const table = document.createElement("table");
+  table.className = "scale";
+  const cols = table.insertRow();
+  T.treatCols.forEach((c, i) => {
+    const th = document.createElement("th");
+    if (i === 1) th.className = "where";
+    th.textContent = c;
+    cols.appendChild(th);
+  });
+  TREAT_SCALE.forEach((step, i) => {
+    const tr = table.insertRow();
+    if (info && info.treat === i) tr.className = "on";
+    const rng = tr.insertCell();
+    rng.className = "rng"; rng.textContent = treatRange(i);
+    const where = tr.insertCell();
+    where.className = "where";
+    where.appendChild(h("span", "eur", step.euros));
+    where.appendChild(document.createTextNode(T.treatTiers[i]));
+    // los restaurantes son el ejemplo de a qué precio juega el peldaño
+    where.appendChild(h("span", "ex", (step.places || []).join(" · ")));
+    const price = tr.insertCell();
+    price.className = "price";
+    price.textContent = i === TREAT_SCALE.length - 1
+      ? T.treatPlus(treatMoney(step.price)) : treatMoney(step.price);
+  });
+  root.appendChild(sectionEl(T.treatScaleLbl, table));
+
+  root.appendChild(h("div", "mnote", T.treatNote));
+  showModal(root);
+}
+
 // ---- detalle de ticker ----
 function openTicker(sym) {
   const t = TICKERS[sym];
@@ -3697,6 +3933,9 @@ def _month_best(computed: list[tuple[Player, list[DayResult]]],
     completa —cada jugador con su color— y no solo la del campeón. Cada entrada
     de ``series`` trae su acumulado alineado con ``dates`` (``None`` en los días
     en los que ese jugador no tiene jornada) y llega ordenada de mejor a peor.
+
+    ``treat`` es el peldaño de :data:`TREAT_TIERS` que le toca pagar al ganador:
+    cuanto mejor sea el mes, más caro el restaurante (ver :func:`treat_tier`).
     """
     tracks = []
     for player, series in computed:
@@ -3727,9 +3966,13 @@ def _month_best(computed: list[tuple[Player, list[DayResult]]],
     # cuando el ganador se elegía con una comparación estricta.
     tracks.sort(key=lambda t: -t["ret"])
     best = tracks[0]
+    value = round(best["ret"], 2)
     return {
         "name": best["name"],
-        "value": round(best["ret"], 2),
+        "value": value,
+        # Categoría del restaurante que le toca pagar (ver ``TREAT_TIERS``): se
+        # calcula sobre el valor ya redondeado, el mismo que canta el widget.
+        "treat": treat_tier(value),
         "slot": best["slot"],
         "month": month,
         "month_year": year,
@@ -3907,6 +4150,11 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
     que tienen los participantes: viajan con su valor y la ficha de cada
     jugador reúne los de su cartera. Son enlaces y titulares públicos, así que
     no revelan nada de nadie.
+
+    ``treatScale`` es la escala del restaurante que paga el ganador del mes
+    (:data:`TREAT_TIERS`), con el precio orientativo y los ejemplos de Madrid de
+    cada peldaño; cada mes de ``monthly`` lleva su ``treat`` (el índice que le
+    toca).
     """
     today = today or date.today()
     now = now or datetime.now(timezone.utc)
@@ -3983,6 +4231,10 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
                                        prices, price_days, analysts, extended,
                                        news),
             "monthly": _monthly_bests(computed, today, order),
+            # Escala del restaurante: viaja entera (con sus precios y sus
+            # ejemplos de Madrid) para que la página pinte la tabla de la
+            # leyenda sin repetir el baremo en el cliente.
+            "treatScale": TREAT_TIERS,
             "dailyWinners": {
                 "month": today.month,
                 "month_year": today.year,

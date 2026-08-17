@@ -348,6 +348,71 @@ def test_previous_month_widget_is_a_headline_with_a_second_level(tmp_path):
     assert "function openMonthDetail(info)" in html
 
 
+def test_treat_tier_climbs_with_the_month():
+    """Cuanto mejor va el mes, más caro el restaurante que invita el ganador."""
+    # los cortes son cerrados por abajo: justo en el umbral ya se sube de peldaño
+    assert webpage.treat_tier(-3.0) == 0      # mes en rojo: cañas y tapas
+    assert webpage.treat_tier(-0.01) == 0
+    assert webpage.treat_tier(0.0) == 1
+    assert webpage.treat_tier(2.49) == 1
+    assert webpage.treat_tier(2.5) == 2
+    assert webpage.treat_tier(4.99) == 2
+    assert webpage.treat_tier(5.0) == 3
+    assert webpage.treat_tier(9.99) == 3
+    assert webpage.treat_tier(10.0) == 4      # tope de la escala
+    assert webpage.treat_tier(120.0) == 4
+    assert webpage.treat_tier(None) is None
+
+
+def test_treat_scale_is_ordered_and_travels_with_the_payload():
+    """La escala llega entera a la página: precios y ejemplos de Madrid."""
+    scale = webpage.build_payload([])["treatScale"]
+    assert len(scale) == len(webpage.TREAT_TIERS)
+    # el primer peldaño es el de los meses en negativo (sin umbral)
+    assert scale[0]["min"] is None
+    umbrales = [s["min"] for s in scale[1:]]
+    assert umbrales == sorted(umbrales)
+    # cada escalón es más caro que el anterior y lleva sus € y sus ejemplos
+    precios = [s["price"] for s in scale]
+    assert precios == sorted(precios)
+    for i, step in enumerate(scale):
+        assert step["euros"] == "€" * (i + 1)
+        assert step["places"]
+
+
+def test_month_widgets_carry_the_restaurant_tier():
+    """Cada mes publica su peldaño: el de ahora y el del ganador del anterior."""
+    fede = Player(player_id="fede", display_name="Fede")
+    # julio +12% (estrellas Michelin), agosto -2% (cañas y tapas)
+    series = [_day(date(2026, 7, 20), 0.12), _day(date(2026, 8, 3), -0.02)]
+    payload = webpage.build_payload([(fede, series)], today=date(2026, 8, 5))
+
+    assert payload["monthly"]["previous"]["value"] == 12.0
+    assert payload["monthly"]["previous"]["treat"] == 4
+    assert payload["monthly"]["current"]["value"] == -2.0
+    assert payload["monthly"]["current"]["treat"] == 0
+
+
+def test_restaurant_scale_reaches_the_page(tmp_path):
+    """Los dos widgets del mes enseñan la categoría y abren la escala."""
+    fede = Player(player_id="fede", display_name="Fede")
+    series = [_day(date(2026, 7, 20), 0.03), _day(date(2026, 8, 3), 0.02)]
+    out = tmp_path / "index.html"
+    webpage.write_index([(fede, series)], out_path=str(out), today=date(2026, 8, 5))
+    html = out.read_text(encoding="utf-8")
+
+    # la categoría se canta en el mes en curso y en el ganador del mes pasado
+    assert 'id="month-cur-note"' in html
+    assert 'id="month-prev-note"' in html
+    # …y cada tarjeta tiene su interrogación, como la de la clasificación
+    assert 'id="month-cur-help"' in html
+    assert 'id="month-prev-help"' in html
+    assert "function openTreatHelp(info)" in html
+    # la leyenda es una tabla con la escala y sus restaurantes de Madrid
+    assert '"treatScale"' in html
+    assert "DiverXO" in html and "Casa Lucio" in html
+
+
 def test_goal_and_badges_close_the_page(tmp_path):
     """Objetivo e insignias van al final, detrás del detalle diario."""
     fede = Player(player_id="fede", display_name="Fede")
