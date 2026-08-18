@@ -222,21 +222,21 @@
     },
     {
       "date": "2026-08-17",
-      "daily_return_pct": 4.7246,
-      "cumulative_return_pct": 7.0801,
+      "daily_return_pct": 3.4667,
+      "cumulative_return_pct": 5.7939,
       "start_value": 5845.51,
-      "end_value": 6121.69,
+      "end_value": 6048.16,
       "external_flow": 0.0,
-      "pnl": 276.18
+      "pnl": 202.65
     },
     {
       "date": "2026-08-18",
-      "daily_return_pct": -4.6341,
-      "cumulative_return_pct": 2.1179,
-      "start_value": 6121.69,
-      "end_value": 5838.0,
+      "daily_return_pct": -3.1214,
+      "cumulative_return_pct": 2.4916,
+      "start_value": 6048.16,
+      "end_value": 5859.37,
       "external_flow": 0.0,
-      "pnl": -283.68
+      "pnl": -188.79
     }
   ]
 }
