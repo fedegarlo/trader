@@ -240,12 +240,12 @@
     },
     {
       "date": "2026-08-19",
-      "daily_return_pct": -0.3728,
-      "cumulative_return_pct": 1.5907,
+      "daily_return_pct": -0.2894,
+      "cumulative_return_pct": 1.6757,
       "start_value": 5829.59,
-      "end_value": 5807.86,
+      "end_value": 5812.72,
       "external_flow": 0.0,
-      "pnl": -21.74
+      "pnl": -16.87
     }
   ]
 }
