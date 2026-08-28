@@ -182,3 +182,24 @@ def test_external_flow_of_closed_days_carries_to_next_market_day():
     by_day = {r.day: r for r in series}
     assert date(2026, 7, 4) not in by_day and date(2026, 7, 5) not in by_day
     assert by_day[date(2026, 7, 6)].external_flow == pytest.approx(500.0)
+
+
+def test_daily_contributions_dividendo_de_ticker_sin_cotizacion():
+    """Un dividendo de un valor que no se compra ni se vende no pide precio.
+
+    Ese ticker no entra en el conjunto para el que se descargan cotizaciones,
+    así que pedirle el cierre reventaba el ranking entero con un PriceError
+    (caso real: un dividendo de NVO en un extracto sin operaciones de NVO).
+    """
+    events = [
+        revolut.Event(date(2026, 7, 1), revolut.TOPUP, None, 0.0, 1000.0, "USD"),
+        revolut.Event(date(2026, 7, 1), revolut.BUY, "AAPL", 2.0, 410.0, "USD"),
+        revolut.Event(date(2026, 7, 2), revolut.DIVIDEND, "NVO", 0.0, 7.0, "USD"),
+    ]
+    contrib = daily_contributions(events, PRICES, until=date(2026, 7, 2))
+    # El dividendo se atribuye a NVO sin haber consultado su cotización…
+    assert contrib[date(2026, 7, 2)]["NVO"] == pytest.approx(7.0)
+    # …y sigue cuadrando con el P&L del día.
+    series = compute_daily_series(events, PRICES, until=date(2026, 7, 2))
+    for row in series:
+        assert sum(contrib[row.day].values()) == pytest.approx(row.pnl)
