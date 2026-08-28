@@ -256,8 +256,16 @@ def daily_contributions(
             for ticker in names:
                 q_end = positions.get(ticker, 0.0)
                 q_start = prev_positions.get(ticker, 0.0)
-                close = prices.close_on(ticker, day)
-                prev_close = prices.close_on(ticker, prev_day) if prev_day else 0.0
+                # El precio solo hace falta si de verdad hay títulos que
+                # valorar en ese extremo. Un ticker que solo aparece como
+                # dividendo —sin compra ni venta en el extracto— no entra en
+                # ``tickers``, así que nadie ha pedido su cotización: pedirla
+                # aquí reventaba el ranking entero (PriceError). Con q=0 el
+                # producto es 0 sea cual sea el cierre, así que saltárselo da
+                # exactamente el mismo resultado.
+                close = prices.close_on(ticker, day) if q_end else 0.0
+                prev_close = (prices.close_on(ticker, prev_day)
+                              if q_start and prev_day else 0.0)
                 value = (q_end * close - q_start * prev_close
                          - pend_buy.get(ticker, 0.0) + pend_sell.get(ticker, 0.0)
                          + pend_div.get(ticker, 0.0))

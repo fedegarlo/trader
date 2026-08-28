@@ -63,6 +63,7 @@ _META: dict[str, tuple[str, str]] = {
     "ASML": ("ASML", "asml.com"),
     "ARM": ("Arm Holdings", "arm.com"),
     "MRVL": ("Marvell Technology", "marvell.com"),
+    "SPCX": ("SpaceX", "spacex.com"),
 }
 
 
@@ -95,6 +96,7 @@ _PEERS: dict[str, list[str]] = {
     "ASML": ["TSM", "AMAT", "LRCX"],
     "ARM": ["QCOM", "NVDA", "AVGO"],
     "MRVL": ["AVGO", "QCOM", "NVDA"],
+    "SPCX": ["BA", "RKLB", "LMT"],
 }
 
 
