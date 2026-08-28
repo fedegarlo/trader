@@ -1,6 +1,6 @@
 # 🏆 Ranking de rentabilidad
 
-_Actualizado: 2026-08-27_
+_Actualizado: 2026-08-28_
 
 | # | Jugador | % acumulado | % último día | Desde |
 |---|---|---:|---:|---|
