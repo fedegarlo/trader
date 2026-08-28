@@ -56,118 +56,118 @@
     },
     {
       "date": "2026-07-28",
-      "daily_return_pct": -1.7207,
-      "cumulative_return_pct": -3.6649
+      "daily_return_pct": -1.7528,
+      "cumulative_return_pct": -3.6963
     },
     {
       "date": "2026-07-29",
-      "daily_return_pct": -0.6721,
-      "cumulative_return_pct": -4.3123
+      "daily_return_pct": -0.8585,
+      "cumulative_return_pct": -4.5231
     },
     {
       "date": "2026-07-30",
-      "daily_return_pct": -3.5167,
-      "cumulative_return_pct": -7.6774
+      "daily_return_pct": -4.6458,
+      "cumulative_return_pct": -8.9588
     },
     {
       "date": "2026-07-31",
-      "daily_return_pct": 1.6272,
-      "cumulative_return_pct": -6.1751
+      "daily_return_pct": 2.0965,
+      "cumulative_return_pct": -7.0501
     },
     {
       "date": "2026-08-03",
-      "daily_return_pct": 3.2384,
-      "cumulative_return_pct": -3.1367
+      "daily_return_pct": 4.098,
+      "cumulative_return_pct": -3.241
     },
     {
       "date": "2026-08-04",
-      "daily_return_pct": 5.1958,
-      "cumulative_return_pct": 1.8962
+      "daily_return_pct": 5.1255,
+      "cumulative_return_pct": 1.7184
     },
     {
       "date": "2026-08-05",
-      "daily_return_pct": 0.4915,
-      "cumulative_return_pct": 2.3971
+      "daily_return_pct": 0.507,
+      "cumulative_return_pct": 2.2341
     },
     {
       "date": "2026-08-06",
-      "daily_return_pct": 0.6287,
-      "cumulative_return_pct": 3.0409
+      "daily_return_pct": 0.6499,
+      "cumulative_return_pct": 2.8985
     },
     {
       "date": "2026-08-07",
-      "daily_return_pct": 0.3986,
-      "cumulative_return_pct": 3.4516
+      "daily_return_pct": 0.4447,
+      "cumulative_return_pct": 3.3561
     },
     {
       "date": "2026-08-10",
-      "daily_return_pct": 0.1004,
-      "cumulative_return_pct": 3.5555
+      "daily_return_pct": 0.1619,
+      "cumulative_return_pct": 3.5235
     },
     {
       "date": "2026-08-11",
-      "daily_return_pct": 0.4093,
-      "cumulative_return_pct": 3.9794
+      "daily_return_pct": 0.4986,
+      "cumulative_return_pct": 4.0397
     },
     {
       "date": "2026-08-12",
-      "daily_return_pct": -0.2244,
-      "cumulative_return_pct": 3.7461
+      "daily_return_pct": -0.6667,
+      "cumulative_return_pct": 3.3461
     },
     {
       "date": "2026-08-13",
-      "daily_return_pct": 1.0654,
-      "cumulative_return_pct": 4.8514
+      "daily_return_pct": 1.4166,
+      "cumulative_return_pct": 4.8101
     },
     {
       "date": "2026-08-14",
-      "daily_return_pct": 0.05,
-      "cumulative_return_pct": 4.9038
+      "daily_return_pct": -0.0618,
+      "cumulative_return_pct": 4.7453
     },
     {
       "date": "2026-08-17",
-      "daily_return_pct": -0.3823,
-      "cumulative_return_pct": 4.5027
+      "daily_return_pct": -0.8343,
+      "cumulative_return_pct": 3.8714
     },
     {
       "date": "2026-08-18",
-      "daily_return_pct": -1.8663,
-      "cumulative_return_pct": 2.5524
+      "daily_return_pct": -2.3614,
+      "cumulative_return_pct": 1.4186
     },
     {
       "date": "2026-08-19",
-      "daily_return_pct": -0.0987,
-      "cumulative_return_pct": 2.4512
+      "daily_return_pct": -0.0765,
+      "cumulative_return_pct": 1.341
     },
     {
       "date": "2026-08-20",
-      "daily_return_pct": -0.4147,
-      "cumulative_return_pct": 2.0264
+      "daily_return_pct": -0.4231,
+      "cumulative_return_pct": 0.9122
     },
     {
       "date": "2026-08-21",
-      "daily_return_pct": 1.0801,
-      "cumulative_return_pct": 3.1284
+      "daily_return_pct": 1.2326,
+      "cumulative_return_pct": 2.156
     },
     {
       "date": "2026-08-24",
-      "daily_return_pct": -0.975,
-      "cumulative_return_pct": 2.1229
+      "daily_return_pct": -0.6392,
+      "cumulative_return_pct": 1.5031
     },
     {
       "date": "2026-08-25",
-      "daily_return_pct": 0.4963,
-      "cumulative_return_pct": 2.6297
+      "daily_return_pct": 0.6965,
+      "cumulative_return_pct": 2.2101
     },
     {
       "date": "2026-08-26",
-      "daily_return_pct": -0.1261,
-      "cumulative_return_pct": 2.5003
+      "daily_return_pct": 0.3364,
+      "cumulative_return_pct": 2.5539
     },
     {
       "date": "2026-08-27",
-      "daily_return_pct": 2.6451,
-      "cumulative_return_pct": 5.2116
+      "daily_return_pct": 2.7333,
+      "cumulative_return_pct": 5.3569
     }
   ]
 }
