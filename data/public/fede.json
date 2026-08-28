@@ -300,6 +300,15 @@
       "end_value": 6067.53,
       "external_flow": 0.0,
       "pnl": 109.03
+    },
+    {
+      "date": "2026-08-28",
+      "daily_return_pct": 0.4362,
+      "cumulative_return_pct": 6.3453,
+      "start_value": 6067.53,
+      "end_value": 6094.0,
+      "external_flow": 0.0,
+      "pnl": 26.47
     }
   ]
 }
