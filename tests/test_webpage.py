@@ -1080,6 +1080,52 @@ def test_canada_banner_links_to_the_official_tourism_site():
         assert 'https://travel.destinationcanada.com/' + locale in webpage._TEMPLATE
 
 
+def test_canada_banner_heads_the_standings_card():
+    """El banner ya no va suelto: es la cabecera del módulo de la general."""
+    card = webpage._TEMPLATE.split('id="hero-card"', 1)[1].split("</section>", 1)[0]
+    # dentro de la misma tarjeta: banner, quién va ganando y la tabla de siempre
+    assert card.index('id="ca-banner"') < card.index('id="gp-lead"') \
+        < card.index('id="gp-podium"') < card.index('id="standings"')
+    # el banner es la cabecera a sangre de la tarjeta (sin margen suelto arriba)
+    assert "#hero-card { padding-top: 0; overflow: hidden; }" in webpage._TEMPLATE
+    assert ".ca-banner { display: flex; align-items: center; gap: 12px;\n" \
+           "               margin: 0 -18px;" in webpage._TEMPLATE
+
+
+def test_the_grand_prix_names_the_season_in_every_language():
+    """El banner presenta la carrera: el Gran Premio 26/27, en los tres idiomas."""
+    for locale in ("en", "ja", "fr"):
+        title = re.search(r'gpTitle: "([^"]*)"', _lang_block(locale)).group(1)
+        assert "26/27" in title, (locale, title)
+        assert "GP" in title.upper() or "Grand Prix" in title, (locale, title)
+
+
+def test_the_grand_prix_highlights_the_overall_leader_and_the_podium():
+    """Quién va ganando la general (y con ella el viaje) sale antes que la tabla."""
+    tpl = webpage._TEMPLATE
+    # el líder es el primero de la clasificación, con su acumulado y su ventaja
+    assert "const leader = ranked[0];" in tpl
+    assert 'document.getElementById("gp-name").textContent = leader.name;' in tpl
+    assert "T.gpGap(second.name, (last.cum - lastOf(second).cum).toFixed(2))" in tpl
+    assert ": T.gpSolo;" in tpl  # sin rival todavía, no se inventa una ventaja
+    # el resto del podio son el 2º y el 3º, con su medalla
+    assert "ranked.slice(1, 3).forEach" in tpl
+    assert 'medal.textContent = MEDALS[i + 1];' in tpl
+    # líder y podio abren la ficha del jugador (delegación por data-player)
+    assert 'row.classList.add("clk"); row.dataset.player = leader.id;' in tpl
+    assert 'chip.className = "gp-chip clk"; chip.dataset.player = p.id;' in tpl
+
+
+def test_the_full_standings_table_survives_the_grand_prix():
+    """La comparativa de siempre sigue entera: todos los jugadores, cuatro columnas."""
+    tpl = webpage._TEMPLATE
+    assert "const ranked = [...DATA.players].sort((a, b) => lastOf(b).cum - lastOf(a).cum);" in tpl
+    assert "ranked.forEach((p, i) => {" in tpl  # la tabla no se corta en el podio
+    for locale in ("en", "ja", "fr"):
+        cols = re.search(r"rankCols: \[([^\]]*)\]", _lang_block(locale)).group(1)
+        assert cols.count('"') == 8, (locale, cols)  # #, jugador, acumulado y jornada
+
+
 def test_canada_banner_is_a_single_short_line_without_a_button():
     """El banner es bajito: titular, una línea de texto y ya. Sin botón."""
     assert "ccta" not in webpage._TEMPLATE and "caCta" not in webpage._TEMPLATE
