@@ -15,16 +15,22 @@ cada día de mercado por una GitHub Action:
 
 ## Ver en web
 
-La página es estática y autocontenida. Abre con la **clasificación**: una tabla
-tipo parrilla de F1 o tabla de liga (1º, 2º, 3º…, con el acumulado de cada
-jugador y el % de la última jornada), seguida del **mejor del día**, de los
+La página es estática y autocontenida. Abre con el **Canada Grand Prix 26/27**,
+que es la **clasificación general** contada como una carrera: de cabecera, el
+banner de turismo de Canadá (enlaza a la web oficial de Destination Canada en el
+idioma activo), porque el viaje es el premio de la general; debajo, **quién va
+ganando** —el líder con su acumulado y su ventaja en puntos sobre el segundo— y
+el resto del **podio** (2º y 3º); y a continuación la clasificación completa de
+siempre: una tabla tipo parrilla de F1 o tabla de liga (1º, 2º, 3º…, con el
+acumulado de cada jugador y el % de la última jornada). Líder, podio y filas
+abren la ficha del jugador. Le siguen el **mejor del día**, los
 **ganadores del mes** (el mes en curso con la evolución de todos los jugadores;
 el mes pasado, ya cerrado, solo con su titular y esa gráfica detrás de «ver
 más»; los dos con la **categoría del restaurante** que le toca pagar al
-ganador, ver [🍽️ Quién invita y **dónde**](#-quién-invita-y-dónde)), de las
+ganador, ver [🍽️ Quién invita y **dónde**](#-quién-invita-y-dónde)), las
 **noticias de la liga** (ver
 [📰 Noticias de los valores de la liga](#-noticias-de-los-valores-de-la-liga)) y
-del **detalle mensual** (por jugador, una fila por mes con la rentabilidad de
+el **detalle mensual** (por jugador, una fila por mes con la rentabilidad de
 ese mes y el acumulado a su cierre: **solo rentabilidad**, sin importes). La
 página cierra con el **camino al objetivo** (ver
 [🎯 Camino al objetivo](#-camino-al-objetivo)) y las **insignias**, que son el

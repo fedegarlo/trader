@@ -2,12 +2,14 @@
 
 Autocontenido (datos embebidos, sin CDNs): tarjetas tipo widget al estilo
 Revolut (fondo aurora, gráficas de área con degradado, tipografía compacta) y,
-de primero, la clasificación en formato tabla (1º, 2º, 3º… con su acumulado y
-el % de la última jornada, como una parrilla de F1 o una tabla de liga). Las
-líneas van suavizadas (spline cúbico monótono, sin sobreoscilación) y el color
-se asigna a cada jugador por orden alfabético de id (estable: no cambia si
-cambia su posición en el ranking) de una paleta cálida: naranja, marrón y
-ocres.
+de primero, el «Canada Grand Prix 26/27»: el banner de turismo de Canadá hace
+de cabecera de la clasificación general —el viaje es el premio—, debajo va
+quién lo lleva ganado (líder y podio) y luego la clasificación en formato tabla
+(1º, 2º, 3º… con su acumulado y el % de la última jornada, como una parrilla de
+F1 o una tabla de liga). Las líneas van suavizadas (spline cúbico monótono, sin
+sobreoscilación) y el color se asigna a cada jugador por orden alfabético de id
+(estable: no cambia si cambia su posición en el ranking) de una paleta cálida:
+naranja, marrón y ocres.
 """
 
 from __future__ import annotations
@@ -256,7 +258,7 @@ _TEMPLATE = """<!doctype html>
            transition: color .12s ease, border-color .12s ease; }
   .whelp:hover { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, var(--hair)); }
   .whelp:active { transform: translateY(1px); }
-  #hero-card .wlabel, #month-cur-card .wlabel, #month-prev-card .wlabel { padding-right: 34px; }
+  #month-cur-card .wlabel, #month-prev-card .wlabel { padding-right: 34px; }
   .wlabel { color: var(--ink-2); font-size: 14px; font-weight: 600; }
   .wbig { font-size: clamp(26px, 8vw, 34px); font-weight: 800; letter-spacing: -0.035em; line-height: 1.1; margin-top: 3px; display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; }
   .wbig.sm { font-size: clamp(22px, 6.6vw, 28px); white-space: nowrap; }
@@ -371,25 +373,80 @@ _TEMPLATE = """<!doctype html>
   .mbadge-chip.prov { border-style: dashed; }
   .mbadge-chip .i { font-size: 17px; line-height: 1; }
 
-  /* banner de Canadá: invita a visitar el país y enlaza a la web oficial de
-     turismo (Destination Canada), en el idioma que esté activo. Colores fijos
-     en claro y oscuro —el rojo de la bandera— porque son los de la marca. */
-  .ca-banner { display: flex; align-items: center; gap: 12px; margin: 12px 0;
-               padding: 11px 14px; border-radius: 20px; text-decoration: none;
+  /* banner de Canadá: cabecera a sangre de la tarjeta de la clasificación. El
+     viaje es el premio de la general, así que el banner presenta la carrera
+     («Canada Grand Prix 26/27») y enlaza a la web oficial de turismo
+     (Destination Canada) en el idioma activo. Colores fijos en claro y oscuro
+     —el rojo de la bandera— porque son los de la marca. */
+  .ca-banner { display: flex; align-items: center; gap: 12px;
+               margin: 0 -18px; padding: 13px 16px; text-decoration: none;
                color: #fff; background: linear-gradient(135deg, #e8112d, #c00d24);
-               border: 1px solid rgba(11,10,16,0.10);
-               box-shadow: 0 1px 1px rgba(11,10,16,0.05), 0 16px 32px -24px rgba(200,13,36,0.90); }
+               border-bottom: 1px solid rgba(11,10,16,0.14); }
   .ca-banner:active { transform: translateY(1px); }
   .ca-banner .cicon { flex: none; width: 42px; height: 42px; border-radius: 14px;
                       display: grid; place-items: center; font-size: 24px; line-height: 1;
                       background: rgba(255,255,255,0.94);
                       box-shadow: 0 2px 6px rgba(11,10,16,0.16); }
   .ca-banner .ctext { flex: 1 1 0; min-width: 0; }
-  .ca-banner .cmain { display: block; font-size: 16px; font-weight: 800;
+  .ca-banner .ckicker { display: block; font-size: 10.5px; font-weight: 800;
+                        letter-spacing: 0.12em; text-transform: uppercase;
+                        line-height: 1.2; color: rgba(255,255,255,0.82); }
+  .ca-banner .cmain { display: block; margin-top: 2px; font-size: 16px; font-weight: 800;
                       letter-spacing: 0.01em; line-height: 1.2; }
   .ca-banner .csub { display: block; margin-top: 2px; font-size: 13px;
                      font-weight: 500; line-height: 1.3; color: rgba(255,255,255,0.90); }
   .ca-banner .carrow { flex: none; font-size: 20px; font-weight: 800; opacity: 0.85; }
+
+  /* Gran Premio de Canadá: quién va ganando la general —y con ella el viaje—
+     antes de la parrilla completa. El líder va tintado con su propio color
+     (``--lead``, el mismo de su fila) y el resto del podio va en fichas; los
+     tres abren su ficha de jugador. */
+  #hero-card { padding-top: 0; overflow: hidden; }
+  .gp { padding-top: 16px; }
+  .gp-lead { display: flex; align-items: center; gap: 8px 12px; flex-wrap: wrap;
+             padding: 12px 13px;
+             border-radius: 18px; border: 1px solid var(--hair);
+             background: color-mix(in srgb, var(--lead, var(--accent)) 12%, var(--surface-2)); }
+  .gp-lead.clk:hover { border-color: color-mix(in srgb, var(--lead, var(--accent)) 55%, var(--hair)); }
+  .gp-lead .gp-flag { flex: none; font-size: 26px; line-height: 1; }
+  /* en pantallas estrechas el acumulado baja a su propia línea antes que
+     estrujar el nombre del líder (``1 1 120px``: ese es el punto de corte) */
+  .gp-lead .gp-l { min-width: 0; flex: 1 1 120px; }
+  .gp-kicker { font-size: 10.5px; font-weight: 800; letter-spacing: 0.08em;
+               text-transform: uppercase;
+               color: color-mix(in srgb, var(--lead, var(--accent)) 72%, var(--ink)); }
+  .gp-name { display: flex; align-items: center; gap: 7px; margin-top: 3px;
+             font-size: clamp(20px, 5.5vw, 24px); font-weight: 800;
+             letter-spacing: -0.025em; line-height: 1.15; color: var(--ink); }
+  /* nombres largos: se recortan antes que empujar al acumulado o desbordar */
+  .gp-name > span:first-child { min-width: 0; overflow: hidden;
+                                text-overflow: ellipsis; white-space: nowrap; }
+  .gp-name .leaf { flex: none; font-size: 18px; line-height: 1; }
+  .gp-gap { margin-top: 3px; color: var(--muted); font-size: 12.5px; font-weight: 600;
+            font-variant-numeric: tabular-nums;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .gp-cum { flex: none; margin-left: auto; font-size: clamp(19px, 5.6vw, 25px);
+            font-weight: 800; letter-spacing: -0.03em; white-space: nowrap; }
+  .gp-podium { display: flex; align-items: center; gap: 8px 10px;
+               flex-wrap: wrap; margin-top: 11px; }
+  .gp-plabel { color: var(--muted); font-size: 11.5px; font-weight: 700;
+               letter-spacing: 0.04em; text-transform: uppercase; }
+  .gp-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .gp-chip { display: inline-flex; align-items: center; gap: 7px;
+             padding: 6px 12px 6px 9px; border-radius: 999px;
+             background: var(--surface-2); border: 1px solid var(--hair);
+             font-size: 13px; font-weight: 700; color: var(--ink); }
+  .gp-chip:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--hair)); }
+  .gp-chip .m { flex: none; font-size: 15px; line-height: 1; }
+  .gp-chip .n { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .gp-chip .v { font-variant-numeric: tabular-nums; }
+  /* la parrilla completa cuelga del podio, separada por un filete: es la
+     comparativa de siempre, con todos los jugadores. */
+  .gp-h2 { display: flex; align-items: center; gap: 10px; margin-top: 18px;
+           padding-top: 14px; border-top: 1px solid var(--hair); }
+  /* sin jugadores no hay podio del que colgar: fuera el filete de separación */
+  .gp-h2.bare { margin-top: 16px; padding-top: 0; border-top: none; }
+  #hero-card .whelp { position: static; flex: none; margin-left: auto; }
 
   /* widget de cartera: gráfico de tarta (cada porción = su peso real) */
   .donut-wrap { display: flex; align-items: center; gap: 18px; margin-top: 16px; }
@@ -825,23 +882,44 @@ _TEMPLATE = """<!doctype html>
     <div class="wsub" id="pending" style="margin-top:6px"></div>
   </section>
 
-  <!-- banner de Canadá: enlaza a la web oficial de turismo (Destination
-       Canada). El texto se traduce con data-i18n y el enlace apunta a la
-       versión del sitio en el idioma activo (ver ``caHref``). -->
-  <a class="ca-banner" id="ca-banner" target="_blank" rel="noopener noreferrer"
-     data-i18n-aria="caAria">
-    <span class="cicon" aria-hidden="true">🍁</span>
-    <span class="ctext">
-      <span class="cmain" data-i18n="caTitle"></span>
-      <span class="csub" data-i18n="caSub"></span>
-    </span>
-    <span class="carrow" aria-hidden="true">→</span>
-  </a>
-
   <div id="widgets" style="display:grid;gap:12px">
-    <section class="card" id="hero-card" style="position:relative">
-      <button class="whelp" id="hero-help" type="button" data-i18n-title="calcHelpAria">?</button>
-      <h2 data-i18n="ranking" style="padding-right:34px"></h2>
+    <!-- Gran Premio de Canadá: la clasificación general es la carrera y el
+         banner de turismo (Destination Canada) es su cabecera —el viaje es el
+         premio—. Debajo va quién lo lleva ganado (líder y podio) y, al final,
+         la tabla completa de siempre: la comparativa no se pierde. -->
+    <section class="card" id="hero-card">
+      <a class="ca-banner" id="ca-banner" target="_blank" rel="noopener noreferrer"
+         data-i18n-aria="caAria">
+        <span class="cicon" aria-hidden="true">🍁</span>
+        <span class="ctext">
+          <span class="ckicker" data-i18n="caTitle"></span>
+          <span class="cmain" data-i18n="gpTitle"></span>
+          <span class="csub" data-i18n="caSub"></span>
+        </span>
+        <span class="carrow" aria-hidden="true">→</span>
+      </a>
+      <!-- quién va ganando el Gran Premio: el líder de la general con su
+           acumulado y la ventaja sobre el segundo, y el resto del podio. -->
+      <div class="gp" id="gp">
+        <div class="gp-lead" id="gp-lead">
+          <span class="gp-flag" aria-hidden="true">🏁</span>
+          <div class="gp-l">
+            <div class="gp-kicker" data-i18n="gpLeading"></div>
+            <div class="gp-name"><span id="gp-name"></span
+              ><span class="leaf" aria-hidden="true">🍁</span></div>
+            <div class="gp-gap" id="gp-gap"></div>
+          </div>
+          <div class="gp-cum num" id="gp-cum"></div>
+        </div>
+        <div class="gp-podium" id="gp-podium" style="display:none">
+          <span class="gp-plabel" data-i18n="gpPodium"></span>
+          <div class="gp-chips" id="gp-chips"></div>
+        </div>
+      </div>
+      <div class="gp-h2">
+        <h2 data-i18n="ranking"></h2>
+        <button class="whelp" id="hero-help" type="button" data-i18n-title="calcHelpAria">?</button>
+      </div>
       <div class="overx" style="margin-top:12px"><table id="standings"></table></div>
     </section>
     <section class="card widget" id="best-card">
@@ -1059,6 +1137,11 @@ const I18N = {
     caSub: "Plan your trip on the official site.",
     caAria: "Visit Canada: official tourism website",
     caHref: "https://travel.destinationcanada.com/en-ca",
+    gpTitle: "Canada Grand Prix 26/27",
+    gpLeading: "Winning the trip",
+    gpGap: (name, pts) => "+" + pts + " pts over " + name,
+    gpSolo: "Alone on the grid for now",
+    gpPodium: "Podium",
     allPlayers: "All players",
     periodAll: "Since the start",
     pendingTitle: "⏳ Awaiting passphrase",
@@ -1268,6 +1351,11 @@ const I18N = {
     caSub: "公式サイトで旅を計画しよう。",
     caAria: "カナダ観光公式サイト",
     caHref: "https://travel.destinationcanada.com/ja-jp",
+    gpTitle: "カナダGP 26/27",
+    gpLeading: "旅行に一番近い",
+    gpGap: (name, pts) => name + "に+" + pts + "pt",
+    gpSolo: "今はグリッドにひとりだけ",
+    gpPodium: "表彰台",
     allPlayers: "全プレイヤー",
     periodAll: "開始から",
     pendingTitle: "⏳ パスフレーズ待ち",
@@ -1472,6 +1560,11 @@ const I18N = {
     caSub: "Préparez votre voyage sur le site officiel.",
     caAria: "Visitez le Canada : site officiel du tourisme",
     caHref: "https://travel.destinationcanada.com/fr-fr",
+    gpTitle: "Grand Prix du Canada 26/27",
+    gpLeading: "Gagne le voyage",
+    gpGap: (name, pts) => "+" + pts + " pts sur " + name,
+    gpSolo: "Seul sur la grille pour l'instant",
+    gpPodium: "Podium",
     allPlayers: "Tous les joueurs",
     periodAll: "Depuis le début",
     pendingTitle: "⏳ En attente de la phrase secrète",
@@ -1852,6 +1945,50 @@ const MEDALS = ["🥇","🥈","🥉"];
   });
 }
 
+// ---- Gran Premio de Canadá: quién va ganando la general ----
+// El viaje es el premio de la clasificación general, así que la tarjeta abre
+// con el líder —su acumulado y la ventaja en puntos sobre el segundo— y con el
+// resto del podio; la parrilla completa sigue justo debajo, intacta. Líder y
+// podio abren la ficha del jugador por delegación (``data-player``).
+{
+  const gp = document.getElementById("gp");
+  const leader = ranked[0];
+  if (!leader) {
+    gp.style.display = "none";
+    document.querySelector(".gp-h2").classList.add("bare");
+  }
+  else {
+    const last = lastOf(leader);
+    // el color del líder tiñe su bloque (y luego su fila de la parrilla)
+    document.getElementById("hero-card").style.setProperty("--lead", colorOf(leader));
+    document.getElementById("gp-name").textContent = leader.name;
+    const cum = document.getElementById("gp-cum");
+    cum.textContent = fmtPct(last.cum);
+    cum.classList.add(last.cum >= 0 ? "pos" : "neg");
+    const row = document.getElementById("gp-lead");
+    row.classList.add("clk"); row.dataset.player = leader.id;
+    const second = ranked[1];
+    document.getElementById("gp-gap").textContent = second
+      ? T.gpGap(second.name, (last.cum - lastOf(second).cum).toFixed(2))
+      : T.gpSolo;
+    const chips = document.getElementById("gp-chips");
+    ranked.slice(1, 3).forEach((p, i) => {
+      const chip = document.createElement("div");
+      chip.className = "gp-chip clk"; chip.dataset.player = p.id;
+      const medal = document.createElement("span");
+      medal.className = "m"; medal.textContent = MEDALS[i + 1];
+      const name = document.createElement("span");
+      name.className = "n"; name.textContent = p.name;
+      const val = document.createElement("span");
+      val.className = "v " + (lastOf(p).cum >= 0 ? "pos" : "neg");
+      val.textContent = fmtPct(lastOf(p).cum);
+      chip.append(medal, name, val);
+      chips.appendChild(chip);
+    });
+    if (chips.children.length) document.getElementById("gp-podium").style.display = "";
+  }
+}
+
 // ---- pendientes de clave (extracto subido pero no descifrable) ----
 if (DATA.pending && DATA.pending.length) {
   const names = DATA.pending.map(p => p.name).join(", ");
@@ -1926,10 +2063,6 @@ function paintWidgets() {
     document.getElementById("best-card").style.display = "none";
     return;
   }
-
-  // el color del líder se pone en la tarjeta para que lo herede su fila de la
-  // clasificación, que va tintada como primera de la parrilla
-  document.getElementById("hero-card").style.setProperty("--lead", colorOf(ranked[0]));
 
   // mejor del día (los fines de semana la última jornada ya es la del viernes;
   // si hay empate en el % del día, desempata la rentabilidad acumulada)
