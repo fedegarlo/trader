@@ -6,7 +6,10 @@ de primero, el «Canada Grand Prix 26/27»: el banner de turismo de Canadá hace
 de cabecera de la clasificación general —el viaje es el premio—, debajo va
 quién lo lleva ganado (líder y podio) y luego la clasificación en formato tabla
 (1º, 2º, 3º… con su acumulado y el % de la última jornada, como una parrilla de
-F1 o una tabla de liga). Las líneas van suavizadas (spline cúbico monótono, sin
+F1 o una tabla de liga). El mes en curso se cuenta igual, con su propia carrera:
+el «Gran Premio de la ciudad de Vancouver», con el banner del ayuntamiento
+(vancouver.ca) de cabecera, el líder y el podio del mes, y detrás la gráfica de
+todos los jugadores. Las líneas van suavizadas (spline cúbico monótono, sin
 sobreoscilación) y el color se asigna a cada jugador por orden alfabético de id
 (estable: no cambia si cambia su posición en el ranking) de una paleta cálida:
 naranja, marrón y ocres.
@@ -258,7 +261,7 @@ _TEMPLATE = """<!doctype html>
            transition: color .12s ease, border-color .12s ease; }
   .whelp:hover { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, var(--hair)); }
   .whelp:active { transform: translateY(1px); }
-  #month-cur-card .wlabel, #month-prev-card .wlabel { padding-right: 34px; }
+  #month-prev-card .wlabel { padding-right: 34px; }
   .wlabel { color: var(--ink-2); font-size: 14px; font-weight: 600; }
   .wbig { font-size: clamp(26px, 8vw, 34px); font-weight: 800; letter-spacing: -0.035em; line-height: 1.1; margin-top: 3px; display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; }
   .wbig.sm { font-size: clamp(22px, 6.6vw, 28px); white-space: nowrap; }
@@ -277,10 +280,6 @@ _TEMPLATE = """<!doctype html>
   .wsub { color: var(--ink-2); font-size: 13.5px; font-weight: 600; margin-top: 4px; }
   .bestname { color: var(--ink); font-size: 18px; font-weight: 700; margin-top: 8px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
   .bestname .medal { font-size: 20px; line-height: 1; }
-  .winnername { color: var(--ink); font-size: clamp(20px, 5.5vw, 24px); font-weight: 800;
-                letter-spacing: -0.02em; line-height: 1.15; margin-top: 6px;
-                display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .winnername .trophy { font-size: 22px; line-height: 1; }
   .wsub.muted { color: var(--muted); font-weight: 500; }
   .wsub.treat { color: var(--ink-2); font-weight: 700; margin-top: 6px;
                 display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
@@ -373,29 +372,32 @@ _TEMPLATE = """<!doctype html>
   .mbadge-chip.prov { border-style: dashed; }
   .mbadge-chip .i { font-size: 17px; line-height: 1; }
 
-  /* banner de Canadá: cabecera a sangre de la tarjeta de la clasificación. El
-     viaje es el premio de la general, así que el banner presenta la carrera
-     («Canada Grand Prix 26/27») y enlaza a la web oficial de turismo
-     (Destination Canada) en el idioma activo. Colores fijos en claro y oscuro
-     —el rojo de la bandera— porque son los de la marca. */
-  .ca-banner { display: flex; align-items: center; gap: 12px;
-               margin: 0 -18px; padding: 13px 16px; text-decoration: none;
-               color: #fff; background: linear-gradient(135deg, #e8112d, #c00d24);
-               border-bottom: 1px solid rgba(11,10,16,0.14); }
-  .ca-banner:active { transform: translateY(1px); }
-  .ca-banner .cicon { flex: none; width: 42px; height: 42px; border-radius: 14px;
-                      display: grid; place-items: center; font-size: 24px; line-height: 1;
-                      background: rgba(255,255,255,0.94);
-                      box-shadow: 0 2px 6px rgba(11,10,16,0.16); }
-  .ca-banner .ctext { flex: 1 1 0; min-width: 0; }
-  .ca-banner .ckicker { display: block; font-size: 10.5px; font-weight: 800;
-                        letter-spacing: 0.12em; text-transform: uppercase;
-                        line-height: 1.2; color: rgba(255,255,255,0.82); }
-  .ca-banner .cmain { display: block; margin-top: 2px; font-size: 16px; font-weight: 800;
-                      letter-spacing: 0.01em; line-height: 1.2; }
-  .ca-banner .csub { display: block; margin-top: 2px; font-size: 13px;
-                     font-weight: 500; line-height: 1.3; color: rgba(255,255,255,0.90); }
-  .ca-banner .carrow { flex: none; font-size: 20px; font-weight: 800; opacity: 0.85; }
+  /* cabecera de un Gran Premio: banner a sangre en lo alto de su tarjeta que
+     presenta la carrera y enlaza a la web oficial del destino en el idioma
+     activo. La chapa (``.gpban``) es la misma para los dos —la general y el
+     mes—; cada uno pone encima su color de marca, fijo en claro y oscuro. */
+  .gpban { display: flex; align-items: center; gap: 12px;
+           margin: 0 -18px; padding: 13px 16px; text-decoration: none;
+           color: #fff; border-bottom: 1px solid rgba(11,10,16,0.14); }
+  .gpban:active { transform: translateY(1px); }
+  .gpban .cicon { flex: none; width: 42px; height: 42px; border-radius: 14px;
+                  display: grid; place-items: center; font-size: 24px; line-height: 1;
+                  background: rgba(255,255,255,0.94);
+                  box-shadow: 0 2px 6px rgba(11,10,16,0.16); }
+  .gpban .ctext { flex: 1 1 0; min-width: 0; }
+  .gpban .ckicker { display: block; font-size: 10.5px; font-weight: 800;
+                    letter-spacing: 0.12em; text-transform: uppercase;
+                    line-height: 1.2; color: rgba(255,255,255,0.82); }
+  .gpban .cmain { display: block; margin-top: 2px; font-size: 16px; font-weight: 800;
+                  letter-spacing: 0.01em; line-height: 1.2; }
+  .gpban .csub { display: block; margin-top: 2px; font-size: 13px;
+                 font-weight: 500; line-height: 1.3; color: rgba(255,255,255,0.90); }
+  .gpban .carrow { flex: none; font-size: 20px; font-weight: 800; opacity: 0.85; }
+  /* Canadá (la general): el rojo de la bandera, que es el de la marca. */
+  .ca-banner { background: linear-gradient(135deg, #e8112d, #c00d24); }
+  /* Vancouver (el mes en curso): el azul del Pacífico y el verde del bosque,
+     los colores con los que se presenta la ciudad. */
+  .vc-banner { background: linear-gradient(135deg, #0a6ea8, #12876f); }
 
   /* Gran Premio de Canadá: quién va ganando la general —y con ella el viaje—
      antes de la parrilla completa. El líder va tintado con su propio color
@@ -446,7 +448,12 @@ _TEMPLATE = """<!doctype html>
            padding-top: 14px; border-top: 1px solid var(--hair); }
   /* sin jugadores no hay podio del que colgar: fuera el filete de separación */
   .gp-h2.bare { margin-top: 16px; padding-top: 0; border-top: none; }
-  #hero-card .whelp { position: static; flex: none; margin-left: auto; }
+  #hero-card .whelp, #month-cur-card .whelp {
+    position: static; flex: none; margin-left: auto; }
+  /* el mes en curso es la otra carrera: mismo bloque de líder y podio bajo su
+     propio banner, y la gráfica de todos los jugadores debajo, intacta. */
+  #month-cur-card { padding-top: 0; }
+  #month-cur-card .gp .treat { margin-top: 11px; }
 
   /* widget de cartera: gráfico de tarta (cada porción = su peso real) */
   .donut-wrap { display: flex; align-items: center; gap: 18px; margin-top: 16px; }
@@ -837,6 +844,8 @@ _TEMPLATE = """<!doctype html>
   @media (min-width: 620px) {
     main { gap: 14px; }
     .card { padding: 22px; }
+    /* el banner va a sangre: su margen negativo sigue al padding de la tarjeta */
+    .gpban { margin: 0 -22px; padding: 13px 20px; }
     .modal { align-items: center; padding: 20px; }
     .sheet { border-radius: 24px; border-bottom: 1px solid var(--ring);
              padding-top: 18px; touch-action: auto;
@@ -888,7 +897,7 @@ _TEMPLATE = """<!doctype html>
          premio—. Debajo va quién lo lleva ganado (líder y podio) y, al final,
          la tabla completa de siempre: la comparativa no se pierde. -->
     <section class="card" id="hero-card">
-      <a class="ca-banner" id="ca-banner" target="_blank" rel="noopener noreferrer"
+      <a class="gpban ca-banner" id="ca-banner" target="_blank" rel="noopener noreferrer"
          data-i18n-aria="caAria">
         <span class="cicon" aria-hidden="true">🍁</span>
         <span class="ctext">
@@ -932,18 +941,44 @@ _TEMPLATE = """<!doctype html>
     <div class="mrow" id="month-row" style="display:none">
       <!-- la interrogación de cada mes abre la escala del restaurante: qué
            categoría de sitio paga el ganador según su rentabilidad. -->
+      <!-- Gran Premio de la ciudad de Vancouver: el mes en curso es su propia
+           carrera y el banner de la ciudad (vancouver.ca) es su cabecera.
+           Debajo va quién lo lleva ganado (líder y podio) y, al final, la
+           gráfica de todos los jugadores de siempre: la comparativa entera. -->
       <section class="card widget month" id="month-cur-card">
-        <button class="whelp" id="month-cur-help" type="button" data-i18n-title="treatHelpAria">?</button>
-        <div class="wlabel" id="month-cur-label"></div>
-        <div class="mhead">
-          <div class="mhead-l">
-            <div class="winnername"><span id="month-cur-player"></span><span class="trophy">🏆</span></div>
+        <a class="gpban vc-banner" id="vc-banner" target="_blank" rel="noopener noreferrer"
+           data-i18n-aria="vcAria">
+          <span class="cicon" aria-hidden="true">🏙️</span>
+          <span class="ctext">
+            <span class="ckicker" data-i18n="vcTitle"></span>
+            <span class="cmain" id="vgp-title"></span>
+            <span class="csub" data-i18n="vcSub"></span>
+          </span>
+          <span class="carrow" aria-hidden="true">→</span>
+        </a>
+        <div class="gp" id="vgp">
+          <div class="gp-lead" id="vgp-lead">
+            <span class="gp-flag" aria-hidden="true">🏁</span>
+            <div class="gp-l">
+              <div class="gp-kicker" data-i18n="vgpLeading"></div>
+              <div class="gp-name"><span id="month-cur-player"></span
+                ><span class="leaf" aria-hidden="true">🏆</span></div>
+              <div class="gp-gap" id="vgp-gap"></div>
+            </div>
+            <div class="gp-cum"><span class="num" id="month-cur-val"></span></div>
           </div>
-          <div class="wbig sm"><span class="num" id="month-cur-val"></span></div>
+          <!-- quién invita y dónde va a ancho completo, bajo el líder: la
+               frase con su chip no cabe junto al nombre sin descolgar el %. -->
+          <div class="wsub treat" id="month-cur-note"></div>
+          <div class="gp-podium" id="vgp-podium" style="display:none">
+            <span class="gp-plabel" data-i18n="gpPodium"></span>
+            <div class="gp-chips" id="vgp-chips"></div>
+          </div>
         </div>
-        <!-- quién invita y dónde va a ancho completo, bajo el titular: la
-             frase con su chip no cabe junto al nombre sin descolgar el %. -->
-        <div class="wsub treat" id="month-cur-note"></div>
+        <div class="gp-h2">
+          <div class="wlabel" id="month-cur-label"></div>
+          <button class="whelp" id="month-cur-help" type="button" data-i18n-title="treatHelpAria">?</button>
+        </div>
         <div class="mchart" id="month-cur-chart"></div>
         <div class="legend mlegend" id="month-cur-legend"></div>
       </section>
@@ -1142,6 +1177,12 @@ const I18N = {
     gpGap: (name, pts) => "+" + pts + " pts over " + name,
     gpSolo: "Alone on the grid for now",
     gpPodium: "Podium",
+    vcTitle: "Vancouver is waiting",
+    vcSub: "Meet the city on its official site.",
+    vcAria: "City of Vancouver: official website",
+    vcHref: "https://vancouver.ca/",
+    vgpTitle: ml => "Vancouver City GP · " + ml,
+    vgpLeading: "Leading this month",
     allPlayers: "All players",
     periodAll: "Since the start",
     pendingTitle: "⏳ Awaiting passphrase",
@@ -1356,6 +1397,12 @@ const I18N = {
     gpGap: (name, pts) => name + "に+" + pts + "pt",
     gpSolo: "今はグリッドにひとりだけ",
     gpPodium: "表彰台",
+    vcTitle: "バンクーバーが待つ",
+    vcSub: "公式サイトで街を知ろう。",
+    vcAria: "バンクーバー市 公式サイト",
+    vcHref: "https://vancouver.ca/",
+    vgpTitle: ml => "バンクーバー市GP · " + ml,
+    vgpLeading: "今月の首位",
     allPlayers: "全プレイヤー",
     periodAll: "開始から",
     pendingTitle: "⏳ パスフレーズ待ち",
@@ -1565,6 +1612,12 @@ const I18N = {
     gpGap: (name, pts) => "+" + pts + " pts sur " + name,
     gpSolo: "Seul sur la grille pour l'instant",
     gpPodium: "Podium",
+    vcTitle: "Vancouver vous attend",
+    vcSub: "Découvrez la ville sur le site officiel.",
+    vcAria: "Ville de Vancouver : site officiel",
+    vcHref: "https://vancouver.ca/",
+    vgpTitle: ml => "GP de la ville de Vancouver · " + ml,
+    vgpLeading: "En tête ce mois-ci",
     allPlayers: "Tous les joueurs",
     periodAll: "Depuis le début",
     pendingTitle: "⏳ En attente de la phrase secrète",
@@ -1848,11 +1901,16 @@ const T = I18N[LANG];
   btn.addEventListener("click", () => { menu.hidden ? open() : close(); });
 })();
 
-// ---- banner de Canadá: enlaza a la web oficial de turismo en el idioma ----
-// activo (el texto ya lo pintan los ``data-i18n``).
+// ---- banners de los Grandes Premios: cada uno enlaza a la web oficial de ----
+// su destino en el idioma activo (el texto ya lo pintan los ``data-i18n``).
+// El de Vancouver es el sitio del ayuntamiento y solo está en inglés, así que
+// ``vcHref`` es el mismo en los tres idiomas; se traduce igual por si algún día
+// deja de serlo.
 (() => {
   const banner = document.getElementById("ca-banner");
   if (banner) banner.href = T.caHref;
+  const city = document.getElementById("vc-banner");
+  if (city) city.href = T.vcHref;
 })();
 
 // ---- enlace de envío de posiciones por correo ----
@@ -2272,6 +2330,53 @@ function monthLegend(host, info) {
   });
 }
 
+// ---- Gran Premio de la ciudad de Vancouver: cómo va el mes en curso ----
+// El mes es su propia carrera, con el banner de la ciudad de cabecera: debajo
+// va quién lo lleva ganado —el líder con su rentabilidad del mes y su ventaja
+// en puntos sobre el segundo, tintado con su propio color— y el resto del
+// podio. La gráfica de todos los jugadores sigue justo detrás, intacta. Líder
+// y podio abren la ficha del jugador por delegación (``data-player``).
+//
+// Se llama desde ``paintMonthly()``, que se repinta al cambiar de tamaño: por
+// eso todo lo que se pinta aquí se limpia antes.
+function paintCityGP(info) {
+  const card = document.getElementById("month-cur-card");
+  const row = document.getElementById("vgp-lead");
+  const podium = document.getElementById("vgp-podium");
+  const chips = document.getElementById("vgp-chips");
+  const series = (info && info.series) || [];
+  const leader = series[0];
+  chips.innerHTML = "";
+  podium.style.display = "none";
+  row.classList.remove("clk");
+  delete row.dataset.player;
+  document.getElementById("vgp-title").textContent =
+    info ? T.vgpTitle(monthLabel(info.month, info.month_year)) : "";
+  // sin jugadores este mes la tarjeta entera está oculta (la esconde ``paint``)
+  if (!leader) { document.getElementById("vgp-gap").textContent = ""; return; }
+  // el color del líder tiñe su bloque, como en la general
+  card.style.setProperty("--lead", colorOf(leader));
+  row.classList.add("clk"); row.dataset.player = leader.id;
+  const second = series[1];
+  document.getElementById("vgp-gap").textContent = second
+    ? T.gpGap(second.name, (leader.value - second.value).toFixed(2))
+    : T.gpSolo;
+  series.slice(1, 3).forEach((p, i) => {
+    const chip = document.createElement("div");
+    chip.className = "gp-chip clk"; chip.dataset.player = p.id;
+    const medal = document.createElement("span");
+    medal.className = "m"; medal.textContent = MEDALS[i + 1];
+    const name = document.createElement("span");
+    name.className = "n"; name.textContent = p.name;
+    const val = document.createElement("span");
+    val.className = "v " + (p.value >= 0 ? "pos" : "neg");
+    val.textContent = fmtPct(p.value);
+    chip.append(medal, name, val);
+    chips.appendChild(chip);
+  });
+  if (chips.children.length) podium.style.display = "";
+}
+
 function paintMonthly() {
   const m = DATA.monthly || {};
   const paint = (info, key) => {
@@ -2310,6 +2415,7 @@ function paintMonthly() {
     return true;
   };
   const hasCur = paint(m.current, "month-cur");
+  paintCityGP(m.current);
   const hasPrev = paint(m.previous, "month-prev");
   // «ver más» del mes pasado: la gráfica de todos los jugadores y su
   // clasificación se abren en el segundo nivel (``onclick`` y no

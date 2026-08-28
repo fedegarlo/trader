@@ -23,11 +23,16 @@ ganando** —el líder con su acumulado y su ventaja en puntos sobre el segundo�
 el resto del **podio** (2º y 3º); y a continuación la clasificación completa de
 siempre: una tabla tipo parrilla de F1 o tabla de liga (1º, 2º, 3º…, con el
 acumulado de cada jugador y el % de la última jornada). Líder, podio y filas
-abren la ficha del jugador. Le siguen el **mejor del día**, los
-**ganadores del mes** (el mes en curso con la evolución de todos los jugadores;
-el mes pasado, ya cerrado, solo con su titular y esa gráfica detrás de «ver
-más»; los dos con la **categoría del restaurante** que le toca pagar al
-ganador, ver [🍽️ Quién invita y **dónde**](#-quién-invita-y-dónde)), las
+abren la ficha del jugador. Le sigue el **mejor del día** y, después, los
+**ganadores del mes**: el mes en curso es el **Gran Premio de la ciudad de
+Vancouver**, la **clasificación mensual** contada igual que la general —de
+cabecera, el banner de la ciudad (enlaza a la web oficial del ayuntamiento,
+[vancouver.ca](https://vancouver.ca/)); debajo, **quién va ganando el mes** con
+su rentabilidad y su ventaja en puntos sobre el segundo, el **podio** (2º y 3º)
+y la evolución de todos los jugadores, que sigue entera—; el mes pasado, ya
+cerrado, se queda en su titular con esa gráfica detrás de «ver más». Los dos
+llevan la **categoría del restaurante** que le toca pagar al ganador (ver
+[🍽️ Quién invita y **dónde**](#-quién-invita-y-dónde)). Le siguen las
 **noticias de la liga** (ver
 [📰 Noticias de los valores de la liga](#-noticias-de-los-valores-de-la-liga)) y
 el **detalle mensual** (por jugador, una fila por mes con la rentabilidad de

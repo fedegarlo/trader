@@ -1088,8 +1088,10 @@ def test_canada_banner_heads_the_standings_card():
         < card.index('id="gp-podium"') < card.index('id="standings"')
     # el banner es la cabecera a sangre de la tarjeta (sin margen suelto arriba)
     assert "#hero-card { padding-top: 0; overflow: hidden; }" in webpage._TEMPLATE
-    assert ".ca-banner { display: flex; align-items: center; gap: 12px;\n" \
-           "               margin: 0 -18px;" in webpage._TEMPLATE
+    assert ".gpban { display: flex; align-items: center; gap: 12px;\n" \
+           "           margin: 0 -18px;" in webpage._TEMPLATE
+    # ...y sigue a sangre cuando la tarjeta crece a 22px de padding
+    assert ".gpban { margin: 0 -22px; padding: 13px 20px; }" in webpage._TEMPLATE
 
 
 def test_the_grand_prix_names_the_season_in_every_language():
@@ -1124,6 +1126,77 @@ def test_the_full_standings_table_survives_the_grand_prix():
     for locale in ("en", "ja", "fr"):
         cols = re.search(r"rankCols: \[([^\]]*)\]", _lang_block(locale)).group(1)
         assert cols.count('"') == 8, (locale, cols)  # #, jugador, acumulado y jornada
+
+
+def test_vancouver_banner_links_to_the_official_city_site():
+    """El banner del mes enlaza al ayuntamiento de Vancouver (vancouver.ca)."""
+    assert 'id="vc-banner"' in webpage._TEMPLATE
+    assert 'city.href = T.vcHref' in webpage._TEMPLATE
+    # el sitio del ayuntamiento solo está en inglés: mismo enlace en los tres
+    for locale in ("en", "ja", "fr"):
+        href = re.search(r'vcHref: "([^"]*)"', _lang_block(locale)).group(1)
+        assert href == "https://vancouver.ca/", (locale, href)
+
+
+def test_vancouver_banner_heads_the_current_month_card():
+    """El mes en curso se cuenta como carrera: banner, líder, podio y gráfica."""
+    card = webpage._TEMPLATE.split('id="month-cur-card"', 1)[1].split("</section>", 1)[0]
+    assert card.index('id="vc-banner"') < card.index('id="vgp-lead"') \
+        < card.index('id="vgp-podium"') < card.index('id="month-cur-chart"')
+    # el banner es la cabecera a sangre de la tarjeta (sin margen suelto arriba)
+    assert "#month-cur-card { padding-top: 0; }" in webpage._TEMPLATE
+    # comparte la chapa con el de Canadá: una sola definición de la cabecera
+    assert 'class="gpban vc-banner"' in card
+    # el ? deja de flotar sobre el banner y se cuelga del titular de la gráfica
+    assert card.index('id="month-cur-label"') < card.index('id="month-cur-help"') \
+        < card.index('id="month-cur-chart"')
+    assert "#month-cur-card .wlabel" not in webpage._TEMPLATE
+
+
+def test_the_city_grand_prix_names_the_month_in_every_language():
+    """El banner presenta la carrera del mes: el GP de Vancouver de ese mes."""
+    for locale in ("en", "ja", "fr"):
+        title = re.search(r"vgpTitle: ml => ([^\n]*)", _lang_block(locale)).group(1)
+        assert "Vancouver" in title or "バンクーバー" in title, (locale, title)
+        assert "GP" in title, (locale, title)
+        assert "+ ml" in title, (locale, title)  # lleva el mes en curso
+    assert 'T.vgpTitle(monthLabel(info.month, info.month_year))' in webpage._TEMPLATE
+
+
+def test_the_city_grand_prix_highlights_the_month_leader_and_the_podium():
+    """Quién va ganando el mes sale antes que la gráfica de todos."""
+    tpl = webpage._TEMPLATE
+    # el líder es el primero del mes (``series`` llega ya de mejor a peor)
+    assert "const leader = series[0];" in tpl
+    assert "T.gpGap(second.name, (leader.value - second.value).toFixed(2))" in tpl
+    assert ": T.gpSolo;" in tpl  # sin rival todavía, no se inventa una ventaja
+    # el resto del podio son el 2º y el 3º, con su medalla
+    assert "series.slice(1, 3).forEach" in tpl
+    # líder y podio abren la ficha del jugador (delegación por data-player)
+    assert 'row.classList.add("clk"); row.dataset.player = leader.id;' in tpl
+    assert 'chip.className = "gp-chip clk"; chip.dataset.player = p.id;' in tpl
+    # se repinta con la tarjeta (``paintMonthly`` corre al cambiar de tamaño)
+    assert "paintCityGP(m.current);" in tpl
+    assert 'chips.innerHTML = "";' in tpl
+
+
+def test_the_monthly_chart_and_treat_survive_the_city_grand_prix():
+    """La comparativa del mes y «quién invita» siguen enteras bajo el podio."""
+    card = webpage._TEMPLATE.split('id="month-cur-card"', 1)[1].split("</section>", 1)[0]
+    for el in ("month-cur-player", "month-cur-val", "month-cur-note",
+               "month-cur-label", "month-cur-chart", "month-cur-legend",
+               "month-cur-help"):
+        assert 'id="%s"' % el in card, el
+
+
+def test_both_grand_prix_banners_are_a_single_short_line_without_a_button():
+    """Los banners son bajitos: titular, una línea de texto y ya. Sin botón."""
+    assert "ccta" not in webpage._TEMPLATE and "caCta" not in webpage._TEMPLATE
+    # el subtítulo de cada idioma cabe en una línea (nada de párrafos)
+    for locale in ("en", "ja", "fr"):
+        for key in ("caSub", "vcSub"):
+            sub = re.search(r'%s: "([^"]*)"' % key, _lang_block(locale)).group(1)
+            assert len(sub) <= 45, (locale, key, sub)
 
 
 def test_canada_banner_is_a_single_short_line_without_a_button():
