@@ -6,24 +6,32 @@ on:
     # EE. UU. (13:00–21:00 UTC cubre el horario de verano e invierno), de lunes
     # a viernes. Mantiene frescos los números «en vivo» sin intervención.
     #
-    # IMPORTANTE: NO usamos el minuto :00. Los cron de GitHub Actions corren en
-    # infraestructura compartida y en los minutos «redondos» (:00, :15, :30, :45)
-    # se acumula tantísima carga que GitHub los retrasa 40–60 min o directamente
+    # IMPORTANTE: NO usamos minutos redondos (:00, :15, :30, :45). Los cron de
+    # GitHub Actions corren en infraestructura compartida y en esos minutos se
+    # acumula tantísima carga que GitHub los retrasa 40–60 min o directamente
     # los descarta. Con "0 13-21" perdíamos casi todas las ejecuciones de la
-    # franja. Desplazarlas a un minuto poco concurrido (:17 y :43) hace que se
+    # franja. Desplazarlas a minutos poco concurridos (:11, :17) hace que se
     # disparen puntuales. Aun así, los cron son «best effort»: la frescura real
     # la garantizan los disparos instantáneos (repository_dispatch) de abajo.
     - cron: "17 13-21 * * 1-5"
-    # Cierre oficial: tras el cierre de la bolsa de EE. UU. (a las 22:00 UTC),
-    # ya con los cierres definitivos del día. También fuera del minuto en punto.
-    - cron: "43 22 * * 1-5"
+    # Cierre oficial: ~11 min después de las 16:00 America/New_York (cierre
+    # regular de NYSE/Nasdaq). Eso es 20:00 UTC con EDT (verano) y 21:00 UTC
+    # con EST (invierno) — nunca 22:00 UTC. En Europe/Madrid son las 22:00
+    # cuando CEST/CET van a la par del DST estadounidense, así que 22:11
+    # Madrid en ambos regímenes. GitHub cron solo habla UTC, de ahí las dos
+    # horas; el disparo que no toca cae aún en vivo (20:11 en invierno) o ya
+    # en after-hours (21:11 en verano). El antiguo "43 22" era 22:43 UTC
+    # (00:43 Madrid en verano): se tomó la hora de Madrid como si fuera UTC.
+    - cron: "11 20 * * 1-5"
+    - cron: "11 21 * * 1-5"
     # Sesión extendida: la tarjeta de pre-market / after-hours de la web es la
     # foto que se toma en el build, así que hace falta pasar por esas franjas.
     # El pre-market de EE. UU. va de 4:00 a 9:30 ET (08:00–13:30 UTC en verano,
     # 09:00–14:30 en invierno) y el after-hours de 16:00 a 20:00 ET
     # (20:00–00:00 UTC en verano, 21:00–01:00 en invierno). El run de las 13:17
-    # ya cae en pre-market y el de las 22:43 en after-hours; estos dos añaden
-    # una pasada temprana por cada franja para que el dato no llegue tarde.
+    # ya cae en pre-market y los de cierre (20:11 / 21:11) al arranque del
+    # after-hours; estos dos añaden una pasada temprana (pre) y otra más
+    # tardía (after) para que el dato no llegue tarde.
     - cron: "11 11 * * 1-5"
     - cron: "9 23 * * 1-5"
   workflow_dispatch: {}
