@@ -44,6 +44,16 @@
       "player": "fede",
       "name": "Fede",
       "date": "2026-08-14"
+    },
+    {
+      "key": "champion:2026-08",
+      "recorded": "2026-09-01",
+      "type": "champion_month",
+      "player": "ana",
+      "name": "Ana",
+      "date": "2026-08-31",
+      "month": "2026-08",
+      "pct": 13.76
     }
   ],
   "record": {
