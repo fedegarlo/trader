@@ -183,6 +183,11 @@
       "date": "2026-09-01",
       "daily_return_pct": -0.2854,
       "cumulative_return_pct": 5.4405
+    },
+    {
+      "date": "2026-09-02",
+      "daily_return_pct": 0.5009,
+      "cumulative_return_pct": 5.9687
     }
   ]
 }
