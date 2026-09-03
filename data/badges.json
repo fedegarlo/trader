@@ -54,6 +54,15 @@
       "date": "2026-08-31",
       "month": "2026-08",
       "pct": 13.76
+    },
+    {
+      "key": "milestone:ana:10",
+      "recorded": "2026-09-03",
+      "type": "milestone",
+      "tier": 10,
+      "player": "ana",
+      "name": "Ana",
+      "date": "2026-09-03"
     }
   ],
   "record": {
