@@ -515,3 +515,113 @@ def test_new_player_json_carries_the_goal_config(tmp_path):
     inbox.process_message(_make_email(), emails, "clave-liga", str(tmp_path))
     cfg = json.loads((tmp_path / "fede" / "player.json").read_text(encoding="utf-8"))
     assert cfg["goal"] == 20000.0 and cfg["show_goal"] is True
+
+
+# ----- ingest-csv (camino sin IMAP) -----
+
+def test_player_cfg_for_defaults_without_files(tmp_path):
+    cfg = inbox.player_cfg_for("fede", str(tmp_path), emails_raw="")
+    assert cfg.player_id == "fede"
+    assert cfg.name == "fede"
+    assert cfg.currency == "USD"
+    assert cfg.show_amounts is False
+    assert cfg.email == ""
+
+
+def test_player_cfg_for_reads_player_emails(tmp_path):
+    cfg = inbox.player_cfg_for("fede", str(tmp_path), emails_raw=json.dumps({
+        "fede": {"email": "fede@icloud.com", "name": "Fede", "currency": "EUR",
+                 "show_amounts": True, "goal": 20000, "show_goal": True},
+    }))
+    assert cfg.name == "Fede" and cfg.currency == "EUR"
+    assert cfg.show_amounts is True and cfg.goal == 20000.0 and cfg.show_goal
+    assert cfg.email == "fede@icloud.com"
+
+
+def test_player_cfg_for_player_json_wins_over_emails(tmp_path):
+    pdir = tmp_path / "fede"
+    pdir.mkdir()
+    (pdir / "player.json").write_text(json.dumps({
+        "display_name": "Federico", "currency": "USD", "show_amounts": False,
+        "goal": 14000, "show_goal": True,
+    }), encoding="utf-8")
+    cfg = inbox.player_cfg_for("fede", str(tmp_path), emails_raw=json.dumps({
+        "fede": {"email": "fede@icloud.com", "name": "Otro", "currency": "EUR",
+                 "show_amounts": True, "goal": 1, "show_goal": False},
+    }))
+    assert cfg.name == "Federico" and cfg.currency == "USD"
+    assert cfg.show_amounts is False and cfg.goal == 14000.0 and cfg.show_goal
+    assert cfg.email == "fede@icloud.com"   # el correo solo vive en PLAYER_EMAILS
+
+
+def test_ingest_csv_encrypts_and_skips_imap(tmp_path, monkeypatch):
+    """write_extract + parse_csv, sin tocar el buzón."""
+    monkeypatch.delenv("IMAP_USER", raising=False)
+    monkeypatch.delenv("IMAP_PASS", raising=False)
+    res = inbox.ingest_csv("fede", SAMPLE_CSV.decode(), "clave-liga", str(tmp_path))
+    assert res.ingested and res.player_id == "fede"
+    assert "CSV" in res.detail and "nueva" in res.detail
+    enc = tmp_path / "fede" / "trades.csv.enc"
+    assert secretbox.decrypt_file(str(enc), "clave-liga") == SAMPLE_CSV
+    cfg = json.loads((tmp_path / "fede" / "player.json").read_text(encoding="utf-8"))
+    assert cfg["display_name"] == "fede"
+
+
+def test_ingest_csv_uses_existing_player_json(tmp_path):
+    pdir = tmp_path / "fede"
+    pdir.mkdir()
+    (pdir / "player.json").write_text(
+        '{"display_name": "Fede", "currency": "USD", "show_amounts": true}',
+        encoding="utf-8")
+    inbox.ingest_csv("fede", SAMPLE_CSV.decode(), "clave-liga", str(tmp_path))
+    cfg = json.loads((pdir / "player.json").read_text(encoding="utf-8"))
+    assert cfg["display_name"] == "Fede" and cfg["show_amounts"] is True
+
+
+def test_ingest_csv_same_statement_is_unchanged(tmp_path):
+    inbox.ingest_csv("fede", SAMPLE_CSV.decode(), "clave-liga", str(tmp_path))
+    blob = (tmp_path / "fede" / "trades.csv.enc").read_bytes()
+    res = inbox.ingest_csv("fede", SAMPLE_CSV.decode(), "clave-liga", str(tmp_path))
+    assert res.status == "unchanged" and not res.ingested
+    assert "0 nuevas" in res.detail
+    assert (tmp_path / "fede" / "trades.csv.enc").read_bytes() == blob
+
+
+def test_ingest_csv_rejects_empty_or_invalid(tmp_path):
+    empty = inbox.ingest_csv("fede", "", "clave-liga", str(tmp_path))
+    assert empty.status == "invalid_report"
+    bad = inbox.ingest_csv("fede", "esto,no,es,revolut\n1,2,3,4\n",
+                           "clave-liga", str(tmp_path))
+    assert bad.status == "invalid_report"
+    assert not (tmp_path / "fede").exists()
+
+
+def test_ingest_csv_rejects_invalid_player_id(tmp_path):
+    res = inbox.ingest_csv("../evil", SAMPLE_CSV.decode(), "k", str(tmp_path))
+    assert res.status == "unauthorized"
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_cli_ingest_csv(tmp_path, monkeypatch, capsys):
+    monkeypatch.setenv("TRADER_KEY", "clave-liga")
+    csv_path = tmp_path / "extracto.csv"
+    csv_path.write_bytes(SAMPLE_CSV)
+    from trader.__main__ import main
+    main(["ingest-csv", "--player", "fede", "--players-dir", str(tmp_path),
+          str(csv_path)])
+    out = capsys.readouterr().out
+    assert "ingerido" in out and "fede" in out
+    assert secretbox.decrypt_file(str(tmp_path / "fede" / "trades.csv.enc"),
+                                  "clave-liga") == SAMPLE_CSV
+
+
+def test_cli_ingest_csv_rejects_invalid(tmp_path, monkeypatch):
+    monkeypatch.setenv("TRADER_KEY", "clave-liga")
+    csv_path = tmp_path / "basura.csv"
+    csv_path.write_text("no,es,un,extracto\n1,2,3,4\n", encoding="utf-8")
+    from trader.__main__ import main
+    with pytest.raises(SystemExit) as exc:
+        main(["ingest-csv", "--player", "fede", "--players-dir", str(tmp_path),
+              str(csv_path)])
+    assert exc.value.code == 1
+    assert not (tmp_path / "fede").exists()

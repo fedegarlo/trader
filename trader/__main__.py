@@ -5,7 +5,8 @@ Comandos:
   decrypt   Descifra un fichero .csv.enc (para comprobarlo en local).
   report    Calcula la serie diaria de un jugador y la muestra por pantalla.
   ranking   Calcula todos los jugadores y genera docs/ranking.md + data/public/.
-  inbox     Ingesta extractos recibidos por email (IMAP), verificando DMARC.
+  inbox      Ingesta extractos recibidos por email (IMAP), verificando DMARC.
+  ingest-csv Ingesta un extracto CSV directo (sin email), misma fusión/cifrado.
 """
 
 from __future__ import annotations
@@ -224,6 +225,40 @@ def cmd_inbox(args: argparse.Namespace) -> None:
               "operaciones, vuelve a exportarlo cuando Revolut las refleje).")
 
 
+def _print_ingest_result(result: inbox_mod.Result, *, label: str) -> None:
+    """Misma portada que el buzón: estado, avisos y recuento de ingeridos."""
+    if result.ingested:
+        print(f"  ✅ {result.detail}")
+    elif result.status == "unchanged":
+        print(f"  ℹ️  {result.detail}")
+    else:
+        print(f"  ⚠️  [{result.status}] {result.detail}")
+    for warning in result.warnings:
+        print(f"     ⚠️  {warning}")
+    if result.status not in {"ingested", "unchanged"}:
+        sys.exit(1)
+    ingested = [result.player_id] if result.ingested else []
+    print(f"\n{label}: {len(ingested)} extracto(s) ingerido(s)"
+          f"{': ' + ', '.join(ingested) if ingested else ''}.")
+    if result.status == "unchanged":
+        print(f"Sin novedades: {result.player_id} "
+              "(el extracto recibido ya estaba registrado entero; si faltan "
+              "operaciones, vuelve a exportarlo cuando Revolut las refleje).")
+
+
+def cmd_ingest_csv(args: argparse.Namespace) -> None:
+    passphrase = _passphrase(args.key)
+    try:
+        with open(args.csv, "rb") as fh:
+            payload = fh.read()
+    except OSError as exc:
+        sys.exit(f"No se puede leer el CSV: {exc}")
+    csv_text = inbox_mod._decode_csv(payload)
+    result = inbox_mod.ingest_csv(
+        args.player, csv_text, passphrase, players_dir=args.players_dir)
+    _print_ingest_result(result, label="CSV")
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="trader", description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -280,6 +315,15 @@ def main(argv: list[str] | None = None) -> None:
     p_inbox.add_argument("--dry-run", action="store_true",
                          help="no marcar los correos como vistos")
     p_inbox.set_defaults(func=cmd_inbox)
+
+    p_csv = sub.add_parser("ingest-csv",
+                           help="ingesta de un extracto CSV (sin email)")
+    p_csv.add_argument("--player", required=True,
+                       help="id del jugador (p.ej. fede)")
+    p_csv.add_argument("csv", help="ruta al extracto CSV de Revolut")
+    p_csv.add_argument("--players-dir", default="players")
+    p_csv.add_argument("--key", help="frase de la liga (o TRADER_KEY)")
+    p_csv.set_defaults(func=cmd_ingest_csv)
 
     args = parser.parse_args(argv)
     args.func(args)

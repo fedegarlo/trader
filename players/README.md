@@ -153,6 +153,22 @@ instalación están en la cabecera del propio fichero (requiere un token de gran
 fino del admin con permiso *Contents*, que vive solo en el script — los
 jugadores siguen sin necesitar ninguno).
 
+**Ingesta directa por CSV (sin email).** El workflow
+[`.github/workflows/ingest-csv.yml`](../.github/workflows/ingest-csv.yml) es el
+mismo cifrado/fusión/publicación que el buzón, pero el extracto llega como
+CSV en base64 (no se abre IMAP). Lo usa la rutina automática de Steve de
+Federico:
+
+```bash
+gh api repos/fedegarlo/trader/dispatches \
+  -f event_type=ingest-csv \
+  -f client_payload='{"player_id":"fede","csv_base64":"..."}'
+```
+
+En local: `python -m trader ingest-csv --player fede extracto.csv` (la frase
+va en `TRADER_KEY`). Comparte el grupo de concurrencia `inbox` para no picar
+`players/` a la vez que el buzón.
+
 > **Seguridad:** el workflow **no se fía del `From:`** (falsificable): exige
 > que el correo pase **DMARC** (o un DKIM alineado) según la cabecera
 > `Authentication-Results` que estampa el buzón receptor. Y como el bot solo
