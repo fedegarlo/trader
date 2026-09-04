@@ -80,6 +80,69 @@ def test_parse_player_emails_json_roto_explica_el_problema():
         inbox.parse_player_emails('{"fede": ')
 
 
+def test_parse_player_emails_emails_array_maps_all_to_same_player():
+    m = inbox.parse_player_emails(json.dumps({
+        "fede": {
+            "emails": ["fgarcialorca@gmail.com", "fedegarcia@icloud.com"],
+            "name": "Fede",
+            "currency": "USD",
+            "show_amounts": True,
+            "goal": 14000,
+            "show_goal": True,
+        },
+        "ana": {"email": "ana@gmail.com", "name": "Ana", "currency": "EUR"},
+    }))
+    assert set(m) == {
+        "fgarcialorca@gmail.com", "fedegarcia@icloud.com", "ana@gmail.com",
+    }
+    assert m["fgarcialorca@gmail.com"].player_id == "fede"
+    assert m["fedegarcia@icloud.com"].player_id == "fede"
+    assert m["fgarcialorca@gmail.com"] is m["fedegarcia@icloud.com"]
+    assert m["ana@gmail.com"].player_id == "ana"
+    assert m["ana@gmail.com"].email == "ana@gmail.com"
+
+
+def test_parse_player_emails_accepts_email_as_list():
+    m = inbox.parse_player_emails(
+        '{"fede": {"email": ["A@x.com", "b@y.com"], "name": "Fede"}}')
+    assert set(m) == {"a@x.com", "b@y.com"}
+    assert m["a@x.com"].player_id == m["b@y.com"].player_id == "fede"
+
+
+def test_parse_player_emails_dedupes_duplicate_addresses():
+    m = inbox.parse_player_emails(json.dumps({
+        "fede": {
+            "email": "fede@icloud.com",
+            "emails": ["FEDE@icloud.com", "fgarcialorca@gmail.com",
+                       "fgarcialorca@gmail.com", ""],
+        },
+    }))
+    assert set(m) == {"fede@icloud.com", "fgarcialorca@gmail.com"}
+    assert m["fede@icloud.com"].player_id == "fede"
+    assert m["fgarcialorca@gmail.com"].player_id == "fede"
+    assert m["fede@icloud.com"] is m["fgarcialorca@gmail.com"]
+
+
+def test_process_accepts_any_registered_address_for_the_player(tmp_path):
+    emails = inbox.parse_player_emails(json.dumps({
+        "fede": {
+            "emails": ["fgarcialorca@gmail.com", "fedegarcia@icloud.com"],
+            "name": "Fede",
+        },
+    }))
+    gmail_auth = ("mx.google.com; dkim=pass header.i=@gmail.com; "
+                  "dmarc=pass header.from=gmail.com")
+    for sender, auth in (
+            ("fgarcialorca@gmail.com", gmail_auth),
+            ("fedegarcia@icloud.com", DMARC_PASS)):
+        res = inbox.process_message(
+            _make_email(sender=sender, auth=auth), emails, "clave-liga",
+            str(tmp_path))
+        assert res.player_id == "fede"
+        assert res.status in {"ingested", "unchanged"}
+        assert res.status != "unauthorized"
+
+
 # ----- verify_sender_auth -----
 
 def test_auth_dmarc_pass():

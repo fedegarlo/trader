@@ -23,7 +23,7 @@ buzón de la liga:
 No necesitas token de GitHub, ni ser colaborador, ni cifrar nada:
 
 1. Pídele al administrador que te **registre** (tu id ↔ tu dirección de
-   correo).
+   correo; puedes registrar más de una).
 2. Consigue tu extracto de Revolut, en **cualquiera de los dos formatos**:
    - el **CSV** que exporta la app (**Inversiones → ⋯ → Extractos → CSV**), o
    - el **PDF de cuenta** (*Account Statement*) que Revolut te manda por
@@ -32,7 +32,7 @@ No necesitas token de GitHub, ni ser colaborador, ni cifrar nada:
    Pide el periodo **desde tu primera operación** (si el extracto empieza con
    la cartera ya montada, no se puede reconstruir lo anterior).
 3. **Envía un email a `ligatrader26@gmail.com`, con el extracto adjunto, desde
-   tu dirección registrada.** Eso es todo.
+   una de tus direcciones registradas.** Eso es todo.
 
 Un workflow lee el buzón cada pocos minutos, **verifica que el correo pasa
 DMARC** (que de verdad viene de tu dirección, no de alguien que la suplanta),
@@ -40,7 +40,7 @@ convierte el PDF al CSV equivalente si hace falta, **lo cifra** con la frase
 de la liga y lo publica en tu carpeta `players/<tu-id>/`. En 1–2 minutos
 aparece en el ranking.
 
-> **Importante:** envía el correo **desde la dirección que registró el
+> **Importante:** envía el correo **desde una dirección que registró el
 > administrador**, y desde un proveedor que use DMARC (Gmail, iCloud, Outlook,
 > etc. — casi todos). Si el remitente no coincide o no pasa DMARC, el extracto
 > se descarta por seguridad. Si el correo llega **sin extracto** (o con un
@@ -121,11 +121,20 @@ Configuración inicial, **una sola vez**:
 
 **Dar de alta a un jugador** — **una vez por jugador** (las actualizaciones no
 requieren nada): regístralo en la Variable `PLAYER_EMAILS` (Settings → Secrets
-and variables → Actions → *Variables*), un JSON `id → datos`:
+and variables → Actions → *Variables*), un JSON `id → datos`. Un jugador puede
+tener **varias direcciones** (`"emails": [...]`); el string `"email"` sigue
+valiendo para una sola:
 
 ```json
 {
-  "fede": { "email": "fede@icloud.com", "name": "Fede 🚀", "currency": "USD", "show_amounts": false, "goal": 14000, "show_goal": true },
+  "fede": {
+    "emails": ["fgarcialorca@gmail.com", "fedegarcia@icloud.com"],
+    "name": "Fede",
+    "currency": "USD",
+    "show_amounts": true,
+    "goal": 14000,
+    "show_goal": true
+  },
   "ana":  { "email": "ana@gmail.com", "name": "Ana", "currency": "EUR", "show_amounts": true }
 }
 ```
