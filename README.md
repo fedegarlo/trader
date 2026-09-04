@@ -345,6 +345,13 @@ Para cada día natural se calcula:
 > que Revolut todavía no las había incluido al exportar: vuelve a enviarlo más
 > tarde.
 >
+> **Ingesta directa por CSV (automatización, sin email):**
+> `python -m trader ingest-csv --player fede extracto.csv` (frase en `TRADER_KEY`)
+> y el workflow [`.github/workflows/ingest-csv.yml`](.github/workflows/ingest-csv.yml)
+> (`repository_dispatch` tipo `ingest-csv` con el CSV en base64). Misma fusión,
+> cifrado y publicación que el buzón; **no usa IMAP**. Pensado para la rutina
+> automática de Steve de Federico.
+>
 > **Alternativa: subida por token (web/CLI).** Con `docs/subir.html` el commit
 > va directo con el token del jugador (cifrado en el navegador, sin PR). Aquí
 > el jugador escribe con un token que da acceso a todo el repo, así que un
@@ -383,6 +390,7 @@ detalles, en [`players/README.md`](players/README.md).
 | `python -m trader decrypt players/fede/trades.csv.enc` | Lo descifra (comprobación local) |
 | `python -m trader report fede` | Serie diaria de un jugador |
 | `python -m trader ranking` | Ranking completo + JSON públicos |
+| `python -m trader ingest-csv --player fede extracto.csv` | Ingesta un CSV (sin email; `TRADER_KEY`) |
 
 La frase de paso se pide por prompt, o se toma de `TRADER_KEY` /
 `PLAYER_<ID>_KEY` si están definidas.
@@ -402,8 +410,9 @@ data/public/                series diarias públicas en JSON (para gráficas)
 docs/index.html             la web del ranking 🏆 (GitHub Pages)
 docs/subir.html             página para subir tu extracto (cifra en el navegador, sin PR)
 docs/ranking.md             el ranking en Markdown
-.github/workflows/inbox.yml     ingesta extractos recibidos por email (IMAP + DMARC)
-.github/workflows/ranking.yml   recalcula y publica el ranking
+.github/workflows/inbox.yml         ingesta extractos recibidos por email (IMAP + DMARC)
+.github/workflows/ingest-csv.yml    ingesta un CSV directo (dispatch, sin IMAP)
+.github/workflows/ranking.yml       recalcula y publica el ranking
 .github/workflows/guard.yml     revierte pushes que toquen carpetas ajenas (vía token)
 examples/                   jugador de ejemplo con precios ficticios para probar
 tests/                      pytest

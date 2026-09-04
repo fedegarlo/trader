@@ -31,6 +31,11 @@ Los correos procesados se marcan como leídos para no reprocesarlos, **salvo
 los que no traen el informe esperado** (sin adjunto o con un fichero que no es
 un extracto legible): esos se dejan sin leer, de modo que sigan a la vista en
 el buzón y se reintenten en cuanto llegue el fichero correcto.
+
+Hay un camino paralelo **sin IMAP** (:func:`ingest_csv`) para ingerir un CSV
+ya en mano —misma validación, fusión y cifrado—. Lo usa la CLI
+``python -m trader ingest-csv`` y el workflow ``ingest-csv.yml`` (p.ej. la
+rutina automática de Steve de Federico).
 """
 
 from __future__ import annotations
@@ -450,6 +455,90 @@ def write_extract(cfg: PlayerCfg, csv_text: str, passphrase: str,
     with open(path, "wb") as fh:
         fh.write(secretbox.encrypt(merged.encode("utf-8"), passphrase))
     return True, stats
+
+
+# Id de jugador = nombre de carpeta en players/<id>/. Nada de barras ni
+# puntos: el CSV directo no pasa por el mapa de remitentes del buzón.
+_PLAYER_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$")
+
+
+def player_cfg_for(player_id: str, players_dir: str = "players",
+                   emails_raw: str | None = None) -> PlayerCfg:
+    """Arma un ``PlayerCfg`` para la ingesta directa (sin email).
+
+    Toma los datos de ``PLAYER_EMAILS`` (el mismo JSON que el buzón) y, si ya
+    existe ``players/<id>/player.json``, esos campos mandan: así no se pisan
+    los ajustes que el jugador ya tenía (``write_extract`` tampoco los
+    reescribe).
+    """
+    emails_raw = emails_raw if emails_raw is not None else os.environ.get("PLAYER_EMAILS")
+    from_emails: PlayerCfg | None = None
+    for cfg in parse_player_emails(emails_raw).values():
+        if cfg.player_id == player_id:
+            from_emails = cfg
+            break
+
+    config: dict = {}
+    config_path = os.path.join(players_dir, player_id, "player.json")
+    if os.path.isfile(config_path):
+        with open(config_path, encoding="utf-8") as fh:
+            config = json.load(fh) or {}
+
+    def _pick(file_key: str, attr: str, default):
+        if file_key in config and config[file_key] is not None:
+            return config[file_key]
+        if from_emails is not None:
+            return getattr(from_emails, attr)
+        return default
+
+    name = str(_pick("display_name", "name", player_id) or player_id)
+    currency = str(_pick("currency", "currency", "USD") or "USD")
+    show_amounts = bool(_pick("show_amounts", "show_amounts", False))
+    goal = float(_pick("goal", "goal", DEFAULT_GOAL) or DEFAULT_GOAL)
+    show_goal = bool(_pick("show_goal", "show_goal", False))
+    email = from_emails.email if from_emails else ""
+    return PlayerCfg(
+        player_id=player_id,
+        email=email,
+        name=name,
+        currency=currency,
+        show_amounts=show_amounts,
+        goal=goal,
+        show_goal=show_goal,
+    )
+
+
+def ingest_csv(player_id: str, csv_text: str, passphrase: str,
+               players_dir: str = "players",
+               emails_raw: str | None = None) -> Result:
+    """Ingesta un extracto CSV sin pasar por IMAP.
+
+    Misma validación, fusión y cifrado que :func:`process_message`:
+    ``revolut.parse_csv`` + :func:`write_extract`. No toca el buzón.
+    """
+    if not _PLAYER_ID_RE.fullmatch(player_id or ""):
+        return Result("unauthorized", detail=f"player_id inválido: {player_id!r}")
+
+    cfg = player_cfg_for(player_id, players_dir, emails_raw)
+    events, warnings = revolut.parse_csv(csv_text or "")
+    if not events:
+        return Result("invalid_report", player_id,
+                      "el extracto CSV no tiene operaciones reconocibles",
+                      warnings)
+
+    changed, stats = write_extract(cfg, csv_text, passphrase, players_dir)
+    detail = (f"{_plural(stats.total, 'operación', 'operaciones')} "
+              f"(CSV, {stats.period}), "
+              f"{_plural(stats.new, 'nueva', 'nuevas')}")
+    if stats.kept:
+        detail += (", " + _plural(stats.kept, "anterior conservada",
+                                  "anteriores conservadas") + " fuera de ese periodo")
+    if not changed:
+        return Result("unchanged", player_id,
+                      detail + "; el extracto no aporta nada que no estuviera ya "
+                      "registrado", warnings)
+    return Result("ingested", player_id,
+                  detail + f"; cifrado en players/{player_id}/", warnings)
 
 
 def process_message(msg: Message, emails: dict[str, PlayerCfg], passphrase: str,

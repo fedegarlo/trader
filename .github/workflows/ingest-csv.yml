@@ -1,0 +1,159 @@
+name: Ingesta por CSV
+
+# Camino sin IMAP para la rutina automática de Steve de Federico: el extracto
+# de Revolut (CSV de cuenta) llega en base64, se valida/fusiona/cifra igual que
+# la ingesta por email (`inbox.write_extract`) y se publica en players/<id>/.
+# No toca el buzón.
+#
+# Disparo desde fuera (Steve / gh / cualquier automatización con permiso):
+#
+#   gh api repos/fedegarlo/trader/dispatches \
+#     -f event_type=ingest-csv \
+#     -f client_payload='{"player_id":"fede","csv_base64":"..."}'
+#
+# `player_id` es opcional (defecto: fede). `csv_base64` es obligatorio.
+# Para probar a mano: Actions → Ingesta por CSV → Run workflow, con el mismo
+# id y el CSV en base64.
+#
+# Comparte el grupo de concurrencia `inbox` (sin cancelar) para no picar
+# players/ a la vez que la ingesta por email.
+
+on:
+  repository_dispatch:
+    types: [ingest-csv]
+  workflow_dispatch:
+    inputs:
+      player_id:
+        description: Id del jugador (carpeta players/<id>/)
+        required: true
+        default: fede
+        type: string
+      csv_base64:
+        description: Extracto CSV en base64 (para probar el workflow a mano)
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: inbox
+  cancel-in-progress: false
+
+jobs:
+  ingest-csv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Ingerir CSV
+        env:
+          TRADER_KEY: ${{ secrets.TRADER_KEY }}
+          PLAYER_EMAILS: ${{ vars.PLAYER_EMAILS }}
+          PLAYER_ID: ${{ github.event.client_payload.player_id || inputs.player_id || 'fede' }}
+          CSV_BASE64: ${{ github.event.client_payload.csv_base64 || inputs.csv_base64 }}
+        # El resultado se copia al resumen de la ejecución (la portada del run),
+        # igual que en inbox.yml: de un vistazo se ve si el extracto traía
+        # operaciones nuevas ("N nueva(s)") o no.
+        run: |
+          set -euo pipefail
+          if [ -z "${CSV_BASE64:-}" ]; then
+            echo "Falta csv_base64 (client_payload del repository_dispatch" \
+                 "o el input csv_base64 del workflow_dispatch)." >&2
+            exit 1
+          fi
+          PLAYER_ID="${PLAYER_ID:-fede}"
+          CSV_FILE="$(mktemp /tmp/revolut-XXXXXX.csv)"
+          cleanup() { rm -f "$CSV_FILE"; }
+          trap cleanup EXIT
+          # -i ignora saltos de línea u otros no-alfabeto que meta el payload.
+          printf '%s' "$CSV_BASE64" | base64 -d -i > "$CSV_FILE"
+          if [ ! -s "$CSV_FILE" ]; then
+            echo "El CSV decodificado está vacío." >&2
+            exit 1
+          fi
+          printf '### Ingesta por CSV\n\n```\n' >> "$GITHUB_STEP_SUMMARY"
+          python -m trader ingest-csv --player "$PLAYER_ID" "$CSV_FILE" \
+            | tee -a "$GITHUB_STEP_SUMMARY"
+          printf '```\n' >> "$GITHUB_STEP_SUMMARY"
+
+      # Ojo con el nombre: esto NO mira si ha llegado un CSV (eso lo dice el
+      # paso anterior), sino si el extracto ha traído operaciones que no
+      # estuvieran ya registradas. Un reenvío sin novedades no cambia ficheros.
+      - name: ¿Alguna operación nueva?
+        id: changed
+        run: |
+          if [ -n "$(git status --porcelain players/)" ]; then
+            echo "yes=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "El extracto no ha traído operaciones nuevas (ver el paso" \
+                 "anterior: dice cuántas trae y cuántas son nuevas)."
+          fi
+
+      - name: Recalcular ranking
+        if: steps.changed.outputs.yes == 'true'
+        env:
+          TRADER_KEY: ${{ secrets.TRADER_KEY }}
+        run: python -m trader ranking --refresh
+
+      - name: Publicar
+        if: steps.changed.outputs.yes == 'true'
+        env:
+          # Hace falta también aquí: si la rama avanza mientras publicábamos,
+          # este paso vuelve a lanzar el cálculo sobre la versión nueva.
+          TRADER_KEY: ${{ secrets.TRADER_KEY }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add players/ docs/ data/public/ data/prices/ data/badges.json
+          if git diff --cached --quiet; then
+            echo "Sin cambios que publicar"
+            exit 0
+          fi
+          git commit -m "Ingesta de extracto CSV $(date -u +%F\ %H:%M)"
+          # Puede coincidir con el workflow de ranking o con la ingesta por
+          # email, que regeneran los mismos ficheros derivados (data/, docs/)
+          # y empujan a la vez. En players/ sí manda lo nuestro (el extracto
+          # recién ingerido es el dato de origen), así que el rebase se
+          # resuelve con -X theirs —que en un rebase se refiere a los commits
+          # que reaplicamos, o sea a nosotros—. Los derivados, en cambio, no
+          # se pueden imponer: se recalculan sobre la rama nueva, ya con el
+          # extracto dentro, y el commit se corrige con ese resultado.
+          for attempt in 1 2 3 4 5; do
+            if git push origin "HEAD:${GITHUB_REF_NAME}"; then
+              echo "Publicado (intento $attempt)."
+              exit 0
+            fi
+            echo "La rama ha avanzado; rebaso y recalculo (intento $attempt)…"
+            sleep 5
+            git fetch origin "${GITHUB_REF_NAME}"
+            if ! git rebase -X theirs "origin/${GITHUB_REF_NAME}"; then
+              git rebase --abort 2>/dev/null || true
+              continue
+            fi
+            python -m trader ranking --refresh
+            git add players/ docs/ data/public/ data/prices/ data/badges.json
+            if [ "$(git rev-parse HEAD)" \
+               = "$(git rev-parse "origin/${GITHUB_REF_NAME}")" ]; then
+              # El rebase ha descartado nuestro commit por vacío: otra ejecución
+              # ya había publicado este mismo extracto. No hay nada que corregir
+              # (amend reescribiría el commit ajeno), solo publicar el recálculo
+              # si aporta algo.
+              if git diff --cached --quiet; then
+                echo "El extracto ya estaba publicado; nada que hacer."
+                exit 0
+              fi
+              git commit -m "Ingesta de extracto CSV $(date -u +%F\ %H:%M)"
+            else
+              git commit --amend --no-edit
+            fi
+          done
+          echo "No se pudo publicar tras varios intentos." >&2
+          exit 1
