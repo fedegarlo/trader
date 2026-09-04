@@ -13,7 +13,8 @@ módulo, que:
    de correo es quien puede subir en su nombre — una frontera de seguridad
    equivalente a "tienes un token de GitHub".
 3. Mapea el remitente a un jugador con ``PLAYER_EMAILS`` (Variable del repo,
-   JSON ``id -> {email, name, currency, show_amounts, goal, show_goal}``).
+   JSON ``id -> {email|emails, name, currency, show_amounts, goal, show_goal}``;
+   un jugador puede tener varias direcciones).
 4. Valida que el adjunto es un extracto de Revolut legible; si viene en PDF,
    lo convierte antes al CSV de la app (:mod:`trader.revolut_pdf`).
 5. **Cifra el CSV con la frase de la liga** (``TRADER_KEY``) y lo escribe en
@@ -150,14 +151,42 @@ def _loads_player_emails(raw: str) -> dict:
         ) from first_error
 
 
+def _collect_player_addresses(cfg: dict) -> list[str]:
+    """Direcciones de un jugador: ``email`` y/o ``emails``, string o lista.
+
+    Conserva el orden de aparición y elimina duplicados (sin distinguir
+    mayúsculas). Las cadenas vacías se ignoran.
+    """
+    seen: set[str] = set()
+    addresses: list[str] = []
+    for key in ("email", "emails"):
+        if key not in cfg:
+            continue
+        value = cfg[key]
+        items = value if isinstance(value, list) else [value]
+        for item in items:
+            if item is None:
+                continue
+            address = str(item).strip().lower()
+            if not address or address in seen:
+                continue
+            seen.add(address)
+            addresses.append(address)
+    return addresses
+
+
 def parse_player_emails(raw: str | None) -> dict[str, PlayerCfg]:
     """Parsea ``PLAYER_EMAILS`` a un mapa ``email (minúsculas) -> PlayerCfg``.
+
+    Cada jugador puede tener una o varias direcciones; todas apuntan al mismo
+    ``player_id``. Se acepta ``"email"`` (string o lista), ``"emails"`` (lista
+    o string), o las dos a la vez. Forma corta: ``id -> "correo"``.
 
     Formato esperado (JSON)::
 
         {
-          "fede": {"email": "fede@icloud.com", "name": "Fede 🚀",
-                   "currency": "USD", "show_amounts": false,
+          "fede": {"emails": ["fgarcialorca@gmail.com", "fedegarcia@icloud.com"],
+                   "name": "Fede", "currency": "USD", "show_amounts": true,
                    "goal": 14000, "show_goal": true},
           "ana":  {"email": "ana@gmail.com", "name": "Ana", "currency": "EUR"}
         }
@@ -169,18 +198,20 @@ def parse_player_emails(raw: str | None) -> dict[str, PlayerCfg]:
     for player_id, cfg in data.items():
         if isinstance(cfg, str):  # forma corta: id -> email
             cfg = {"email": cfg}
-        address = str(cfg.get("email", "")).strip().lower()
-        if not address:
+        addresses = _collect_player_addresses(cfg)
+        if not addresses:
             continue
-        out[address] = PlayerCfg(
+        player = PlayerCfg(
             player_id=player_id,
-            email=address,
+            email=addresses[0],
             name=str(cfg.get("name", player_id)),
             currency=str(cfg.get("currency", "USD")),
             show_amounts=bool(cfg.get("show_amounts", False)),
             goal=float(cfg.get("goal") or DEFAULT_GOAL),
             show_goal=bool(cfg.get("show_goal", False)),
         )
+        for address in addresses:
+            out[address] = player
     return out
 
 

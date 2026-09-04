@@ -14,8 +14,11 @@ name: Ingesta por email
 #     IMAP_USER    dirección del buzón receptor (p.ej. liga.trader@gmail.com)
 #     IMAP_PASS    contraseña de aplicación del buzón (Gmail: App Password)
 #   Variables (... -> Variables):
-#     PLAYER_EMAILS  JSON id -> {email, name, currency, show_amounts}, p.ej.:
-#       { "fede": {"email":"fede@icloud.com","name":"Fede 🚀","currency":"USD"},
+#     PLAYER_EMAILS  JSON id -> {email|emails, name, currency, show_amounts};
+#                    un jugador puede listar varias direcciones. p.ej.:
+#       { "fede": {"emails":["fgarcialorca@gmail.com","fedegarcia@icloud.com"],
+#                  "name":"Fede","currency":"USD","show_amounts":true,
+#                  "goal":14000,"show_goal":true},
 #         "ana":  {"email":"ana@gmail.com","name":"Ana","currency":"EUR","show_amounts":true} }
 #   Opcional:
 #     IMAP_HOST (secret/var, def. imap.gmail.com), IMAP_PORT (def. 993),

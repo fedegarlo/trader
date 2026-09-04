@@ -327,7 +327,8 @@ Para cada día natural se calcula:
 > Como es el bot quien decide en qué carpeta escribe según el remitente
 > verificado, un jugador no puede tocar la carpeta de otro **por
 > construcción**. Dar de alta a alguien nuevo solo requiere añadir su
-> `email ↔ id` a la Variable `PLAYER_EMAILS`.
+> `email ↔ id` a la Variable `PLAYER_EMAILS` (un jugador puede listar varias
+> direcciones con `"emails"`).
 >
 > Al editar esa Variable, ojo con **escribirla desde el móvil**: iOS y macOS
 > sustituyen las comillas rectas por tipográficas (`“ ”`) y el JSON deja de ser
@@ -367,7 +368,7 @@ python -m trader ranking --players-dir examples/players \
 Lo más fácil es **enviar tu extracto por email**: el administrador te dice a
 qué dirección y te registra; tú adjuntas tu extracto de Revolut —el CSV que
 exporta la app o el PDF de cuenta que te manda Revolut— en un correo desde tu
-dirección registrada. Ojo: manda un extracto que cubra **desde tu primera
+dirección registrada (puedes tener más de una). Ojo: manda un extracto que cubra **desde tu primera
 operación**; si empieza más tarde, con la cartera ya montada, no se puede
 reconstruir (el bot lo avisa en el log). Sin token, sin frase, sin cifrar nada.
 También puedes usar la web **[⬆️ Subir tu extracto](https://fedegarlo.github.io/trader/subir.html)**
