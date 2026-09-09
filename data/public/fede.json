@@ -366,12 +366,12 @@
     },
     {
       "date": "2026-09-09",
-      "daily_return_pct": -1.3013,
-      "cumulative_return_pct": 7.3097,
+      "daily_return_pct": -1.4768,
+      "cumulative_return_pct": 7.1189,
       "start_value": 6230.34,
-      "end_value": 6149.26,
+      "end_value": 6138.33,
       "external_flow": 0.0,
-      "pnl": -81.07
+      "pnl": -92.01
     }
   ]
 }
