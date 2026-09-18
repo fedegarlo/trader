@@ -1934,7 +1934,8 @@ const T = I18N[LANG];
 // que sigue reservado a los colores con significado (aviso, «conseguido»…).
 const SLOTS = ["--p1","--p2","--p3","--p4","--p5","--p6","--p7","--p8"];
 const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-const colorOf = p => css(SLOTS[p.slot % SLOTS.length]);
+const colorOf = p => (p && p.color) ? p.color : css(SLOTS[(p && p.slot || 0) % SLOTS.length]);
+const colorFromSlotOrHex = (slot, color) => color || css(SLOTS[(slot || 0) % SLOTS.length]);
 const fmtPct = v => (v > 0 ? "+" : "") + v.toFixed(2) + "%";
 const fmtDate = iso => { const [y,m,d] = iso.split("-"); return d + "/" + m + "/" + y.slice(2); };
 const money = v => "$" + Number(v).toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2});
@@ -2284,7 +2285,7 @@ function monthChart(host, info) {
   // ganando se lee por su posición en la gráfica (y por el 🏆 de la leyenda),
   // no porque su trazo pese más que el de los demás.
   series.forEach(s => {
-    const c = css(SLOTS[s.slot % SLOTS.length]);
+    const c = colorFromSlotOrHex(s.slot, s.color || (PLAYERS[s.id] || {}).color);
     const pts = dates.map((d, i) => s.cum[i] === null || s.cum[i] === undefined
       ? null : [X(i), Y(s.cum[i])]).filter(Boolean);
     if (!pts.length) return;
@@ -2315,7 +2316,7 @@ function monthLegend(host, info) {
     const el = document.createElement("span");
     el.className = "clk"; el.dataset.player = s.id;
     const key = document.createElement("span");
-    key.className = "key"; key.style.background = css(SLOTS[s.slot % SLOTS.length]);
+    key.className = "key"; key.style.background = colorFromSlotOrHex(s.slot, s.color || (PLAYERS[s.id] || {}).color);
     el.appendChild(key);
     if (i === 0) {
       const tr = document.createElement("span");
@@ -2459,7 +2460,7 @@ function paintDaily() {
     name.appendChild(document.createTextNode("🏅 "));
     if (r.slot !== null && r.slot !== undefined) {
       const key = document.createElement("span");
-      key.className = "key"; key.style.background = slotColor(r.slot);
+      key.className = "key"; key.style.background = colorFromSlotOrHex(r.slot, (PLAYERS[r.player] || {}).color);
       name.appendChild(key);
     }
     name.appendChild(document.createTextNode(r.names.join(", ")));
@@ -2543,7 +2544,7 @@ function paintBadges() {
     title.className = "btitle"; title.textContent = badgeTitle(b); box.appendChild(title);
     const who = document.createElement("div"); who.className = "bwho";
     const key = document.createElement("span");
-    key.className = "key"; key.style.background = slotColor(b.slot); who.appendChild(key);
+    key.className = "key"; key.style.background = colorFromSlotOrHex(b.slot, (PLAYERS[b.player] || {}).color); who.appendChild(key);
     who.appendChild(document.createTextNode(b.name || "")); box.appendChild(who);
     const meta = document.createElement("div"); meta.className = "bmeta";
     if (b.type === "champion_month" && b.pct !== undefined && b.pct !== null)
@@ -2990,7 +2991,7 @@ function paintOperations() {
 
     const name = h("span", "op-name");
     if (o.id && PLAYERS[o.id]) { name.classList.add("clk"); name.dataset.player = o.id; }
-    const key = h("span", "key"); key.style.background = css(SLOTS[o.slot % SLOTS.length]);
+    const key = h("span", "key"); key.style.background = colorFromSlotOrHex(o.slot, (PLAYERS[o.id] || {}).color);
     name.appendChild(key);
     const nm = h("span", "nm"); nm.textContent = o.name;
     name.appendChild(nm);
@@ -3581,7 +3582,7 @@ function openTicker(sym) {
       const row = h("div", "holder-row clk");
       row.dataset.player = playerIdByName(hd.name) || "";
       const nm = h("span", "nm");
-      const key = h("span", "key"); key.style.background = css(SLOTS[hd.slot % SLOTS.length]);
+      const key = h("span", "key"); key.style.background = colorFromSlotOrHex(hd.slot, (PLAYERS[hd.id || playerIdByName(hd.name)] || {}).color);
       nm.appendChild(key); nm.appendChild(document.createTextNode(hd.name));
       row.appendChild(nm);
       row.appendChild(h("span", "w", T.ofPortfolio(fmtW(hd.w))));
@@ -3795,7 +3796,7 @@ function openMonthDetail(info) {
   const root = document.createElement("div");
 
   const head = h("div", "mhead");
-  head.appendChild(monoEl(info.name, 46, css(SLOTS[info.slot % SLOTS.length])));
+  head.appendChild(monoEl(info.name, 46, colorFromSlotOrHex(info.slot, info.color || (PLAYERS[info.id] || {}).color)));
   const title = h("div", "mtitle");
   const t1 = h("div", "t1");
   t1.appendChild(document.createTextNode(ml));
@@ -3818,7 +3819,7 @@ function openMonthDetail(info) {
       row.dataset.player = s.id;
       const nm = h("span", "nm");
       const key = h("span", "key");
-      key.style.background = css(SLOTS[s.slot % SLOTS.length]);
+      key.style.background = colorFromSlotOrHex(s.slot, s.color || (PLAYERS[s.id] || {}).color);
       nm.appendChild(key);
       if (i === 0) nm.appendChild(document.createTextNode("🏆 "));
       nm.appendChild(document.createTextNode(s.name));
@@ -4209,13 +4210,16 @@ def _month_best(computed: list[tuple[Player, list[DayResult]]],
         for r in rows:
             factor *= 1.0 + r.daily_return
             points[r.day.isoformat()] = round((factor - 1.0) * 100, 4)
-        tracks.append({
+        track = {
             "id": player.player_id,
             "name": player.display_name,
             "slot": order[player.player_id],
             "ret": (factor - 1.0) * 100,
             "points": points,
-        })
+        }
+        if player.color:
+            track["color"] = player.color
+        tracks.append(track)
     if not tracks:
         return None
 
@@ -4463,6 +4467,8 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
             "holdings": holdings_w,
         }
         suggestion = _buy_sell_suggestion(holdings_w, analysts)
+        if player.color:
+            entry["color"] = player.color
         if suggestion:
             entry["suggestion"] = suggestion
         goal = _goal_progress(player, window, fx)
