@@ -1,0 +1,43 @@
+name: Deploy Pages
+
+# Publica docs/ en GitHub Pages con concurrency que cancela builds viejos.
+# Así un deploy lento de un commit anterior no pisa el HTML más reciente
+# (el fallo clásico del widget de operaciones desfasado).
+#
+# Requiere Pages → Build and deployment → Source: GitHub Actions
+# (ya configurado en el repo).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - ".github/workflows/deploy-pages.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

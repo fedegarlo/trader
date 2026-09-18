@@ -46,8 +46,9 @@ on:
 permissions:
   contents: write
 
+# Misma cola que ranking (league-publish): serializa publicaciones a main.
 concurrency:
-  group: inbox
+  group: league-publish
   cancel-in-progress: false
 
 jobs:

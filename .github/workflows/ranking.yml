@@ -40,19 +40,23 @@ on:
   # este `repository_dispatch` garantiza que el ranking se recalcule al subir.
   repository_dispatch:
     types: [extracto-subido]
+  # No escuchamos players/**: inbox e ingest-csv ya recalculan ranking al
+  # ingerir. Un push ahí volvía a lanzar ranking + Pages y provocaba carreras
+  # donde un build viejo publicaba HTML desfasado.
   push:
     branches: [main]
     paths:
-      - "players/**"
       - "trader/**"
 
 permissions:
   contents: write
   issues: write
 
+# Comparte cola con inbox / ingest-csv: un solo escritor a main a la vez,
+# para no disparar deploys de Pages en carrera (HTML viejo pisando al nuevo).
 concurrency:
-  group: ranking
-  cancel-in-progress: true
+  group: league-publish
+  cancel-in-progress: false
 
 jobs:
   ranking:
