@@ -40,6 +40,9 @@ class Player:
     # es opt-in, como ``show_amounts``. Sin activar, el jugador sale en el
     # módulo pero con la barra oculta.
     show_goal: bool = False
+    # Hex CSS opcional (p. ej. "#7c3aed"). Si está, la web lo usa en lugar
+    # del color de la paleta por slot.
+    color: str | None = None
     events: list[Event] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
     enc_count: int = 0          # ficheros .csv.enc encontrados
@@ -84,6 +87,7 @@ def load_player(players_dir: str, player_id: str, passphrase: str | None = None)
         show_amounts=bool(config.get("show_amounts", False)),
         goal=float(config.get("goal") or DEFAULT_GOAL),
         show_goal=bool(config.get("show_goal", False)),
+        color=_optional_color(config.get("color")),
     )
 
     passphrase = passphrase or passphrase_from_env(player_id)
