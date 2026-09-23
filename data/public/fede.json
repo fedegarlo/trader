@@ -402,57 +402,57 @@
     },
     {
       "date": "2026-09-15",
-      "daily_return_pct": -1.3039,
-      "cumulative_return_pct": 5.9798,
+      "daily_return_pct": -1.2917,
+      "cumulative_return_pct": 5.9929,
       "start_value": 6153.29,
-      "end_value": 6073.06,
+      "end_value": 6073.81,
       "external_flow": 0.0,
-      "pnl": -80.23
+      "pnl": -79.48
     },
     {
       "date": "2026-09-16",
-      "daily_return_pct": 0.1621,
-      "cumulative_return_pct": 6.1516,
-      "start_value": 6073.06,
-      "end_value": 6082.9,
+      "daily_return_pct": 0.162,
+      "cumulative_return_pct": 6.1647,
+      "start_value": 6073.81,
+      "end_value": 6083.65,
       "external_flow": 0.0,
       "pnl": 9.84
     },
     {
       "date": "2026-09-17",
-      "daily_return_pct": 2.0103,
-      "cumulative_return_pct": 8.2855,
-      "start_value": 6082.9,
-      "end_value": 6205.18,
+      "daily_return_pct": 2.01,
+      "cumulative_return_pct": 8.2986,
+      "start_value": 6083.65,
+      "end_value": 6205.93,
       "external_flow": 0.0,
       "pnl": 122.28
     },
     {
       "date": "2026-09-18",
-      "daily_return_pct": 1.0289,
-      "cumulative_return_pct": 9.3996,
-      "start_value": 6205.18,
-      "end_value": 6269.03,
+      "daily_return_pct": 1.0309,
+      "cumulative_return_pct": 9.415,
+      "start_value": 6205.93,
+      "end_value": 6269.91,
       "external_flow": 0.0,
-      "pnl": 63.85
+      "pnl": 63.98
     },
     {
       "date": "2026-09-21",
-      "daily_return_pct": 1.8903,
-      "cumulative_return_pct": 11.4676,
-      "start_value": 6269.03,
-      "end_value": 6387.53,
+      "daily_return_pct": 1.89,
+      "cumulative_return_pct": 11.483,
+      "start_value": 6269.91,
+      "end_value": 6388.41,
       "external_flow": 0.0,
       "pnl": 118.5
     },
     {
       "date": "2026-09-22",
-      "daily_return_pct": 0.3649,
-      "cumulative_return_pct": 11.8743,
-      "start_value": 6387.53,
-      "end_value": 6410.83,
+      "daily_return_pct": 0.7549,
+      "cumulative_return_pct": 12.3245,
+      "start_value": 6388.41,
+      "end_value": 6436.63,
       "external_flow": 0.0,
-      "pnl": 23.31
+      "pnl": 48.22
     }
   ]
 }
