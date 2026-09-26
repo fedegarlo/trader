@@ -474,12 +474,12 @@
     },
     {
       "date": "2026-09-25",
-      "daily_return_pct": 0.4035,
-      "cumulative_return_pct": 10.3986,
+      "daily_return_pct": 0.5523,
+      "cumulative_return_pct": 10.5623,
       "start_value": 6300.85,
-      "end_value": 6326.27,
+      "end_value": 6335.65,
       "external_flow": 0.0,
-      "pnl": 25.42
+      "pnl": 34.8
     }
   ]
 }
