@@ -501,12 +501,12 @@
     },
     {
       "date": "2026-09-30",
-      "daily_return_pct": 1.2419,
-      "cumulative_return_pct": 12.227,
+      "daily_return_pct": 0.2232,
+      "cumulative_return_pct": 11.0978,
       "start_value": 6352.16,
-      "end_value": 6431.05,
+      "end_value": 6366.34,
       "external_flow": 0.0,
-      "pnl": 78.89
+      "pnl": 14.18
     }
   ]
 }
