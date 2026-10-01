@@ -133,7 +133,7 @@ paintNews();
 // ---- hilo conversacional: Warren y Scout cuentan los mismos módulos ----
 function syncTurns() {
   document.querySelectorAll(".turn[data-watch]").forEach(turn => {
-    const visible = turn.dataset.watch.split(/\\s+/).some(id => {
+    const visible = turn.dataset.watch.split(/\s+/).some(id => {
       const el = document.getElementById(id);
       return el && el.style.display !== "none";
     });
@@ -213,4 +213,4 @@ function revolutRow(sym) {
     const a = document.createElement("a");
     a.href = href;
     a.className = "rev-btn " + cls;
-    a.innerHTML = '<span class="ic">' + ico + "</span>" + labe
+    a.innerHTML = '<span class="ic">' + ico + "</span>" + label
