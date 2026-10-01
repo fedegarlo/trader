@@ -34,11 +34,11 @@ No necesitas token de GitHub, ni ser colaborador, ni cifrar nada:
 3. **Envía un email a `ligatrader26@gmail.com`, con el extracto adjunto, desde
    una de tus direcciones registradas.** Eso es todo.
 
-Un workflow lee el buzón cada pocos minutos, **verifica que el correo pasa
-DMARC** (que de verdad viene de tu dirección, no de alguien que la suplanta),
-convierte el PDF al CSV equivalente si hace falta, **lo cifra** con la frase
-de la liga y lo publica en tu carpeta `players/<tu-id>/`. En 1–2 minutos
-aparece en el ranking.
+Al llegar el correo, Apps Script avisa al repo; el workflow de ingesta lee
+el buzón, **verifica que el correo pasa DMARC** (que de verdad viene de tu
+dirección, no de alguien que la suplanta), convierte el PDF al CSV equivalente
+si hace falta, **lo cifra** con la frase de la liga y lo publica en tu carpeta
+`players/<tu-id>/`. En 1–2 minutos aparece en el ranking.
 
 > **Importante:** envía el correo **desde una dirección que registró el
 > administrador**, y desde un proveedor que use DMARC (Gmail, iCloud, Outlook,
@@ -52,10 +52,11 @@ aparece en el ranking.
 
 La página **[⬆️ Subir tu extracto](https://fedegarlo.github.io/trader/subir.html)**
 cifra tu CSV en el navegador y lo sube con tu token de GitHub. Requiere ser
-**colaborador con permiso Write**, estar registrado en `PLAYER_OWNERS` y usar
-un [token fine-grained](https://github.com/settings/tokens?type=beta) con
-permiso **Contents: Read and write**. Un guardián de CI solo te deja escribir
-en tu propia carpeta `players/<tu-id>/`.
+**colaborador con permiso Write** y usar un
+[token fine-grained](https://github.com/settings/tokens?type=beta) con
+permiso **Contents: Read and write**. El token puede escribir en el repo;
+la vía recomendada sigue siendo el email, donde el bot solo escribe en tu
+carpeta.
 
 ## Alternativa: por línea de comandos y pull request
 
@@ -139,25 +140,24 @@ valiendo para una sola:
 }
 ```
 
-El workflow `.github/workflows/inbox.yml` usa este mapa para autorizar al
-remitente y, si el jugador es nuevo, crear su `player.json`. No hace falta que
-sea colaborador ni que tenga token. Dile la dirección del buzón y listo.
+El workflow [`.github/workflows/ingest.yml`](../.github/workflows/ingest.yml)
+usa este mapa para autorizar al remitente y, si el jugador es nuevo, crear su
+`player.json`. No hace falta que sea colaborador ni que tenga token. Dile la
+dirección del buzón y listo.
 
-**Latencia y procesamiento instantáneo (opcional).** Por defecto el workflow
-revisa el buzón con un cron cada 15 min (los cron de Actions son aproximados,
-cuenta ~15–30 min). Si quieres que los extractos se procesen **en segundos**,
-instala el timbre de Gmail: [`scripts/gmail-dispatch.gs`](../scripts/gmail-dispatch.gs)
-es un Google Apps Script que se asocia a la cuenta del buzón y, en cuanto llega
-un correo con adjunto, dispara el workflow al instante. Las instrucciones de
-instalación están en la cabecera del propio fichero (requiere un token de grano
-fino del admin con permiso *Contents*, que vive solo en el script — los
-jugadores siguen sin necesitar ninguno).
+**El correo es event-driven, no hay cron de sondeo.** El timbre de Gmail
+([`scripts/gmail-dispatch.gs`](../scripts/gmail-dispatch.gs)) se asocia a la
+cuenta del buzón y, en cuanto llega un correo con adjunto, lanza
+`repository_dispatch` tipo `email-recibido`. Las instrucciones de instalación
+están en la cabecera del propio fichero (requiere un token de grano fino del
+admin con permiso *Contents*, que vive solo en el script — los jugadores
+siguen sin necesitar ninguno).
 
-**Ingesta directa por CSV (sin email).** El workflow
-[`.github/workflows/ingest-csv.yml`](../.github/workflows/ingest-csv.yml) es el
+**Ingesta directa por CSV (sin email).** El mismo workflow
+[`.github/workflows/ingest.yml`](../.github/workflows/ingest.yml) es el
 mismo cifrado/fusión/publicación que el buzón, pero el extracto llega como
 CSV en base64 (no se abre IMAP). Lo usa la rutina automática de Steve de
-Federico:
+Federico (`event_type=ingest-csv` no cambia):
 
 ```bash
 gh api repos/fedegarlo/trader/dispatches \
@@ -166,8 +166,8 @@ gh api repos/fedegarlo/trader/dispatches \
 ```
 
 En local: `python -m trader ingest-csv --player fede extracto.csv` (la frase
-va en `TRADER_KEY`). Comparte el grupo de concurrencia `inbox` para no picar
-`players/` a la vez que el buzón.
+va en `TRADER_KEY`). Comparte el grupo de concurrencia `league-publish` para
+no picar `players/` a la vez que el ranking.
 
 > **Seguridad:** el workflow **no se fía del `From:`** (falsificable): exige
 > que el correo pase **DMARC** (o un DKIM alineado) según la cabecera
@@ -183,21 +183,8 @@ va en `TRADER_KEY`). Comparte el grupo de concurrencia `inbox` para no picar
 Si además quieres permitir la subida con token desde `docs/subir.html`:
 
 1. **Colaborador:** invítalo con permiso **Write** (Settings → Collaborators).
-2. **Regístralo** en la Variable `PLAYER_OWNERS`, un JSON `id → usuario de
-   GitHub`:
+2. **Frase de la liga:** dile la frase compartida.
 
-   ```json
-   { "fede": "fedegarlo", "juan": "juangh" }
-   ```
-
-   El guardián de CI (`.github/workflows/guard.yml`) usa este mapa: si alguien
-   toca una carpeta que no es la suya, un id no registrado o ficheros fuera de
-   `players/`, **revierte el push y abre una issue**. Tú (admin) y los bots
-   quedáis exentos.
-3. **Frase de la liga:** dile la frase compartida.
-
-> El guardián es una malla de seguridad contra despistes y gamberreo casual
-> (los jugadores no pueden editar ni el workflow ni la Variable). Un insider
-> decidido con un token más amplio podría sortearlo; para prevención estricta
-> haría falta el *gatekeeper* serverless. La vía por email no tiene este
-> problema: el jugador nunca recibe un token del repo.
+> La vía por email no entrega token del repo: el bot solo escribe en la
+> carpeta del remitente verificado. La subida por token sí da acceso de
+> escritura al repo; úsala solo con gente de confianza.

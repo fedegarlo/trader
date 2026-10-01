@@ -1,58 +1,49 @@
-name: Ranking diario
+name: Ranking
+
+# Solo apertura y cierre del mercado de EE. UU. (America/New_York), más
+# disparos manuales y el aviso de docs/subir.html (`extracto-subido`).
+# Sin cron intradía, sin pre/after extra, sin push de trader/**.
+#
+# GitHub cron habla UTC, el NYSE cambia con el DST:
+#   apertura 09:30 ET = 13:30 UTC (EDT) / 14:30 UTC (EST)
+#   cierre   16:00 ET = 20:00 UTC (EDT) / 21:00 UTC (EST)
+# Cuatro crons (minutos poco concurridos). El primer paso —antes de
+# checkout o pip— sale al momento si la hora local de Nueva York no está
+# a ~25 min de 09:30 o 16:00, así el hueco del DST contrario cuesta
+# casi cero minutos.
+#
+# Al final, si docs/ cambió, se publica GitHub Pages aquí mismo
+# (antes era .github/workflows/deploy-pages.yml).
+# Requiere Pages → Build and deployment → Source: GitHub Actions.
 
 on:
   schedule:
-    # Refresco intradía: una vez por hora durante el horario de mercado de
-    # EE. UU. (13:00–21:00 UTC cubre el horario de verano e invierno), de lunes
-    # a viernes. Mantiene frescos los números «en vivo» sin intervención.
-    #
-    # IMPORTANTE: NO usamos minutos redondos (:00, :15, :30, :45). Los cron de
-    # GitHub Actions corren en infraestructura compartida y en esos minutos se
-    # acumula tantísima carga que GitHub los retrasa 40–60 min o directamente
-    # los descarta. Con "0 13-21" perdíamos casi todas las ejecuciones de la
-    # franja. Desplazarlas a minutos poco concurridos (:11, :17) hace que se
-    # disparen puntuales. Aun así, los cron son «best effort»: la frescura real
-    # la garantizan los disparos instantáneos (repository_dispatch) de abajo.
-    - cron: "17 13-21 * * 1-5"
-    # Cierre oficial: ~11 min después de las 16:00 America/New_York (cierre
-    # regular de NYSE/Nasdaq). Eso es 20:00 UTC con EDT (verano) y 21:00 UTC
-    # con EST (invierno) — nunca 22:00 UTC. En Europe/Madrid son las 22:00
-    # cuando CEST/CET van a la par del DST estadounidense, así que 22:11
-    # Madrid en ambos regímenes. GitHub cron solo habla UTC, de ahí las dos
-    # horas; el disparo que no toca cae aún en vivo (20:11 en invierno) o ya
-    # en after-hours (21:11 en verano). El antiguo "43 22" era 22:43 UTC
-    # (00:43 Madrid en verano): se tomó la hora de Madrid como si fuera UTC.
-    - cron: "11 20 * * 1-5"
-    - cron: "11 21 * * 1-5"
-    # Sesión extendida: la tarjeta de pre-market / after-hours de la web es la
-    # foto que se toma en el build, así que hace falta pasar por esas franjas.
-    # El pre-market de EE. UU. va de 4:00 a 9:30 ET (08:00–13:30 UTC en verano,
-    # 09:00–14:30 en invierno) y el after-hours de 16:00 a 20:00 ET
-    # (20:00–00:00 UTC en verano, 21:00–01:00 en invierno). El run de las 13:17
-    # ya cae en pre-market y los de cierre (20:11 / 21:11) al arranque del
-    # after-hours; estos dos añaden una pasada temprana (pre) y otra más
-    # tardía (after) para que el dato no llegue tarde.
-    - cron: "11 11 * * 1-5"
-    - cron: "9 23 * * 1-5"
-  workflow_dispatch: {}
+    # Apertura ~09:41 ET (11 min después de las 09:30).
+    - cron: "41 13 * * 1-5"   # 09:41 EDT
+    - cron: "41 14 * * 1-5"   # 09:41 EST
+    # Cierre ~16:11 ET (11 min después de las 16:00).
+    - cron: "11 20 * * 1-5"   # 16:11 EDT
+    - cron: "11 21 * * 1-5"   # 16:11 EST
+  workflow_dispatch:
+    inputs:
+      run_tests:
+        description: Ejecutar pytest antes del ranking
+        required: false
+        type: boolean
+        default: false
   # La web (docs/subir.html) lanza este evento tras subir un extracto: los
   # commits creados por la API de GitHub no disparan el evento `push`, así que
   # este `repository_dispatch` garantiza que el ranking se recalcule al subir.
   repository_dispatch:
     types: [extracto-subido]
-  # No escuchamos players/**: inbox e ingest-csv ya recalculan ranking al
-  # ingerir. Un push ahí volvía a lanzar ranking + Pages y provocaba carreras
-  # donde un build viejo publicaba HTML desfasado.
-  push:
-    branches: [main]
-    paths:
-      - "trader/**"
 
 permissions:
   contents: write
   issues: write
+  pages: write
+  id-token: write
 
-# Comparte cola con inbox / ingest-csv: un solo escritor a main a la vez,
+# Comparte cola con ingest: un solo escritor a main a la vez,
 # para no disparar deploys de Pages en carrera (HTML viejo pisando al nuevo).
 concurrency:
   group: league-publish
@@ -61,33 +52,74 @@ concurrency:
 jobs:
   ranking:
     runs-on: ubuntu-latest
+    outputs:
+      docs_changed: ${{ steps.docs.outputs.changed || 'false' }}
     steps:
+      # Barato y sin checkout: el hueco DST contrario no instala Python.
+      - name: ¿Ventana de apertura o cierre (America/New_York)?
+        id: gate
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" != "schedule" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "Disparo ${{ github.event_name }}: se corre el ranking."
+            exit 0
+          fi
+          hour=$(TZ=America/New_York date +%-H)
+          minute=$(TZ=America/New_York date +%-M)
+          now=$((hour * 60 + minute))
+          open=$((9 * 60 + 30))
+          close=$((16 * 60))
+          window=25
+          d_open=$((now - open)); if [ "$d_open" -lt 0 ]; then d_open=$((-d_open)); fi
+          d_close=$((now - close)); if [ "$d_close" -lt 0 ]; then d_close=$((-d_close)); fi
+          stamp=$(TZ=America/New_York date +%H:%M)
+          if [ "$d_open" -le "$window" ] || [ "$d_close" -le "$window" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "Dentro de ventana (ahora ${stamp} ET)."
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "Fuera de ventana de apertura/cierre (ahora ${stamp} ET)." \
+                 "Salgo sin ranking."
+          fi
+
       - uses: actions/checkout@v4
+        if: steps.gate.outputs.run == 'true'
 
       # `checkout` se trae el commit que disparó el run (`github.sha`), que NO
       # tiene por qué ser la punta de main: los cron de Actions son «best
       # effort» y un run puede quedarse encolado horas (se han visto 7 h) y
       # arrancar cuando main ya ha avanzado. Calcular con esa foto vieja
       # publicaba un ranking sin las operaciones ingeridas mientras tanto, así
-      # que nos ponemos siempre sobre la última main antes de nada (también
-      # antes de los tests, para probar el mismo árbol que se va a publicar).
+      # que nos ponemos siempre sobre la última main antes de nada.
       - name: Situarse en el último main
+        if: steps.gate.outputs.run == 'true'
         run: |
           git fetch origin main
           git reset --hard origin/main
           echo "Calculando sobre $(git rev-parse --short HEAD)"
+          echo "DOCS_TREE_BEFORE=$(git rev-parse HEAD:docs)" >> "$GITHUB_ENV"
 
       - uses: actions/setup-python@v5
+        if: steps.gate.outputs.run == 'true'
         with:
           python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
 
       - name: Instalar dependencias
+        if: steps.gate.outputs.run == 'true'
         run: pip install -r requirements.txt
 
       - name: Tests
+        if: >
+          steps.gate.outputs.run == 'true'
+          && github.event_name == 'workflow_dispatch'
+          && inputs.run_tests
         run: python -m pytest tests/ -q
 
       - name: Calcular ranking
+        if: steps.gate.outputs.run == 'true'
         env:
           # Frase de paso COMPARTIDA de la liga: con ella se cifran (y se
           # descifran) todos los extractos. Créala UNA sola vez en
@@ -98,6 +130,7 @@ jobs:
         run: python -m trader ranking --refresh
 
       - name: Publicar resultados
+        if: steps.gate.outputs.run == 'true'
         env:
           # Hace falta también aquí: si main avanza mientras calculábamos, este
           # paso vuelve a lanzar el cálculo sobre la versión nueva.
@@ -105,7 +138,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          # Puede coincidir con la ingesta por email, que regenera los mismos
+          # Puede coincidir con la ingesta, que regenera los mismos
           # ficheros derivados y empuja a la vez. Antes se rebasaba con
           # `-X theirs`, imponiendo nuestra versión: si la ingesta había
           # publicado una operación nueva mientras calculábamos, ese rebase
@@ -136,7 +169,7 @@ jobs:
           exit 1
 
       - name: Avisar de extractos sin descifrar
-        if: always()
+        if: always() && steps.gate.outputs.run == 'true'
         uses: actions/github-script@v7
         with:
           script: |
@@ -172,3 +205,39 @@ jobs:
               await github.rest.issues.update({ owner: context.repo.owner, repo: context.repo.repo,
                 issue_number: existing.number, state: "closed" });
             }
+
+      - name: ¿Cambió docs/?
+        id: docs
+        if: success() && steps.gate.outputs.run == 'true'
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          after=$(git rev-parse origin/main:docs)
+          if [ "${DOCS_TREE_BEFORE:-}" != "$after" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "docs/ ha cambiado; se publica Pages."
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "docs/ igual que al empezar; no se redespliega Pages."
+          fi
+
+  pages:
+    needs: ranking
+    if: success() && needs.ranking.outputs.docs_changed == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
