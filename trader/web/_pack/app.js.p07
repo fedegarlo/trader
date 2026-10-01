@@ -1,4 +1,60 @@
-gator.standalone === true;
+    timeZone: "Europe/Madrid", hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+  }).format(new Date(epoch * 1000));
+}
+function paintExtended() {
+  const m = DATA.market, card = document.getElementById("ext-card");
+  const fresh = m && m.asOf && (Date.now() / 1000 - m.asOf) < EXT_MAX_AGE;
+  const rows = (DATA.tickers || []).filter(t =>
+    t.ext && m && t.ext.session === m.session && t.ext.pct != null);
+  if (!fresh || !rows.length) { card.style.display = "none"; return; }
+  card.style.display = "";
+
+  document.getElementById("ext-title").textContent =
+    (m.session === "pre" ? "\\ud83c\\udf05 " : "\\ud83c\\udf19 ") + extLabel(m.session);
+  document.getElementById("ext-when").textContent = T.extAt(fmtClock(m.asOf));
+  // El titular es la variación media de la liga ponderada por el peso de cada
+  // posición; si no se ha podido calcular, la tarjeta se queda en la lista.
+  const val = document.getElementById("ext-val");
+  val.textContent = m.pct == null ? "" : fmtPct(m.pct);
+  val.className = "num " + (m.pct >= 0 ? "pos" : "neg");
+  document.getElementById("ext-sub").textContent =
+    (m.pct == null ? T.extSession : T.extLeague) + " \\u00b7 " +
+    T.extHoldings(rows.length);
+  document.getElementById("ext-note").textContent = T.extNote;
+
+  const box = document.getElementById("ext-list");
+  box.innerHTML = "";
+  const painted = rows.sort((a, b) => b.ext.pct - a.ext.pct).map(t => {
+    const row = h("div", "ext-row clk");
+    row.dataset.ticker = t.ticker;
+    row.appendChild(tickerLogoEl(t, 30));
+    const tk = h("div", "tk");
+    const sym = h("span", "sym"); sym.textContent = t.ticker;
+    const nm = h("span", "nm"); nm.textContent = t.name;
+    tk.appendChild(sym); tk.appendChild(nm);
+    row.appendChild(tk);
+    row.appendChild(h("span", "px", extMoney(t.ext.price, t.ext.currency)));
+    row.appendChild(h("span", "pct " + (t.ext.pct >= 0 ? "pos" : "neg"),
+                      fmtPct(t.ext.pct)));
+    box.appendChild(row);
+    return row;
+  });
+  collapseList(painted, box);
+}
+paintExtended();
+
+// ---- enlaces de noticias: siempre en otra ventana -------------------------
+// Un `target="_blank"` basta en el navegador, pero NO con la web instalada como
+// app (el manifest va en `display: standalone`): ahí el enlace se abre dentro
+// de la propia app, sin barra de direcciones ni botón de atrás, y quien entra a
+// leer una noticia se queda atrapado en ella. Cuando estamos en ese modo la
+// abrimos nosotros con `window.open`, que sí salta al navegador — llamado
+// dentro del propio click, que si no lo bloquea el navegador.
+const STANDALONE = (() => {
+  try {
+    return ["standalone", "fullscreen", "minimal-ui"].some(
+      m => window.matchMedia("(display-mode: " + m + ")").matches)
+      || window.navigator.standalone === true;
   } catch (e) { return false; }
 })();
 function externalLink(href) {
@@ -151,66 +207,3 @@ function paintChat() {
       btn.type = "button";
       btn.className = "agent-pill";
       btn.setAttribute("role", "listitem");
-      const blob = document.createElement("span");
-      blob.className = "blob " + kind + (kind === "player" ? "" : " lg");
-      blob.setAttribute("aria-hidden", "true");
-      if (kind === "player" && color) blob.style.backgroundColor = color;
-      btn.appendChild(blob);
-      const an = document.createElement("span"); an.className = "an"; an.textContent = name;
-      btn.appendChild(an);
-      if (role) {
-        const ar = document.createElement("span"); ar.className = "ar"; ar.textContent = role;
-        btn.appendChild(ar);
-      }
-      btn.addEventListener("click", () => {
-        const t = document.querySelector('.turn[data-agent="' + agent + '"]');
-        if (t) t.scrollIntoView({behavior: "smooth", block: "start"});
-      });
-      strip.appendChild(btn);
-    };
-    add("warren", T.agentWarren, T.agentWarrenRole, null, "warren");
-    add("scout", T.agentScout, T.agentScoutRole, null, "scout");
-    (DATA.players || []).forEach(p => add("player", p.name, "", colorOf(p), "warren"));
-  }
-  const say = (id, value) => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = value || "";
-  };
-  const leader = ranked[0];
-  if (leader) say("say-standings", T.chatStandings(leader.name, fmtPct(lastOf(leader).cum)));
-  else say("say-standings", T.noPlayersDot);
-  const best = DATA.players.length ? [...DATA.players].sort((a, b) =>
-    (lastOf(b).day - lastOf(a).day) || (lastOf(b).cum - lastOf(a).cum))[0] : null;
-  if (best) say("say-day", T.chatDay(best.name, fmtPct(lastOf(best).day)));
-  const m = DATA.monthly || {};
-  if (m.current) {
-    say("say-month", T.chatMonth(m.current.name, fmtPct(m.current.value),
-      monthLabel(m.current.month, m.current.month_year)));
-  } else if (m.previous) {
-    say("say-month", T.chatMonthPrev(m.previous.name, fmtPct(m.previous.value),
-      monthLabel(m.previous.month, m.previous.month_year)));
-  }
-  say("say-ops", T.chatOps);
-  say("say-news", T.chatNews);
-  say("say-ext", T.chatExt);
-  say("say-insights", T.chatInsights);
-  say("say-daily", T.chatDaily);
-  say("say-alloc", T.chatAlloc);
-  say("say-wallets", T.chatWallets);
-  say("say-monthly", T.chatMonthlyDetail);
-  say("say-goal", T.chatGoal);
-  say("say-badges", T.chatBadges);
-  say("say-pending", T.chatPending);
-  syncTurns();
-}
-paintChat();
-// Botones «Comprar»/«Vender» que abren la app de Revolut en el detalle del
-// valor. Ambos llevan al mismo detalle; desde ahí se elige comprar o vender.
-function revolutRow(sym) {
-  const href = "https://revolut.com/app/trading/stocks/" + encodeURIComponent(sym);
-  const box = h("div", "revolut");
-  [[T.buy, "buy", "▲"], [T.sell, "sell", "▼"]].forEach(([label, cls, ico]) => {
-    const a = document.createElement("a");
-    a.href = href;
-    a.className = "rev-btn " + cls;
-    a.innerHTML = '<span class="ic">' + ico + "</span>" + label

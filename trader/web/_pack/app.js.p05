@@ -1,4 +1,54 @@
-.pulse(who(leader), who(second)));
+// pintan tres y van rotando, para que la lectura parezca un análisis vivo.
+function computeInsights() {
+  const ps = DATA.players.filter(p => p.days && p.days.length);
+  if (!ps.length) return [];
+  const lastp = p => p.days[p.days.length - 1];
+  const ranked = [...ps].sort((a, b) => lastp(b).cum - lastp(a).cum);
+  const byDay = [...ps].sort((a, b) => lastp(b).day - lastp(a).day);
+  const n = ps.length;
+  const leader = ranked[0], second = ranked[1], tail = ranked[n - 1];
+  const bestDay = byDay[0], worstDay = byDay[n - 1];
+  const who = p => '<b style="color:' + colorOf(p) + '">' + p.name + '</b>';
+  const pts = v => T.points(v);
+  const I = T.ins;
+  const streak = (p, positive) => { let c = 0; for (let i = p.days.length - 1; i >= 0; i--) {
+    const d = p.days[i].day; if (positive ? d > 0 : d < 0) c++; else break; } return c; };
+  const greenCount = (p, k) => p.days.slice(-k).filter(d => d.day > 0).length;
+  // avance desde el inicio de la liga (la serie ya no se recorta a 30 días)
+  const totalDelta = p => lastp(p).cum - p.days[0].cum;
+  const range = p => { const c = p.days.map(d => d.cum); return Math.max(...c) - Math.min(...c); };
+  const recovered = p => p.days.length >= 2 &&
+    lastp(p).day > 0 && p.days[p.days.length - 2].day < 0;
+  const allNeg = ps.every(p => lastp(p).day < 0);
+  const allPos = ps.every(p => lastp(p).day > 0);
+
+  const out = [];
+  const add = (prio, icon, html) => out.push({ prio, icon, html });
+
+  // ---- líder y cabeza de la tabla ----
+  if (n >= 2) {
+    const g = lastp(leader).cum - lastp(second).cum;
+    if (g > 0.05)
+      add(9.5, "🔥", I.leaderFire(who(leader), pts(g), who(second)));
+    if (g > 3)
+      add(6.7, "🧱", I.leaderPullAway(who(leader)));
+  }
+  add(6.0, lastp(leader).cum >= 0 ? "👑" : "🏳️",
+    I.leaderLeads(who(leader), fmtPct(lastp(leader).cum)));
+  add(4.6, "🧭", I.leaderHelm(who(leader)));
+  if (lastp(leader).day > 0)
+    add(6.9, "🛰️", I.leaderUnstoppable(who(leader), fmtPct(lastp(leader).day)));
+  if (leader === bestDay && lastp(leader).day > 0)
+    add(8.5, "🚀", I.leaderPerfect(who(leader), fmtPct(lastp(leader).day)));
+  { const s = streak(leader, true); if (s >= 2)
+    add(7.0, "📈", I.leaderGreenStreak(who(leader), s)); }
+  if (n >= 2) {
+    const g = lastp(leader).cum - lastp(tail).cum;
+    if (g > 5)
+      add(6.5, "🏁", I.raceFinish(who(leader), pts(g), who(tail)));
+    add(4.8, "📐", I.overallGap(who(leader), who(tail), pts(g)));
+    add(4.4, "🛡️", I.leaderDefends(who(leader), who(tail)));
+    add(4.2, "🎙️", I.pulse(who(leader), who(second)));
   }
 
   // ---- movimientos del día ----
@@ -134,60 +184,3 @@ window.addEventListener("resize", () => {
     });
     const trs = (p.months || []).map(mo => {
       const tr = t.insertRow();
-      const cells = [monthLabel(mo.month, mo.month_year), fmtPct(mo.ret), fmtPct(mo.cum)];
-      cells.forEach((c, i) => {
-        const td = tr.insertCell(); td.textContent = c;
-        const isPct = i >= cells.length - 2;
-        if (isPct) td.className = c.startsWith("+") ? "pos" : (c.startsWith("-") ? "neg" : "");
-      });
-      return tr;
-    });
-    over.appendChild(t); det.appendChild(over); box.appendChild(det);
-    collapseList(trs, det);
-  });
-  if (!ranked.length) box.textContent = T.noPlayersDot;
-}
-
-// ==== vistas de detalle: ticker y jugador ==============================
-// Overlay que se rellena en cliente desde los datos ya embebidos. Los logos se
-// piden a logo.dev por dominio con respaldo a un monograma de color (si el
-// servicio no responde), y las noticias son enlaces de búsqueda por símbolo:
-// la página sigue siendo estática y no expone importes ni operaciones.
-const modal = document.getElementById("modal");
-const modalBody = document.getElementById("modal-body");
-const sheet = document.getElementById("sheet");
-const h = (tag, cls, html) => { const e = document.createElement(tag);
-  if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
-
-function monoEl(text, size, bg) {
-  const m = document.createElement("span");
-  m.className = "mono";
-  m.style.width = m.style.height = size + "px";
-  m.style.fontSize = Math.round(size * 0.4) + "px";
-  m.style.background = bg;
-  m.textContent = (text || "?").slice(0, 2).toUpperCase();
-  return m;
-}
-// Token publicable de logo.dev (pensado para el frontend; puede ir en el HTML).
-const LOGO_TOKEN = "pk_cgMPtdfzT5GGEORKN4rMDA";
-// Logo de empresa (por ticker) con respaldo a monograma si la imagen falla.
-function tickerLogoEl(t, size) {
-  const bg = badgeColor(t.ticker);
-  if (!t.ticker) return monoEl(t.ticker, size, bg);
-  const img = document.createElement("img");
-  img.className = "logo"; img.width = img.height = size; img.alt = "";
-  img.loading = "lazy"; img.referrerPolicy = "no-referrer";
-  img.src = "https://img.logo.dev/ticker/" + encodeURIComponent(t.ticker) +
-    "?token=" + LOGO_TOKEN + "&size=" + size + "&retina=true&format=png";
-  img.onerror = () => img.replaceWith(monoEl(t.ticker, size, bg));
-  return img;
-}
-
-// ---- últimas operaciones de la liga (fecha · compra/venta · ticker · jugador) ----
-// Va aquí, tras definir ``h`` y ``tickerLogoEl``, porque los usa al pintar. No
-// expone importes: solo qué se compró/vendió, de qué valor y qué día. El ticker
-// abre su ficha y el jugador la suya (si son abribles).
-function paintOperations() {
-  const ops = DATA.operations || [];
-  const card = document.getElementById("ops-card");
-  if (!ops.length) {

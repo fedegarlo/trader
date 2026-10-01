@@ -1,4 +1,14 @@
-losed-tag { flex: none; font-size: 11px; font-weight: 800; letter-spacing: 0.03em;
+           transition: color .12s ease, border-color .12s ease; }
+  .whelp:hover { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, var(--hair)); }
+  .whelp:active { transform: translateY(1px); }
+  #month-prev-card .wlabel { padding-right: 34px; }
+  .wlabel { color: var(--ink-2); font-size: 14px; font-weight: 600; }
+  .wbig { font-size: clamp(26px, 8vw, 34px); font-weight: 800; letter-spacing: -0.035em; line-height: 1.1; margin-top: 3px; display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; }
+  .wbig.sm { font-size: clamp(22px, 6.6vw, 28px); white-space: nowrap; }
+  .num { font-variant-numeric: tabular-nums; }
+  /* «mercado cerrado»: etiqueta junto al ganador de la última jornada, para
+     que se vea que el dato es de la sesión ya cerrada y no de hoy. */
+  .closed-tag { flex: none; font-size: 11px; font-weight: 800; letter-spacing: 0.03em;
                 text-transform: uppercase; padding: 3px 9px; border-radius: 999px;
                 background: var(--surface-2); border: 1px solid var(--hair);
                 color: var(--ink-2); }
@@ -50,7 +60,8 @@ losed-tag { flex: none; font-size: 11px; font-weight: 800; letter-spacing: 0.03e
   .mlegend .mtrophy { margin-right: 5px; }
 
   /* insignias (badges): récord destacado de la liga + rejilla de logros. */
-  .card.record { padding-bottom: 18px; }
+  .card.record { padding-bottom: 18px; background: var(--chip); border: none;
+                 box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
   .record .record-tk { font-size: 16px; font-weight: 700; color: var(--ink-2); margin-left: 8px; }
   #record-date { color: var(--muted); font-weight: 600; font-size: 13px; margin-left: 8px; }
   /* carrusel: cada logro es su propia tarjeta y se pasan deslizando en
@@ -86,7 +97,9 @@ losed-tag { flex: none; font-size: 11px; font-weight: 800; letter-spacing: 0.03e
   .badge-nav .count { font-size: 12px; font-weight: 700; color: var(--muted);
                       font-variant-numeric: tabular-nums; }
   .badge.prov { border-style: dashed; opacity: 0.9; }
-  .badge .bico { font-size: 26px; line-height: 1; flex: 0 0 auto; }
+  .badge .bico, .mbadge-chip .i { flex: 0 0 auto; display: block; }
+  .badge .bico { width: 40px; height: 40px; }
+  .bico svg, .mbadge-chip .i svg { display: block; width: 100%; height: 100%; }
   .badge .btext { min-width: 0; }
   .badge .btitle { font-weight: 800; font-size: 14px; letter-spacing: -0.02em; color: var(--ink); line-height: 1.2; }
   .badge .bwho { display: flex; align-items: center; gap: 5px; margin-top: 4px;
@@ -97,11 +110,11 @@ losed-tag { flex: none; font-size: 11px; font-weight: 800; letter-spacing: 0.03e
   /* insignias compactas dentro de la ficha del jugador */
   .mbadges { display: flex; flex-wrap: wrap; gap: 8px; }
   .mbadge-chip { display: inline-flex; align-items: center; gap: 7px;
-                 background: var(--surface-2); border: 1px solid var(--hair);
-                 padding: 6px 12px 6px 8px; border-radius: 999px;
+                 background: var(--chip); border: 1px solid transparent;
+                 padding: 5px 12px 5px 6px; border-radius: 999px;
                  font-weight: 700; font-size: 13px; color: var(--ink); }
-  .mbadge-chip.prov { border-style: dashed; }
-  .mbadge-chip .i { font-size: 17px; line-height: 1; }
+  .mbadge-chip.prov { border: 1px dashed var(--hair); }
+  .mbadge-chip .i { width: 24px; height: 24px; }
 
   /* cabecera de un Gran Premio: banner a sangre en lo alto de su tarjeta que
      presenta la carrera y enlaza a la web oficial del destino en el idioma
@@ -118,22 +131,3 @@ losed-tag { flex: none; font-size: 11px; font-weight: 800; letter-spacing: 0.03e
   .gpban .ctext { flex: 1 1 0; min-width: 0; }
   .gpban .ckicker { display: block; font-size: 10.5px; font-weight: 800;
                     letter-spacing: 0.12em; text-transform: uppercase;
-                    line-height: 1.2; color: rgba(255,255,255,0.82); }
-  .gpban .cmain { display: block; margin-top: 2px; font-size: 16px; font-weight: 800;
-                  letter-spacing: 0.01em; line-height: 1.2; }
-  .gpban .csub { display: block; margin-top: 2px; font-size: 13px;
-                 font-weight: 500; line-height: 1.3; color: rgba(255,255,255,0.90); }
-  .gpban .carrow { flex: none; font-size: 20px; font-weight: 800; opacity: 0.85; }
-  /* Canadá (la general): el rojo de la bandera, que es el de la marca. */
-  .ca-banner { background: linear-gradient(135deg, #e8112d, #c00d24); }
-  /* Vancouver (el mes en curso): el azul del Pacífico y el verde del bosque,
-     los colores con los que se presenta la ciudad. */
-  .vc-banner { background: linear-gradient(135deg, #0a6ea8, #12876f); }
-
-  /* Gran Premio de Canadá: quién va ganando la general —y con ella el viaje—
-     antes de la parrilla completa. El líder va tintado con su propio color
-     (``--lead``, el mismo de su fila) y el resto del podio va en fichas; los
-     tres abren su ficha de jugador. */
-  #hero-card { padding-top: 0; overflow: hidden; }
-  .gp { padding-top: 16px; }
-  .gp-lead { display: flex; align-items: center; gap: 8px 12p

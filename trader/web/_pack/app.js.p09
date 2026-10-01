@@ -1,4 +1,81 @@
-e de ticker ----
+  title.appendChild(h("div", "t1", c.title));
+  title.appendChild(h("div", "t2", c.subtitle));
+  head.appendChild(title);
+  root.appendChild(head);
+
+  // preguntas y respuestas (la venta, mantener la rentabilidad, los flujos…)
+  c.qa.forEach(([q, a]) => {
+    root.appendChild(sectionEl(q, h("div", "mtext", a)));
+  });
+
+  // fórmulas: rentabilidad diaria (Dietz simple) y acumulada (geométrica)
+  const fsec = h("div", "msec");
+  fsec.appendChild(h("div", "h", c.formulaLabel));
+  const f1 = h("div", "formula");
+  f1.appendChild(h("span", "lbl", c.dailyLbl));
+  f1.appendChild(document.createTextNode(c.dailyFormula));
+  fsec.appendChild(f1);
+  const f2 = h("div", "formula");
+  f2.appendChild(h("span", "lbl", c.cumLbl));
+  f2.appendChild(document.createTextNode(c.cumFormula));
+  fsec.appendChild(f2);
+  root.appendChild(fsec);
+
+  root.appendChild(h("div", "mnote", c.note));
+  showModal(root);
+}
+const heroHelp = document.getElementById("hero-help");
+if (heroHelp) heroHelp.addEventListener("click", openLeaderHelp);
+
+// ---- la escala del restaurante (interrogante de los widgets del mes) ----
+// El widget solo canta la categoría; aquí está el baremo entero: qué
+// rentabilidad mensual da derecho a qué clase de sitio, con un precio
+// orientativo por persona y unos restaurantes de Madrid como vara de medir. La
+// fila del peldaño en el que está ese mes va resaltada.
+function openTreatHelp(info) {
+  const root = document.createElement("div");
+
+  const head = h("div", "mhead");
+  const title = h("div", "mtitle");
+  title.appendChild(h("div", "t1", T.treatTitle));
+  title.appendChild(h("div", "t2", T.treatSubtitle));
+  head.appendChild(title);
+  root.appendChild(head);
+
+  root.appendChild(h("div", "mtext", T.treatIntro));
+
+  const table = document.createElement("table");
+  table.className = "scale";
+  const cols = table.insertRow();
+  T.treatCols.forEach((c, i) => {
+    const th = document.createElement("th");
+    if (i === 1) th.className = "where";
+    th.textContent = c;
+    cols.appendChild(th);
+  });
+  TREAT_SCALE.forEach((step, i) => {
+    const tr = table.insertRow();
+    if (info && info.treat === i) tr.className = "on";
+    const rng = tr.insertCell();
+    rng.className = "rng"; rng.textContent = treatRange(i);
+    const where = tr.insertCell();
+    where.className = "where";
+    where.appendChild(h("span", "eur", step.euros));
+    where.appendChild(document.createTextNode(T.treatTiers[i]));
+    // los restaurantes son el ejemplo de a qué precio juega el peldaño
+    where.appendChild(h("span", "ex", (step.places || []).join(" · ")));
+    const price = tr.insertCell();
+    price.className = "price";
+    price.textContent = i === TREAT_SCALE.length - 1
+      ? T.treatPlus(treatMoney(step.price)) : treatMoney(step.price);
+  });
+  root.appendChild(sectionEl(T.treatScaleLbl, table));
+
+  root.appendChild(h("div", "mnote", T.treatNote));
+  showModal(root);
+}
+
+// ---- detalle de ticker ----
 function openTicker(sym) {
   const t = TICKERS[sym];
   if (!t) return;
@@ -126,7 +203,7 @@ function openPlayer(pid) {
     const wrap = h("div", "mbadges");
     myBadges.forEach(b => {
       const chip = h("div", "mbadge-chip" + (b.provisional ? " prov" : ""));
-      chip.appendChild(h("span", "i", badgeIcon(b)));
+      const ic = h("span", "i"); ic.innerHTML = badgeBlob(b); chip.appendChild(ic);
       chip.appendChild(h("span", "t", badgeTitle(b)));
       wrap.appendChild(chip);
     });
@@ -146,79 +223,3 @@ function openPlayer(pid) {
       const meta = TICKERS[hh.ticker] || {ticker: hh.ticker, domain: "", name: hh.ticker};
       const chip = h("div", "chip-tk" + (TICKERS[hh.ticker] ? " clk" : ""));
       if (TICKERS[hh.ticker]) chip.dataset.ticker = hh.ticker;
-      chip.appendChild(tickerLogoEl(meta, 22));
-      chip.appendChild(document.createTextNode(hh.ticker));
-      chip.appendChild(h("span", "w", fmtW(hh.w)));
-      chips.appendChild(chip);
-    });
-    root.appendChild(sectionEl(T.portfolioCount(p.holdings.length), chips));
-  }
-
-  const recent = days.slice(-6).reverse();
-  if (recent.length) {
-    const list = document.createElement("div");
-    recent.forEach(d => {
-      const row = h("div", "mini-row");
-      row.appendChild(h("span", "dt", fmtDate(d.date)));
-      row.appendChild(h("span", "v " + (d.day >= 0 ? "pos" : "neg"), fmtPct(d.day)));
-      list.appendChild(row);
-    });
-    root.appendChild(sectionEl(T.recentSessions, list));
-  }
-
-  if (p.holdings && p.holdings.length) {
-    // Los titulares de toda su cartera, no solo los de su primera posición.
-    const syms = p.holdings.map(hh => hh.ticker);
-    root.appendChild(newsSectionEl(T.portfolioNews, newsFor(syms, 6), syms[0]));
-  }
-  showModal(root);
-}
-
-// ---- detalle de una jornada (campeón del día) ----
-// Índice fecha -> { id de jugador -> su jornada }, para reunir en un vistazo la
-// rentabilidad de cada jugador ese día sin recorrer todo el dataset al abrir.
-const DAY_INDEX = {};
-DATA.players.forEach(p => (p.days || []).forEach(d => {
-  (DAY_INDEX[d.date] || (DAY_INDEX[d.date] = {}))[p.id] = d;
-}));
-
-// Muestra la rentabilidad de cada valor del jugador esa jornada (los % suman el
-// «% del día») y, debajo, el % del día del resto de jugadores. ``pid`` es el
-// jugador protagonista (el campeón del día); si falta o no tiene datos ese
-// día, se toma el mejor de la jornada.
-function openDayDetail(pid, iso) {
-  const perPlayer = DAY_INDEX[iso] || {};
-  let subject = PLAYERS[pid];
-  if (!subject || !perPlayer[pid]) {
-    let bestId = null, bestVal = -Infinity;
-    Object.keys(perPlayer).forEach(id => {
-      if (perPlayer[id].day > bestVal) { bestVal = perPlayer[id].day; bestId = id; }
-    });
-    subject = PLAYERS[bestId]; pid = bestId;
-  }
-  if (!subject) return;
-  const sd = perPlayer[pid] || {day: 0, bd: []};
-  const root = document.createElement("div");
-
-  const head = h("div", "mhead");
-  head.appendChild(monoEl(subject.name, 46, colorOf(subject)));
-  const title = h("div", "mtitle");
-  const t1 = h("div", "t1");
-  t1.appendChild(document.createTextNode(fmtDate(iso)));
-  t1.appendChild(h("span", "mbadge" + (sd.day >= 0 ? "" : " neg"), fmtPct(sd.day)));
-  title.appendChild(t1);
-  title.appendChild(h("div", "t2", subject.name));
-  head.appendChild(title);
-  root.appendChild(head);
-
-  // rentabilidad por valor: cada porción suma el % del día
-  const bd = sd.bd || [];
-  if (bd.length) {
-    const list = document.createElement("div");
-    const rows = bd.map(x => {
-      const row = h("div", "holder-row");
-      if (x.ticker && TICKERS[x.ticker]) { row.classList.add("clk"); row.dataset.ticker = x.ticker; }
-      const nm = h("span", "nm");
-      if (x.ticker) {
-        nm.appendChild(tickerLogoEl({ticker: x.ticker}, 26));
-        nm.

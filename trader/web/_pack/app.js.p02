@@ -1,4 +1,8 @@
-nt = TREAT_SCALE[tier].euros;
+  const b = document.createElement("button");
+  b.type = "button";
+  b.className = "tchip";
+  const eur = document.createElement("span");
+  eur.className = "eur"; eur.textContent = TREAT_SCALE[tier].euros;
   b.appendChild(eur);
   b.appendChild(document.createTextNode(T.treatTiers[tier]));
   b.setAttribute("aria-label", T.treatHelpAria);
@@ -179,9 +183,3 @@ function paintMonthly() {
     // peldaño resaltado), así que se recuelga en cada repintado
     const help = document.getElementById(key + "-help");
     if (help) help.onclick = info ? () => openTreatHelp(info) : null;
-    if (!info) { card.style.display = "none"; return false; }
-    card.style.display = "";
-    document.getElementById(key + "-label").textContent =
-      T.winnerOf(monthLabel(info.month, info.month_year));
-    const val = document.getElementById(key + "-val");
-    val.textCont
