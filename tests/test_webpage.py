@@ -1,13 +1,44 @@
-"""La página embebe la serie completa de cada jugador (la liga es desde el inicio)."""
+"""La web: su API (``docs/api/league.json``) y la página estática que la lee.
 
+La página ya no se genera: ``docs/index.html`` y ``docs/assets/`` son
+ficheros fijos y el recálculo solo escribe el JSON. Los tests del payload
+miran ``build_payload``; los de la interfaz leen esos ficheros estáticos.
+"""
+
+import json
 import os
 import re
 from datetime import date, datetime, timedelta, timezone
+from pathlib import Path
 
 from trader import webpage
 from trader.players import Player
 from trader.portfolio import DayResult
 from trader.revolut import BUY, FEE, SELL, TOPUP, Event
+
+
+DOCS = Path(__file__).resolve().parent.parent / "docs"
+
+
+def _front(name: str) -> str:
+    return (DOCS / name).read_text(encoding="utf-8")
+
+
+HTML = _front("index.html")
+CSS = _front("assets/app.css")
+I18N_JS = _front("assets/i18n.js")
+APP = _front("assets/app.js")
+
+
+def _fn(name: str) -> str:
+    """Cuerpo de la función ``name`` de app.js (hasta la siguiente de primer nivel)."""
+    return APP.split("function " + name + "(", 1)[1].split("\nfunction ", 1)[0]
+
+
+def _api(tmp_path, computed, **kw) -> dict:
+    out = webpage.write_api(computed, out_path=str(tmp_path / "api" / "league.json"), **kw)
+    with open(out, encoding="utf-8") as fh:
+        return json.load(fh)
 
 
 def _series(n_days: int) -> list[DayResult]:
@@ -57,7 +88,7 @@ def test_custom_window():
     assert len(payload["players"][0]["days"]) == 7
 
 
-def test_badges_flow_into_payload_and_html(tmp_path):
+def test_badges_flow_into_payload_and_api(tmp_path):
     from trader import badges
     player = Player(player_id="fede", display_name="Fede")
     series = _series(6)  # 6 jornadas al +1 %: una semana en verde y +5 %
@@ -68,12 +99,11 @@ def test_badges_flow_into_payload_and_html(tmp_path):
     types = {a["type"] for a in payload["badges"]["awards"]}
     assert "week_streak" in types and "milestone" in types
 
-    out = tmp_path / "index.html"
-    webpage.write_index(computed, out_path=str(out), badges=display)
-    html = out.read_text(encoding="utf-8")
-    assert "badges-card" in html and "paintBadges" in html
+    api = _api(tmp_path, computed, badges=display)
+    assert {a["type"] for a in api["badges"]["awards"]} == types
+    assert "function badgesCard()" in APP
     # También en la ficha del jugador: índice por jugador + render de chips.
-    assert "PLAYER_BADGES" in html and "mbadge-chip" in html
+    assert "PLAYER_BADGES" in APP and "mbadge-chip" in APP
 
 
 def _july(pid, name, rows):
@@ -363,23 +393,16 @@ def test_monthly_previous_month_when_data():
     assert payload["monthly"]["previous"]["value"] == 3.0
 
 
-def test_previous_month_widget_is_a_headline_with_a_second_level(tmp_path):
+def test_previous_month_widget_is_a_headline_with_a_second_level():
     """El mes pasado se queda en titular: su gráfica va tras «ver más»."""
-    fede = Player(player_id="fede", display_name="Fede")
-    series = [_day(date(2026, 7, 20), 0.03), _day(date(2026, 8, 3), 0.02)]
-    out = tmp_path / "index.html"
-    webpage.write_index([(fede, series)], out_path=str(out), today=date(2026, 8, 5))
-    html = out.read_text(encoding="utf-8")
-
     # el widget sigue, pero sin gráfica ni leyenda dentro de la tarjeta
-    assert 'id="month-prev-card"' in html
-    assert 'id="month-prev-chart"' not in html
-    assert 'id="month-prev-legend"' not in html
+    assert "chartHost(" not in _fn("monthPrevCard")
+    assert "monthLegend(" not in _fn("monthPrevCard")
     # la del mes en curso, que es la carrera viva, se queda donde estaba
-    assert 'id="month-cur-chart"' in html
-    # y el detalle del mes pasado se abre desde el botón «ver más»
-    assert 'id="month-prev-more"' in html
-    assert "function openMonthDetail(info)" in html
+    assert "chartHost(info)" in _fn("monthCurCard")
+    # y el detalle del mes pasado se abre desde su «ver más»
+    assert "pill(T.monthSeeMore, () => openMonthDetail(m.previous), true)" in APP
+    assert "function openMonthDetail(info)" in APP
 
 
 def test_treat_tier_climbs_with_the_month():
@@ -431,32 +454,25 @@ def test_restaurant_scale_reaches_the_page(tmp_path):
     """Los dos widgets del mes enseñan la categoría y abren la escala."""
     fede = Player(player_id="fede", display_name="Fede")
     series = [_day(date(2026, 7, 20), 0.03), _day(date(2026, 8, 3), 0.02)]
-    out = tmp_path / "index.html"
-    webpage.write_index([(fede, series)], out_path=str(out), today=date(2026, 8, 5))
-    html = out.read_text(encoding="utf-8")
+    api = _api(tmp_path, [(fede, series)], today=date(2026, 8, 5))
 
     # la categoría se canta en el mes en curso y en el ganador del mes pasado
-    assert 'id="month-cur-note"' in html
-    assert 'id="month-prev-note"' in html
+    assert "treatNote(info, true)" in _fn("monthCurCard")
+    assert "treatNote(info, false)" in _fn("monthPrevCard")
     # …y cada tarjeta tiene su interrogación, como la de la clasificación
-    assert 'id="month-cur-help"' in html
-    assert 'id="month-prev-help"' in html
-    assert "function openTreatHelp(info)" in html
+    for fn in ("monthCurCard", "monthPrevCard"):
+        assert "qbtn(T.treatHelpAria, () => openTreatHelp(info))" in _fn(fn), fn
+    assert "function openTreatHelp(info)" in APP
     # la leyenda es una tabla con la escala y sus restaurantes de Madrid
-    assert '"treatScale"' in html
-    assert "DiverXO" in html and "Casa Lucio" in html
+    places = [p for step in api["treatScale"] for p in step["places"]]
+    assert "DiverXO" in places and "Casa Lucio" in places
 
 
-def test_goal_and_badges_close_the_page(tmp_path):
-    """Objetivo e insignias van al final, detrás del detalle diario."""
-    fede = Player(player_id="fede", display_name="Fede")
-    out = tmp_path / "index.html"
-    webpage.write_index([(fede, _series(6))], out_path=str(out))
-    html = out.read_text(encoding="utf-8")
-
-    last_module = html.index('id="wallets-card"')
-    assert last_module < html.index('id="goal-card"') < html.index('id="badges-card"')
-    assert html.index('id="badges-card"') < html.index("</main>")
+def test_goal_and_badges_close_the_page():
+    """Objetivo e insignias van al final del hilo, detrás de las carteras."""
+    body = _fn("render")
+    assert body.index('exchange("portfolio"') < body.index('exchange("goal"') \
+        < body.index('exchange("badges"') < body.index("T.routineName")
 
 
 def test_monthly_none_when_no_competition_data():
@@ -549,10 +565,9 @@ def test_ticker_details_attach_analyst_consensus():
 
 
 def test_revolut_buttons_use_same_tab_universal_link():
-    assert 'https://revolut.com/app/trading/stocks/" + encodeURIComponent(sym)' in webpage._TEMPLATE
-    snippet = webpage._TEMPLATE.split("function revolutRow(sym)", 1)[1].split(
-        "function sectionEl", 1)[0]
-    assert 'a.target = "_blank"' not in snippet
+    snippet = _fn("revolutRow")
+    assert 'https://revolut.com/app/trading/stocks/" + encodeURIComponent(sym)' in snippet
+    assert "_blank" not in snippet and "externalLink" not in snippet
 
 
 def test_ticker_details_carry_the_news_of_their_ticker():
@@ -574,30 +589,24 @@ def test_ticker_details_no_news_key_without_data():
     assert "news" not in payload["tickers"][0]
 
 
-def test_news_travel_to_the_html(tmp_path):
+def test_news_travel_to_the_api(tmp_path):
     player = Player(player_id="fede", display_name="Fede")
-    out = webpage.write_index(
-        [(player, _series(5))], out_path=str(tmp_path / "index.html"),
-        allocation={"AAPL": 100.0},
-        news={"AAPL": [{"title": "Apple presenta resultados",
-                        "link": "https://finance.yahoo.com/news/a"}]})
-    html = open(out, encoding="utf-8").read()
-    assert "Apple presenta resultados" in html
+    api = _api(tmp_path, [(player, _series(5))], allocation={"AAPL": 100.0},
+               news={"AAPL": [{"title": "Apple presenta resultados",
+                               "link": "https://finance.yahoo.com/news/a"}]})
+    assert api["tickers"][0]["news"][0]["title"] == "Apple presenta resultados"
 
 
 def test_player_news_gather_the_whole_portfolio():
     """La ficha del jugador reúne los titulares de todas sus posiciones."""
-    snippet = webpage._TEMPLATE.split("function newsFor(", 1)[1].split(
-        "function newsSectionEl", 1)[0]
-    assert "TICKERS[sym] || {}).news" in snippet
-    assert "newsFor(syms, 6)" in webpage._TEMPLATE
+    assert "TICKERS[sym] || {}).news" in _fn("newsFor")
+    assert "newsFor(syms, 6)" in _fn("openPlayer")
 
 
 def test_news_of_several_tickers_are_dealt_in_rounds():
     """Una cola por valor y una ronda cada vez: sin esto las primeras filas se
     llenaban con la empresa que más hubiera publicado ese día."""
-    snippet = webpage._TEMPLATE.split("function newsFor(", 1)[1].split(
-        "function newsSectionEl", 1)[0]
+    snippet = _fn("newsFor")
     # una cola por valor, y de cada ronda sale un titular de cada una
     assert "queues.push(queue)" in snippet
     assert "queues.forEach(q => out.push(q.shift()))" in snippet
@@ -609,65 +618,54 @@ def test_news_of_several_tickers_are_dealt_in_rounds():
 
 def test_news_titles_are_never_injected_as_html():
     """Los textos vienen de una API de terceros: solo textContent, nunca innerHTML."""
-    snippet = webpage._TEMPLATE.split("function newsListEl(items)", 1)[1].split(
-        "function newsFor(", 1)[0]
+    snippet = _fn("newsRowEl")
     assert "innerHTML" not in snippet
-    assert "title.textContent = n.title" in snippet
+    assert 'txt("div", "nw-t", n.title)' in snippet
+    # ``txt`` es el ayudante de texto: textContent, no HTML
+    assert "if (text != null) e.textContent = text;" in APP
 
 
 def test_home_has_a_news_card_fed_by_every_ticker():
     """El módulo de portada mezcla los titulares de todos los valores."""
-    assert 'id="news-card"' in webpage._TEMPLATE
-    assert "paintNews();" in webpage._TEMPLATE
-    snippet = webpage._TEMPLATE.split("function paintNews()", 1)[1].split(
-        "paintNews();", 1)[0]
-    assert "(DATA.tickers || []).map(t => t.ticker)" in snippet
-    assert "newsFor(syms, NEWS_HOME_MAX)" in snippet
-    assert "collapseList(rows, box)" in snippet  # 5 filas y el resto tras «ver más»
+    assert "newsFor((DATA.tickers || []).map(t => t.ticker), NEWS_HOME_MAX)" in APP
+    assert "collapseList(rows, list)" in _fn("newsCard")  # 5 y el resto tras «ver más»
+    assert 'exchange("news", "scout", T.qNews' in _fn("render")
 
 
 def test_home_news_card_hides_itself_without_news():
-    snippet = webpage._TEMPLATE.split("function paintNews()", 1)[1].split(
-        "paintNews();", 1)[0]
-    assert 'if (!items.length) { card.style.display = "none"; return; }' in snippet
+    assert "if (!items.length) return null;" in _fn("newsCard")
 
 
 def test_home_news_card_is_translated_in_every_language():
-    for key in ("leagueNews", "newsCount", "newsTickers", "newsNote"):
-        assert webpage._TEMPLATE.count(key + ":") == 3, key
+    for key in ("leagueNews", "newsCount", "newsTickers", "newsNote", "qNews", "chatNews"):
+        assert I18N_JS.count("    " + key + ":") == 3, key
 
 
 def test_home_news_rows_open_the_article_in_another_window():
-    snippet = webpage._TEMPLATE.split("function paintNews()", 1)[1].split(
-        "paintNews();", 1)[0]
-    assert "externalLink(n.link)" in snippet
-    assert "innerHTML" not in snippet.replace("box.innerHTML = \"\";", "")
+    assert "externalLink(n.link)" in _fn("newsRowEl")
 
 
 def test_every_news_link_goes_through_external_link():
     """Titulares y enlaces de búsqueda: todos salen a otra ventana."""
-    for fn in ("function newsRow(sym)", "function newsListEl(items)"):
-        snippet = webpage._TEMPLATE.split(fn, 1)[1].split("\nfunction ", 1)[0]
+    for fn in ("newsRowEl", "newsLinksEl"):
+        snippet = _fn(fn)
         assert "externalLink(" in snippet
         assert 'target = "_blank"' not in snippet  # lo pone externalLink
 
 
 def test_external_links_escape_the_installed_app():
     """Instalada como app (standalone) un _blank se abre dentro: window.open."""
-    snippet = webpage._TEMPLATE.split("function externalLink(href)", 1)[1].split(
-        "function newsRow(", 1)[0]
+    snippet = _fn("externalLink")
     assert 'a.target = "_blank"; a.rel = "noopener noreferrer"' in snippet
     assert "ev.preventDefault()" in snippet
     assert 'window.open(href, "_blank", "noopener,noreferrer")' in snippet
     assert "if (STANDALONE)" in snippet  # en el navegador manda el target
-    assert "window.navigator.standalone === true" in webpage._TEMPLATE  # iOS
+    assert "window.navigator.standalone === true" in APP  # iOS
 
 
 def test_search_links_survive_without_downloaded_news():
     """Sin titulares (API caída) la sección se queda con los enlaces de siempre."""
-    snippet = webpage._TEMPLATE.split("function newsSectionEl(", 1)[1].split(
-        "// Botones", 1)[0]
-    assert "items.length ? newsListEl(items) : newsRow(sym)" in snippet
+    assert "sec.appendChild(newsLinksEl(sym))" in _fn("newsSectionEl")
 
 
 def test_ticker_details_no_analyst_key_without_data():
@@ -739,14 +737,12 @@ def test_market_snapshot_none_when_no_session_open():
 def test_market_closed_widget_shows_the_last_session_winner():
     """Con el mercado cerrado el widget no se queda en blanco.
 
-    Antes pintaba un 🚧 sin ganador; ahora enseña al ganador de la última
-    jornada cerrada y le añade la etiqueta de «mercado cerrado».
+    Enseña al ganador de la última jornada cerrada y le añade la etiqueta de
+    «mercado cerrado».
     """
-    snippet = webpage._TEMPLATE.split("const marketClosed =", 1)[1].split(
-        "// diferencia 1º - último", 1)[0]
-    assert 'bv.textContent = fmtPct(bd.day)' in snippet
-    assert 'tag.className = "closed-tag"' in snippet
-    assert 'bDate.textContent = ""' not in snippet
+    snippet = _fn("bestCard")
+    assert "fmtPct(bd.day)" in snippet
+    assert 'marketClosedFor(bd) ? txt("span", "closed-tag"' in snippet
 
 
 def test_player_suggestion_prefers_highest_upside_buy():
@@ -1021,77 +1017,74 @@ def test_goal_progress_never_goes_negative():
     assert goal["pct"] == 0.0
 
 
-def test_goal_module_reaches_the_html(tmp_path):
+def test_goal_module_reaches_the_api(tmp_path):
     fede = Player(player_id="fede", display_name="Fede",
                   currency="EUR", show_goal=True)
-    out = tmp_path / "index.html"
-    webpage.write_index([(fede, _goal_series(7000.0))], out_path=str(out),
-                        today=date(2026, 8, 14), fx=_EUR)
-    html = out.read_text(encoding="utf-8")
-    assert "goal-card" in html and "paintGoal" in html
-    assert '"deadline": "2027-08-01"' in html or '"deadline":"2027-08-01"' in html
+    api = _api(tmp_path, [(fede, _goal_series(7000.0))],
+               today=date(2026, 8, 14), fx=_EUR)
+    assert api["goal"]["deadline"] == "2027-08-01"
+    assert api["players"][0]["goal"]["pct"] == 50.0
+    assert "function goalCard()" in APP
 
 
-def test_long_lists_collapse_to_five(tmp_path):
+def test_long_lists_collapse_to_five():
     """Los listados largos se pintan a 5 y el resto va tras «ver más»."""
-    out = tmp_path / "index.html"
-    webpage.write_index([(Player(player_id="fede", display_name="Fede"), _series(9))],
-                        out_path=str(out))
-    html = out.read_text(encoding="utf-8")
-    assert "const LIST_MAX = 5;" in html
-    assert "function collapseList(rows, host)" in html
+    assert "const LIST_MAX = 5;" in APP
+    assert "function collapseList(rows, host)" in APP
     # y se aplica a cada listado que puede crecer
-    assert html.count("collapseList(") >= 8
+    assert APP.count("collapseList(") >= 9
 
 
 def _lang_block(code: str) -> str:
     """Cuerpo del bloque ``code`` de ``I18N`` (las traducciones de ese idioma)."""
-    blocks = webpage._TEMPLATE.split("const I18N = {", 1)[1].split("\nconst T = I18N", 1)[0]
+    blocks = I18N_JS.split("const I18N = {", 1)[1].split("\nconst T = I18N", 1)[0]
     return blocks.split("\n  %s: {\n" % code, 1)[1].split("\n  },\n", 1)[0]
 
 
 def _lang_keys(code: str) -> set[str]:
     """Nombres de clave del bloque ``code`` de ``I18N`` (incluidos los anidados)."""
-    return set(re.findall(r"^\s+([A-Za-z]\w*):", _lang_block(code), re.M))
+    # una clave por línea o varias seguidas («opBuy: "Buy", opSell: "Sell",»)
+    return set(re.findall(r"(?:^\s+|, )([A-Za-z]\w*):", _lang_block(code), re.M))
 
 
 def test_language_selector_offers_english_japanese_and_french():
-    assert '{code: "en"' in webpage._TEMPLATE
-    assert '{code: "ja"' in webpage._TEMPLATE
-    assert '{code: "fr"' in webpage._TEMPLATE
+    assert '{code: "en"' in I18N_JS
+    assert '{code: "ja"' in I18N_JS
+    assert '{code: "fr"' in I18N_JS
     # el selector se pinta a partir de esa lista, no de un toggle de dos
-    assert 'LANGS.forEach(l => {' in webpage._TEMPLATE
+    assert "LANGS.forEach(l => {" in APP
     # cada idioma con nombre propio tiene su manifest (nombre de la app)
     assert os.path.exists("docs/manifest-ja.webmanifest")
     assert os.path.exists("docs/manifest-fr.webmanifest")
 
 
 def test_french_translates_every_string():
-    """El francés cubre exactamente las mismas claves que el inglés."""
+    """Los tres idiomas cubren exactamente las mismas claves."""
     en = _lang_keys("en")
-    assert "appTitle" in en and "footer" in en  # el bloque se ha leído bien
+    assert "appTitle" in en and "footer" in en and "qStandings" in en  # bloque leído
     assert _lang_keys("fr") == en == _lang_keys("ja")
 
 
+def test_every_string_the_app_uses_is_translated():
+    """Ninguna ``T.clave`` de app.js se queda sin traducir."""
+    used = set(re.findall(r"\bT\.([A-Za-z]\w*)", APP))
+    assert used and used <= _lang_keys("en"), used - _lang_keys("en")
+
+
 def test_canada_banner_links_to_the_official_tourism_site():
-    assert 'id="ca-banner"' in webpage._TEMPLATE
-    assert 'banner.href = T.caHref' in webpage._TEMPLATE
+    assert 'gpBanner("ca-banner", T.caHref' in APP
     for locale in ("en-ca", "ja-jp", "fr-fr"):
-        assert 'https://travel.destinationcanada.com/' + locale in webpage._TEMPLATE
+        assert "https://travel.destinationcanada.com/" + locale in I18N_JS
 
 
 def test_canada_banner_heads_the_standings_card():
-    """El banner ya no va suelto: es la cabecera del módulo de la general."""
-    card = webpage._TEMPLATE.split('id="hero-card"', 1)[1].split("</section>", 1)[0]
-    # dentro de la misma tarjeta: banner, quién va ganando y la tabla de siempre
-    assert card.index('id="ca-banner"') < card.index('id="gp-lead"') \
-        < card.index('id="gp-podium"') < card.index('id="standings"')
-    # el banner es la cabecera a sangre de la tarjeta (sin margen suelto arriba)
-    assert "#hero-card { padding-top: 0; overflow: hidden; }" in webpage._TEMPLATE
-    assert ".gpban { display: flex; align-items: center; gap: 12px;\n" \
-           "           margin: 0 -18px;" in webpage._TEMPLATE
-    # ...y sigue a sangre cuando la tarjeta crece a 22px de padding
-    assert ".gpban { margin: 0 -22px; padding: 13px 20px; }" in webpage._TEMPLATE
+    """El banner es la cabecera del módulo de la general."""
+    card = _fn("standingsCard")
+    # dentro de la misma tarjeta: quién va ganando, su podio y la tabla de siempre
+    assert card.index("leadBlock(") < card.index("podiumEl(") < card.index('t.id = "standings"')
+    # el banner es la cabecera a sangre de la tarjeta
+    assert 'card({head: gpBanner("ca-banner"' in card
+    assert ".gpban { display: flex; align-items: center; gap: 12px; margin: 0 -14px 12px;" in CSS
 
 
 def test_the_grand_prix_names_the_season_in_every_language():
@@ -1104,25 +1097,23 @@ def test_the_grand_prix_names_the_season_in_every_language():
 
 def test_the_grand_prix_highlights_the_overall_leader_and_the_podium():
     """Quién va ganando la general (y con ella el viaje) sale antes que la tabla."""
-    tpl = webpage._TEMPLATE
+    card = _fn("standingsCard")
     # el líder es el primero de la clasificación, con su acumulado y su ventaja
-    assert "const leader = ranked[0];" in tpl
-    assert 'document.getElementById("gp-name").textContent = leader.name;' in tpl
-    assert "T.gpGap(second.name, (last.cum - lastOf(second).cum).toFixed(2))" in tpl
-    assert ": T.gpSolo;" in tpl  # sin rival todavía, no se inventa una ventaja
+    assert "const leader = ranked[0];" in card
+    assert "T.gpGap(second.name, (last.cum - lastOf(second).cum).toFixed(2))" in card
+    assert ": T.gpSolo," in card  # sin rival todavía, no se inventa una ventaja
     # el resto del podio son el 2º y el 3º, con su medalla
-    assert "ranked.slice(1, 3).forEach" in tpl
-    assert 'medal.textContent = MEDALS[i + 1];' in tpl
+    assert "ranked.slice(1, 3)" in card
+    assert "MEDALS[i + 1]" in _fn("podiumEl")
     # líder y podio abren la ficha del jugador (delegación por data-player)
-    assert 'row.classList.add("clk"); row.dataset.player = leader.id;' in tpl
-    assert 'chip.className = "gp-chip clk"; chip.dataset.player = p.id;' in tpl
+    assert "row.dataset.player = p.id;" in _fn("leadBlock")
+    assert "chip.dataset.player = p.id;" in _fn("podiumEl")
 
 
 def test_the_full_standings_table_survives_the_grand_prix():
     """La comparativa de siempre sigue entera: todos los jugadores, cuatro columnas."""
-    tpl = webpage._TEMPLATE
-    assert "const ranked = [...DATA.players].sort((a, b) => lastOf(b).cum - lastOf(a).cum);" in tpl
-    assert "ranked.forEach((p, i) => {" in tpl  # la tabla no se corta en el podio
+    assert "ranked = [...DATA.players].sort((a, b) => lastOf(b).cum - lastOf(a).cum);" in APP
+    assert "ranked.forEach((p, i) => {" in _fn("standingsCard")  # no se corta en el podio
     for locale in ("en", "ja", "fr"):
         cols = re.search(r"rankCols: \[([^\]]*)\]", _lang_block(locale)).group(1)
         assert cols.count('"') == 8, (locale, cols)  # #, jugador, acumulado y jornada
@@ -1130,8 +1121,7 @@ def test_the_full_standings_table_survives_the_grand_prix():
 
 def test_vancouver_banner_links_to_the_official_city_site():
     """El banner del mes enlaza al ayuntamiento de Vancouver (vancouver.ca)."""
-    assert 'id="vc-banner"' in webpage._TEMPLATE
-    assert 'city.href = T.vcHref' in webpage._TEMPLATE
+    assert 'gpBanner("vc-banner", T.vcHref' in APP
     # el sitio del ayuntamiento solo está en inglés: mismo enlace en los tres
     for locale in ("en", "ja", "fr"):
         href = re.search(r'vcHref: "([^"]*)"', _lang_block(locale)).group(1)
@@ -1140,17 +1130,10 @@ def test_vancouver_banner_links_to_the_official_city_site():
 
 def test_vancouver_banner_heads_the_current_month_card():
     """El mes en curso se cuenta como carrera: banner, líder, podio y gráfica."""
-    card = webpage._TEMPLATE.split('id="month-cur-card"', 1)[1].split("</section>", 1)[0]
-    assert card.index('id="vc-banner"') < card.index('id="vgp-lead"') \
-        < card.index('id="vgp-podium"') < card.index('id="month-cur-chart"')
-    # el banner es la cabecera a sangre de la tarjeta (sin margen suelto arriba)
-    assert "#month-cur-card { padding-top: 0; }" in webpage._TEMPLATE
-    # comparte la chapa con el de Canadá: una sola definición de la cabecera
-    assert 'class="gpban vc-banner"' in card
-    # el ? deja de flotar sobre el banner y se cuelga del titular de la gráfica
-    assert card.index('id="month-cur-label"') < card.index('id="month-cur-help"') \
-        < card.index('id="month-cur-chart"')
-    assert "#month-cur-card .wlabel" not in webpage._TEMPLATE
+    card = _fn("monthCurCard")
+    assert 'card({head: gpBanner("vc-banner"' in card
+    assert card.index("leadBlock(") < card.index("treatNote(") < card.index("podiumEl(") \
+        < card.index("chartHost(info)")
 
 
 def test_the_city_grand_prix_names_the_month_in_every_language():
@@ -1160,69 +1143,52 @@ def test_the_city_grand_prix_names_the_month_in_every_language():
         assert "Vancouver" in title or "バンクーバー" in title, (locale, title)
         assert "GP" in title, (locale, title)
         assert "+ ml" in title, (locale, title)  # lleva el mes en curso
-    assert 'T.vgpTitle(monthLabel(info.month, info.month_year))' in webpage._TEMPLATE
+    assert "T.vgpTitle(ml)" in _fn("monthCurCard")
 
 
 def test_the_city_grand_prix_highlights_the_month_leader_and_the_podium():
     """Quién va ganando el mes sale antes que la gráfica de todos."""
-    tpl = webpage._TEMPLATE
+    card = _fn("monthCurCard")
     # el líder es el primero del mes (``series`` llega ya de mejor a peor)
-    assert "const leader = series[0];" in tpl
-    assert "T.gpGap(second.name, (leader.value - second.value).toFixed(2))" in tpl
-    assert ": T.gpSolo;" in tpl  # sin rival todavía, no se inventa una ventaja
-    # el resto del podio son el 2º y el 3º, con su medalla
-    assert "series.slice(1, 3).forEach" in tpl
-    # líder y podio abren la ficha del jugador (delegación por data-player)
-    assert 'row.classList.add("clk"); row.dataset.player = leader.id;' in tpl
-    assert 'chip.className = "gp-chip clk"; chip.dataset.player = p.id;' in tpl
-    # se repinta con la tarjeta (``paintMonthly`` corre al cambiar de tamaño)
-    assert "paintCityGP(m.current);" in tpl
-    assert 'chips.innerHTML = "";' in tpl
+    assert "const leader = series[0];" in card
+    assert "T.gpGap(second.name, (leader.value - second.value).toFixed(2))" in card
+    assert ": T.gpSolo," in card
+    assert "series.slice(1, 3)" in card
 
 
 def test_the_monthly_chart_and_treat_survive_the_city_grand_prix():
     """La comparativa del mes y «quién invita» siguen enteras bajo el podio."""
-    card = webpage._TEMPLATE.split('id="month-cur-card"', 1)[1].split("</section>", 1)[0]
-    for el in ("month-cur-player", "month-cur-val", "month-cur-note",
-               "month-cur-label", "month-cur-chart", "month-cur-legend",
-               "month-cur-help"):
-        assert 'id="%s"' % el in card, el
+    card = _fn("monthCurCard")
+    for piece in ("chartHost(info)", "monthLegend(info)", "treatNote(info, true)",
+                  "qbtn(T.treatHelpAria"):
+        assert piece in card, piece
+    # las gráficas se rehacen al cambiar de tamaño (miden px reales)
+    assert "raf = requestAnimationFrame(paintCharts);" in APP
 
 
 def test_both_grand_prix_banners_are_a_single_short_line_without_a_button():
     """Los banners son bajitos: titular, una línea de texto y ya. Sin botón."""
-    assert "ccta" not in webpage._TEMPLATE and "caCta" not in webpage._TEMPLATE
-    # el subtítulo de cada idioma cabe en una línea (nada de párrafos)
+    assert "ccta" not in APP and "caCta" not in I18N_JS
     for locale in ("en", "ja", "fr"):
         for key in ("caSub", "vcSub"):
             sub = re.search(r'%s: "([^"]*)"' % key, _lang_block(locale)).group(1)
             assert len(sub) <= 45, (locale, key, sub)
 
 
-def test_canada_banner_is_a_single_short_line_without_a_button():
-    """El banner es bajito: titular, una línea de texto y ya. Sin botón."""
-    assert "ccta" not in webpage._TEMPLATE and "caCta" not in webpage._TEMPLATE
-    # el subtítulo de cada idioma cabe en una línea (nada de párrafos)
-    for locale in ("en", "ja", "fr"):
-        sub = re.search(r'caSub: "([^"]*)"', _lang_block(locale)).group(1)
-        assert len(sub) <= 45, (locale, sub)
-
-
 def test_charts_are_drawn_with_smooth_monotone_curves():
     """Las líneas se dibujan con curvas (C), no con segmentos rectos (L)."""
-    assert "function smoothD(pts)" in webpage._TEMPLATE
-    # las dos gráficas de líneas (el spark de las tarjetas y la del mes) pasan
+    assert "function smoothD(pts)" in APP
+    # las dos gráficas de líneas (el spark de las fichas y la del mes) pasan
     # por el mismo suavizado, y ninguna arma ya el camino a base de "L"
-    calls = webpage._TEMPLATE.count("smoothD(pts)") - 1  # sin la definición
-    assert calls == 2
-    assert '(i ? "L" : "M")' not in webpage._TEMPLATE
+    assert APP.count("smoothD(pts)") - 1 == 2  # sin la definición
+    assert '(i ? "L" : "M")' not in APP
 
 
 def test_gains_are_green_and_losses_red():
-    """Verde arriba y rojo abajo, en los tres bloques de tema."""
-    ups = re.findall(r"--up: (#[0-9a-f]{6});", webpage._TEMPLATE)
-    downs = re.findall(r"--down: (#[0-9a-f]{6});", webpage._TEMPLATE)
-    assert len(ups) == len(downs) == 3
+    """Verde arriba y rojo abajo, en el tema oscuro y en el claro."""
+    ups = re.findall(r"--up: (#[0-9a-f]{6});", CSS)
+    downs = re.findall(r"--down: (#[0-9a-f]{6});", CSS)
+    assert len(ups) == len(downs) == 2
 
     def rgb(c):
         return tuple(int(c[i:i + 2], 16) for i in (1, 3, 5))
@@ -1235,47 +1201,109 @@ def test_gains_are_green_and_losses_red():
         assert r > g and r > b and b <= g + 10, c
 
 
-def test_the_theme_accent_is_orange():
-    """El color de marca (botones, enlaces, estado activo) es naranja."""
-    accents = re.findall(r"--accent: (#[0-9a-f]{6});", webpage._TEMPLATE)
-    assert len(accents) == 3  # claro, oscuro del sistema y oscuro forzado
-    for c in accents:
-        r, g, b = (int(c[i:i + 2], 16) for i in (1, 3, 5))
-        # naranja: el rojo manda, el verde va a media altura y el azul casi no está
-        assert r > g > b, c
-        assert b < r // 3, c
+def test_the_theme_is_dark_like_grok_with_a_light_variant():
+    """Oscuro por defecto (casi negro, como Grok Bots) y claro si el sistema lo pide."""
+    root = CSS.split(":root {", 1)[1].split("}", 1)[0]
+    assert "color-scheme: dark;" in root
+    pane = re.search(r"--pane: (#[0-9a-f]{6});", root).group(1)
+    assert max(int(pane[i:i + 2], 16) for i in (1, 3, 5)) < 0x20, pane
+    assert "@media (prefers-color-scheme: light)" in CSS
+    # en escritorio es una ventana de app con su carril de agentes y semáforo
+    assert "@media (min-width: 900px)" in CSS and ".lights" in CSS
+    assert 'id="rail"' in HTML
 
 
 def test_players_use_the_warm_orange_and_brown_palette():
     """Naranja, marrón y ocres: los colores de jugador son su propia familia."""
-    assert 'const SLOTS = ["--p1"' in webpage._TEMPLATE
-    # los ocho tonos están definidos en los tres bloques de tema (claro, oscuro
-    # por preferencia del sistema y oscuro forzado)
+    assert 'const SLOTS = ["--p1"' in APP
+    # los ocho tonos están definidos en los dos temas (oscuro y claro)
     for slot in range(1, 9):
-        assert webpage._TEMPLATE.count("--p%d: #" % slot) == 3
+        assert CSS.count("--p%d: #" % slot) == 2
+
+
+def test_agents_are_blobs_with_eyes():
+    """Warren y Scout son blobs de color plano con dos ojitos, como los bots de Grok."""
+    assert "function blobSVG(color, shape, ring)" in APP
+    assert 'warren: {name: T.agentWarren' in APP and 'scout: {name: T.agentScout' in APP
+    assert "--warren:" in CSS and "--scout:" in CSS
 
 
 def test_the_page_is_a_conversation_with_warren_and_scout():
-    """La portada es un hilo: Warren y Scout cuentan, los módulos siguen debajo."""
-    tpl = webpage._TEMPLATE
-    assert 'id="agent-strip"' in tpl
-    assert 'function paintChat()' in tpl
-    assert 'function syncTurns()' in tpl
-    assert 'class="composer"' in tpl and 'id="upload-mail"' in tpl
-    for key in ("agentWarren", "agentScout", "askWarren", "chatStandings",
-                "chatDay", "chatMonth", "chatOps", "chatNews"):
-        assert key + ":" in tpl
-    # cada módulo de siempre sigue en el hilo, con su id intacto
+    """La portada es un hilo: tú preguntas y Warren o Scout contestan con su tarjeta."""
+    body = _fn("render")
+    for key in ("standings", "today", "month", "ext", "trades", "news",
+                "portfolio", "goal", "badges"):
+        assert 'exchange("%s"' % key in body, key
+    # cada módulo de siempre sigue en el hilo, con su id
     for el in ("hero-card", "best-card", "month-cur-card", "month-prev-card",
                "ops-card", "news-card", "insights-card", "daily-card",
-               "alloc-card", "wallets-card", "goal-card", "badges-card"):
-        assert 'id="%s"' % el in tpl, el
-    # las frases van en burbuja, las tarjetas se adjuntan debajo
-    assert 'id="say-standings"' in tpl and 'id="say-day"' in tpl
-    assert 'id="say-month"' in tpl and 'id="say-ops"' in tpl
-    assert 'id="say-news"' in tpl
-    # un solo envío de posiciones: ahora es la barra de componer
-    assert tpl.count('id="upload-mail"') == 1
-    # JS real, no escapes de cuando el script vivía dentro de un string Python
-    assert 'href=\\\\"https' not in tpl
-    assert "split(/\\s+/)" in tpl
+               "alloc-card", "wallets-card", "monthly-card", "goal-card",
+               "badges-card", "ext-card", "pending-card"):
+        assert 'c.id = "%s";' % el in APP, el
+    # tus preguntas van en burbuja clara a la derecha; las respuestas, con acciones
+    assert "function meBubble(text, react)" in APP and ".me {" in CSS
+    assert "function pill(label, onClick, fill)" in APP and ".pill.fill" in CSS
+    # un solo envío de posiciones en la barra de mensaje (y el + del carril)
+    assert 'class="composer"' in HTML and HTML.count('id="upload-mail"') == 1
+    # JS real, sin los escapes dobles de cuando vivía dentro de un string Python
+    assert "\\\\u" not in APP and "\\\\d" not in APP
+
+
+def test_the_message_bar_answers_with_the_league_data():
+    """La barra de mensaje contesta: jugador, ticker o tema (sin modelo detrás)."""
+    snippet = _fn("understand")
+    assert 'kind: "player"' in snippet and 'kind: "ticker"' in snippet
+    assert 'kind: "topic"' in snippet and 'kind: "help"' in snippet
+    answer = _fn("answerFor")
+    assert "openPlayer(p.id)" in answer and "openTicker(t.ticker)" in answer
+    assert "scrollToEx(a.key)" in answer
+    # lo que escribes entra como texto, nunca como HTML
+    assert 'txt("div", "me", text)' in APP
+
+
+# ---- la API: lo único que escribe el recálculo ----------------------------
+
+def test_write_api_writes_the_league_json(tmp_path):
+    fede = Player(player_id="fede", display_name="Fede")
+    out = webpage.write_api([(fede, _series(5))],
+                            out_path=str(tmp_path / "api" / "league.json"))
+    raw = open(out, encoding="utf-8").read()
+    api = json.loads(raw)
+    assert api["api"] == webpage.API_VERSION
+    assert re.fullmatch(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}", api["updated"])
+    assert re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z", api["generatedAt"])
+    assert [p["id"] for p in api["players"]] == ["fede"]
+    # indentado: el commit de cada recálculo enseña qué ha cambiado línea a línea
+    assert raw.startswith("{\n") and raw.count("\n") > 50
+    # el mismo payload de siempre, con su cabecera delante
+    payload = webpage.build_payload([(fede, _series(5))])
+    assert set(api) == set(payload) | {"api", "updated", "generatedAt"}
+
+
+def test_the_page_reads_its_data_from_the_api():
+    """El HTML es estático: no lleva datos y los pide a api/league.json."""
+    assert "__DATA__" not in HTML and "const DATA" not in HTML
+    assert 'const API_URL = "api/league.json";' in APP
+    assert 'fetch(API_URL, {cache: "no-cache"})' in APP
+    for asset in ("assets/app.css", "assets/i18n.js", "assets/app.js"):
+        assert 'href="%s' % asset in HTML or 'src="%s' % asset in HTML, asset
+    # i18n antes que la app (los dos con defer conservan el orden)
+    assert HTML.index('src="assets/i18n.js') < HTML.index('src="assets/app.js')
+
+
+def test_the_ranking_no_longer_renders_the_page():
+    """Del recálculo solo sale la API: ni plantilla ni HTML generado."""
+    assert not hasattr(webpage, "write_index") and not hasattr(webpage, "_TEMPLATE")
+    assert not (Path(webpage.__file__).parent / "web").exists()
+    main = (Path(webpage.__file__).parent / "__main__.py").read_text(encoding="utf-8")
+    assert '"--api-out", default="docs/api/league.json"' in main
+
+
+def test_the_published_api_has_what_the_page_reads():
+    """El league.json versionado se lee con esta página (mismas claves)."""
+    api = json.loads(_front("api/league.json"))
+    assert api["api"] == webpage.API_VERSION
+    for key in ("updated", "generatedAt", "players", "pending", "goal", "operations",
+                "allocation", "market", "tickers", "monthly", "treatScale",
+                "dailyWinners", "badges"):
+        assert key in api, key

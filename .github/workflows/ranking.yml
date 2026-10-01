@@ -4,6 +4,10 @@ name: Ranking
 # disparos manuales y el aviso de docs/subir.html (`extracto-subido`).
 # Sin cron intradía, sin pre/after extra, sin push de trader/**.
 #
+# La web es estática (docs/index.html + docs/assets/) y lee sus datos de
+# docs/api/league.json, que es lo único que escribe el ranking. Por eso un
+# push que toca la web (y no la API) no recalcula nada: solo publica Pages.
+#
 # GitHub cron habla UTC, el NYSE cambia con el DST:
 #   apertura 09:30 ET = 13:30 UTC (EDT) / 14:30 UTC (EST)
 #   cierre   16:00 ET = 20:00 UTC (EDT) / 21:00 UTC (EST)
@@ -17,6 +21,15 @@ name: Ranking
 # Requiere Pages → Build and deployment → Source: GitHub Actions.
 
 on:
+  # Cambio de diseño de la web: se publica sin recalcular la liga. Los commits
+  # del propio ranking (docs/api/, ranking.md) van con GITHUB_TOKEN, que no
+  # dispara `push`, y además quedan fuera del filtro.
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - "!docs/api/**"
+      - "!docs/ranking.md"
   schedule:
     # Apertura ~09:41 ET (11 min después de las 09:30).
     - cron: "41 13 * * 1-5"   # 09:41 EDT
@@ -60,6 +73,11 @@ jobs:
         id: gate
         run: |
           set -euo pipefail
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "Cambio de la web: sin ranking, solo se publica Pages."
+            exit 0
+          fi
           if [ "${{ github.event_name }}" != "schedule" ]; then
             echo "run=true" >> "$GITHUB_OUTPUT"
             echo "Disparo ${{ github.event_name }}: se corre el ranking."
@@ -223,7 +241,9 @@ jobs:
 
   pages:
     needs: ranking
-    if: success() && needs.ranking.outputs.docs_changed == 'true'
+    if: >
+      success()
+      && (needs.ranking.outputs.docs_changed == 'true' || github.event_name == 'push')
     runs-on: ubuntu-latest
     environment:
       name: github-pages
