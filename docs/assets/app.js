@@ -95,15 +95,29 @@ const BLOB_BODY = {
   tri: '<path d="M20 3.6c1.4 0 2.6.7 3.3 1.9l14 24.2c1.5 2.6-.4 5.8-3.4 5.8H6.1c-3 0-4.9-3.2-3.4-5.8l14-24.2c.7-1.2 1.9-1.9 3.3-1.9z"/>',
 };
 const BLOB_EYES = {circle: [15.4, 14.6, 22.2, 13.7], diamond: [15.9, 15.2, 22.4, 14.3], tri: [16.8, 19.4, 22.6, 18.6]};
-function blobSVG(color, shape, ring) {
+// ``life`` les da vida (la animación vive en app.css): "bot" parpadea y mira
+// de reojo a un lado y a otro; "blink" solo parpadea. Sin ``life`` (las
+// insignias) el blob se queda quieto.
+function blobSVG(color, shape, ring, life) {
   const s = BLOB_BODY[shape] ? shape : "circle";
   const [ax, ay, bx, by] = BLOB_EYES[s];
   // ``ring``: filete del color del fondo alrededor de la forma, para que los
   // avatares montados se separen (también el rombo, que no es redondo)
   const halo = ring ? ' style="stroke:var(--pane);stroke-width:5;paint-order:stroke"' : "";
-  return '<svg viewBox="0 0 40 40" aria-hidden="true"><g fill="' + color + '"' + halo + ">" + BLOB_BODY[s] +
-    '</g><path d="M' + ax + " " + ay + "l.5 4.3M" + bx + " " + by + 'l.5 4.3" stroke="#121212" ' +
-    'stroke-opacity=".82" stroke-width="2.3" stroke-linecap="round" fill="none"/></svg>';
+  const eye = (x, y) => '<path class="eye" d="M' + x + " " + y + 'l.5 4.3"/>';
+  let alive = "";
+  if (life) {
+    // cada blob con su propio ritmo y su propio punto de partida: si
+    // parpadearan todos a la vez parecería un fallo de la página, no un gesto
+    const r = (a, b) => (a + Math.random() * (b - a)).toFixed(2);
+    const slow = life === "bot" ? 0 : 3;   // los jugadores parpadean menos
+    alive = ' class="alive ' + life + (Math.random() < 0.35 ? " twice" : "") + '" style="' +
+      "--blink:" + r(4.5 + slow, 7.5 + slow) + "s;--blink-at:-" + r(0, 8) + "s;" +
+      "--look:" + r(8, 12) + "s;--look-at:-" + r(0, 12) + 's"';
+  }
+  return "<svg" + alive + ' viewBox="0 0 40 40" aria-hidden="true"><g fill="' + color + '"' + halo + ">" +
+    BLOB_BODY[s] + '</g><g class="look" stroke="#121212" stroke-opacity=".82" stroke-width="2.3" ' +
+    'stroke-linecap="round" fill="none">' + eye(ax, ay) + eye(bx, by) + "</g></svg>";
 }
 const AGENTS = {
   warren: {name: T.agentWarren, role: T.agentWarrenRole, about: T.agentWarrenAbout,
@@ -111,12 +125,14 @@ const AGENTS = {
   scout: {name: T.agentScout, role: T.agentScoutRole, about: T.agentScoutAbout,
           color: "--scout", shape: "diamond"},
 };
-function avEl(color, shape, size, ring) {
-  const s = h("span", "av" + (size ? " " + size : ""), blobSVG(color, shape, ring));
+// Los avatares de jugador parpadean de vez en cuando; los de los bots, además,
+// miran a un lado y a otro (``life``).
+function avEl(color, shape, size, ring, life) {
+  const s = h("span", "av" + (size ? " " + size : ""), blobSVG(color, shape, ring, life || "blink"));
   s.setAttribute("aria-hidden", "true");
   return s;
 }
-const agentAv = (id, size, ring) => avEl(css(AGENTS[id].color), AGENTS[id].shape, size, ring);
+const agentAv = (id, size, ring) => avEl(css(AGENTS[id].color), AGENTS[id].shape, size, ring, "bot");
 const playerAv = (p, size) => avEl(colorOf(p), "circle", size);
 // la liga entera: Warren, Scout y el primer jugador, montados (Connect the Bots)
 function groupAv(size) {
@@ -1452,7 +1468,9 @@ function ask(q) {
   ex.dataset.agent = a.agent;
   const grp = h("div", "grp");
   const who = h("div", "who");
-  who.append(agentAv(a.agent, "sm"), txt("b", null, AGENTS[a.agent].name), document.createTextNode(AGENTS[a.agent].role));
+  const face = agentAv(a.agent, "sm");
+  face.firstChild.classList.add("thinking");   // mientras piensa, mira de un lado a otro
+  who.append(face, txt("b", null, AGENTS[a.agent].name), document.createTextNode(AGENTS[a.agent].role));
   const typing = h("span", "typing", '<span class="dots"><i></i><i></i><i></i></span>');
   typing.appendChild(txt("span", null, T.typing(AGENTS[a.agent].name)));
   grp.append(who, typing);
@@ -1460,6 +1478,7 @@ function ask(q) {
   $("asks").appendChild(ex);
   toBottom();
   setTimeout(() => {
+    face.firstChild.classList.remove("thinking");
     typing.replaceWith(answerFor(a, () => ex.remove()));
     toBottom();
   }, 650);

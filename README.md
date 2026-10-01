@@ -38,6 +38,12 @@ a su respuesta. Encima van las sugerencias (Clasificación, Sesión, Mes,
 Operaciones…), que llevan a cada respuesta del hilo. El **+** sigue siendo el
 envío de tu extracto por correo.
 
+Los bots están vivos, pero sin llamar la atención: Warren y Scout parpadean y
+miran de reojo a un lado y a otro de vez en cuando (cada uno a su ritmo, nunca
+todos a la vez), y mientras piensan una respuesta de la barra mueven los ojos
+de un lado a otro. Los jugadores solo parpadean, y menos. Con «reducir
+movimiento» activado en el sistema se quedan quietos.
+
 El tema es oscuro, como el de Grok, y pasa a claro si el sistema lo pide.
 
 ### ⚙️ HTML estático + API

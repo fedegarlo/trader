@@ -1232,9 +1232,26 @@ def test_players_use_the_warm_orange_and_brown_palette():
 
 def test_agents_are_blobs_with_eyes():
     """Warren y Scout son blobs de color plano con dos ojitos, como los bots de Grok."""
-    assert "function blobSVG(color, shape, ring)" in APP
+    assert "function blobSVG(color, shape, ring, life)" in APP
     assert 'warren: {name: T.agentWarren' in APP and 'scout: {name: T.agentScout' in APP
     assert "--warren:" in CSS and "--scout:" in CSS
+
+
+def test_the_bots_blink_and_glance():
+    """Los bots parpadean y miran de reojo; los jugadores solo parpadean y las
+    insignias se quedan quietas."""
+    assert 'avEl(css(AGENTS[id].color), AGENTS[id].shape, size, ring, "bot")' in APP
+    assert 'life || "blink"' in _fn("avEl")
+    assert "return blobSVG(css(col), shape);" in _fn("badgeBlob")  # sin vida
+    for kf in ("@keyframes blink ", "@keyframes blink-twice", "@keyframes look", "@keyframes think"):
+        assert kf in CSS, kf
+    assert ".alive.bot .look" in CSS and ".alive .eye" in CSS
+    # cada blob con su ritmo y su desfase: nunca parpadean todos a la vez
+    assert "Math.random()" in _fn("blobSVG") and "--blink-at:-" in _fn("blobSVG")
+    # mientras piensa una respuesta, mira de un lado a otro
+    assert 'face.firstChild.classList.add("thinking")' in _fn("ask")
+    # con «reducir movimiento», quietos
+    assert "@media (prefers-reduced-motion: reduce)" in CSS
 
 
 def test_the_page_is_a_conversation_with_warren_and_scout():
