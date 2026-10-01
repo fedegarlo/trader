@@ -1,0 +1,191 @@
+lay: standalone`): ahí el enlace se abre dentro
+// de la propia app, sin barra de direcciones ni botón de atrás, y quien entra a
+// leer una noticia se queda atrapado en ella. Cuando estamos en ese modo la
+// abrimos nosotros con `window.open`, que sí salta al navegador — llamado
+// dentro del propio click, que si no lo bloquea el navegador.
+const STANDALONE = (() => {
+  try {
+    return ["standalone", "fullscreen", "minimal-ui"].some(
+      m => window.matchMedia("(display-mode: " + m + ")").matches)
+      || window.navigator.standalone === true;
+  } catch (e) { return false; }
+})();
+function externalLink(href) {
+  const a = document.createElement("a");
+  a.href = href; a.target = "_blank"; a.rel = "noopener noreferrer";
+  if (STANDALONE) a.addEventListener("click", ev => {
+    ev.preventDefault();
+    window.open(href, "_blank", "noopener,noreferrer");
+  });
+  return a;
+}
+function newsRow(sym) {
+  const q = encodeURIComponent(sym + " stock");
+  const links = [
+    ["Yahoo Finance", "https://finance.yahoo.com/quote/" + encodeURIComponent(sym)],
+    ["Google News", "https://news.google.com/search?q=" + q],
+    ["Finviz", "https://finviz.com/quote.ashx?t=" + encodeURIComponent(sym)],
+  ];
+  const box = h("div", "news");
+  links.forEach(([label, href]) => {
+    const a = externalLink(href);
+    a.innerHTML = label + ' <span class="ext">↗</span>';
+    box.appendChild(a);
+  });
+  return box;
+}
+// Titulares descargados en el build (API de noticias de la liga) para los
+// valores que tiene alguien en cartera. Todo el texto entra por textContent:
+// viene de una API de terceros y nunca se interpreta como HTML.
+function newsListEl(items) {
+  const box = h("div", "newslist");
+  items.forEach(n => {
+    const a = externalLink(n.link);
+    a.className = "news-item";
+    const title = h("div", "nt"); title.textContent = n.title; a.appendChild(title);
+    if (n.desc) {
+      const d = h("div", "nd"); d.textContent = n.desc; a.appendChild(d);
+    }
+    const meta = h("div", "nm");
+    if (n.sym) {
+      const tk = h("span", "tk"); tk.textContent = n.sym; meta.appendChild(tk);
+    }
+    const bits = [];
+    if (n.source) bits.push(n.source);
+    if (n.at && /^\d{4}-\d{2}-\d{2}/.test(n.at)) bits.push(fmtDate(n.at.slice(0, 10)));
+    if (bits.length) meta.appendChild(document.createTextNode(bits.join(" · ")));
+    if (meta.childNodes.length) a.appendChild(meta);
+    box.appendChild(a);
+  });
+  return box;
+}
+// Titulares de varios valores a la vez (la portada, la cartera de un jugador):
+// sin repetidos y **repartidos por valor**, marcando de qué valor es cada uno.
+//
+// Se van cogiendo por rondas: el titular más reciente de cada valor, luego el
+// segundo de cada uno, y así. Ordenar solo por fecha llenaba las primeras filas
+// con la misma empresa —la que hubiera publicado más ese día— y quien no
+// desplegara la lista no veía a nadie más. Dentro de cada ronda sí manda la
+// fecha, así que lo más fresco sigue saliendo antes.
+function newsFor(syms, max) {
+  const seen = {}, queues = [];
+  syms.forEach(sym => {
+    const queue = [];
+    ((TICKERS[sym] || {}).news || []).forEach(n => {
+      if (seen[n.link]) return;
+      seen[n.link] = 1;
+      queue.push(Object.assign({sym: sym}, n));
+    });
+    queue.sort((a, b) => (b.at || "").localeCompare(a.at || ""));
+    if (queue.length) queues.push(queue);
+  });
+  const out = [];
+  while (queues.length && (!max || out.length < max)) {
+    queues.sort((a, b) => (b[0].at || "").localeCompare(a[0].at || ""));
+    queues.forEach(q => out.push(q.shift()));
+    for (let i = queues.length - 1; i >= 0; i--)
+      if (!queues[i].length) queues.splice(i, 1);
+  }
+  return max ? out.slice(0, max) : out;
+}
+// Sección de noticias: los titulares del build si los hay y, siempre, los
+// enlaces de búsqueda por símbolo (que no dependen de que la API respondiera).
+function newsSectionEl(title, items, sym) {
+  const sec = sectionEl(title, items.length ? newsListEl(items) : newsRow(sym));
+  if (items.length) sec.appendChild(newsRow(sym));
+  return sec;
+}
+// ---- noticias de la liga: módulo de portada -------------------------------
+// Los titulares de todos los valores que alguien tiene en cartera, mezclados de
+// más a menos reciente. Cada fila abre la noticia en su medio; el símbolo dice
+// de qué valor es (su ficha se abre desde la cartera, como siempre). Sin
+// noticias descargadas la tarjeta no se pinta: la portada no enseña huecos.
+const NEWS_HOME_MAX = 12;
+function paintNews() {
+  const card = document.getElementById("news-card");
+  const syms = (DATA.tickers || []).map(t => t.ticker);
+  const items = newsFor(syms, NEWS_HOME_MAX);
+  if (!items.length) { card.style.display = "none"; return; }
+  card.style.display = "";
+
+  const withNews = syms.filter(s => ((TICKERS[s] || {}).news || []).length).length;
+  document.getElementById("news-sub").textContent =
+    T.newsCount(items.length) + " · " + T.newsTickers(withNews);
+  document.getElementById("news-note").textContent = T.newsNote;
+
+  const box = document.getElementById("news-feed");
+  box.innerHTML = "";
+  const rows = items.map(n => {
+    const row = externalLink(n.link);
+    row.className = "nw-row";
+    row.appendChild(tickerLogoEl(TICKERS[n.sym] || {ticker: n.sym}, 30));
+    const body = h("div", "nw-b");
+    const title = h("div", "nw-t"); title.textContent = n.title;
+    body.appendChild(title);
+    const meta = h("div", "nw-m");
+    const sym = h("span", "sym"); sym.textContent = n.sym;
+    meta.appendChild(sym);
+    const bits = [];
+    if (n.source) bits.push(n.source);
+    if (n.at && /^\d{4}-\d{2}-\d{2}/.test(n.at)) bits.push(fmtDate(n.at.slice(0, 10)));
+    if (bits.length)
+      meta.appendChild(document.createTextNode(" · " + bits.join(" · ")));
+    body.appendChild(meta);
+    row.appendChild(body);
+    box.appendChild(row);
+    return row;
+  });
+  collapseList(rows, box);
+}
+paintNews();
+
+// ---- hilo conversacional: Warren y Scout cuentan los mismos módulos ----
+function syncTurns() {
+  document.querySelectorAll(".turn[data-watch]").forEach(turn => {
+    const visible = turn.dataset.watch.split(/\s+/).some(id => {
+      const el = document.getElementById(id);
+      return el && el.style.display !== "none";
+    });
+    turn.hidden = !visible;
+  });
+}
+function paintChat() {
+  const sep = document.getElementById("day-sep");
+  if (sep) sep.textContent = T.chatToday;
+  const strip = document.getElementById("agent-strip");
+  if (strip) {
+    strip.innerHTML = "";
+    const add = (kind, name, role, color, agent) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "agent-pill";
+      btn.setAttribute("role", "listitem");
+      const blob = document.createElement("span");
+      blob.className = "blob " + kind + (kind === "player" ? "" : " lg");
+      blob.setAttribute("aria-hidden", "true");
+      if (kind === "player" && color) blob.style.backgroundColor = color;
+      btn.appendChild(blob);
+      const an = document.createElement("span"); an.className = "an"; an.textContent = name;
+      btn.appendChild(an);
+      if (role) {
+        const ar = document.createElement("span"); ar.className = "ar"; ar.textContent = role;
+        btn.appendChild(ar);
+      }
+      btn.addEventListener("click", () => {
+        const t = document.querySelector('.turn[data-agent="' + agent + '"]');
+        if (t) t.scrollIntoView({behavior: "smooth", block: "start"});
+      });
+      strip.appendChild(btn);
+    };
+    add("warren", T.agentWarren, T.agentWarrenRole, null, "warren");
+    add("scout", T.agentScout, T.agentScoutRole, null, "scout");
+    (DATA.players || []).forEach(p => add("player", p.name, "", colorOf(p), "warren"));
+  }
+  const say = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value || "";
+  };
+  const leader = ranked[0];
+  if (leader) say("say-standings", T.chatStandings(leader.name, fmtPct(lastOf(leader).cum)));
+  else say("say-standings", T.noPlayersDot);
+  cons

@@ -1,0 +1,195 @@
+t best = DATA.players.length ? [...DATA.players].sort((a, b) =>
+    (lastOf(b).day - lastOf(a).day) || (lastOf(b).cum - lastOf(a).cum))[0] : null;
+  if (best) say("say-day", T.chatDay(best.name, fmtPct(lastOf(best).day)));
+  const m = DATA.monthly || {};
+  if (m.current) {
+    say("say-month", T.chatMonth(m.current.name, fmtPct(m.current.value),
+      monthLabel(m.current.month, m.current.month_year)));
+  } else if (m.previous) {
+    say("say-month", T.chatMonthPrev(m.previous.name, fmtPct(m.previous.value),
+      monthLabel(m.previous.month, m.previous.month_year)));
+  }
+  say("say-ops", T.chatOps);
+  say("say-news", T.chatNews);
+  say("say-ext", T.chatExt);
+  say("say-insights", T.chatInsights);
+  say("say-daily", T.chatDaily);
+  say("say-alloc", T.chatAlloc);
+  say("say-wallets", T.chatWallets);
+  say("say-monthly", T.chatMonthlyDetail);
+  say("say-goal", T.chatGoal);
+  say("say-badges", T.chatBadges);
+  say("say-pending", T.chatPending);
+  syncTurns();
+}
+paintChat();
+// Botones «Comprar»/«Vender» que abren la app de Revolut en el detalle del
+// valor. Ambos llevan al mismo detalle; desde ahí se elige comprar o vender.
+function revolutRow(sym) {
+  const href = "https://revolut.com/app/trading/stocks/" + encodeURIComponent(sym);
+  const box = h("div", "revolut");
+  [[T.buy, "buy", "▲"], [T.sell, "sell", "▼"]].forEach(([label, cls, ico]) => {
+    const a = document.createElement("a");
+    a.href = href;
+    a.className = "rev-btn " + cls;
+    a.innerHTML = '<span class="ic">' + ico + "</span>" + label;
+    box.appendChild(a);
+  });
+  return box;
+}
+function sectionEl(title, node) {
+  const s = h("div", "msec");
+  s.appendChild(h("div", "h", title));
+  s.appendChild(node);
+  return s;
+}
+function tileEl(k, v, cls) {
+  const t = h("div", "tile");
+  t.appendChild(h("div", "k", k));
+  t.appendChild(h("div", "v" + (cls ? " " + cls : ""), v));
+  return t;
+}
+
+// Reparto de opiniones: buckets de compra→venta con su propia rampa de cinco
+// pasos (verde→ámbar→rojo, con el gris del «mantener» en medio). Comparte el
+// idioma de color con la liga —verde bien, rojo mal— pero no sus variables:
+// aquí hacen falta los tonos intermedios, que --up y --down no tienen.
+const REC_BUCKETS = [
+  ["strongBuy", T.recBuckets[0], "#15a34a"],
+  ["buy", T.recBuckets[1], "#22c55e"],
+  ["hold", T.recBuckets[2], "#9aa0ac"],
+  ["sell", T.recBuckets[3], "#f59e0b"],
+  ["strongSell", T.recBuckets[4], "#ef4444"],
+];
+// El análisis (label) llega en español desde el backend (derivado de la media
+// de recomendación); se traduce al idioma activo mapeando a los buckets.
+const REC_LABEL_MAP = {"Compra fuerte": 0, "Comprar": 1, "Mantener": 2, "Vender": 3, "Venta fuerte": 4};
+const recLabel = l => { const i = REC_LABEL_MAP[l]; return i == null ? l : T.recBuckets[i]; };
+function analystSectionEl(a) {
+  const wrap = h("div", "msec");
+  wrap.appendChild(h("div", "h", T.analystRec +
+    (a.asOf ? ' <span style="color:var(--muted);font-weight:600">· ' + fmtDate(a.asOf) + "</span>" : "")));
+  const cons = h("div", "consensus");
+  if (a.label) cons.appendChild(h("span", "cbadge " + (a.tone || "neutral"), recLabel(a.label)));
+  const meta = [];
+  if (a.count) meta.push(T.analysts(a.count));
+  if (a.mean != null) meta.push(T.avg(a.mean.toFixed(1)));
+  if (meta.length) cons.appendChild(h("span", "cmeta", meta.join(" · ")));
+  wrap.appendChild(cons);
+  if (a.dist) {
+    const total = REC_BUCKETS.reduce((s, [k]) => s + (a.dist[k] || 0), 0);
+    if (total > 0) {
+      const bar = h("div", "distbar");
+      const leg = h("div", "distlegend");
+      REC_BUCKETS.forEach(([k, lbl, col]) => {
+        const n = a.dist[k] || 0; if (!n) return;
+        const seg = document.createElement("span");
+        seg.style.background = col; seg.style.width = (n / total * 100) + "%";
+        seg.title = lbl + ": " + n; bar.appendChild(seg);
+        const item = h("span", "k");
+        const sw = document.createElement("span"); sw.className = "sw"; sw.style.background = col;
+        item.appendChild(sw); item.appendChild(document.createTextNode(lbl + " " + n));
+        leg.appendChild(item);
+      });
+      wrap.appendChild(bar); wrap.appendChild(leg);
+    }
+  }
+  if (a.target != null) {
+    const t = h("div", "target");
+    let html = T.priceTarget(money(a.target));
+    if (a.upside != null)
+      html += ' <span class="up ' + (a.upside >= 0 ? "pos" : "neg") + '">(' + fmtPct(a.upside) + ")</span>';
+    if (a.targetLow != null && a.targetHigh != null)
+      html += ' <span class="rng">' + T.rangeLabel(money(a.targetLow), money(a.targetHigh)) + "</span>";
+    t.innerHTML = html;
+    wrap.appendChild(t);
+  }
+  return wrap;
+}
+function peersSectionEl(peers) {
+  const chips = h("div", "chips");
+  peers.forEach(p => {
+    const known = !!TICKERS[p.ticker];
+    let chip;
+    if (known) { chip = h("div", "chip-tk clk"); chip.dataset.ticker = p.ticker; }
+    else {
+      chip = document.createElement("a"); chip.className = "chip-tk";
+      chip.href = "https://revolut.com/app/trading/stocks/" + encodeURIComponent(p.ticker);
+      chip.target = "_blank"; chip.rel = "noopener noreferrer";
+      chip.style.textDecoration = "none"; chip.style.color = "inherit";
+    }
+    chip.appendChild(tickerLogoEl(p, 22));
+    chip.appendChild(document.createTextNode(p.ticker));
+    if (!known) chip.appendChild(h("span", "w", "↗"));
+    chips.appendChild(chip);
+  });
+  return sectionEl(T.relatedTickers, chips);
+}
+function nextStepEl(s) {
+  const card = h("div", "nextstep");
+  if (TICKERS[s.ticker]) { card.classList.add("clk"); card.dataset.ticker = s.ticker; }
+  const isBuy = s.action !== "trim";
+  const top = h("div", "top");
+  top.appendChild(tickerLogoEl(s, 26));
+  top.appendChild(h("span", "act" + (isBuy ? "" : " neg"), isBuy ? T.nextBuy : T.nextTrim));
+  top.appendChild(h("span", "ttl", T.nextTitle(s.ticker, isBuy)));
+  card.appendChild(top);
+  const bits = [];
+  if (s.label) bits.push(T.consensusBit(recLabel(s.label)));
+  if (s.count) bits.push(T.analysts(s.count));
+  if (s.upside != null) bits.push(T.targetBit(fmtPct(s.upside)));
+  bits.push(T.ofPortfolio(fmtW(s.w)));
+  card.appendChild(h("div", "body", bits.join(" · ")));
+  card.appendChild(h("div", "dis", T.nextDisclaimer));
+  return card;
+}
+
+let closingTimer = null;
+function hideModal() {
+  clearTimeout(closingTimer);
+  modal.classList.remove("open");
+  sheet.classList.remove("closing");
+  sheet.style.transform = ""; sheet.style.transition = ""; sheet.style.opacity = "";
+  modal.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+}
+function closeModal() {
+  if (!modal.classList.contains("open")) return;
+  sheet.classList.add("closing");        // desliza la hoja hacia abajo y oculta
+  clearTimeout(closingTimer);
+  closingTimer = setTimeout(hideModal, 240);
+}
+function showModal(node) {
+  clearTimeout(closingTimer);
+  sheet.classList.remove("closing");
+  sheet.style.transform = ""; sheet.style.transition = ""; sheet.style.opacity = "";
+  modalBody.innerHTML = "";
+  const close = h("button", "mclose", "✕");
+  close.setAttribute("aria-label", T.close);
+  close.addEventListener("click", closeModal);
+  node.appendChild(close);               // ✕ fijado arriba a la derecha (absolute)
+  modalBody.appendChild(node);
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+  sheet.scrollTop = 0;
+}
+
+// ---- cómo se calcula la rentabilidad (interrogante del widget líder) ----
+function openLeaderHelp() {
+  const c = T.calc;
+  const root = document.createElement("div");
+
+  const head = h("div", "mhead");
+  const title = h("div", "mtitle");
+  title.appendChild(h("div", "t1", c.title));
+  title.appendChild(h("div", "t2", c.subtitle));
+  head.appendChild(title);
+  root.appendChild(head);
+
+  // preguntas y respuestas (la venta, mantener la rentabilidad, los flujos…)
+  c.qa.forEach(([q, a]) => {
+    root.appendChild(sectionEl(q, h("div", "mtext", a)));
+  });
+
+  // fórmulas: rentabilidad diaria (Dietz simple) y acumulada (geo
