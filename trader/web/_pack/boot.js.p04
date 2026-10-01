@@ -1,4 +1,4 @@
-    nextTitle: (tk, buy) => buy ? "Renforcer " + tk : "Alléger " + tk,
+, buy) => buy ? "Renforcer " + tk : "Alléger " + tk,
     consensusBit: l => "consensus " + l.toLowerCase(),
     targetBit: pct => "objectif " + pct,
     ofPortfolio: w => w + " de son portefeuille",
