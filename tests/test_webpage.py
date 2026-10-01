@@ -16,8 +16,8 @@ def _series(n_days: int) -> list[DayResult]:
     cum = 0.0
     day = date(2026, 1, 1)
     while len(out) < n_days:
-        if day.weekday() < 5:  # los fines de semana no hay competición
-            cum += 0.01  # +1% cada jornada, acumulado desde el inicio
+        if day.weekday() < 5:
+            cum += 0.01
             out.append(DayResult(
                 day=day,
                 start_value=100.0, end_value=101.0, external_flow=0.0, pnl=1.0,
