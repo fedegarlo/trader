@@ -46,12 +46,12 @@ ick, not a booking.",
     footer: "Daily return with simple Dietz (deposits and withdrawals don't count " +
       "as gains); cumulative by geometric compounding (time-weighted return). " +
       "Data: encrypted Revolut statements · closing prices from Yahoo Finance · " +
-      "logos by <a href=\\"https://logo.dev\\" target=\\"_blank\\" rel=\\"noopener noreferrer\\">Logo.dev</a>.",
+      "logos by <a href=\"https://logo.dev\" target=\"_blank\" rel=\"noopener noreferrer\">Logo.dev</a>.",
     assets: n => n === 1 ? "asset" : "assets",
     others: "Others",
     donutAria: "Portfolio breakdown by weight",
     allocInsight: (tk, w) => "📊 Largest position · " + tk +
-      ' <span class="muted">· ' + w + " of total</span>",
+      ' <span class="muted">· ' + w + " of total</span>',
     walletTop: (tk, w) => "Largest · " + tk + " " + w,
     noPlayers: "No players with data yet",
     noPlayersDot: "No players with data yet.",
@@ -174,4 +174,4 @@ ick, not a booking.",
     chatAlloc: "リーグ全体の配分（ウェイト）。",
     chatWallets: "選手ごとの構成。ウェイトのみ、金額なし。",
     chatMonthlyDetail: "リーグ開始からの月次。",
-    chatGoa
+    chatGoal: "目標
