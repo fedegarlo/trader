@@ -1,4 +1,4 @@
-l;
+;
     box.appendChild(a);
   });
   return box;
@@ -64,7 +64,7 @@ function analystSectionEl(a) {
     const t = h("div", "target");
     let html = T.priceTarget(money(a.target));
     if (a.upside != null)
-      html += ' <span class="up ' + (a.upside >= 0 ? "pos" : "neg") + '">(' + fmtPct(a.upside) + ")</span>";
+      html += ' <span class="up ' + (a.upside >= 0 ? "pos" : "neg") + '">( ' + fmtPct(a.upside) + ")</span>";
     if (a.targetLow != null && a.targetHigh != null)
       html += ' <span class="rng">' + T.rangeLabel(money(a.targetLow), money(a.targetHigh)) + "</span>";
     t.innerHTML = html;
@@ -225,4 +225,4 @@ function openTreatHelp(info) {
   showModal(root);
 }
 
-// ---- detal
+// ---- detall
