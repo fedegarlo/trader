@@ -89,6 +89,35 @@ a { color: inherit; }
 /* varios agentes juntos («Connect the Bots»): se montan un poco */
 .stack { display: inline-flex; align-items: center; flex: none; }
 .stack .av + .av { margin-left: -9px; }
+/* blobs vivos: parpadean (todos) y miran de reojo (los bots). Cada uno lleva
+   su ritmo en --blink/--look y su desfase en --blink-at/--look-at (app.js),
+   así que nunca se mueven todos a la vez. Con «reducir movimiento» se
+   quedan quietos (regla del final). */
+.alive .eye { transform-box: fill-box; transform-origin: center;
+              animation: blink var(--blink, 6s) var(--blink-at, 0s) infinite; }
+.alive.twice .eye { animation-name: blink-twice; }
+.alive.bot .look { animation: look var(--look, 10s) var(--look-at, 0s) ease-in-out infinite; }
+.alive.thinking .look { animation: think 1.5s ease-in-out infinite; }
+@keyframes blink {
+  0%, 95%, 98.5%, 100% { transform: none; }
+  96.6% { transform: scaleY(0.1); }
+}
+@keyframes blink-twice {
+  0%, 92%, 94%, 96%, 98.5%, 100% { transform: none; }
+  93% { transform: scaleY(0.1); }
+  97.2% { transform: scaleY(0.1); }
+}
+@keyframes look {
+  0%, 30% { transform: none; }
+  33%, 46% { transform: translate(1.8px, -0.4px); }
+  49%, 71% { transform: none; }
+  74%, 85% { transform: translate(-1.7px, 0.6px); }
+  88%, 100% { transform: none; }
+}
+@keyframes think {
+  0%, 100% { transform: translate(1.6px, -1.4px); }
+  50% { transform: translate(-1.4px, -1.4px); }
+}
 .stack.xl .av + .av { margin-left: -18px; }
 
 /* ---- la app: carril + hilo ---------------------------------------------- */
