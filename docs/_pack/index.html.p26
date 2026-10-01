@@ -1,0 +1,171 @@
+ontadas y momentum ----
+  ps.forEach(p => { const s = streak(p, false); if (s >= 2)
+    add(6.0 + s * 0.2, "🌧️", I.redStreak(who(p), s)); });
+  ps.forEach(p => { if (p === leader) return; const s = streak(p, true); if (s >= 3)
+    add(6.4, "🔋", I.holdsFirm(who(p), s)); });
+  ps.forEach(p => { const d = totalDelta(p); if (d > 3)
+    add(6.0 + Math.min(d, 10) / 10, "🛫", I.onARoll(who(p), pts(d))); });
+  ps.forEach(p => { const k = Math.min(5, p.days.length); if (k >= 4 && greenCount(p, k) >= 4)
+    add(5.8, "✅", I.sharp(who(p), greenCount(p, k), k)); });
+  ps.forEach(p => { if (lastp(p).cum <= -2)
+    add(5.2, "🧯", I.needsReact(who(p), fmtPct(lastp(p).cum))); });
+  if (n >= 2 && lastp(tail).day > 0)
+    add(5.5, "🌱", I.signsOfLife(who(tail), fmtPct(lastp(tail).day)));
+  if (n >= 2)
+    add(4.0, "⏳", I.bottomEarly(who(tail)));
+  ps.forEach(p => { if (p.days.length >= 3 && range(p) >= 6)
+    add(5.2, "🎢", I.rollercoaster(who(p), pts(range(p)))); });
+
+  // ---- carteras (solo pesos, sin importes) ----
+  ps.forEach(p => { const h = p.holdings; if (!h || !h.length) return;
+    if (h.length === 1)
+      add(6.2, "🎯", I.allIn(who(p), h[0].ticker));
+    else if (h[0].w >= 40)
+      add(6.0, "⚠️", I.concentrates(who(p), fmtW(h[0].w), h[0].ticker)); });
+  { const withH = ps.filter(p => p.holdings && p.holdings.length);
+    if (withH.length) {
+      const div = withH.slice().sort((a, b) => b.holdings.length - a.holdings.length)[0];
+      if (div.holdings.length >= 4)
+        add(5.4, "🧩", I.mostDiversified(who(div), div.holdings.length)); } }
+  if (DATA.allocation && DATA.allocation.length) { const top = DATA.allocation[0];
+    if (top.w >= 20)
+      add(5.0, "📊", I.leagueLoaded(top.ticker, fmtW(top.w))); }
+
+  out.sort((a, b) => b.prio - a.prio);
+  return out;
+}
+
+let insightTimer = null, insightOff = 0;
+function paintInsights() {
+  const card = document.getElementById("insights-card");
+  const box = document.getElementById("insights");
+  const items = computeInsights();
+  if (!items.length) { card.style.display = "none"; return; }
+  card.style.display = "";
+  const show = Math.min(3, items.length);
+  if (insightOff >= items.length) insightOff = 0;
+  const render = () => {
+    box.innerHTML = "";
+    for (let k = 0; k < show; k++) {
+      const it = items[(insightOff + k) % items.length];
+      const row = document.createElement("div"); row.className = "insight";
+      row.innerHTML = '<span class="ic">' + it.icon + '</span><span class="tx">' + it.html + '</span>';
+      box.appendChild(row);
+    }
+  };
+  render();
+  clearInterval(insightTimer);
+  if (items.length > show) {
+    insightTimer = setInterval(() => {
+      [...box.children].forEach(c => c.style.opacity = "0");
+      setTimeout(() => { insightOff = (insightOff + show) % items.length; render(); }, 450);
+    }, 7000);
+  }
+}
+paintInsights();
+
+// ---- utilidades de escala (las usan las gráficas de los widgets del mes) ----
+function niceTicks(lo, hi, n) {
+  const span = hi - lo, step0 = span / n, mag = Math.pow(10, Math.floor(Math.log10(step0)));
+  const step = [1,2,2.5,5,10].map(m => m * mag).find(s => span / s <= n) || 10 * mag;
+  const out = []; for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) out.push(v);
+  return out;
+}
+
+// Repintado ante cambios de tema o de tamaño: las gráficas de los widgets del
+// mes miden en px reales del contenedor, así que hay que rehacerlas.
+const mq = window.matchMedia("(prefers-color-scheme: dark)");
+if (mq.addEventListener) mq.addEventListener("change", () => { paintWidgets(); paintMonthly(); paintAllocation(); paintWallets(); paintInsights(); paintChat(); });
+let rafId;
+window.addEventListener("resize", () => {
+  cancelAnimationFrame(rafId);
+  rafId = requestAnimationFrame(() => { paintMonthly(); syncTurns(); });
+});
+
+// ---- detalle mensual (vista de tabla: los valores nunca dependen del hover) ----
+// Un mes por fila —del más reciente al más antiguo— con la rentabilidad de ese
+// mes y el acumulado a su cierre. Solo rentabilidad: ni importes ni flujos,
+// tampoco para quien publica los suyos (eso sigue en su ficha de jugador).
+{
+  const box = document.getElementById("detail");
+  ranked.forEach(p => {
+    const det = document.createElement("details");
+    const sum = document.createElement("summary");
+    const key = document.createElement("span"); key.className = "key";
+    key.style.background = colorOf(p);
+    sum.appendChild(key); sum.appendChild(document.createTextNode(p.name));
+    det.appendChild(sum);
+    const over = document.createElement("div"); over.className = "overx";
+    const t = document.createElement("table");
+    const head = t.insertRow();
+    T.detailCols.forEach(c => {
+      const th = document.createElement("th"); th.textContent = c; head.appendChild(th);
+    });
+    const trs = (p.months || []).map(mo => {
+      const tr = t.insertRow();
+      const cells = [monthLabel(mo.month, mo.month_year), fmtPct(mo.ret), fmtPct(mo.cum)];
+      cells.forEach((c, i) => {
+        const td = tr.insertCell(); td.textContent = c;
+        const isPct = i >= cells.length - 2;
+        if (isPct) td.className = c.startsWith("+") ? "pos" : (c.startsWith("-") ? "neg" : "");
+      });
+      return tr;
+    });
+    over.appendChild(t); det.appendChild(over); box.appendChild(det);
+    collapseList(trs, det);
+  });
+  if (!ranked.length) box.textContent = T.noPlayersDot;
+}
+
+// ==== vistas de detalle: ticker y jugador ==============================
+// Overlay que se rellena en cliente desde los datos ya embebidos. Los logos se
+// piden a logo.dev por dominio con respaldo a un monograma de color (si el
+// servicio no responde), y las noticias son enlaces de búsqueda por símbolo:
+// la página sigue siendo estática y no expone importes ni operaciones.
+const modal = document.getElementById("modal");
+const modalBody = document.getElementById("modal-body");
+const sheet = document.getElementById("sheet");
+const h = (tag, cls, html) => { const e = document.createElement(tag);
+  if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+
+function monoEl(text, size, bg) {
+  const m = document.createElement("span");
+  m.className = "mono";
+  m.style.width = m.style.height = size + "px";
+  m.style.fontSize = Math.round(size * 0.4) + "px";
+  m.style.background = bg;
+  m.textContent = (text || "?").slice(0, 2).toUpperCase();
+  return m;
+}
+// Token publicable de logo.dev (pensado para el frontend; puede ir en el HTML).
+const LOGO_TOKEN = "pk_cgMPtdfzT5GGEORKN4rMDA";
+// Logo de empresa (por ticker) con respaldo a monograma si la imagen falla.
+function tickerLogoEl(t, size) {
+  const bg = badgeColor(t.ticker);
+  if (!t.ticker) return monoEl(t.ticker, size, bg);
+  const img = document.createElement("img");
+  img.className = "logo"; img.width = img.height = size; img.alt = "";
+  img.loading = "lazy"; img.referrerPolicy = "no-referrer";
+  img.src = "https://img.logo.dev/ticker/" + encodeURIComponent(t.ticker) +
+    "?token=" + LOGO_TOKEN + "&size=" + size + "&retina=true&format=png";
+  img.onerror = () => img.replaceWith(monoEl(t.ticker, size, bg));
+  return img;
+}
+
+// ---- últimas operaciones de la liga (fecha · compra/venta · ticker · jugador) ----
+// Va aquí, tras definir ``h`` y ``tickerLogoEl``, porque los usa al pintar. No
+// expone importes: solo qué se compró/vendió, de qué valor y qué día. El ticker
+// abre su ficha y el jugador la suya (si son abribles).
+function paintOperations() {
+  const ops = DATA.operations || [];
+  const card = document.getElementById("ops-card");
+  if (!ops.length) { card.style.display = "none"; return; }
+  card.style.display = "";
+  const box = document.getElementById("ops-list");
+  box.innerHTML = "";
+  const rows = ops.map(o => {
+    const row = h("div", "op-row");
+    // Toda la fila es clicable: abre la ficha del valor (o la del jugador si el
+    // valor no es abrible). El nombre del jugador, anidado con su propio
+    // data-player, sigue abriendo su ficha por delegación (gana el más interno).
+    if (TICKERS[o.ticker]) { r
