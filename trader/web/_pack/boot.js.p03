@@ -1,5 +1,4 @@
-Trader",
-    agentScout: "Scout",
+ agentScout: "Scout",
     agentScoutRole: "Veille",
     askWarren: "Demander à Warren",
     chatToday: "Aujourd'hui",
@@ -130,7 +129,7 @@ Trader",
       "ne comptent pas comme des gains) ; cumul par capitalisation géométrique " +
       "(rendement pondéré dans le temps). Données : relevés Revolut chiffrés · " +
       "cours de clôture de Yahoo Finance · logos par " +
-      "<a href=\\"https://logo.dev\\" target=\\"_blank\\" rel=\\"noopener noreferrer\\">Logo.dev</a>.",
+      "<a href=\"https://logo.dev\" target=\"_blank\" rel=\"noopener noreferrer\">Logo.dev</a>.",
     assets: n => n === 1 ? "actif" : "actifs",
     others: "Autres",
     donutAria: "Répartition du portefeuille par poids",
@@ -149,3 +148,4 @@ Trader",
     rangeLabel: (lo, hi) => "· fourchette " + lo + "–" + hi,
     relatedTickers: "Valeurs liées",
     nextBuy: "Renforcer", nextTrim: "Alléger",
+    nextTitle: (tk
