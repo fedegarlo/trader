@@ -1,0 +1,176 @@
+ow.classList.add("clk"); row.dataset.ticker = o.ticker; }
+    else if (o.id && PLAYERS[o.id]) { row.classList.add("clk"); row.dataset.player = o.id; }
+
+    const tk = h("span", "op-tk");
+    if (TICKERS[o.ticker]) { tk.classList.add("clk"); tk.dataset.ticker = o.ticker; }
+    tk.appendChild(tickerLogoEl({ticker: o.ticker}, 30));
+    const sym = h("span", "sym"); sym.textContent = o.ticker;
+    tk.appendChild(sym);
+    row.appendChild(tk);
+
+    const act = h("span", "op-act " + (o.kind === "BUY" ? "buy" : "sell"));
+    act.textContent = o.kind === "BUY" ? T.opBuy : T.opSell;
+    row.appendChild(act);
+
+    const name = h("span", "op-name");
+    if (o.id && PLAYERS[o.id]) { name.classList.add("clk"); name.dataset.player = o.id; }
+    const key = h("span", "key"); key.style.background = css(SLOTS[o.slot % SLOTS.length]);
+    name.appendChild(key);
+    const nm = h("span", "nm"); nm.textContent = o.name;
+    name.appendChild(nm);
+    row.appendChild(name);
+
+    row.appendChild(h("span", "op-date", fmtDate(o.date)));
+    box.appendChild(row);
+    return row;
+  });
+  collapseList(rows, box);
+}
+paintOperations();
+
+// ---- objetivo de la liga: avance de cada jugador + cuenta atrás -----------
+// El avance es el valor de la cartera (inversiones + efectivo) sobre el
+// objetivo del jugador. Solo se pinta la barra de quien lo publica
+// (``show_goal`` en su player.json, porque el % deja adivinar el importe); del
+// resto sí sale la fila —están todos— pero con la barra en trama y sin dato.
+// El importe exacto necesita además ``show_amounts``.
+const goalMoney = v => new Intl.NumberFormat(LANG_META.locale,
+  {style: "currency", currency: "EUR", maximumFractionDigits: 0}).format(v);
+function paintGoal() {
+  const g = DATA.goal;
+  const card = document.getElementById("goal-card");
+  if (!g || !ranked.length) { card.style.display = "none"; return; }
+  card.style.display = "";
+  // Ni la fecha límite ni el importe del objetivo se escriben: la cuenta atrás
+  // ya dice cuánto queda y la barra, cuánto llevas. Los datos siguen en
+  // ``DATA.goal`` para quien los quiera, pero la tarjeta va al grano.
+  document.getElementById("goal-days").textContent = g.days;
+  document.getElementById("goal-days-lbl").textContent =
+    g.days === 0 ? T.goalToday : (g.days === 1 ? T.goalDay : T.goalDays);
+
+  // Primero quien más lleva; los que no publican avance, al final (empates y
+  // filas sin dato, por orden de clasificación).
+  const box = document.getElementById("goal-list");
+  box.innerHTML = "";
+  const rows = ranked.map((p, i) => ({p, i}))
+    .sort((a, b) => ((b.p.goal ? b.p.goal.pct : -1) - (a.p.goal ? a.p.goal.pct : -1)) ||
+                    (a.i - b.i));
+  const painted = rows.map(({p}) => {
+    // ``goal`` sin ``pct`` (noFx) es «no se pudo convertir a euros»: se trata
+    // como sin dato, pero con su propia explicación.
+    const goal = (p.goal && p.goal.pct != null) ? p.goal : null;
+    const row = h("div", "goal-row clk");
+    row.dataset.player = p.id;
+
+    const top = h("div", "goal-top");
+    const key = h("span", "key"); key.style.background = colorOf(p);
+    top.appendChild(key);
+    const nm = h("span", "nm"); nm.textContent = p.name;
+    top.appendChild(nm);
+    const pct = h("span", "pct");
+    if (goal) {
+      // El objetivo cumplido se celebra en la propia cifra, sin línea aparte.
+      pct.textContent = goal.pct.toFixed(1) + "%" + (goal.pct >= 100 ? " 🎉" : "");
+      if (goal.pct >= 100) pct.classList.add("done");
+    } else {
+      pct.textContent = (p.goal && p.goal.noFx) ? T.goalNoRate : T.goalHidden;
+      pct.classList.add("hidden");
+    }
+    top.appendChild(pct);
+    row.appendChild(top);
+
+    const bar = h("div", "goal-bar" + (goal ? "" : " priv"));
+    if (goal) {
+      const fill = h("span");
+      fill.style.width = Math.max(0, Math.min(100, goal.pct)) + "%";
+      fill.style.background = colorOf(p);
+      bar.appendChild(fill);
+    }
+    row.appendChild(bar);
+
+    // Única línea extra posible, y solo para quien publica importes: lo que
+    // lleva. El objetivo no se escribe — es el mismo para todos y ya está en
+    // la barra.
+    if (goal && goal.value != null)
+      row.appendChild(h("div", "goal-meta", goalMoney(goal.value)));
+
+    box.appendChild(row);
+    return row;
+  });
+  collapseList(painted, box);
+
+  // Las carteras se valoran en la divisa del extracto y el objetivo está en
+  // euros: el cambio aplicado va en la cabecera, una vez por divisa. Es de la
+  // liga y no de cada jugador, así que se enseña aunque todos tengan su avance
+  // en privado: es lo que explica cómo se cuenta el objetivo.
+  const rates = Object.entries(g.fx || {});
+  const fxBox = document.getElementById("goal-fx");
+  fxBox.textContent = rates.map(([cur, r]) => T.goalFx(cur, r.toFixed(4))).join(" \\u00b7 ");
+  fxBox.style.display = rates.length ? "" : "none";
+}
+paintGoal();
+
+// ---- sesión extendida: pre-market / after-hours valor a valor -------------
+// La web es estática: lo que se pinta es la foto que se tomó al generarla (el
+// build corre cada hora en horario de mercado y también en las franjas de
+// pre-market y after-hours). Por eso la cabecera lleva siempre la hora del
+// dato y, si quien abre la página lo hace mucho después, la tarjeta se esconde
+// en vez de enseñar un pre-market de hace horas como si fuera de ahora.
+const EXT_MAX_AGE = 6 * 3600;  // segundos
+const CUR_SYM = {USD: "$", EUR: "\\u20ac", GBP: "\\u00a3"};
+const extLabel = session => session === "pre" ? T.extPre : T.extPost;
+function extMoney(v, cur) {
+  const n = Number(v).toLocaleString("en-US",
+    {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  return CUR_SYM[cur] ? CUR_SYM[cur] + n : n + (cur ? " " + cur : "");
+}
+function fmtClock(epoch) {
+  return new Intl.DateTimeFormat(LANG_META.clock, {
+    timeZone: "Europe/Madrid", hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+  }).format(new Date(epoch * 1000));
+}
+function paintExtended() {
+  const m = DATA.market, card = document.getElementById("ext-card");
+  const fresh = m && m.asOf && (Date.now() / 1000 - m.asOf) < EXT_MAX_AGE;
+  const rows = (DATA.tickers || []).filter(t =>
+    t.ext && m && t.ext.session === m.session && t.ext.pct != null);
+  if (!fresh || !rows.length) { card.style.display = "none"; return; }
+  card.style.display = "";
+
+  document.getElementById("ext-title").textContent =
+    (m.session === "pre" ? "\\ud83c\\udf05 " : "\\ud83c\\udf19 ") + extLabel(m.session);
+  document.getElementById("ext-when").textContent = T.extAt(fmtClock(m.asOf));
+  // El titular es la variación media de la liga ponderada por el peso de cada
+  // posición; si no se ha podido calcular, la tarjeta se queda en la lista.
+  const val = document.getElementById("ext-val");
+  val.textContent = m.pct == null ? "" : fmtPct(m.pct);
+  val.className = "num " + (m.pct >= 0 ? "pos" : "neg");
+  document.getElementById("ext-sub").textContent =
+    (m.pct == null ? T.extSession : T.extLeague) + " \\u00b7 " +
+    T.extHoldings(rows.length);
+  document.getElementById("ext-note").textContent = T.extNote;
+
+  const box = document.getElementById("ext-list");
+  box.innerHTML = "";
+  const painted = rows.sort((a, b) => b.ext.pct - a.ext.pct).map(t => {
+    const row = h("div", "ext-row clk");
+    row.dataset.ticker = t.ticker;
+    row.appendChild(tickerLogoEl(t, 30));
+    const tk = h("div", "tk");
+    const sym = h("span", "sym"); sym.textContent = t.ticker;
+    const nm = h("span", "nm"); nm.textContent = t.name;
+    tk.appendChild(sym); tk.appendChild(nm);
+    row.appendChild(tk);
+    row.appendChild(h("span", "px", extMoney(t.ext.price, t.ext.currency)));
+    row.appendChild(h("span", "pct " + (t.ext.pct >= 0 ? "pos" : "neg"),
+                      fmtPct(t.ext.pct)));
+    box.appendChild(row);
+    return row;
+  });
+  collapseList(painted, box);
+}
+paintExtended();
+
+// ---- enlaces de noticias: siempre en otra ventana -------------------------
+// Un `target="_blank"` basta en el navegador, pero NO con la web instalada como
+// app (el manifest va en `disp

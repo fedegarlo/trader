@@ -1,0 +1,106 @@
+
+    <article class="turn" data-agent="warren" data-watch="daily-card">
+      <span class="blob warren" aria-hidden="true"></span>
+      <div class="turn-body">
+        <div class="turn-who"><strong data-i18n="agentWarren"></strong><span class="role" data-i18n="agentWarrenRole"></span></div>
+        <p class="say" id="say-daily"></p>
+<section class="card" id="daily-card" style="display:none">
+    <h2 id="daily-title"></h2>
+    <div class="overx" style="margin-top:6px"><table id="daily"></table></div>
+  </section>
+      </div>
+    </article>
+    <article class="turn" data-agent="scout" data-watch="alloc-card">
+      <span class="blob scout" aria-hidden="true"></span>
+      <div class="turn-body">
+        <div class="turn-who"><strong data-i18n="agentScout"></strong><span class="role" data-i18n="agentScoutRole"></span></div>
+        <p class="say" id="say-alloc"></p>
+<section class="card" id="alloc-card" style="display:none">
+    <div class="wlabel" data-i18n="leagueWallet"></div>
+    <div id="alloc-bars"></div>
+    <div class="alloc-insight" id="alloc-insight"></div>
+  </section>
+      </div>
+    </article>
+    <article class="turn" data-agent="scout" data-watch="wallets-card">
+      <span class="blob scout" aria-hidden="true"></span>
+      <div class="turn-body">
+        <div class="turn-who"><strong data-i18n="agentScout"></strong><span class="role" data-i18n="agentScoutRole"></span></div>
+        <p class="say" id="say-wallets"></p>
+<section class="card" id="wallets-card" style="display:none">
+    <h2 data-i18n="walletsTitle"></h2>
+    <div id="wallets" style="margin-top:4px"></div>
+  </section>
+      </div>
+    </article>
+    <article class="turn" data-agent="warren" data-watch="monthly-card">
+      <span class="blob warren" aria-hidden="true"></span>
+      <div class="turn-body">
+        <div class="turn-who"><strong data-i18n="agentWarren"></strong><span class="role" data-i18n="agentWarrenRole"></span></div>
+        <p class="say" id="say-monthly"></p>
+<section class="card" id="monthly-card">
+    <h2 data-i18n="monthlyDetailTitle"></h2>
+    <div id="detail" style="margin-top:4px"></div>
+  </section>
+      </div>
+    </article>
+    <article class="turn" data-agent="warren" data-watch="goal-card">
+      <span class="blob warren" aria-hidden="true"></span>
+      <div class="turn-body">
+        <div class="turn-who"><strong data-i18n="agentWarren"></strong><span class="role" data-i18n="agentWarrenRole"></span></div>
+        <p class="say" id="say-goal"></p>
+<section class="card" id="goal-card" style="display:none">
+    <div class="goal-head">
+      <div class="goal-l">
+        <h2 data-i18n="goalTitle"></h2>
+        <div class="wsub muted" id="goal-fx" style="display:none"></div>
+      </div>
+      <div class="goal-count">
+        <span class="num" id="goal-days"></span>
+        <span class="lbl" id="goal-days-lbl"></span>
+      </div>
+    </div>
+    <div id="goal-list" style="margin-top:14px"></div>
+  </section>
+      </div>
+    </article>
+    <article class="turn" data-agent="warren" data-watch="badges-card">
+      <span class="blob warren" aria-hidden="true"></span>
+      <div class="turn-body">
+        <div class="turn-who"><strong data-i18n="agentWarren"></strong><span class="role" data-i18n="agentWarrenRole"></span></div>
+        <p class="say" id="say-badges"></p>
+<section class="card" id="badges-card" style="display:none">
+    <h2 data-i18n="badgesTitle"></h2>
+    <div class="wsub muted" data-i18n="badgesSub" style="margin-top:2px"></div>
+    <section class="card widget record" id="record-card" style="display:none;margin-top:12px">
+      <div class="wlabel"><span data-i18n="recordTitle"></span><span id="record-date"></span></div>
+      <div class="wbig"><span class="num pos" id="record-val"></span><span class="record-tk" id="record-tk"></span></div>
+      <div class="bestname" id="record-holders"></div>
+      <div class="wsub muted" id="record-prev" style="margin-top:6px"></div>
+    </section>
+    <div id="badge-rail" class="badge-rail" style="margin-top:12px" tabindex="0"
+         role="group" data-i18n-aria="badgesRailAria"></div>
+    <div id="badge-nav" class="badge-nav" style="display:none"></div>
+    <div class="wsub muted" id="badge-empty" style="display:none;margin-top:8px" data-i18n="badgesEmpty"></div>
+  </section>
+      </div>
+    </article>
+  </main>
+
+  <a class="composer" id="upload-mail" href="mailto:ligatrader26@gmail.com" data-i18n-title="sendPositions">
+    <span class="composer-plus" aria-hidden="true">+</span>
+    <span class="composer-field" data-i18n="askWarren">Ask Warren</span>
+    <span class="composer-mic" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 15a3.5 3.5 0 0 0 3.5-3.5V7a3.5 3.5 0 1 0-7 0v4.5A3.5 3.5 0 0 0 12 15zm7-3.5a1 1 0 1 0-2 0 5 5 0 1 1-10 0 1 1 0 1 0-2 0 7 7 0 0 0 6 6.93V20H9a1 1 0 1 0 0 2h6a1 1 0 1 0 0-2h-2v-1.57A7 7 0 0 0 19 11.5z"/></svg>
+    </span>
+  </a>
+</div>
+<div class="modal" id="modal" aria-hidden="true">
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" data-i18n-aria="detailAria">
+    <div class="grab"></div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+<footer data-i18n-html="footer"></footer>
+<script>
+const DATA = {"players": [{"id": "ana", "name": "Ana", "slot": 0, "amounts": false, "since": "2026-07-14", "days": [{"date": "2026-07-14", "day": 1.5255, "cum": 1.5255, "bd": [{"ticker": "PLTR", "pct": 1.5255}]}, {"date": "2026-07-15", "day": 0.0299, "cum": 1.5559, "bd": [{"ticker": "PLTR", "pct": 0.0299}]}, {"date": "2026-07-16", "day": -2.6311, "cum": -1.1161, "bd": [{"ticker": "SMCI", "pct": -1.8665}, {"ticker": "META", "pct": -1.0134}, {"ticker": "PLTR", "pct": 0.2489}]}, {"date": "2026-07-17", "day": -2.1399, "cum": -3.2322, "bd": [{"ticker": "META", "pct": -1.0154}, {"ticker": "SMCI", "pct": -0.6165}, {"ticker": "PLTR", "pct": -0.508}]}, {"date": "2026-07-20", "day": 0.322, "cum": -2.9206, "bd": [{"ticker": "PLTR", "pct": 0.5713}, {"ticker": "SMCI", "pct": -0.4048}, {"ticker": "META", "pct": 0.1555}]}, {"date": "2026-07-21", "day": 4.7588, "cum": 1.6992, "bd": [{"ticker": "SMCI", "pct": 5.3704}, {"ticker": "PLTR", "pct": -0.4667}, {"ticker": "META", "pct": -0.1449}]}, {"date": "2026-07-22", "day": -2.7738, "cum": -1.1218, "bd": [{"ticker": "PLTR", "pct": -1.6456}, {"ticker": "META", "pct": -1.1283}]}, {"date": "2026-07-23", "day": -1.7204, "cum": -2.8229, "bd": [{"ticker": "META", "pct": -1.4694}, {"ticker": "PLTR", "pct": -0.2511}]}, {"date": "2026-07-24", "day": -0.87, "cum": -3.6683, "bd": [{"ticker": "META", "pct": -0.7742}, {"ticker": "PLTR", "pct": -0.0958}]}, {"date": "2026-07-27", "day": 1.7545, "cum": -1.9782, "bd": [{"ticker": "PLTR", "pct": 1.849}, {"ticker": "META", "pct": -0.0945}]}, {"date": "2026-07-28", "day": -1.7528, "cum": -3.6963, "bd": [{"ticker": "PLTR", "pct": -1.6883}, {"ticker": "META", "pct": -0.0645}]}, {"date": "2026-07-29", "day": -0.8585, "cum": -4.5231, "bd": [{"ticker": "META", "pct": -0.7447}, {"ticker": "PLTR", "pct": -0.1138}]}, {"date": "2026-07-30", "day": -4.6458, "cum": -8.9588, "bd": [{"ticker": "META", "pct": -4.4855}, {"ticker": "PLTR", "pct": -0.1603}]}, {"date": "2026-07-31", "day": 2.0965, "cum": -7.0501, "bd": [{"ticker": "META", "pct": 1.9147}, {"ticker": "PLTR", "pct": 0.1818}]}, {"date": "2026-08-03", "day": 4.098, "cum": -3.241, "bd": [{"ticker": "META", "pct": 3.5216}, {"ticker": "PLTR", "pct": 0.5764}]}, {"date": "2026-08-04", "day": 5.1255, "cum": 1.7184, "bd": [{"ticker": "PLTR", "pct": 5.3431}, {"ticker": "META", "pct": -0.2176}]}, {"date": "2026-08-05", "day": 0.507, "cum": 2.2341, "bd": [{"ticker": "MU", "pct": 0.4326}, {"ticker": "META", "pct": 0.0744}]}, {"date": "2026-08-06", "day": 0.6499, "cum": 2.8985, "bd": [{"ticker": "MU", "pct": 0.5491}, {"ticker": "META", "pct": 0.1008}]}, {"date": "2026-08-07", "day": 0.4447, "cum": 3.3561, "bd": [{"ticker": "SNOW", "pct": 0.3361}, {"ticker": "META", "pct": 0.195}, {"ticker": "MU", "pct": -0.0864}]}, {"date

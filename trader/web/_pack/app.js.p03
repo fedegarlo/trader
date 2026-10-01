@@ -1,0 +1,192 @@
+ent = fmtPct(info.value);
+    val.className = "num " + (info.value >= 0 ? "pos" : "neg");
+    document.getElementById(key + "-player").textContent = info.name;
+    // Quién invita y dónde: el mes en curso va en condicional (la categoría se
+    // mueve con la rentabilidad hasta que el mes cierre); la del mes pasado ya
+    // es firme. El chip abre la escala completa, igual que la interrogación.
+    const note = document.getElementById(key + "-note");
+    if (note) {
+      const live = key === "month-cur";
+      note.innerHTML = "";
+      note.appendChild(document.createTextNode(live ? T.lunchNoteLive : T.lunchNote));
+      if (TREAT_SCALE[info.treat]) {
+        const chip = treatChip(info.treat);
+        chip.onclick = () => openTreatHelp(info);
+        note.appendChild(chip);
+      }
+    }
+    // El widget del mes pasado no lleva gráfica: es un titular y su «ver más».
+    const chart = document.getElementById(key + "-chart");
+    if (chart) monthChart(chart, info);
+    const legend = document.getElementById(key + "-legend");
+    if (legend) monthLegend(legend, info);
+    return true;
+  };
+  const hasCur = paint(m.current, "month-cur");
+  paintCityGP(m.current);
+  const hasPrev = paint(m.previous, "month-prev");
+  // «ver más» del mes pasado: la gráfica de todos los jugadores y su
+  // clasificación se abren en el segundo nivel (``onclick`` y no
+  // ``addEventListener`` porque esta función se repinta al cambiar de tamaño).
+  const more = document.getElementById("month-prev-more");
+  if (more) {
+    more.textContent = T.monthSeeMore;
+    more.onclick = hasPrev ? () => openMonthDetail(m.previous) : null;
+  }
+  const row = document.getElementById("month-row");
+  row.style.display = (hasCur || hasPrev) ? "grid" : "none";
+}
+paintMonthly();
+
+// ---- campeón de cada día del mes actual (mayor % del día) ----
+function paintDaily() {
+  const dw = DATA.dailyWinners || {};
+  const rows = dw.rows || [];
+  const card = document.getElementById("daily-card");
+  if (!rows.length) { card.style.display = "none"; return; }
+  card.style.display = "";
+  document.getElementById("daily-title").textContent =
+    T.dailyTitle(monthLabel(dw.month, dw.month_year));
+  const t = document.getElementById("daily");
+  t.innerHTML = "";
+  const head = t.insertRow();
+  T.dailyCols.forEach((h, i) => {
+    const th = document.createElement("th");
+    th.textContent = h; if (i === 1) th.className = "name"; head.appendChild(th);
+  });
+  const slotColor = s => css(SLOTS[s % SLOTS.length]);
+  const trs = rows.map(r => {
+    const tr = t.insertRow();
+    // toda la fila abre el detalle del día del campeón (rentabilidad por valor
+    // + el % del día del resto de jugadores)
+    tr.classList.add("clk");
+    tr.dataset.dayDate = r.date;
+    tr.dataset.dayPlayer = (r.ids && r.ids[0]) || "";
+    const fecha = tr.insertCell(); fecha.textContent = fmtDate(r.date);
+    const name = tr.insertCell(); name.className = "name";
+    name.appendChild(document.createTextNode("🏅 "));
+    if (r.slot !== null && r.slot !== undefined) {
+      const key = document.createElement("span");
+      key.className = "key"; key.style.background = slotColor(r.slot);
+      name.appendChild(key);
+    }
+    name.appendChild(document.createTextNode(r.names.join(", ")));
+    const val = tr.insertCell();
+    val.className = r.value >= 0 ? "pos" : "neg";
+    val.textContent = fmtPct(r.value);
+    return tr;
+  });
+  collapseList(trs, card);
+}
+paintDaily();
+
+// ---- insignias (badges): récord de la liga + rejilla de logros acumulados ----
+// Los datos llegan ya calculados y ordenados desde el histórico persistente
+// (data/badges.json): aquí solo se pintan. Cada logro lleva el color del
+// jugador (slot) para reconocerlo de un vistazo.
+const BADGE_ICON = {
+  champion_month: "🏆", week_streak: "🔥", milestone: "💎",
+  months_2: "📈", months_3: "🗓️",
+};
+function badgeMilestoneIcon(t) { return t >= 25 ? "🚀" : (t >= 10 ? "💎" : "🌱"); }
+function badgeTitle(b) {
+  if (b.type === "champion_month") {
+    const ml = monthLabel(+b.month.split("-")[1], +b.month.split("-")[0]);
+    return b.provisional ? T.badgeChampProv(ml) : T.badgeChamp(ml);
+  }
+  if (b.type === "week_streak") return T.badgeWeek;
+  if (b.type === "milestone") return T.badgeMilestone(b.tier);
+  if (b.type === "months_2") return T.badgeMonths(2);
+  if (b.type === "months_3") return T.badgeMonths(3);
+  return b.type;
+}
+function badgeIcon(b) {
+  if (b.type === "milestone") return badgeMilestoneIcon(b.tier);
+  return BADGE_ICON[b.type] || "🎖️";
+}
+// Insignias agrupadas por jugador, para su ficha de detalle. Las provisionales
+// (campeón del mes en curso) van primero; el resto ya llega ordenado de más
+// reciente a más antigua desde el histórico.
+const PLAYER_BADGES = {};
+(((DATA.badges || {}).provisional) || [])
+  .concat(((DATA.badges || {}).awards) || [])
+  .forEach(b => { if (b.player) (PLAYER_BADGES[b.player] || (PLAYER_BADGES[b.player] = [])).push(b); });
+function paintBadges() {
+  const data = DATA.badges || {};
+  const awards = (data.provisional || []).concat(data.awards || []);
+  const record = data.record || null;
+  const card = document.getElementById("badges-card");
+  if (!awards.length && !record) { card.style.display = "none"; return; }
+  card.style.display = "";
+  const slotColor = s => css(SLOTS[(s || 0) % SLOTS.length]);
+
+  // Récord de «mayor subida de un valor en un día».
+  const rc = document.getElementById("record-card");
+  if (record) {
+    rc.style.display = "";
+    document.getElementById("record-date").textContent = " · " + fmtDate(record.date);
+    document.getElementById("record-val").textContent = fmtPct(record.pct);
+    document.getElementById("record-tk").textContent = record.ticker;
+    const holders = (record.holders || []).map(h => h.name);
+    const rh = document.getElementById("record-holders");
+    rh.textContent = holders.length ? T.recordHeld(holders.join(", ")) : "";
+    rh.style.display = holders.length ? "" : "none";
+    const prev = (record.history || []).slice(-1)[0];
+    const rp = document.getElementById("record-prev");
+    if (prev) { rp.style.display = ""; rp.textContent = T.recordPrev(fmtPct(prev.pct), prev.ticker, fmtDate(prev.date)); }
+    else rp.style.display = "none";
+  } else rc.style.display = "none";
+
+  // Carrusel de insignias: una tarjeta por logro, que se pasan deslizando.
+  const rail = document.getElementById("badge-rail");
+  rail.innerHTML = "";
+  document.getElementById("badge-empty").style.display = awards.length ? "none" : "";
+  const cards = awards.map(b => {
+    const el = document.createElement("div");
+    el.className = "badge" + (b.provisional ? " prov" : "");
+    const ico = document.createElement("span");
+    ico.className = "bico"; ico.textContent = badgeIcon(b); el.appendChild(ico);
+    const box = document.createElement("div"); box.className = "btext";
+    const title = document.createElement("div");
+    title.className = "btitle"; title.textContent = badgeTitle(b); box.appendChild(title);
+    const who = document.createElement("div"); who.className = "bwho";
+    const key = document.createElement("span");
+    key.className = "key"; key.style.background = slotColor(b.slot); who.appendChild(key);
+    who.appendChild(document.createTextNode(b.name || "")); box.appendChild(who);
+    const meta = document.createElement("div"); meta.className = "bmeta";
+    if (b.type === "champion_month" && b.pct !== undefined && b.pct !== null)
+      meta.textContent = T.badgeChampMeta(fmtPct(b.pct));
+    else if (b.date) meta.textContent = T.badgeOn(fmtDate(b.date));
+    box.appendChild(meta);
+    if (b.provisional) {
+      const tag = document.createElement("div");
+      tag.className = "ptag"; tag.textContent = "● " + T.badgeLive; box.appendChild(tag);
+    }
+    el.appendChild(box);
+    el.setAttribute("role", "listitem");
+    rail.appendChild(el);
+    return el;
+  });
+  rail.setAttribute("role", cards.length ? "list" : "group");
+  badgeNav(rail, cards);
+}
+// Indicador del carrusel: un punto por insignia (y salta a ella al pulsarlo)
+// mientras quepan; en cuanto son muchas, un contador «3 / 27», que ocupa lo
+// mismo con veinte insignias que con cien. El punto activo es el de la tarjeta
+// anclada al borde izquierdo del carril, que es la que el anclaje deja fija.
+const BADGE_DOTS_MAX = 10;
+function badgeNav(rail, cards) {
+  const nav = document.getElementById("badge-nav");
+  nav.innerHTML = "";
+  nav.style.display = "none";
+  if (cards.length < 2) return;
+  // en pantallas anchas puede que quepan todas: sin nada que deslizar, sobra
+  // el indicador (y al girar el móvil se recalcula)
+  const showNav = () => { nav.style.display = rail.scrollWidth > rail.clientWidth + 2 ? "" : "none"; };
+  window.addEventListener("resize", showNav);
+  const dots = cards.length <= BADGE_DOTS_MAX ? cards.map((el, i) => {
+    const dot = document.createElement("button");
+    dot.type = "button";
+    dot.setAttribute("aria-label", T.badgeGoTo(i + 1, cards.length));
+    dot.addEventListener("click", () => {
+      const left = e

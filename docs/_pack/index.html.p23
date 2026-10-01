@@ -1,0 +1,183 @@
+ "stroke-width": 2.4,
+      "stroke-linejoin": "round", "stroke-linecap": "round"}));
+    const end = pts[pts.length - 1];
+    svg.appendChild(mk("circle", {cx: end[0], cy: end[1], r: 3.6, fill: c,
+      stroke: css("--card-solid"), "stroke-width": 2.5}));
+  });
+  if (showEnds) ends.forEach(e => {
+    const t = mk("text", {x: W - M.r + 5, y: e.yy + 4, fill: css("--ink-2"),
+      "font-size": 11, style: "font-variant-numeric:tabular-nums;font-weight:600"});
+    t.textContent = fmtPct(e.value);
+    svg.appendChild(t);
+  });
+  host.appendChild(svg);
+}
+
+// Leyenda del mes: cada jugador con su color y su % del mes, de mejor a peor.
+// Abre la ficha del jugador al pulsar (delegación sobre ``data-player``).
+function monthLegend(host, info) {
+  host.innerHTML = "";
+  const series = info.series || [];
+  if (series.length < 2) return;
+  series.forEach((s, i) => {
+    const el = document.createElement("span");
+    el.className = "clk"; el.dataset.player = s.id;
+    const key = document.createElement("span");
+    key.className = "key"; key.style.background = css(SLOTS[s.slot % SLOTS.length]);
+    el.appendChild(key);
+    if (i === 0) {
+      const tr = document.createElement("span");
+      tr.className = "mtrophy"; tr.textContent = "🏆"; el.appendChild(tr);
+    }
+    el.appendChild(document.createTextNode(s.name));
+    const val = document.createElement("span");
+    val.className = "mval " + (s.value >= 0 ? "pos" : "neg");
+    val.textContent = fmtPct(s.value);
+    el.appendChild(val);
+    host.appendChild(el);
+  });
+}
+
+// ---- Gran Premio de la ciudad de Vancouver: cómo va el mes en curso ----
+// El mes es su propia carrera, con el banner de la ciudad de cabecera: debajo
+// va quién lo lleva ganado —el líder con su rentabilidad del mes y su ventaja
+// en puntos sobre el segundo, tintado con su propio color— y el resto del
+// podio. La gráfica de todos los jugadores sigue justo detrás, intacta. Líder
+// y podio abren la ficha del jugador por delegación (``data-player``).
+//
+// Se llama desde ``paintMonthly()``, que se repinta al cambiar de tamaño: por
+// eso todo lo que se pinta aquí se limpia antes.
+function paintCityGP(info) {
+  const card = document.getElementById("month-cur-card");
+  const row = document.getElementById("vgp-lead");
+  const podium = document.getElementById("vgp-podium");
+  const chips = document.getElementById("vgp-chips");
+  const series = (info && info.series) || [];
+  const leader = series[0];
+  chips.innerHTML = "";
+  podium.style.display = "none";
+  row.classList.remove("clk");
+  delete row.dataset.player;
+  document.getElementById("vgp-title").textContent =
+    info ? T.vgpTitle(monthLabel(info.month, info.month_year)) : "";
+  // sin jugadores este mes la tarjeta entera está oculta (la esconde ``paint``)
+  if (!leader) { document.getElementById("vgp-gap").textContent = ""; return; }
+  // el color del líder tiñe su bloque, como en la general
+  card.style.setProperty("--lead", colorOf(leader));
+  row.classList.add("clk"); row.dataset.player = leader.id;
+  const second = series[1];
+  document.getElementById("vgp-gap").textContent = second
+    ? T.gpGap(second.name, (leader.value - second.value).toFixed(2))
+    : T.gpSolo;
+  series.slice(1, 3).forEach((p, i) => {
+    const chip = document.createElement("div");
+    chip.className = "gp-chip clk"; chip.dataset.player = p.id;
+    const medal = document.createElement("span");
+    medal.className = "m"; medal.textContent = MEDALS[i + 1];
+    const name = document.createElement("span");
+    name.className = "n"; name.textContent = p.name;
+    const val = document.createElement("span");
+    val.className = "v " + (p.value >= 0 ? "pos" : "neg");
+    val.textContent = fmtPct(p.value);
+    chip.append(medal, name, val);
+    chips.appendChild(chip);
+  });
+  if (chips.children.length) podium.style.display = "";
+}
+
+function paintMonthly() {
+  const m = DATA.monthly || {};
+  const paint = (info, key) => {
+    const card = document.getElementById(key + "-card");
+    // la interrogación abre la escala del restaurante de *ese* mes (con su
+    // peldaño resaltado), así que se recuelga en cada repintado
+    const help = document.getElementById(key + "-help");
+    if (help) help.onclick = info ? () => openTreatHelp(info) : null;
+    if (!info) { card.style.display = "none"; return false; }
+    card.style.display = "";
+    document.getElementById(key + "-label").textContent =
+      T.winnerOf(monthLabel(info.month, info.month_year));
+    const val = document.getElementById(key + "-val");
+    val.textContent = fmtPct(info.value);
+    val.className = "num " + (info.value >= 0 ? "pos" : "neg");
+    document.getElementById(key + "-player").textContent = info.name;
+    // Quién invita y dónde: el mes en curso va en condicional (la categoría se
+    // mueve con la rentabilidad hasta que el mes cierre); la del mes pasado ya
+    // es firme. El chip abre la escala completa, igual que la interrogación.
+    const note = document.getElementById(key + "-note");
+    if (note) {
+      const live = key === "month-cur";
+      note.innerHTML = "";
+      note.appendChild(document.createTextNode(live ? T.lunchNoteLive : T.lunchNote));
+      if (TREAT_SCALE[info.treat]) {
+        const chip = treatChip(info.treat);
+        chip.onclick = () => openTreatHelp(info);
+        note.appendChild(chip);
+      }
+    }
+    // El widget del mes pasado no lleva gráfica: es un titular y su «ver más».
+    const chart = document.getElementById(key + "-chart");
+    if (chart) monthChart(chart, info);
+    const legend = document.getElementById(key + "-legend");
+    if (legend) monthLegend(legend, info);
+    return true;
+  };
+  const hasCur = paint(m.current, "month-cur");
+  paintCityGP(m.current);
+  const hasPrev = paint(m.previous, "month-prev");
+  // «ver más» del mes pasado: la gráfica de todos los jugadores y su
+  // clasificación se abren en el segundo nivel (``onclick`` y no
+  // ``addEventListener`` porque esta función se repinta al cambiar de tamaño).
+  const more = document.getElementById("month-prev-more");
+  if (more) {
+    more.textContent = T.monthSeeMore;
+    more.onclick = hasPrev ? () => openMonthDetail(m.previous) : null;
+  }
+  const row = document.getElementById("month-row");
+  row.style.display = (hasCur || hasPrev) ? "grid" : "none";
+}
+paintMonthly();
+
+// ---- campeón de cada día del mes actual (mayor % del día) ----
+function paintDaily() {
+  const dw = DATA.dailyWinners || {};
+  const rows = dw.rows || [];
+  const card = document.getElementById("daily-card");
+  if (!rows.length) { card.style.display = "none"; return; }
+  card.style.display = "";
+  document.getElementById("daily-title").textContent =
+    T.dailyTitle(monthLabel(dw.month, dw.month_year));
+  const t = document.getElementById("daily");
+  t.innerHTML = "";
+  const head = t.insertRow();
+  T.dailyCols.forEach((h, i) => {
+    const th = document.createElement("th");
+    th.textContent = h; if (i === 1) th.className = "name"; head.appendChild(th);
+  });
+  const slotColor = s => css(SLOTS[s % SLOTS.length]);
+  const trs = rows.map(r => {
+    const tr = t.insertRow();
+    // toda la fila abre el detalle del día del campeón (rentabilidad por valor
+    // + el % del día del resto de jugadores)
+    tr.classList.add("clk");
+    tr.dataset.dayDate = r.date;
+    tr.dataset.dayPlayer = (r.ids && r.ids[0]) || "";
+    const fecha = tr.insertCell(); fecha.textContent = fmtDate(r.date);
+    const name = tr.insertCell(); name.className = "name";
+    name.appendChild(document.createTextNode("🏅 "));
+    if (r.slot !== null && r.slot !== undefined) {
+      const key = document.createElement("span");
+      key.className = "key"; key.style.background = slotColor(r.slot);
+      name.appendChild(key);
+    }
+    name.appendChild(document.createTextNode(r.names.join(", ")));
+    const val = tr.insertCell();
+    val.className = r.value >= 0 ? "pos" : "neg";
+    val.textContent = fmtPct(r.value);
+    return tr;
+  });
+  collapseList(trs, card);
+}
+paintDaily();
+
+// ---- insignias (badges): réc

@@ -1,0 +1,228 @@
+;
+    box.appendChild(a);
+  });
+  return box;
+}
+function sectionEl(title, node) {
+  const s = h("div", "msec");
+  s.appendChild(h("div", "h", title));
+  s.appendChild(node);
+  return s;
+}
+function tileEl(k, v, cls) {
+  const t = h("div", "tile");
+  t.appendChild(h("div", "k", k));
+  t.appendChild(h("div", "v" + (cls ? " " + cls : ""), v));
+  return t;
+}
+
+// Reparto de opiniones: buckets de compra→venta con su propia rampa de cinco
+// pasos (verde→ámbar→rojo, con el gris del «mantener» en medio). Comparte el
+// idioma de color con la liga —verde bien, rojo mal— pero no sus variables:
+// aquí hacen falta los tonos intermedios, que --up y --down no tienen.
+const REC_BUCKETS = [
+  ["strongBuy", T.recBuckets[0], "#15a34a"],
+  ["buy", T.recBuckets[1], "#22c55e"],
+  ["hold", T.recBuckets[2], "#9aa0ac"],
+  ["sell", T.recBuckets[3], "#f59e0b"],
+  ["strongSell", T.recBuckets[4], "#ef4444"],
+];
+// El análisis (label) llega en español desde el backend (derivado de la media
+// de recomendación); se traduce al idioma activo mapeando a los buckets.
+const REC_LABEL_MAP = {"Compra fuerte": 0, "Comprar": 1, "Mantener": 2, "Vender": 3, "Venta fuerte": 4};
+const recLabel = l => { const i = REC_LABEL_MAP[l]; return i == null ? l : T.recBuckets[i]; };
+function analystSectionEl(a) {
+  const wrap = h("div", "msec");
+  wrap.appendChild(h("div", "h", T.analystRec +
+    (a.asOf ? ' <span style="color:var(--muted);font-weight:600">· ' + fmtDate(a.asOf) + "</span>" : "")));
+  const cons = h("div", "consensus");
+  if (a.label) cons.appendChild(h("span", "cbadge " + (a.tone || "neutral"), recLabel(a.label)));
+  const meta = [];
+  if (a.count) meta.push(T.analysts(a.count));
+  if (a.mean != null) meta.push(T.avg(a.mean.toFixed(1)));
+  if (meta.length) cons.appendChild(h("span", "cmeta", meta.join(" · ")));
+  wrap.appendChild(cons);
+  if (a.dist) {
+    const total = REC_BUCKETS.reduce((s, [k]) => s + (a.dist[k] || 0), 0);
+    if (total > 0) {
+      const bar = h("div", "distbar");
+      const leg = h("div", "distlegend");
+      REC_BUCKETS.forEach(([k, lbl, col]) => {
+        const n = a.dist[k] || 0; if (!n) return;
+        const seg = document.createElement("span");
+        seg.style.background = col; seg.style.width = (n / total * 100) + "%";
+        seg.title = lbl + ": " + n; bar.appendChild(seg);
+        const item = h("span", "k");
+        const sw = document.createElement("span"); sw.className = "sw"; sw.style.background = col;
+        item.appendChild(sw); item.appendChild(document.createTextNode(lbl + " " + n));
+        leg.appendChild(item);
+      });
+      wrap.appendChild(bar); wrap.appendChild(leg);
+    }
+  }
+  if (a.target != null) {
+    const t = h("div", "target");
+    let html = T.priceTarget(money(a.target));
+    if (a.upside != null)
+      html += ' <span class="up ' + (a.upside >= 0 ? "pos" : "neg") + '">(' + fmtPct(a.upside) + ")</span>";
+    if (a.targetLow != null && a.targetHigh != null)
+      html += ' <span class="rng">' + T.rangeLabel(money(a.targetLow), money(a.targetHigh)) + "</span>";
+    t.innerHTML = html;
+    wrap.appendChild(t);
+  }
+  return wrap;
+}
+function peersSectionEl(peers) {
+  const chips = h("div", "chips");
+  peers.forEach(p => {
+    const known = !!TICKERS[p.ticker];
+    let chip;
+    if (known) { chip = h("div", "chip-tk clk"); chip.dataset.ticker = p.ticker; }
+    else {
+      chip = document.createElement("a"); chip.className = "chip-tk";
+      chip.href = "https://revolut.com/app/trading/stocks/" + encodeURIComponent(p.ticker);
+      chip.target = "_blank"; chip.rel = "noopener noreferrer";
+      chip.style.textDecoration = "none"; chip.style.color = "inherit";
+    }
+    chip.appendChild(tickerLogoEl(p, 22));
+    chip.appendChild(document.createTextNode(p.ticker));
+    if (!known) chip.appendChild(h("span", "w", "↗"));
+    chips.appendChild(chip);
+  });
+  return sectionEl(T.relatedTickers, chips);
+}
+function nextStepEl(s) {
+  const card = h("div", "nextstep");
+  if (TICKERS[s.ticker]) { card.classList.add("clk"); card.dataset.ticker = s.ticker; }
+  const isBuy = s.action !== "trim";
+  const top = h("div", "top");
+  top.appendChild(tickerLogoEl(s, 26));
+  top.appendChild(h("span", "act" + (isBuy ? "" : " neg"), isBuy ? T.nextBuy : T.nextTrim));
+  top.appendChild(h("span", "ttl", T.nextTitle(s.ticker, isBuy)));
+  card.appendChild(top);
+  const bits = [];
+  if (s.label) bits.push(T.consensusBit(recLabel(s.label)));
+  if (s.count) bits.push(T.analysts(s.count));
+  if (s.upside != null) bits.push(T.targetBit(fmtPct(s.upside)));
+  bits.push(T.ofPortfolio(fmtW(s.w)));
+  card.appendChild(h("div", "body", bits.join(" · ")));
+  card.appendChild(h("div", "dis", T.nextDisclaimer));
+  return card;
+}
+
+let closingTimer = null;
+function hideModal() {
+  clearTimeout(closingTimer);
+  modal.classList.remove("open");
+  sheet.classList.remove("closing");
+  sheet.style.transform = ""; sheet.style.transition = ""; sheet.style.opacity = "";
+  modal.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+}
+function closeModal() {
+  if (!modal.classList.contains("open")) return;
+  sheet.classList.add("closing");        // desliza la hoja hacia abajo y oculta
+  clearTimeout(closingTimer);
+  closingTimer = setTimeout(hideModal, 240);
+}
+function showModal(node) {
+  clearTimeout(closingTimer);
+  sheet.classList.remove("closing");
+  sheet.style.transform = ""; sheet.style.transition = ""; sheet.style.opacity = "";
+  modalBody.innerHTML = "";
+  const close = h("button", "mclose", "✕");
+  close.setAttribute("aria-label", T.close);
+  close.addEventListener("click", closeModal);
+  node.appendChild(close);               // ✕ fijado arriba a la derecha (absolute)
+  modalBody.appendChild(node);
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+  sheet.scrollTop = 0;
+}
+
+// ---- cómo se calcula la rentabilidad (interrogante del widget líder) ----
+function openLeaderHelp() {
+  const c = T.calc;
+  const root = document.createElement("div");
+
+  const head = h("div", "mhead");
+  const title = h("div", "mtitle");
+  title.appendChild(h("div", "t1", c.title));
+  title.appendChild(h("div", "t2", c.subtitle));
+  head.appendChild(title);
+  root.appendChild(head);
+
+  // preguntas y respuestas (la venta, mantener la rentabilidad, los flujos…)
+  c.qa.forEach(([q, a]) => {
+    root.appendChild(sectionEl(q, h("div", "mtext", a)));
+  });
+
+  // fórmulas: rentabilidad diaria (Dietz simple) y acumulada (geométrica)
+  const fsec = h("div", "msec");
+  fsec.appendChild(h("div", "h", c.formulaLabel));
+  const f1 = h("div", "formula");
+  f1.appendChild(h("span", "lbl", c.dailyLbl));
+  f1.appendChild(document.createTextNode(c.dailyFormula));
+  fsec.appendChild(f1);
+  const f2 = h("div", "formula");
+  f2.appendChild(h("span", "lbl", c.cumLbl));
+  f2.appendChild(document.createTextNode(c.cumFormula));
+  fsec.appendChild(f2);
+  root.appendChild(fsec);
+
+  root.appendChild(h("div", "mnote", c.note));
+  showModal(root);
+}
+const heroHelp = document.getElementById("hero-help");
+if (heroHelp) heroHelp.addEventListener("click", openLeaderHelp);
+
+// ---- la escala del restaurante (interrogante de los widgets del mes) ----
+// El widget solo canta la categoría; aquí está el baremo entero: qué
+// rentabilidad mensual da derecho a qué clase de sitio, con un precio
+// orientativo por persona y unos restaurantes de Madrid como vara de medir. La
+// fila del peldaño en el que está ese mes va resaltada.
+function openTreatHelp(info) {
+  const root = document.createElement("div");
+
+  const head = h("div", "mhead");
+  const title = h("div", "mtitle");
+  title.appendChild(h("div", "t1", T.treatTitle));
+  title.appendChild(h("div", "t2", T.treatSubtitle));
+  head.appendChild(title);
+  root.appendChild(head);
+
+  root.appendChild(h("div", "mtext", T.treatIntro));
+
+  const table = document.createElement("table");
+  table.className = "scale";
+  const cols = table.insertRow();
+  T.treatCols.forEach((c, i) => {
+    const th = document.createElement("th");
+    if (i === 1) th.className = "where";
+    th.textContent = c;
+    cols.appendChild(th);
+  });
+  TREAT_SCALE.forEach((step, i) => {
+    const tr = table.insertRow();
+    if (info && info.treat === i) tr.className = "on";
+    const rng = tr.insertCell();
+    rng.className = "rng"; rng.textContent = treatRange(i);
+    const where = tr.insertCell();
+    where.className = "where";
+    where.appendChild(h("span", "eur", step.euros));
+    where.appendChild(document.createTextNode(T.treatTiers[i]));
+    // los restaurantes son el ejemplo de a qué precio juega el peldaño
+    where.appendChild(h("span", "ex", (step.places || []).join(" · ")));
+    const price = tr.insertCell();
+    price.className = "price";
+    price.textContent = i === TREAT_SCALE.length - 1
+      ? T.treatPlus(treatMoney(step.price)) : treatMoney(step.price);
+  });
+  root.appendChild(sectionEl(T.treatScaleLbl, table));
+
+  root.appendChild(h("div", "mnote", T.treatNote));
+  showModal(root);
+}
+
+// ---- detall

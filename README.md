@@ -15,7 +15,11 @@ en la apertura y el cierre de cada día de mercado por una GitHub Action:
 
 ## Ver en web
 
-La página es estática y autocontenida. Abre con el **Canada Grand Prix 26/27**,
+La página es estática y autocontenida. Se lee como un **hilo de conversación**
+con dos agentes —**Warren** (Trader) y **Scout** (Watch)—: salen los dibujitos,
+cuentan quién va ganando el día, el mes y el acumulado desde el inicio, y
+debajo de cada turno siguen los mismos módulos de siempre. Abre con el
+**Canada Grand Prix 26/27**,
 que es la **clasificación general** contada como una carrera: de cabecera, el
 banner de turismo de Canadá (enlaza a la web oficial de Destination Canada en el
 idioma activo), porque el viaje es el premio de la general; debajo, **quién va

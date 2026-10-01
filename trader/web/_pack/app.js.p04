@@ -1,0 +1,193 @@
+l.getBoundingClientRect().left - rail.getBoundingClientRect().left
+                 + rail.scrollLeft - 18;
+      rail.scrollTo({left: Math.max(0, left), behavior: "smooth"});
+    });
+    nav.appendChild(dot);
+    return dot;
+  }) : null;
+  const count = dots ? null : nav.appendChild(document.createElement("span"));
+  if (count) count.className = "count";
+  let at = -1, tick = 0;
+  const sync = () => {
+    tick = 0;
+    const base = rail.getBoundingClientRect().left + 18;  // borde útil, tras el acolchado
+    let best = 0, dist = Infinity;
+    cards.forEach((el, i) => {
+      const d = Math.abs(el.getBoundingClientRect().left - base);
+      if (d < dist) { dist = d; best = i; }
+    });
+    if (best === at) return;
+    at = best;
+    if (dots) dots.forEach((d, i) => {
+      d.classList.toggle("on", i === at);
+      d.setAttribute("aria-current", i === at ? "true" : "false");
+    });
+    else count.textContent = (at + 1) + " / " + cards.length;
+  };
+  rail.addEventListener("scroll", () => {
+    if (!tick) tick = requestAnimationFrame(sync);
+  }, {passive: true});
+  sync();
+  showNav();
+}
+paintBadges();
+
+// ---- widgets de cartera: asignación por ticker (solo pesos, sin importes) ----
+function badgeColor(t) {
+  let h = 0; for (let i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) >>> 0;
+  return "hsl(" + (h % 360) + " 58% 52%)";
+}
+const fmtW = w => w.toFixed(w < 10 ? 1 : 0) + "%";
+// Agrupa la cola en «Otros» cuando hay más de 6 posiciones (misma regla que
+// usa la cartera de la liga), para que las barras no se aprieten.
+function allocItems(all) {
+  if (all.length <= 6) return all;
+  const rest = all.slice(5).reduce((s, x) => s + x.w, 0);
+  return all.slice(0, 5).concat([{ticker: T.others, w: Math.round(rest * 100) / 100, other: true}]);
+}
+// Gráfico de tarta (donut): el ángulo de cada porción es su peso real en la
+// cartera, así que la superficie refleja el % verdadero (no relativo al mayor,
+// como hacían las barras). Se dibuja con arcos de una circunferencia via
+// stroke-dasharray; un hueco de 2px separa las porciones. En el centro, el
+// número de posiciones. ``count`` es el total real de tickers (antes de
+// agrupar la cola en «Otros»), no el número de porciones.
+function donutSVG(items, count, size) {
+  const S = size || 132, sw = S < 120 ? 16 : 20;
+  const cx = S / 2, cy = S / 2, r = (S - sw) / 2 - 1, C = 2 * Math.PI * r;
+  const drawn = items.filter(x => x.w > 0);
+  const gap = drawn.length > 1 ? 2 : 0;
+  let acc = 0;
+  const segs = drawn.map(x => {
+    const col = x.other ? css("--muted") : badgeColor(x.ticker);
+    const frac = x.w / 100;
+    const len = Math.max(0.5, frac * C - gap);
+    const dash = len.toFixed(2) + " " + (C - len).toFixed(2);
+    const off = (-acc * C).toFixed(2);
+    acc += frac;
+    return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r.toFixed(2) +
+      '" fill="none" stroke="' + col + '" stroke-width="' + sw +
+      '" stroke-dasharray="' + dash + '" stroke-dashoffset="' + off + '">' +
+      '<title>' + x.ticker + ' · ' + fmtW(x.w) + '</title></circle>';
+  }).join("");
+  const big = S < 120 ? 20 : 24;
+  const center = count
+    ? '<text x="' + cx + '" y="' + (cy - 1) + '" text-anchor="middle" class="donut-center" ' +
+        'font-size="' + big + '">' + count + '</text>' +
+      '<text x="' + cx + '" y="' + (cy + 14) + '" text-anchor="middle" class="donut-sub" ' +
+        'font-size="10.5">' + T.assets(count) + '</text>'
+    : "";
+  return '<svg class="donut" width="' + S + '" height="' + S + '" viewBox="0 0 ' + S + ' ' + S +
+    '" role="img" aria-label="' + T.donutAria + '">' +
+    '<g transform="rotate(-90 ' + cx + ' ' + cy + ')">' + segs + '</g>' + center + '</svg>';
+}
+function donutLegendHTML(items) {
+  return '<ul class="donut-legend">' + items.map(x => {
+    const col = x.other ? css("--muted") : badgeColor(x.ticker);
+    const openable = !x.other && TICKERS[x.ticker];
+    const attrs = openable ? ' class="dl clk" data-ticker="' + x.ticker + '"' : ' class="dl"';
+    return '<li' + attrs + '><span class="dot" style="background:' + col + '"></span>' +
+      '<span class="tk">' + x.ticker + '</span><span class="w">' + fmtW(x.w) + '</span></li>';
+  }).join("") + '</ul>';
+}
+// Tarta + leyenda. ``all`` es la lista completa de posiciones (peso ya en %);
+// se agrupa la cola en «Otros» para no fragmentar la tarta, pero el contador
+// central refleja el número real de activos.
+function donutHTML(all, size) {
+  const items = allocItems(all);
+  return '<div class="donut-wrap">' + donutSVG(items, all.length, size) +
+    donutLegendHTML(items) + '</div>';
+}
+function paintAllocation() {
+  const all = DATA.allocation || [];
+  const card = document.getElementById("alloc-card");
+  if (!all.length) { card.style.display = "none"; return; }
+  card.style.display = "";
+  document.getElementById("alloc-bars").innerHTML = donutHTML(all);
+  const top = all[0];
+  document.getElementById("alloc-insight").innerHTML =
+    T.allocInsight(top.ticker, fmtW(top.w));
+}
+paintAllocation();
+
+// ---- carteras por jugador: reparto por ticker de cada uno (solo pesos) ----
+function paintWallets() {
+  const withHoldings = ranked.filter(p => p.holdings && p.holdings.length);
+  const card = document.getElementById("wallets-card");
+  if (!withHoldings.length) { card.style.display = "none"; return; }
+  card.style.display = "";
+  const box = document.getElementById("wallets");
+  box.innerHTML = "";
+  const wallets = withHoldings.map(p => {
+    const wrap = document.createElement("div"); wrap.className = "wallet";
+    const head = document.createElement("div"); head.className = "whead clk";
+    head.dataset.player = p.id;
+    const key = document.createElement("span"); key.className = "key";
+    key.style.background = colorOf(p);
+    head.appendChild(key); head.appendChild(document.createTextNode(p.name));
+    const top = document.createElement("span"); top.className = "top";
+    top.textContent = T.walletTop(p.holdings[0].ticker, fmtW(p.holdings[0].w));
+    head.appendChild(top);
+    const chart = document.createElement("div");
+    chart.innerHTML = donutHTML(p.holdings, 108);
+    wrap.appendChild(head); wrap.appendChild(chart.firstChild);
+    box.appendChild(wrap);
+    return wrap;
+  });
+  collapseList(wallets, box);
+}
+paintWallets();
+
+// ---- insights «IA»: 30+ plantillas con hueco para el/los jugador(es) ----
+// Cada plantilla lleva su condición y solo se muestra «según corresponda»
+// (ranking, % del día/acumulado, rachas, carteras). De todas las aplicables se
+// pintan tres y van rotando, para que la lectura parezca un análisis vivo.
+function computeInsights() {
+  const ps = DATA.players.filter(p => p.days && p.days.length);
+  if (!ps.length) return [];
+  const lastp = p => p.days[p.days.length - 1];
+  const ranked = [...ps].sort((a, b) => lastp(b).cum - lastp(a).cum);
+  const byDay = [...ps].sort((a, b) => lastp(b).day - lastp(a).day);
+  const n = ps.length;
+  const leader = ranked[0], second = ranked[1], tail = ranked[n - 1];
+  const bestDay = byDay[0], worstDay = byDay[n - 1];
+  const who = p => '<b style="color:' + colorOf(p) + '">' + p.name + '</b>';
+  const pts = v => T.points(v);
+  const I = T.ins;
+  const streak = (p, positive) => { let c = 0; for (let i = p.days.length - 1; i >= 0; i--) {
+    const d = p.days[i].day; if (positive ? d > 0 : d < 0) c++; else break; } return c; };
+  const greenCount = (p, k) => p.days.slice(-k).filter(d => d.day > 0).length;
+  // avance desde el inicio de la liga (la serie ya no se recorta a 30 días)
+  const totalDelta = p => lastp(p).cum - p.days[0].cum;
+  const range = p => { const c = p.days.map(d => d.cum); return Math.max(...c) - Math.min(...c); };
+  const recovered = p => p.days.length >= 2 &&
+    lastp(p).day > 0 && p.days[p.days.length - 2].day < 0;
+  const allNeg = ps.every(p => lastp(p).day < 0);
+  const allPos = ps.every(p => lastp(p).day > 0);
+
+  const out = [];
+  const add = (prio, icon, html) => out.push({ prio, icon, html });
+
+  // ---- líder y cabeza de la tabla ----
+  if (n >= 2) {
+    const g = lastp(leader).cum - lastp(second).cum;
+    if (g > 0.05)
+      add(9.5, "🔥", I.leaderFire(who(leader), pts(g), who(second)));
+    if (g > 3)
+      add(6.7, "🧱", I.leaderPullAway(who(leader)));
+  }
+  add(6.0, lastp(leader).cum >= 0 ? "👑" : "🏳️",
+    I.leaderLeads(who(leader), fmtPct(lastp(leader).cum)));
+  add(4.6, "🧭", I.leaderHelm(who(leader)));
+  if (lastp(leader).day > 0)
+    add(6.9, "🛰️", I.leaderUnstoppable(who(leader), fmtPct(lastp(leader).day)));
+  if (leader === bestDay && lastp(leader).day > 0)
+    add(8.5, "🚀", I.leaderPerfect(who(leader), fmtPct(lastp(leader).day)));
+  { const s = streak(leader, true); if (s >= 2)
+    add(7.0, "📈", I.leaderGreenStreak(who(leader), s)); }
+  if (n >= 2) {
+    const g = lastp(leader).cum - lastp(tail).cum;
+    if (g > 5)
+      add(6.5, "🏁", I.raceFinish(who(leader), pts(g), who(tail)));
+    add(4.8, "📐", I.overallGap(who(leader), who(tail), pts(g)));
+    add(4.4, "🛡️", I.leaderDefends(who(leader), who(tail)));
+    add(4.2, "🎙️", I

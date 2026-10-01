@@ -1,0 +1,199 @@
+t.cum >= 0 ? upC : downC, "pl", {baseline0: true}));
+    // la serie del jugador es toda la liga: mismo título que la gráfica grande
+    root.appendChild(sectionEl(T.cumTitle, spark));
+  }
+
+  if (p.holdings && p.holdings.length) {
+    const chips = h("div", "chips");
+    p.holdings.forEach(hh => {
+      const meta = TICKERS[hh.ticker] || {ticker: hh.ticker, domain: "", name: hh.ticker};
+      const chip = h("div", "chip-tk" + (TICKERS[hh.ticker] ? " clk" : ""));
+      if (TICKERS[hh.ticker]) chip.dataset.ticker = hh.ticker;
+      chip.appendChild(tickerLogoEl(meta, 22));
+      chip.appendChild(document.createTextNode(hh.ticker));
+      chip.appendChild(h("span", "w", fmtW(hh.w)));
+      chips.appendChild(chip);
+    });
+    root.appendChild(sectionEl(T.portfolioCount(p.holdings.length), chips));
+  }
+
+  const recent = days.slice(-6).reverse();
+  if (recent.length) {
+    const list = document.createElement("div");
+    recent.forEach(d => {
+      const row = h("div", "mini-row");
+      row.appendChild(h("span", "dt", fmtDate(d.date)));
+      row.appendChild(h("span", "v " + (d.day >= 0 ? "pos" : "neg"), fmtPct(d.day)));
+      list.appendChild(row);
+    });
+    root.appendChild(sectionEl(T.recentSessions, list));
+  }
+
+  if (p.holdings && p.holdings.length) {
+    // Los titulares de toda su cartera, no solo los de su primera posición.
+    const syms = p.holdings.map(hh => hh.ticker);
+    root.appendChild(newsSectionEl(T.portfolioNews, newsFor(syms, 6), syms[0]));
+  }
+  showModal(root);
+}
+
+// ---- detalle de una jornada (campeón del día) ----
+// Índice fecha -> { id de jugador -> su jornada }, para reunir en un vistazo la
+// rentabilidad de cada jugador ese día sin recorrer todo el dataset al abrir.
+const DAY_INDEX = {};
+DATA.players.forEach(p => (p.days || []).forEach(d => {
+  (DAY_INDEX[d.date] || (DAY_INDEX[d.date] = {}))[p.id] = d;
+}));
+
+// Muestra la rentabilidad de cada valor del jugador esa jornada (los % suman el
+// «% del día») y, debajo, el % del día del resto de jugadores. ``pid`` es el
+// jugador protagonista (el campeón del día); si falta o no tiene datos ese
+// día, se toma el mejor de la jornada.
+function openDayDetail(pid, iso) {
+  const perPlayer = DAY_INDEX[iso] || {};
+  let subject = PLAYERS[pid];
+  if (!subject || !perPlayer[pid]) {
+    let bestId = null, bestVal = -Infinity;
+    Object.keys(perPlayer).forEach(id => {
+      if (perPlayer[id].day > bestVal) { bestVal = perPlayer[id].day; bestId = id; }
+    });
+    subject = PLAYERS[bestId]; pid = bestId;
+  }
+  if (!subject) return;
+  const sd = perPlayer[pid] || {day: 0, bd: []};
+  const root = document.createElement("div");
+
+  const head = h("div", "mhead");
+  head.appendChild(monoEl(subject.name, 46, colorOf(subject)));
+  const title = h("div", "mtitle");
+  const t1 = h("div", "t1");
+  t1.appendChild(document.createTextNode(fmtDate(iso)));
+  t1.appendChild(h("span", "mbadge" + (sd.day >= 0 ? "" : " neg"), fmtPct(sd.day)));
+  title.appendChild(t1);
+  title.appendChild(h("div", "t2", subject.name));
+  head.appendChild(title);
+  root.appendChild(head);
+
+  // rentabilidad por valor: cada porción suma el % del día
+  const bd = sd.bd || [];
+  if (bd.length) {
+    const list = document.createElement("div");
+    const rows = bd.map(x => {
+      const row = h("div", "holder-row");
+      if (x.ticker && TICKERS[x.ticker]) { row.classList.add("clk"); row.dataset.ticker = x.ticker; }
+      const nm = h("span", "nm");
+      if (x.ticker) {
+        nm.appendChild(tickerLogoEl({ticker: x.ticker}, 26));
+        nm.appendChild(document.createTextNode(x.ticker));
+      } else {
+        nm.appendChild(document.createTextNode("💵 " + T.dayCash));
+      }
+      row.appendChild(nm);
+      row.appendChild(h("span", "w " + (x.pct >= 0 ? "pos" : "neg"), fmtPct(x.pct)));
+      list.appendChild(row);
+      return row;
+    });
+    collapseList(rows, list);
+    root.appendChild(sectionEl(T.dayByAsset, list));
+  } else {
+    root.appendChild(sectionEl(T.dayByAsset, h("div", "mnote", T.dayNoBreakdown)));
+  }
+
+  // resto de jugadores: su % del día (ordenado de mejor a peor)
+  const others = Object.keys(perPlayer)
+    .filter(id => id !== pid && PLAYERS[id])
+    .map(id => ({p: PLAYERS[id], d: perPlayer[id]}))
+    .sort((a, b) => b.d.day - a.d.day);
+  if (others.length) {
+    const list = document.createElement("div");
+    others.forEach(({p, d}) => {
+      const row = h("div", "holder-row clk"); row.dataset.player = p.id;
+      const nm = h("span", "nm");
+      const key = h("span", "key"); key.style.background = colorOf(p);
+      nm.appendChild(key); nm.appendChild(document.createTextNode(p.name));
+      row.appendChild(nm);
+      row.appendChild(h("span", "w " + (d.day >= 0 ? "pos" : "neg"), fmtPct(d.day)));
+      list.appendChild(row);
+    });
+    root.appendChild(sectionEl(T.dayOthers, list));
+  }
+
+  showModal(root);
+}
+
+// ---- segundo nivel del mes pasado («ver más» del widget) ----
+// El widget de portada solo canta el titular (quién ganó y con cuánto); aquí
+// abajo está el detalle: la evolución de todos los jugadores dentro del mes y su
+// clasificación, con cada fila abriendo la ficha del jugador.
+function openMonthDetail(info) {
+  if (!info) return;
+  const ml = monthLabel(info.month, info.month_year);
+  const root = document.createElement("div");
+
+  const head = h("div", "mhead");
+  head.appendChild(monoEl(info.name, 46, css(SLOTS[info.slot % SLOTS.length])));
+  const title = h("div", "mtitle");
+  const t1 = h("div", "t1");
+  t1.appendChild(document.createTextNode(ml));
+  t1.appendChild(h("span", "mbadge" + (info.value >= 0 ? "" : " neg"), fmtPct(info.value)));
+  title.appendChild(t1);
+  title.appendChild(h("div", "t2", "🏆 " + info.name));
+  head.appendChild(title);
+  root.appendChild(head);
+
+  // La gráfica se pinta *después* de abrir la hoja: mide el ancho real de su
+  // contenedor y dentro del modal ese ancho no existe hasta estar en el DOM.
+  const chart = h("div", "mchart");
+  root.appendChild(sectionEl(T.monthEvolution, chart));
+
+  const series = info.series || [];
+  if (series.length) {
+    const list = document.createElement("div");
+    const rows = series.map((s, i) => {
+      const row = h("div", "holder-row clk");
+      row.dataset.player = s.id;
+      const nm = h("span", "nm");
+      const key = h("span", "key");
+      key.style.background = css(SLOTS[s.slot % SLOTS.length]);
+      nm.appendChild(key);
+      if (i === 0) nm.appendChild(document.createTextNode("🏆 "));
+      nm.appendChild(document.createTextNode(s.name));
+      row.appendChild(nm);
+      row.appendChild(h("span", "w " + (s.value >= 0 ? "pos" : "neg"), fmtPct(s.value)));
+      list.appendChild(row);
+      return row;
+    });
+    collapseList(rows, list);
+    root.appendChild(sectionEl(T.monthRanking, list));
+  }
+
+  showModal(root);
+  monthChart(chart, info);
+}
+
+// ---- apertura por delegación + cierre (backdrop / ✕ / Esc) ----
+document.addEventListener("click", ev => {
+  // detalle de una jornada (campeón del día)
+  const dd = ev.target.closest("[data-day-date]");
+  if (dd && dd.dataset.dayDate) {
+    openDayDetail(dd.dataset.dayPlayer || "", dd.dataset.dayDate); return;
+  }
+  const tk = ev.target.closest("[data-ticker]");
+  const pl = ev.target.closest("[data-player]");
+  // Cuando un elemento abrible está anidado dentro de otro (p. ej. el nombre
+  // del jugador dentro de una fila de operación que abre el valor), gana el más
+  // interno: el que el usuario ha tocado realmente.
+  if (tk && pl) {
+    if (tk.contains(pl)) openPlayer(pl.dataset.player);
+    else openTicker(tk.dataset.ticker);
+    return;
+  }
+  if (tk && tk.dataset.ticker) { openTicker(tk.dataset.ticker); return; }
+  if (pl && pl.dataset.player) { openPlayer(pl.dataset.player); return; }
+});
+modal.addEventListener("click", ev => { if (ev.target === modal) closeModal(); });
+document.addEventListener("keydown", ev => {
+  if (ev.key === "Escape" && modal.classList.contains("open")) closeModal();
+});
+
+// ---- arrastrar hacia abajo para cerrar (bottom sheet nativo en m

@@ -1,0 +1,168 @@
+const DATA = __DATA__;
+const UPDATED = "__UPDATED__";
+
+// ==== idioma: inglés por defecto, japonés y francés opcionales ========
+// La selección se recuerda por dispositivo en localStorage. El selector solo
+// guarda la preferencia y recarga: toda la interfaz se pinta según ``LANG``.
+// ``LANGS`` es la lista de idiomas del selector, en el orden en que aparecen.
+const LANGS = [
+  {code: "en", label: "English", short: "EN", locale: "en-US", clock: "en-GB"},
+  {code: "ja", label: "日本語", short: "日本語", locale: "ja-JP", clock: "ja-JP",
+   manifest: "manifest-ja.webmanifest"},
+  {code: "fr", label: "Français", short: "FR", locale: "fr-FR", clock: "fr-FR",
+   manifest: "manifest-fr.webmanifest"},
+];
+const LANG = (() => {
+  try {
+    const s = localStorage.getItem("lang");
+    if (LANGS.some(l => l.code === s)) return s;
+  } catch (e) {}
+  return "en";
+})();
+const LANG_META = LANGS.find(l => l.code === LANG);
+document.documentElement.lang = LANG;
+
+const NBSP = String.fromCharCode(160);
+const MONTHS = {
+  en: ["January","February","March","April","May","June","July","August",
+       "September","October","November","December"],
+  ja: ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"],
+  fr: ["janvier","février","mars","avril","mai","juin","juillet","août",
+       "septembre","octobre","novembre","décembre"],
+};
+const monthLabel = (m, y) => LANG === "ja"
+  ? y + "年" + MONTHS.ja[m - 1]
+  : (MONTHS[LANG] || MONTHS.en)[m - 1] + " " + y;
+// francés: «de» se elide ante los meses que empiezan por vocal (d'avril,
+// d'août, d'octobre), así que el conector va junto a la etiqueta del mes.
+const deMois = ml => (/^[aeiouâéêîô]/i.test(ml) ? "d'" : "de ") + ml;
+
+// El sello de la última actualización llega del build como «AAAA-MM-DD HH:MM»
+// (hora de Madrid). En la cabecera se lee con el mes escrito en el idioma que
+// toque —«August 14, 2026 · 09:30», «14 août 2026 · 09:30», «2026年8月14日
+// 09:30»— en vez del ISO crudo, que parece más un número de serie que una
+// fecha. Si el sello no viniera con la forma esperada se deja tal cual. Va con
+// espacios duros: en el móvil la cabecera cabe justa y así la fecha salta
+// entera al segundo renglón en vez de dejar la hora suelta.
+const updatedOn = (() => {
+  const m = /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}:\d{2}))?/.exec(UPDATED.trim());
+  if (!m) return () => UPDATED;
+  const y = m[1], mo = +m[2], d = +m[3], hm = m[4];
+  return lang => {
+    const day = lang === "ja" ? y + "年" + mo + "月" + d + "日"
+      : lang === "fr" ? d + NBSP + MONTHS.fr[mo - 1] + NBSP + y
+      : MONTHS.en[mo - 1] + NBSP + d + "," + NBSP + y;
+    // en japonés la hora va pegada a la fecha, sin el punto medio que separa
+    // los bloques del resto de la cabecera
+    return hm ? day + (lang === "ja" ? NBSP : NBSP + "·" + NBSP) + hm : day;
+  };
+})();
+
+const I18N = {
+  en: {
+    appTitle: "Trader League",
+    eyebrow: "🏆 League · Revolut · updated " + updatedOn("en"),
+    sendPositions: "Send positions",
+    mailBody: "attached are my positions in csv format",
+    langAria: "Change language",
+    caTitle: "Canada is calling",
+    caSub: "Plan your trip on the official site.",
+    caAria: "Visit Canada: official tourism website",
+    caHref: "https://travel.destinationcanada.com/en-ca",
+    gpTitle: "Canada Grand Prix 26/27",
+    gpLeading: "Winning the trip",
+    gpGap: (name, pts) => "+" + pts + " pts over " + name,
+    gpSolo: "Alone on the grid for now",
+    gpPodium: "Podium",
+    vcTitle: "Vancouver is waiting",
+    vcSub: "Meet the city on its official site.",
+    vcAria: "City of Vancouver: official website",
+    vcHref: "https://vancouver.ca/",
+    vgpTitle: ml => "Vancouver City GP · " + ml,
+    vgpLeading: "Leading this month",
+    allPlayers: "All players",
+    periodAll: "Since the start",
+    agentWarren: "Warren",
+    agentWarrenRole: "Trader",
+    agentScout: "Scout",
+    agentScoutRole: "Watch",
+    askWarren: "Ask Warren",
+    chatToday: "Today",
+    chatStandings: (name, pct) => name + " leads the league with " + pct + " since the start. Standings and the curve are right here.",
+    chatDay: (name, pct) => "Session leader: " + name + " with " + pct + ".",
+    chatMonth: (name, pct, ml) => name + " is winning " + ml + " with " + pct + ". Chart of everyone below.",
+    chatMonthPrev: (name, pct, ml) => name + " took " + ml + " with " + pct + ".",
+    chatOps: "Latest buys and sells — who moved, and in what.",
+    chatNews: "Headlines from the holdings in the league.",
+    chatExt: "What the holdings are doing outside regular hours.",
+    chatInsights: "A quick read on who's pulling away and who's catching up.",
+    chatDaily: "Who won each session this month.",
+    chatAlloc: "How the league is allocated, by weight.",
+    chatWallets: "Each player's composition — weights only, no amounts.",
+    chatMonthlyDetail: "Month by month since the start of the league.",
+    chatGoal: "How close each player is to the goal.",
+    chatBadges: "The palmarès — badges stay once they're earned.",
+    chatPending: "A statement is in, but it still needs the league passphrase.",
+    pendingTitle: "⏳ Awaiting passphrase",
+    pendingText: n => n + " — the statement is uploaded but couldn't be decrypted. " +
+      "The passphrase is probably not the league's: please re-upload with the correct one.",
+    calcHelpAria: "How the ranking is calculated",
+    calc: {
+      title: "How the ranking is calculated",
+      subtitle: "Time-weighted return — fair across different amounts",
+      qa: [
+        ["Are sales taken into account?",
+         "Yes — every buy and sell is processed — but a sale on its own doesn't change your return. Selling just turns shares into cash at their market price, so your portfolio is worth the same the instant before and after (bar fees). Whatever you had already earned stays locked in."],
+        ["If I sell, do I keep my profitability?",
+         "Yes. Your accumulated return is preserved: selling never resets it. From then on your cash simply stops moving — idle cash scores 0% per day — so you hold your position but stop climbing until you buy back in."],
+        ["What actually moves the score, then?",
+         "Only how your holdings change in value day to day: share prices and dividends. Buys and sells reshuffle money between cash and shares without adding or removing any gains."],
+        ["Do deposits or withdrawals help?",
+         "No. Paying in or taking out money is neutralised (simple Dietz), so adding cash never inflates your score. Everyone is compared on <b>percentage return</b>, not on how much they invested."],
+      ],
+      formulaLabel: "The formulas",
+      dailyLbl: "Day",
+      dailyFormula: "r = (end − start − flow) / (start + flow/2)",
+      cumLbl: "Total",
+      cumFormula: "∏ (1 + rₙ) − 1",
+      note: "That's why someone with €100 and someone with €10,000 compete on equal terms: what counts is the percentage, not the amount.",
+    },
+    bestOfDay: "Best of the day",
+    recentOps: "Latest trades",
+    opBuy: "Buy", opSell: "Sell",
+    leagueNews: "League news",
+    newsCount: n => n + (n === 1 ? " headline" : " headlines"),
+    newsTickers: n => n + (n === 1 ? " holding" : " holdings"),
+    newsNote: "Headlines for the tickers held in the league, fetched when the " +
+      "page was built. Each one opens on its own outlet.",
+    marketClosed: "Market closed",
+    extPre: "Pre-market",
+    extPost: "After hours",
+    extAt: t => "as of " + t,
+    extHoldings: n => n + (n === 1 ? " holding" : " holdings"),
+    extSession: "Extended session",
+    extLeague: "League portfolio, weighted",
+    extNote: "Prices outside regular trading hours (Yahoo Finance), captured " +
+      "when the page was built — they don't count towards the standings until " +
+      "the session closes.",
+    winnerOf: ml => "Winner of " + ml,
+    monthChartAria: ml => "Return of every player during " + ml,
+    lunchNote: "🍽️ Their turn to buy lunch, at",
+    lunchNoteLive: "🍽️ As things stand, they're buying at",
+    treatHelpAria: "How the restaurant tier is decided",
+    treatTitle: "Who pays, and where",
+    treatSubtitle: "The better the month, the pricier the table",
+    treatIntro: "Whoever wins the month buys lunch — and their own return picks " +
+      "the restaurant. Every step up the scale is a pricier table, and a month " +
+      "in the red is settled with beers and tapas. While the month is still " +
+      "running the tier moves with the leader: a good week upgrades the table, " +
+      "a bad one sends everyone back to the bar.",
+    treatScaleLbl: "The scale",
+    treatCols: ["The month", "Where they take you", "≈ / person"],
+    treatTiers: ["Beers and tapas", "Neighbourhood tavern",
+                 "Tablecloth and dessert", "Fine dining", "Michelin stars"],
+    treatUnder: p => "below " + p,
+    treatFrom: p => p + " or better",
+    treatPlus: m => m + "+",
+    treatNote: "Prices are a rough guide per person, drinks in. The Madrid places " +
+      "are only examples of each step — a yardst

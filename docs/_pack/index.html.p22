@@ -1,0 +1,153 @@
+queda en blanco: sigue enseñando
+    // al ganador de la última jornada cerrada (que es la anterior a hoy), solo
+    // que con una etiqueta de «mercado cerrado» junto a su fecha para que se
+    // vea de qué sesión es el dato.
+    //
+    // «Cerrado» aquí es la madrugada/mañana de un día laborable, antes de que
+    // abra el mercado de EE. UU. (~15:30 en Madrid) y mientras no haya jornada
+    // de hoy. Todo se calcula en hora de Madrid para que el corte sea
+    // exactamente la medianoche local (con DST correcto). Los fines de semana y
+    // tras el cierre —con la jornada del día ya publicada— no se marca nada.
+    const mp = new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Europe/Madrid", weekday: "short",
+      year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+    }).formatToParts(new Date());
+    const gp = t => (mp.find(x => x.type === t) || {}).value;
+    const madridDate = gp("year") + "-" + gp("month") + "-" + gp("day");
+    const isWeekday = gp("weekday") !== "Sat" && gp("weekday") !== "Sun";
+    const hh = +gp("hour"), mm = +gp("minute");
+    const preOpen = hh < 15 || (hh === 15 && mm < 30);
+    const marketClosed = isWeekday && preOpen && bd.date !== madridDate;
+    bDate.textContent = " · " + bd.date.slice(5).split("-").reverse().join("/");
+    bv.textContent = fmtPct(bd.day); bv.className = "num " + (bd.day >= 0 ? "pos" : "neg");
+    bn.innerHTML = '<span class="medal">🥇</span>';
+    bn.appendChild(document.createTextNode(best.name));
+    if (marketClosed) {
+      const tag = document.createElement("span");
+      tag.className = "closed-tag";
+      tag.textContent = "🚧 " + T.marketClosed;
+      bn.appendChild(tag);
+    }
+  }
+}
+paintWidgets();
+
+// ---- categoría del restaurante: quién invita y **dónde** -----------------
+// El ganador del mes paga la comida y su propia rentabilidad decide el precio
+// del sitio: cuanto mejor el mes, más caro el restaurante. La escala llega del
+// build (``treatScale``: tramo, € de la categoría, precio orientativo por
+// persona y restaurantes de Madrid de ejemplo) y cada mes trae su peldaño
+// (``treat``). Aquí se pinta el chip del widget; la tabla entera vive detrás de
+// la interrogación (``openTreatHelp``).
+//
+// Se declara antes que ``paintMonthly`` a propósito: esa función se ejecuta al
+// cargar y necesita la escala ya disponible.
+const TREAT_SCALE = DATA.treatScale || [];
+const treatMoney = v => new Intl.NumberFormat(LANG_META.locale,
+  {style: "currency", currency: "EUR", maximumFractionDigits: 0}).format(v);
+// Los cortes de la escala son redondos (0 %, 2,5 %, 5 %, 10 %): se enseñan con
+// un decimal solo cuando lo tienen, no con los dos del resto de la página.
+const treatPct = v => (v > 0 ? "+" : "") + (v % 1 ? v.toFixed(1) : v.toFixed(0)) + "%";
+function treatRange(i) {
+  const lo = TREAT_SCALE[i].min;
+  const hi = i + 1 < TREAT_SCALE.length ? TREAT_SCALE[i + 1].min : null;
+  if (lo === null || lo === undefined) return T.treatUnder(treatPct(hi));
+  if (hi === null || hi === undefined) return T.treatFrom(treatPct(lo));
+  return treatPct(lo) + " – " + treatPct(hi);
+}
+// Chip «€€€ categoría» que remata la frase de quién invita. Va con
+// ``createElement`` y no con el ayudante ``h`` porque este bloque corre antes
+// de que ese ayudante exista.
+function treatChip(tier) {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.className = "tchip";
+  const eur = document.createElement("span");
+  eur.className = "eur"; eur.textContent = TREAT_SCALE[tier].euros;
+  b.appendChild(eur);
+  b.appendChild(document.createTextNode(T.treatTiers[tier]));
+  b.setAttribute("aria-label", T.treatHelpAria);
+  b.title = T.treatHelpAria;
+  return b;
+}
+
+// ---- widgets «mejor del mes»: este mes y el mes pasado (si hay datos) ----
+// Aunque el titular sea el ganador, la gráfica pinta a todos los jugadores del
+// mes con su color: así se ve de un vistazo cómo va el resto y cuánta ventaja
+// lleva el campeón. El acumulado arranca en 0 el primer día del mes (es la
+// carrera *de ese mes*, no el acumulado de toda la liga).
+//
+// La gráfica solo va en el widget del mes en curso, que es la carrera viva. El
+// mes pasado ya está cerrado y se queda con el titular: su gráfica se dibuja en
+// el segundo nivel, al pulsar «ver más» (``openMonthDetail``).
+function monthChart(host, info) {
+  const NSm = "http://www.w3.org/2000/svg";
+  const mk = (tag, attrs) => { const e = document.createElementNS(NSm, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]); return e; };
+  const dates = info.dates || [], series = info.series || [];
+  host.innerHTML = "";
+  if (!dates.length || !series.length) return;
+  // Las unidades del viewBox son px reales del contenedor: el texto no se
+  // deforma al escalar en pantallas estrechas (igual que la gráfica principal).
+  const W = Math.max(280, Math.round(host.clientWidth || 600));
+  const narrow = W < 520;
+  const H = narrow ? 190 : 220;
+  const M = {t: 12, r: 14, b: 24, l: narrow ? 42 : 48};
+  // línea base en 0: la magnitud es honesta aunque nadie se mueva mucho
+  let lo = 0, hi = 0;
+  series.forEach(s => s.cum.forEach(v => {
+    if (v === null) return; lo = Math.min(lo, v); hi = Math.max(hi, v); }));
+  if (hi === lo) { hi += 1; lo -= 1; }
+  const padv = (hi - lo) * 0.12; hi += padv; lo -= padv;
+  const Y = v => M.t + (1 - (v - lo) / (hi - lo)) * (H - M.t - M.b);
+  // El % final va junto al último punto solo si hay sitio y las etiquetas no se
+  // pisan entre sí; si no, la derecha se aprovecha para la propia gráfica (la
+  // leyenda de abajo siempre lleva el dato de cada jugador).
+  const ends = series
+    .map(s => { const v = s.cum.filter(x => x !== null && x !== undefined).pop();
+                return v === undefined ? null : {yy: Y(v), value: s.value}; })
+    .filter(Boolean)
+    .sort((a, b) => a.yy - b.yy);
+  const showEnds = !narrow && ends.length &&
+    !ends.some((e, i) => i && e.yy - ends[i - 1].yy < 13);
+  if (showEnds) M.r = 58;
+  const X = i => M.l + (dates.length < 2 ? 0.5 : i / (dates.length - 1)) * (W - M.l - M.r);
+  const svg = mk("svg", {viewBox: "0 0 " + W + " " + H, role: "img",
+    "aria-label": T.monthChartAria(monthLabel(info.month, info.month_year))});
+
+  // rejilla + eje Y
+  niceTicks(lo, hi, 4).forEach(v => {
+    const isZero = Math.abs(v) < 1e-9;
+    svg.appendChild(mk("line", {x1: M.l, x2: W - M.r, y1: Y(v), y2: Y(v),
+      stroke: isZero ? css("--baseline") : css("--grid"), "stroke-width": 1}));
+    const t = mk("text", {x: M.l - 8, y: Y(v) + 4, "text-anchor": "end",
+      fill: css("--muted"), "font-size": 11, style: "font-variant-numeric:tabular-nums"});
+    t.textContent = (v > 0 ? "+" : "") + v.toFixed(Math.abs(v) < 10 && v % 1 ? 1 : 0) + "%";
+    svg.appendChild(t);
+  });
+  // eje X: tantas fechas como quepan (~1 cada 110px), con la última siempre
+  const stepX = Math.max(1, Math.round(dates.length /
+    Math.max(2, Math.round((W - M.l - M.r) / 110))));
+  dates.forEach((d, i) => {
+    const isLast = i === dates.length - 1;
+    if (!isLast && (i % stepX !== 0 || dates.length - 1 - i < stepX * 0.6)) return;
+    // la última fecha se alinea a la derecha si centrada se saldría del lienzo
+    const clip = isLast && X(i) + 32 > W;
+    const t = mk("text", {x: clip ? W - 2 : X(i), y: H - 7,
+      "text-anchor": clip ? "end" : "middle",
+      fill: css("--muted"), "font-size": 11});
+    t.textContent = fmtDate(d);
+    svg.appendChild(t);
+  });
+  // una línea por jugador, con su color y todas del mismo grosor: quien va
+  // ganando se lee por su posición en la gráfica (y por el 🏆 de la leyenda),
+  // no porque su trazo pese más que el de los demás.
+  series.forEach(s => {
+    const c = css(SLOTS[s.slot % SLOTS.length]);
+    const pts = dates.map((d, i) => s.cum[i] === null || s.cum[i] === undefined
+      ? null : [X(i), Y(s.cum[i])]).filter(Boolean);
+    if (!pts.length) return;
+    if (pts.length > 1) svg.appendChild(mk("path", {
+      d: smoothD(pts),
+      fill: "none", stroke: c,

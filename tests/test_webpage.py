@@ -1253,3 +1253,29 @@ def test_players_use_the_warm_orange_and_brown_palette():
     # por preferencia del sistema y oscuro forzado)
     for slot in range(1, 9):
         assert webpage._TEMPLATE.count("--p%d: #" % slot) == 3
+
+
+def test_the_page_is_a_conversation_with_warren_and_scout():
+    """La portada es un hilo: Warren y Scout cuentan, los módulos siguen debajo."""
+    tpl = webpage._TEMPLATE
+    assert 'id="agent-strip"' in tpl
+    assert 'function paintChat()' in tpl
+    assert 'function syncTurns()' in tpl
+    assert 'class="composer"' in tpl and 'id="upload-mail"' in tpl
+    for key in ("agentWarren", "agentScout", "askWarren", "chatStandings",
+                "chatDay", "chatMonth", "chatOps", "chatNews"):
+        assert key + ":" in tpl
+    # cada módulo de siempre sigue en el hilo, con su id intacto
+    for el in ("hero-card", "best-card", "month-cur-card", "month-prev-card",
+               "ops-card", "news-card", "insights-card", "daily-card",
+               "alloc-card", "wallets-card", "goal-card", "badges-card"):
+        assert 'id="%s"' % el in tpl, el
+    # las frases van en burbuja, las tarjetas se adjuntan debajo
+    assert 'id="say-standings"' in tpl and 'id="say-day"' in tpl
+    assert 'id="say-month"' in tpl and 'id="say-ops"' in tpl
+    assert 'id="say-news"' in tpl
+    # un solo envío de posiciones: ahora es la barra de componer
+    assert tpl.count('id="upload-mail"') == 1
+    # JS real, no escapes de cuando el script vivía dentro de un string Python
+    assert 'href=\\\\"https' not in tpl
+    assert "split(/\\s+/)" in tpl

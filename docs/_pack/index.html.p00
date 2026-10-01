@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#efeaf8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e0d13" media="(prefers-color-scheme: dark)">
+<link rel="apple-touch-icon" href="icon-ios.png">
+<link rel="manifest" href="manifest.webmanifest" id="manifest-link">
+<meta name="apple-mobile-web-app-title" content="Trader League" id="app-title-meta">
+<title>🏆 Trader League</title>
+<style>
+:root {
+    color-scheme: light;
+    --ink: #0b0a10; --ink-2: #5b5966; --muted: #918f9d;
+    --surface: rgba(255,255,255,0.66);
+    --surface-2: rgba(255,255,255,0.42);
+    --card-solid: #f6f4fb;
+    --grid: rgba(11,10,16,0.08); --baseline: rgba(11,10,16,0.20);
+    --ring: rgba(11,10,16,0.07); --hair: rgba(11,10,16,0.06);
+    /* naranja de marca: tiñe botones, enlaces y estados activos. Tono
+       profundo para que el blanco encima del botón y el texto de los
+       enlaces se lean sobre el fondo claro. */
+    --accent: #c45400;
+    /* ganancias en verde y pérdidas en rojo (el código de color de toda la
+       vida en bolsa). El rojo tira a carmín, no a teja, para que no se
+       confunda con el naranja de la paleta de jugadores. */
+    --up: #0a7a3f; --down: #d92027;
+    --up-soft: rgba(10,122,63,0.14); --down-soft: rgba(217,32,39,0.14);
+    --s1: #2a78d6; --s2: #1baf7a; --s3: #eda100; --s4: #008300;
+    --s5: #4a3aa7; --s6: #e34948; --s7: #8a44cc; --s8: #eb6834;
+    /* paleta de jugadores: naranja y marrón para los dos primeros y, a partir
+       de ahí, tonos ocres (teja, oro viejo, cobre) para que todas las series
+       se lean como una misma familia de color. */
+    --p1: #e2670f; --p2: #7b4a21; --p3: #c08a12; --p4: #a63a1b;
+    --p5: #8a6a2c; --p6: #ef9b3d; --p7: #55381f; --p8: #b56a3a;
+    --aura-1: #ffe4c2; --aura-2: #dcd4ff; --aura-3: #ffd6ea; --aura-base: #efeaf8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --ink: #f6f5fb; --ink-2: #b9b6c6; --muted: #86838f;
+      --surface: rgba(30,29,38,0.62);
+      --surface-2: rgba(30,29,38,0.40);
+      --card-solid: #1b1a22;
+      --grid: rgba(255,255,255,0.09); --baseline: rgba(255,255,255,0.22);
+      --ring: rgba(255,255,255,0.10); --hair: rgba(255,255,255,0.07);
+      --accent: #ea6d10;
+      --up: #37c978; --down: #fa5252;
+      --up-soft: rgba(55,201,120,0.18); --down-soft: rgba(250,82,82,0.18);
+      --s1: #3987e5; --s2: #199e70; --s3: #c98500; --s4: #008300;
+      --s5: #9085e9; --s6: #e66767; --s7: #a86fe0; --s8: #d95926;
+      --p1: #ff9040; --p2: #a56b3f; --p3: #e6b93f; --p4: #e2664a;
+      --p5: #c2a466; --p6: #ffc487; --p7: #8d7460; --p8: #cf8248;
+      --aura-1: #3a2c55; --aura-2: #232c4d; --aura-3: #4a2740; --aura-base: #0e0d13;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --ink: #f6f5fb; --ink-2: #b9b6c6; --muted: #86838f;
+    --surface: rgba(30,29,38,0.62);
+    --surface-2: rgba(30,29,38,0.40);
+    --card-solid: #1b1a22;
+    --grid: rgba(255,255,255,0.09); --baseline: rgba(255,255,255,0.22);
+    --ring: rgba(255,255,255,0.10); --hair: rgba(255,255,255,0.07);
+    --accent: #ea6d10;
+    --up: #37c978; --down: #fa5252;
+    --up-soft: rgba(55,201,120,0.18); --down-soft: rgba(250,82,82,0.18);
+    --s1: #3987e5; --s2: #199e70; --s3: #c98500; --s4: #008300;
+    --s5: #9085e9; --s6: #e66767; --s7: #a86fe0; --s8: #d95926;
+    --p1: #ff9040; --p2: #a56b3f; --p3: #e6b93f; --p4: #e2664a;
+    --p5: #c2a466; --p6: #ffc487; --p7: #8d7460; --p8: #cf8248;
+    --aura-1: #3a2c55; --aura-2: #232c4d; --aura-3: #4a2740; --aura-base: #0e0d13;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html {
+    -webkit-text-size-adjust: 100%;
+    min-height: 100%;
+    background: var(--aura-base);
+  }
+  body {
+    color: var(--ink);
+    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "SF Pro Display",
+          system-ui, "Segoe UI", Roboto, sans-serif;
+    letter-spacing: -0.01em;
+    /* el aura del fondo se difumina justo arriba y la primera línea (el sello
+       de «actualizado») le quedaba pegada: 34px de aire la despegan del borde
+       —y del notch, que suma su propio safe-area. */
+    padding:
+      calc(34px + env(safe-area-inset-top))
+      calc(14px + env(safe-area-inset-right))
+      calc(40px + env(safe-area-inset-bottom))
+      calc(14px + env(safe-area-inset-left));
+    min-height: 100vh;
+    min-height: 100dvh;
+    background: transparent;
+  }
+  main { max-width: 760px; margin: 0 auto; display: grid; gap: 12px; }
+  main > * { min-width: 0; }
+
+  /* header */
+  header { padding: 4px 6px 6px; }
+  .eyebrow { color: var(--ink-2); font-size: 13px; font-weight: 600; }
+  .hrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 6px; }
+  h1 { font-size: clamp(30px, 9vw, 40px); font-weight: 800; letter-spacing: -0.035em; line-height: 1.02; }
+  .upload {
+    flex: none; text-decoration: none; color: #fff; background: var(--accent);
+    width: 46px; height: 46px; border-radius: 999px; display: grid; place-items: center;
+    box-shadow: 0 8px 18px -6px color-mix(in srgb, var(--accent) 75%, transparent);
+  }
+  .upload svg { display: block; }
+  .upload:active { transform: translateY(1px); }
+  .hbtns { flex: none; display: flex; align-items: center; gap: 10px; }
+  /* selector de idioma: el botón muestra el idioma activo y despliega el
+     menú con los tres disponibles (inglés, japonés y francés). */
+  .langwrap { position: relative; flex: none; }
+  .lang {
+    flex: none; border: 0; cursor: pointer; color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    min-width: 46px; height: 46px; padding: 0 13px; border-radius: 999px;
+    display: grid; place-items: center; font-family: inherit;
+    font-weight: 800; font-size: 15px; letter-spacing: 0.01em; line-height: 1;
+  }
+  .lang:active { transform: translateY(1px); }
+  .langmenu {
+    position: absolute; z-index: 40; top: calc(100% + 8px); right: 0;
+    min-width: 172px; padding: 6px; border-radius: 20px;
+    background: var(--card-solid); border: 1px solid var(--ring);
+    box-shadow: 0 1px 1px rgba(11,10,16,0.04), 0 18px 36px -20px rgba(11,10,16,0.55);
+    display: grid; gap: 2px;
+  }
+  .langmenu[hidden] { display: none; }
+  .langmenu button {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    width: 100%; padding: 10px 12px; border: 0; border-radius: 14px; cursor: pointer;
+    background: transparent; color: var(--ink); font-family: inherit;
+    font-size: 15px; font-weight: 700; letter-spacing: -0.01em; text-align: left;
+  }
+  .langmenu button:hover { background: var(--surface-2); }
+  .langmenu button[aria-checked="true"] { color: var(--accent); }
+  .langmenu .tick { font-size: 13px; font-weight: 800; opacity: 0; }
+  .langmenu button[aria-checked="true"] .tick { opacity: 1; }
+  /* japonés: el título es más ancho (kana a cuerpo completo); se reduce y se
+     fuerza a una sola línea para que no se parta en dos renglones */
+  html[lang="ja"] h1 { font-size: clamp(22px, 6.4vw, 30px); white-space: nowrap; }
+  .hbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; }
+  .chip { font-weight: 700; font-size: 15px; color: var(--ink); }
+  .chip .caret { color: var(--muted); font-size: 12px; }
+  .period { font-weight: 700; font-size: 15px; color: var(--accent); }
+
+  /* tarjetas */
+  .card {
+    background: var(--surface);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    backdrop-filter: blur(24px) saturate(150%);
+    border: 1px solid var(--ring);
+    border-radius: 26px; padding: 18px;
+    box-shadow: 0 1px 1px rgba(11,10,16,0.03), 0 12px 28px -22px rgba(11,10,16,0.30);
+  }
+  .card h2 { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; }
+  .card.warn { border-color: color-mix(in srgb, var(--s3) 55%, var(--ring)); background: color-mix(in srgb, var(--s3)
