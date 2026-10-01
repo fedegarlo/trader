@@ -51,7 +51,7 @@ ick, not a booking.",
     others: "Others",
     donutAria: "Portfolio breakdown by weight",
     allocInsight: (tk, w) => "📊 Largest position · " + tk +
-      ' <span class="muted">· ' + w + " of total</span>',
+      ' <span class="muted">· ' + w + " of total</span>",
     walletTop: (tk, w) => "Largest · " + tk + " " + w,
     noPlayers: "No players with data yet",
     noPlayersDot: "No players with data yet.",
