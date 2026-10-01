@@ -135,7 +135,7 @@ Trader",
     others: "Autres",
     donutAria: "Répartition du portefeuille par poids",
     allocInsight: (tk, w) => "📊 Plus grosse position · " + tk +
-      ' <span class="muted">· ' + w + " du total</span>',
+      ' <span class="muted">· ' + w + " du total</span>",
     walletTop: (tk, w) => "Plus grosse · " + tk + " " + w,
     noPlayers: "Aucun joueur avec des données pour l'instant",
     noPlayersDot: "Aucun joueur avec des données pour l'instant.",
