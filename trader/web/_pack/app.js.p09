@@ -1,4 +1,4 @@
-le de ticker ----
+e de ticker ----
 function openTicker(sym) {
   const t = TICKERS[sym];
   if (!t) return;
@@ -221,4 +221,4 @@ function openDayDetail(pid, iso) {
       const nm = h("span", "nm");
       if (x.ticker) {
         nm.appendChild(tickerLogoEl({ticker: x.ticker}, 26));
-        nm
+        nm.
