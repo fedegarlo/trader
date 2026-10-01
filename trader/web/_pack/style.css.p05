@@ -1,4 +1,14 @@
-vo sigue al padding de la tarjeta */
+  .nextstep .act { font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase;
+                   padding: 3px 8px; border-radius: 999px; background: var(--up-soft); color: var(--up); }
+  .nextstep .act.neg { background: var(--down-soft); color: var(--down); }
+  .nextstep .ttl { font-weight: 800; font-size: 15px; letter-spacing: -0.01em; }
+  .nextstep .body { font-size: 13.5px; color: var(--ink-2); font-weight: 600; margin-top: 7px; }
+  .nextstep .dis { color: var(--muted); font-size: 11px; margin-top: 8px; line-height: 1.4; }
+
+  @media (min-width: 620px) {
+    main { gap: 14px; }
+    .card { padding: 22px; }
+    /* el banner va a sangre: su margen negativo sigue al padding de la tarjeta */
     .gpban { margin: 0 -22px; padding: 13px 20px; }
     .modal { align-items: center; padding: 20px; }
     .sheet { border-radius: 24px; border-bottom: 1px solid var(--ring);

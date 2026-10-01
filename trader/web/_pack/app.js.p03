@@ -1,4 +1,9 @@
-ent = fmtPct(info.value);
+    if (!info) { card.style.display = "none"; return false; }
+    card.style.display = "";
+    document.getElementById(key + "-label").textContent =
+      T.winnerOf(monthLabel(info.month, info.month_year));
+    const val = document.getElementById(key + "-val");
+    val.textContent = fmtPct(info.value);
     val.className = "num " + (info.value >= 0 ? "pos" : "neg");
     document.getElementById(key + "-player").textContent = info.name;
     // Quién invita y dónde: el mes en curso va en condicional (la categoría se
@@ -104,6 +109,36 @@ function badgeIcon(b) {
   if (b.type === "milestone") return badgeMilestoneIcon(b.tier);
   return BADGE_ICON[b.type] || "🎖️";
 }
+// Cada insignia se dibuja como un blob, como los agentes: forma y color planos
+// según el tipo de logro, con dos ojos blancos (decorativo: el título ya dice
+// qué logro es).
+const BLOB_SHAPES = {
+  round: ['<ellipse cx="32" cy="33" rx="27" ry="23"/>', 30],
+  tri: ['<path d="M32 5c1.9 0 3.6 1 4.5 2.7l21.6 39.2A5.2 5.2 0 0 1 53.6 55H10.4a5.2 5.2 0 0 1-4.5-8.1L27.5 7.7A5.2 5.2 0 0 1 32 5z"/>', 36],
+  hex: ['<path d="M32 7 54 19.5v25L32 57 10 44.5v-25z" stroke-width="8" stroke-linejoin="round"/>', 29],
+  square: ['<rect x="8" y="8" width="48" height="48" rx="15"/>', 29],
+  drop: ['<path d="M32 4C26 12 11 27 11 39a21 21 0 0 0 42 0C53 27 38 12 32 4z"/>', 37],
+  pill: ['<rect x="4" y="15" width="56" height="36" rx="18"/>', 30],
+};
+function badgeBlob(b) {
+  let shape = "round", col = "--g8";
+  if (b.type === "champion_month") { shape = "round"; col = "--g5"; }
+  else if (b.type === "week_streak") { shape = "hex"; col = "--g6"; }
+  else if (b.type === "milestone") {
+    if (b.tier >= 25) { shape = "drop"; col = "--g3"; }
+    else if (b.tier >= 10) { shape = "square"; col = "--g1"; }
+    else { shape = "tri"; col = "--g4"; }
+  }
+  else if (b.type === "months_2") { shape = "pill"; col = "--g2"; }
+  else if (b.type === "months_3") { shape = "hex"; col = "--g7"; }
+  const [body, ey] = BLOB_SHAPES[shape];
+  const c = css(col);
+  const eye = col === "--g8" ? css("--aura-base") : "#fff";
+  return '<svg viewBox="0 0 64 64" aria-hidden="true">' +
+    '<g fill="' + c + '" stroke="' + c + '">' + body + '</g>' +
+    '<path d="M26 ' + ey + 'l1.6 7M36.5 ' + ey + 'l1.6 7" stroke="' + eye +
+    '" stroke-width="4.6" stroke-linecap="round" fill="none"/></svg>';
+}
 // Insignias agrupadas por jugador, para su ficha de detalle. Las provisionales
 // (campeón del mes en curso) van primero; el resto ya llega ordenado de más
 // reciente a más antigua desde el histórico.
@@ -145,48 +180,7 @@ function paintBadges() {
     const el = document.createElement("div");
     el.className = "badge" + (b.provisional ? " prov" : "");
     const ico = document.createElement("span");
-    ico.className = "bico"; ico.textContent = badgeIcon(b); el.appendChild(ico);
+    ico.className = "bico"; ico.innerHTML = badgeBlob(b); el.appendChild(ico);
     const box = document.createElement("div"); box.className = "btext";
     const title = document.createElement("div");
     title.className = "btitle"; title.textContent = badgeTitle(b); box.appendChild(title);
-    const who = document.createElement("div"); who.className = "bwho";
-    const key = document.createElement("span");
-    key.className = "key"; key.style.background = slotColor(b.slot); who.appendChild(key);
-    who.appendChild(document.createTextNode(b.name || "")); box.appendChild(who);
-    const meta = document.createElement("div"); meta.className = "bmeta";
-    if (b.type === "champion_month" && b.pct !== undefined && b.pct !== null)
-      meta.textContent = T.badgeChampMeta(fmtPct(b.pct));
-    else if (b.date) meta.textContent = T.badgeOn(fmtDate(b.date));
-    box.appendChild(meta);
-    if (b.provisional) {
-      const tag = document.createElement("div");
-      tag.className = "ptag"; tag.textContent = "● " + T.badgeLive; box.appendChild(tag);
-    }
-    el.appendChild(box);
-    el.setAttribute("role", "listitem");
-    rail.appendChild(el);
-    return el;
-  });
-  rail.setAttribute("role", cards.length ? "list" : "group");
-  badgeNav(rail, cards);
-}
-// Indicador del carrusel: un punto por insignia (y salta a ella al pulsarlo)
-// mientras quepan; en cuanto son muchas, un contador «3 / 27», que ocupa lo
-// mismo con veinte insignias que con cien. El punto activo es el de la tarjeta
-// anclada al borde izquierdo del carril, que es la que el anclaje deja fija.
-const BADGE_DOTS_MAX = 10;
-function badgeNav(rail, cards) {
-  const nav = document.getElementById("badge-nav");
-  nav.innerHTML = "";
-  nav.style.display = "none";
-  if (cards.length < 2) return;
-  // en pantallas anchas puede que quepan todas: sin nada que deslizar, sobra
-  // el indicador (y al girar el móvil se recalcula)
-  const showNav = () => { nav.style.display = rail.scrollWidth > rail.clientWidth + 2 ? "" : "none"; };
-  window.addEventListener("resize", showNav);
-  const dots = cards.length <= BADGE_DOTS_MAX ? cards.map((el, i) => {
-    const dot = document.createElement("button");
-    dot.type = "button";
-    dot.setAttribute("aria-label", T.badgeGoTo(i + 1, cards.length));
-    dot.addEventListener("click", () => {
-      const left = e

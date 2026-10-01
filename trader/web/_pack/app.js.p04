@@ -1,4 +1,44 @@
-l.getBoundingClientRect().left - rail.getBoundingClientRect().left
+    const who = document.createElement("div"); who.className = "bwho";
+    const key = document.createElement("span");
+    key.className = "key"; key.style.background = slotColor(b.slot); who.appendChild(key);
+    who.appendChild(document.createTextNode(b.name || "")); box.appendChild(who);
+    const meta = document.createElement("div"); meta.className = "bmeta";
+    if (b.type === "champion_month" && b.pct !== undefined && b.pct !== null)
+      meta.textContent = T.badgeChampMeta(fmtPct(b.pct));
+    else if (b.date) meta.textContent = T.badgeOn(fmtDate(b.date));
+    box.appendChild(meta);
+    if (b.provisional) {
+      const tag = document.createElement("div");
+      tag.className = "ptag"; tag.textContent = "● " + T.badgeLive; box.appendChild(tag);
+    }
+    el.appendChild(box);
+    el.setAttribute("role", "listitem");
+    rail.appendChild(el);
+    return el;
+  });
+  rail.setAttribute("role", cards.length ? "list" : "group");
+  badgeNav(rail, cards);
+}
+// Indicador del carrusel: un punto por insignia (y salta a ella al pulsarlo)
+// mientras quepan; en cuanto son muchas, un contador «3 / 27», que ocupa lo
+// mismo con veinte insignias que con cien. El punto activo es el de la tarjeta
+// anclada al borde izquierdo del carril, que es la que el anclaje deja fija.
+const BADGE_DOTS_MAX = 10;
+function badgeNav(rail, cards) {
+  const nav = document.getElementById("badge-nav");
+  nav.innerHTML = "";
+  nav.style.display = "none";
+  if (cards.length < 2) return;
+  // en pantallas anchas puede que quepan todas: sin nada que deslizar, sobra
+  // el indicador (y al girar el móvil se recalcula)
+  const showNav = () => { nav.style.display = rail.scrollWidth > rail.clientWidth + 2 ? "" : "none"; };
+  window.addEventListener("resize", showNav);
+  const dots = cards.length <= BADGE_DOTS_MAX ? cards.map((el, i) => {
+    const dot = document.createElement("button");
+    dot.type = "button";
+    dot.setAttribute("aria-label", T.badgeGoTo(i + 1, cards.length));
+    dot.addEventListener("click", () => {
+      const left = el.getBoundingClientRect().left - rail.getBoundingClientRect().left
                  + rail.scrollLeft - 18;
       rail.scrollTo({left: Math.max(0, left), behavior: "smooth"});
     });
@@ -33,9 +73,18 @@ l.getBoundingClientRect().left - rail.getBoundingClientRect().left
 paintBadges();
 
 // ---- widgets de cartera: asignación por ticker (solo pesos, sin importes) ----
+// Color de cada ticker: la paleta plana de los blobs, repartida por orden de
+// aparición (la cartera de la liga se pinta primero, de mayor a menor peso)
+// para que las porciones vecinas de una tarta nunca repitan color. Un ticker
+// conserva su color en toda la página.
+// El naranja va el último: es también el color de Ana.
+const TICKER_PALETTE = ["--g1","--g4","--g3","--g8","--g5","--g6","--g7","--g2"];
+const TICKER_COLOR = {};
+let tickerNext = 0;
 function badgeColor(t) {
-  let h = 0; for (let i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) >>> 0;
-  return "hsl(" + (h % 360) + " 58% 52%)";
+  if (!(t in TICKER_COLOR))
+    TICKER_COLOR[t] = TICKER_PALETTE[tickerNext++ % TICKER_PALETTE.length];
+  return css(TICKER_COLOR[t]);
 }
 const fmtW = w => w.toFixed(w < 10 ? 1 : 0) + "%";
 // Agrupa la cola en «Otros» cuando hay más de 6 posiciones (misma regla que
@@ -140,54 +189,3 @@ paintWallets();
 // ---- insights «IA»: 30+ plantillas con hueco para el/los jugador(es) ----
 // Cada plantilla lleva su condición y solo se muestra «según corresponda»
 // (ranking, % del día/acumulado, rachas, carteras). De todas las aplicables se
-// pintan tres y van rotando, para que la lectura parezca un análisis vivo.
-function computeInsights() {
-  const ps = DATA.players.filter(p => p.days && p.days.length);
-  if (!ps.length) return [];
-  const lastp = p => p.days[p.days.length - 1];
-  const ranked = [...ps].sort((a, b) => lastp(b).cum - lastp(a).cum);
-  const byDay = [...ps].sort((a, b) => lastp(b).day - lastp(a).day);
-  const n = ps.length;
-  const leader = ranked[0], second = ranked[1], tail = ranked[n - 1];
-  const bestDay = byDay[0], worstDay = byDay[n - 1];
-  const who = p => '<b style="color:' + colorOf(p) + '">' + p.name + '</b>';
-  const pts = v => T.points(v);
-  const I = T.ins;
-  const streak = (p, positive) => { let c = 0; for (let i = p.days.length - 1; i >= 0; i--) {
-    const d = p.days[i].day; if (positive ? d > 0 : d < 0) c++; else break; } return c; };
-  const greenCount = (p, k) => p.days.slice(-k).filter(d => d.day > 0).length;
-  // avance desde el inicio de la liga (la serie ya no se recorta a 30 días)
-  const totalDelta = p => lastp(p).cum - p.days[0].cum;
-  const range = p => { const c = p.days.map(d => d.cum); return Math.max(...c) - Math.min(...c); };
-  const recovered = p => p.days.length >= 2 &&
-    lastp(p).day > 0 && p.days[p.days.length - 2].day < 0;
-  const allNeg = ps.every(p => lastp(p).day < 0);
-  const allPos = ps.every(p => lastp(p).day > 0);
-
-  const out = [];
-  const add = (prio, icon, html) => out.push({ prio, icon, html });
-
-  // ---- líder y cabeza de la tabla ----
-  if (n >= 2) {
-    const g = lastp(leader).cum - lastp(second).cum;
-    if (g > 0.05)
-      add(9.5, "🔥", I.leaderFire(who(leader), pts(g), who(second)));
-    if (g > 3)
-      add(6.7, "🧱", I.leaderPullAway(who(leader)));
-  }
-  add(6.0, lastp(leader).cum >= 0 ? "👑" : "🏳️",
-    I.leaderLeads(who(leader), fmtPct(lastp(leader).cum)));
-  add(4.6, "🧭", I.leaderHelm(who(leader)));
-  if (lastp(leader).day > 0)
-    add(6.9, "🛰️", I.leaderUnstoppable(who(leader), fmtPct(lastp(leader).day)));
-  if (leader === bestDay && lastp(leader).day > 0)
-    add(8.5, "🚀", I.leaderPerfect(who(leader), fmtPct(lastp(leader).day)));
-  { const s = streak(leader, true); if (s >= 2)
-    add(7.0, "📈", I.leaderGreenStreak(who(leader), s)); }
-  if (n >= 2) {
-    const g = lastp(leader).cum - lastp(tail).cum;
-    if (g > 5)
-      add(6.5, "🏁", I.raceFinish(who(leader), pts(g), who(tail)));
-    add(4.8, "📐", I.overallGap(who(leader), who(tail), pts(g)));
-    add(4.4, "🛡️", I.leaderDefends(who(leader), who(tail)));
-    add(4.2, "🎙️", I

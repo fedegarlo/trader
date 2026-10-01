@@ -1,4 +1,11 @@
-adding-right: 42px; }
+  .sheet.closing { animation: sheetout 0.22s ease-in forwards; }
+  @keyframes sheetout { from { transform: translateY(0); } to { transform: translateY(100%); } }
+  /* zona de agarre: ocupa el ancho para poder arrastrar y cerrar de un toque */
+  .grab { position: sticky; top: 0; z-index: 2; margin: 0 -18px 8px; padding: 9px 0 7px;
+          background: var(--card-solid); cursor: grab; touch-action: none; }
+  .grab::before { content: ""; display: block; width: 40px; height: 5px; border-radius: 999px;
+                  background: var(--baseline); opacity: 0.5; margin: 0 auto; }
+  .mhead { display: flex; align-items: center; gap: 13px; padding-right: 42px; }
   .mhead .mtitle { min-width: 0; }
   .mhead .mtitle .t1 { font-size: 20px; font-weight: 800; letter-spacing: -0.02em;
                        display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -127,14 +134,3 @@ adding-right: 42px; }
   .nextstep.clk { cursor: pointer; }
   .nextstep.clk:hover { border-color: color-mix(in srgb, var(--accent) 55%, var(--hair)); }
   .nextstep .top { display: flex; align-items: center; gap: 9px; }
-  .nextstep .act { font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase;
-                   padding: 3px 8px; border-radius: 999px; background: var(--up-soft); color: var(--up); }
-  .nextstep .act.neg { background: var(--down-soft); color: var(--down); }
-  .nextstep .ttl { font-weight: 800; font-size: 15px; letter-spacing: -0.01em; }
-  .nextstep .body { font-size: 13.5px; color: var(--ink-2); font-weight: 600; margin-top: 7px; }
-  .nextstep .dis { color: var(--muted); font-size: 11px; margin-top: 8px; line-height: 1.4; }
-
-  @media (min-width: 620px) {
-    main { gap: 14px; }
-    .card { padding: 22px; }
-    /* el banner va a sangre: su margen negati

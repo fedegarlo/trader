@@ -1,4 +1,60 @@
- card.style.display = "none"; return; }
+      const cells = [monthLabel(mo.month, mo.month_year), fmtPct(mo.ret), fmtPct(mo.cum)];
+      cells.forEach((c, i) => {
+        const td = tr.insertCell(); td.textContent = c;
+        const isPct = i >= cells.length - 2;
+        if (isPct) td.className = c.startsWith("+") ? "pos" : (c.startsWith("-") ? "neg" : "");
+      });
+      return tr;
+    });
+    over.appendChild(t); det.appendChild(over); box.appendChild(det);
+    collapseList(trs, det);
+  });
+  if (!ranked.length) box.textContent = T.noPlayersDot;
+}
+
+// ==== vistas de detalle: ticker y jugador ==============================
+// Overlay que se rellena en cliente desde los datos ya embebidos. Los logos se
+// piden a logo.dev por dominio con respaldo a un monograma de color (si el
+// servicio no responde), y las noticias son enlaces de búsqueda por símbolo:
+// la página sigue siendo estática y no expone importes ni operaciones.
+const modal = document.getElementById("modal");
+const modalBody = document.getElementById("modal-body");
+const sheet = document.getElementById("sheet");
+const h = (tag, cls, html) => { const e = document.createElement(tag);
+  if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+
+function monoEl(text, size, bg) {
+  const m = document.createElement("span");
+  m.className = "mono";
+  m.style.width = m.style.height = size + "px";
+  m.style.fontSize = Math.round(size * 0.4) + "px";
+  m.style.background = bg;
+  m.textContent = (text || "?").slice(0, 2).toUpperCase();
+  return m;
+}
+// Token publicable de logo.dev (pensado para el frontend; puede ir en el HTML).
+const LOGO_TOKEN = "pk_cgMPtdfzT5GGEORKN4rMDA";
+// Logo de empresa (por ticker) con respaldo a monograma si la imagen falla.
+function tickerLogoEl(t, size) {
+  const bg = badgeColor(t.ticker);
+  if (!t.ticker) return monoEl(t.ticker, size, bg);
+  const img = document.createElement("img");
+  img.className = "logo"; img.width = img.height = size; img.alt = "";
+  img.loading = "lazy"; img.referrerPolicy = "no-referrer";
+  img.src = "https://img.logo.dev/ticker/" + encodeURIComponent(t.ticker) +
+    "?token=" + LOGO_TOKEN + "&size=" + size + "&retina=true&format=png";
+  img.onerror = () => img.replaceWith(monoEl(t.ticker, size, bg));
+  return img;
+}
+
+// ---- últimas operaciones de la liga (fecha · compra/venta · ticker · jugador) ----
+// Va aquí, tras definir ``h`` y ``tickerLogoEl``, porque los usa al pintar. No
+// expone importes: solo qué se compró/vendió, de qué valor y qué día. El ticker
+// abre su ficha y el jugador la suya (si son abribles).
+function paintOperations() {
+  const ops = DATA.operations || [];
+  const card = document.getElementById("ops-card");
+  if (!ops.length) { card.style.display = "none"; return; }
   card.style.display = "";
   const box = document.getElementById("ops-list");
   box.innerHTML = "";
@@ -135,60 +191,3 @@ function extMoney(v, cur) {
 }
 function fmtClock(epoch) {
   return new Intl.DateTimeFormat(LANG_META.clock, {
-    timeZone: "Europe/Madrid", hour: "2-digit", minute: "2-digit", hourCycle: "h23",
-  }).format(new Date(epoch * 1000));
-}
-function paintExtended() {
-  const m = DATA.market, card = document.getElementById("ext-card");
-  const fresh = m && m.asOf && (Date.now() / 1000 - m.asOf) < EXT_MAX_AGE;
-  const rows = (DATA.tickers || []).filter(t =>
-    t.ext && m && t.ext.session === m.session && t.ext.pct != null);
-  if (!fresh || !rows.length) { card.style.display = "none"; return; }
-  card.style.display = "";
-
-  document.getElementById("ext-title").textContent =
-    (m.session === "pre" ? "\\ud83c\\udf05 " : "\\ud83c\\udf19 ") + extLabel(m.session);
-  document.getElementById("ext-when").textContent = T.extAt(fmtClock(m.asOf));
-  // El titular es la variación media de la liga ponderada por el peso de cada
-  // posición; si no se ha podido calcular, la tarjeta se queda en la lista.
-  const val = document.getElementById("ext-val");
-  val.textContent = m.pct == null ? "" : fmtPct(m.pct);
-  val.className = "num " + (m.pct >= 0 ? "pos" : "neg");
-  document.getElementById("ext-sub").textContent =
-    (m.pct == null ? T.extSession : T.extLeague) + " \\u00b7 " +
-    T.extHoldings(rows.length);
-  document.getElementById("ext-note").textContent = T.extNote;
-
-  const box = document.getElementById("ext-list");
-  box.innerHTML = "";
-  const painted = rows.sort((a, b) => b.ext.pct - a.ext.pct).map(t => {
-    const row = h("div", "ext-row clk");
-    row.dataset.ticker = t.ticker;
-    row.appendChild(tickerLogoEl(t, 30));
-    const tk = h("div", "tk");
-    const sym = h("span", "sym"); sym.textContent = t.ticker;
-    const nm = h("span", "nm"); nm.textContent = t.name;
-    tk.appendChild(sym); tk.appendChild(nm);
-    row.appendChild(tk);
-    row.appendChild(h("span", "px", extMoney(t.ext.price, t.ext.currency)));
-    row.appendChild(h("span", "pct " + (t.ext.pct >= 0 ? "pos" : "neg"),
-                      fmtPct(t.ext.pct)));
-    box.appendChild(row);
-    return row;
-  });
-  collapseList(painted, box);
-}
-paintExtended();
-
-// ---- enlaces de noticias: siempre en otra ventana -------------------------
-// Un `target="_blank"` basta en el navegador, pero NO con la web instalada como
-// app (el manifest va en `display: standalone`): ahí el enlace se abre dentro
-// de la propia app, sin barra de direcciones ni botón de atrás, y quien entra a
-// leer una noticia se queda atrapado en ella. Cuando estamos en ese modo la
-// abrimos nosotros con `window.open`, que sí salta al navegador — llamado
-// dentro del propio click, que si no lo bloquea el navegador.
-const STANDALONE = (() => {
-  try {
-    return ["standalone", "fullscreen", "minimal-ui"].some(
-      m => window.matchMedia("(display-mode: " + m + ")").matches)
-      || window.navi

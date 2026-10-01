@@ -1,4 +1,5 @@
-ElementById("gp-lead");
+    cum.classList.add(last.cum >= 0 ? "pos" : "neg");
+    const row = document.getElementById("gp-lead");
     row.classList.add("clk"); row.dataset.player = leader.id;
     const second = ranked[1];
     document.getElementById("gp-gap").textContent = second
@@ -175,8 +176,3 @@ function treatRange(i) {
 // ``createElement`` y no con el ayudante ``h`` porque este bloque corre antes
 // de que ese ayudante exista.
 function treatChip(tier) {
-  const b = document.createElement("button");
-  b.type = "button";
-  b.className = "tchip";
-  const eur = document.createElement("span");
-  eur.className = "eur"; eur.textConte

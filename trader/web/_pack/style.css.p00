@@ -23,6 +23,12 @@
     --p1: #e2670f; --p2: #7b4a21; --p3: #c08a12; --p4: #a63a1b;
     --p5: #8a6a2c; --p6: #ef9b3d; --p7: #55381f; --p8: #b56a3a;
     --aura-1: #ffe4c2; --aura-2: #dcd4ff; --aura-3: #ffd6ea; --aura-base: #efeaf8;
+    /* paleta de los blobs (la misma familia que los agentes): colores planos y
+       saturados para tickers, gráficos e insignias, en vez de tonos al azar. */
+    --g1: #8b5cf6; --g2: #ee7130; --g3: #ec4899; --g4: #4fbfa8;
+    --g5: #f2a03d; --g6: #e5383b; --g7: #6e6e73; --g8: #1c1b22;
+    /* pastilla neutra (como «Trader» o «Coder»): gris plano, sin tinte */
+    --chip: rgba(11,10,16,0.05);
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
@@ -41,6 +47,9 @@
       --p1: #ff9040; --p2: #a56b3f; --p3: #e6b93f; --p4: #e2664a;
       --p5: #c2a466; --p6: #ffc487; --p7: #8d7460; --p8: #cf8248;
       --aura-1: #3a2c55; --aura-2: #232c4d; --aura-3: #4a2740; --aura-base: #0e0d13;
+      --g1: #9d74f8; --g2: #f2834a; --g3: #f062a8; --g4: #5ccdb5;
+      --g5: #f4ad55; --g6: #ef5557; --g7: #8e8e94; --g8: #e9e8ee;
+      --chip: rgba(255,255,255,0.08);
     }
   }
   :root[data-theme="dark"] {
@@ -59,6 +68,9 @@
     --p1: #ff9040; --p2: #a56b3f; --p3: #e6b93f; --p4: #e2664a;
     --p5: #c2a466; --p6: #ffc487; --p7: #8d7460; --p8: #cf8248;
     --aura-1: #3a2c55; --aura-2: #232c4d; --aura-3: #4a2740; --aura-base: #0e0d13;
+    --g1: #9d74f8; --g2: #f2834a; --g3: #f062a8; --g4: #5ccdb5;
+    --g5: #f4ad55; --g6: #ef5557; --g7: #8e8e94; --g8: #e9e8ee;
+    --chip: rgba(255,255,255,0.08);
   }
   * { box-sizing: border-box; margin: 0; }
   html {
@@ -159,14 +171,3 @@
            border: 1px solid var(--hair); background: var(--surface-2);
            color: var(--ink-2); font-size: 15px; font-weight: 800; line-height: 1;
            cursor: pointer; display: grid; place-items: center;
-           transition: color .12s ease, border-color .12s ease; }
-  .whelp:hover { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, var(--hair)); }
-  .whelp:active { transform: translateY(1px); }
-  #month-prev-card .wlabel { padding-right: 34px; }
-  .wlabel { color: var(--ink-2); font-size: 14px; font-weight: 600; }
-  .wbig { font-size: clamp(26px, 8vw, 34px); font-weight: 800; letter-spacing: -0.035em; line-height: 1.1; margin-top: 3px; display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; }
-  .wbig.sm { font-size: clamp(22px, 6.6vw, 28px); white-space: nowrap; }
-  .num { font-variant-numeric: tabular-nums; }
-  /* «mercado cerrado»: etiqueta junto al ganador de la última jornada, para
-     que se vea que el dato es de la sesión ya cerrada y no de hoy. */
-  .c

@@ -1,0 +1,3 @@
+  document.querySelector(".grab").addEventListener("click", closeModal);
+})();
+

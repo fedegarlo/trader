@@ -35,6 +35,12 @@
     --p1: #e2670f; --p2: #7b4a21; --p3: #c08a12; --p4: #a63a1b;
     --p5: #8a6a2c; --p6: #ef9b3d; --p7: #55381f; --p8: #b56a3a;
     --aura-1: #ffe4c2; --aura-2: #dcd4ff; --aura-3: #ffd6ea; --aura-base: #efeaf8;
+    /* paleta de los blobs (la misma familia que los agentes): colores planos y
+       saturados para tickers, gráficos e insignias, en vez de tonos al azar. */
+    --g1: #8b5cf6; --g2: #ee7130; --g3: #ec4899; --g4: #4fbfa8;
+    --g5: #f2a03d; --g6: #e5383b; --g7: #6e6e73; --g8: #1c1b22;
+    /* pastilla neutra (como «Trader» o «Coder»): gris plano, sin tinte */
+    --chip: rgba(11,10,16,0.05);
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
@@ -53,6 +59,9 @@
       --p1: #ff9040; --p2: #a56b3f; --p3: #e6b93f; --p4: #e2664a;
       --p5: #c2a466; --p6: #ffc487; --p7: #8d7460; --p8: #cf8248;
       --aura-1: #3a2c55; --aura-2: #232c4d; --aura-3: #4a2740; --aura-base: #0e0d13;
+      --g1: #9d74f8; --g2: #f2834a; --g3: #f062a8; --g4: #5ccdb5;
+      --g5: #f4ad55; --g6: #ef5557; --g7: #8e8e94; --g8: #e9e8ee;
+      --chip: rgba(255,255,255,0.08);
     }
   }
   :root[data-theme="dark"] {
@@ -71,6 +80,9 @@
     --p1: #ff9040; --p2: #a56b3f; --p3: #e6b93f; --p4: #e2664a;
     --p5: #c2a466; --p6: #ffc487; --p7: #8d7460; --p8: #cf8248;
     --aura-1: #3a2c55; --aura-2: #232c4d; --aura-3: #4a2740; --aura-base: #0e0d13;
+    --g1: #9d74f8; --g2: #f2834a; --g3: #f062a8; --g4: #5ccdb5;
+    --g5: #f4ad55; --g6: #ef5557; --g7: #8e8e94; --g8: #e9e8ee;
+    --chip: rgba(255,255,255,0.08);
   }
   * { box-sizing: border-box; margin: 0; }
   html {
@@ -233,7 +245,8 @@
   .mlegend .mtrophy { margin-right: 5px; }
 
   /* insignias (badges): récord destacado de la liga + rejilla de logros. */
-  .card.record { padding-bottom: 18px; }
+  .card.record { padding-bottom: 18px; background: var(--chip); border: none;
+                 box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
   .record .record-tk { font-size: 16px; font-weight: 700; color: var(--ink-2); margin-left: 8px; }
   #record-date { color: var(--muted); font-weight: 600; font-size: 13px; margin-left: 8px; }
   /* carrusel: cada logro es su propia tarjeta y se pasan deslizando en
@@ -269,7 +282,9 @@
   .badge-nav .count { font-size: 12px; font-weight: 700; color: var(--muted);
                       font-variant-numeric: tabular-nums; }
   .badge.prov { border-style: dashed; opacity: 0.9; }
-  .badge .bico { font-size: 26px; line-height: 1; flex: 0 0 auto; }
+  .badge .bico, .mbadge-chip .i { flex: 0 0 auto; display: block; }
+  .badge .bico { width: 40px; height: 40px; }
+  .bico svg, .mbadge-chip .i svg { display: block; width: 100%; height: 100%; }
   .badge .btext { min-width: 0; }
   .badge .btitle { font-weight: 800; font-size: 14px; letter-spacing: -0.02em; color: var(--ink); line-height: 1.2; }
   .badge .bwho { display: flex; align-items: center; gap: 5px; margin-top: 4px;
@@ -280,11 +295,11 @@
   /* insignias compactas dentro de la ficha del jugador */
   .mbadges { display: flex; flex-wrap: wrap; gap: 8px; }
   .mbadge-chip { display: inline-flex; align-items: center; gap: 7px;
-                 background: var(--surface-2); border: 1px solid var(--hair);
-                 padding: 6px 12px 6px 8px; border-radius: 999px;
+                 background: var(--chip); border: 1px solid transparent;
+                 padding: 5px 12px 5px 6px; border-radius: 999px;
                  font-weight: 700; font-size: 13px; color: var(--ink); }
-  .mbadge-chip.prov { border-style: dashed; }
-  .mbadge-chip .i { font-size: 17px; line-height: 1; }
+  .mbadge-chip.prov { border: 1px dashed var(--hair); }
+  .mbadge-chip .i { width: 24px; height: 24px; }
 
   /* cabecera de un Gran Premio: banner a sangre en lo alto de su tarjeta que
      presenta la carrera y enlaza a la web oficial del destino en el idioma
@@ -321,16 +336,15 @@
   .gp { padding-top: 16px; }
   .gp-lead { display: flex; align-items: center; gap: 8px 12px; flex-wrap: wrap;
              padding: 12px 13px;
-             border-radius: 18px; border: 1px solid var(--hair);
-             background: color-mix(in srgb, var(--lead, var(--accent)) 12%, var(--surface-2)); }
-  .gp-lead.clk:hover { border-color: color-mix(in srgb, var(--lead, var(--accent)) 55%, var(--hair)); }
+             border-radius: 18px; background: var(--chip); }
+  .gp-lead.clk:hover { background: color-mix(in srgb, var(--ink) 8%, transparent); }
   .gp-lead .gp-flag { flex: none; font-size: 26px; line-height: 1; }
   /* en pantallas estrechas el acumulado baja a su propia línea antes que
      estrujar el nombre del líder (``1 1 120px``: ese es el punto de corte) */
   .gp-lead .gp-l { min-width: 0; flex: 1 1 120px; }
   .gp-kicker { font-size: 10.5px; font-weight: 800; letter-spacing: 0.08em;
                text-transform: uppercase;
-               color: color-mix(in srgb, var(--lead, var(--accent)) 72%, var(--ink)); }
+               color: var(--muted); }
   .gp-name { display: flex; align-items: center; gap: 7px; margin-top: 3px;
              font-size: clamp(20px, 5.5vw, 24px); font-weight: 800;
              letter-spacing: -0.025em; line-height: 1.15; color: var(--ink); }
@@ -350,9 +364,9 @@
   .gp-chips { display: flex; flex-wrap: wrap; gap: 8px; }
   .gp-chip { display: inline-flex; align-items: center; gap: 7px;
              padding: 6px 12px 6px 9px; border-radius: 999px;
-             background: var(--surface-2); border: 1px solid var(--hair);
+             background: var(--chip);
              font-size: 13px; font-weight: 700; color: var(--ink); }
-  .gp-chip:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--hair)); }
+  .gp-chip:hover { background: color-mix(in srgb, var(--ink) 8%, transparent); }
   .gp-chip .m { flex: none; font-size: 15px; line-height: 1; }
   .gp-chip .n { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .gp-chip .v { font-variant-numeric: tabular-nums; }
@@ -472,14 +486,9 @@
   .op-tk .sym { white-space: nowrap; }
   .op-act { flex: none; font-size: 11px; font-weight: 800; letter-spacing: 0.03em;
             text-transform: uppercase; padding: 3px 9px; border-radius: 999px; }
-  .op-act.buy { background: rgba(22,163,74,0.15); color: #16a34a; }
-  .op-act.sell { background: rgba(225,29,72,0.15); color: #e11d48; }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .op-act.buy { background: rgba(34,197,94,0.20); color: #4ade80; }
-    :root:not([data-theme="light"]) .op-act.sell { background: rgba(244,63,94,0.20); color: #fb7185; }
-  }
-  :root[data-theme="dark"] .op-act.buy { background: rgba(34,197,94,0.20); color: #4ade80; }
-  :root[data-theme="dark"] .op-act.sell { background: rgba(244,63,94,0.20); color: #fb7185; }
+  .op-act { background: var(--chip); }
+  .op-act.buy { color: var(--up); }
+  .op-act.sell { color: var(--down); }
   .op-name { display: inline-flex; align-items: center; margin-left: auto;
              color: var(--ink-2); font-weight: 600; font-size: 13.5px; min-width: 0; }
   .op-name .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -508,24 +517,24 @@
   .ai-head { display: flex; align-items: center; gap: 9px; }
   .ai-badge {
     font-size: 11px; font-weight: 800; letter-spacing: 0.06em; color: #fff;
-    padding: 3px 8px; border-radius: 999px;
-    background: linear-gradient(120deg, var(--s3), var(--accent));
-    box-shadow: 0 5px 14px -6px color-mix(in srgb, var(--accent) 70%, transparent);
+    padding: 3px 8px; border-radius: 999px; background: var(--g1);
   }
   .ai-title { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; }
   .ai-live { margin-left: auto; display: inline-flex; align-items: center; gap: 6px;
              color: var(--muted); font-size: 11.5px; font-weight: 600; }
-  .ai-live .dot { width: 6px; height: 6px; border-radius: 999px; background: var(--s2);
+  .ai-live .dot { width: 6px; height: 6px; border-radius: 999px; background: var(--g4);
                   animation: pulse 1.8s ease-out infinite; }
-  .insights { display: grid; gap: 10px; margin-top: 14px; }
+  .insights { display: grid; margin-top: 8px; }
   .insight {
-    display: flex; gap: 11px; align-items: flex-start;
-    font-size: 14.5px; font-weight: 600; color: var(--ink);
-    padding: 12px 13px; border-radius: 16px;
-    background: var(--surface-2); border: 1px solid var(--hair);
+    display: flex; gap: 12px; align-items: center;
+    font-size: 14.5px; font-weight: 600; color: var(--ink); line-height: 1.4;
+    padding: 12px 2px; border-top: 1px solid var(--hair);
     transition: opacity 0.45s ease;
   }
-  .insight .ic { flex: none; font-size: 17px; line-height: 1.35; }
+  .insight:first-child { border-top: none; }
+  .insight .ic { flex: none; width: 36px; height: 36px; border-radius: 999px;
+                 display: grid; place-items: center; font-size: 17px; line-height: 1;
+                 background: var(--chip); }
   .insight .tx { min-width: 0; }
   .insight b { font-weight: 800; letter-spacing: -0.01em; }
 
@@ -2718,6 +2727,36 @@ function badgeIcon(b) {
   if (b.type === "milestone") return badgeMilestoneIcon(b.tier);
   return BADGE_ICON[b.type] || "🎖️";
 }
+// Cada insignia se dibuja como un blob, como los agentes: forma y color planos
+// según el tipo de logro, con dos ojos blancos (decorativo: el título ya dice
+// qué logro es).
+const BLOB_SHAPES = {
+  round: ['<ellipse cx="32" cy="33" rx="27" ry="23"/>', 30],
+  tri: ['<path d="M32 5c1.9 0 3.6 1 4.5 2.7l21.6 39.2A5.2 5.2 0 0 1 53.6 55H10.4a5.2 5.2 0 0 1-4.5-8.1L27.5 7.7A5.2 5.2 0 0 1 32 5z"/>', 36],
+  hex: ['<path d="M32 7 54 19.5v25L32 57 10 44.5v-25z" stroke-width="8" stroke-linejoin="round"/>', 29],
+  square: ['<rect x="8" y="8" width="48" height="48" rx="15"/>', 29],
+  drop: ['<path d="M32 4C26 12 11 27 11 39a21 21 0 0 0 42 0C53 27 38 12 32 4z"/>', 37],
+  pill: ['<rect x="4" y="15" width="56" height="36" rx="18"/>', 30],
+};
+function badgeBlob(b) {
+  let shape = "round", col = "--g8";
+  if (b.type === "champion_month") { shape = "round"; col = "--g5"; }
+  else if (b.type === "week_streak") { shape = "hex"; col = "--g6"; }
+  else if (b.type === "milestone") {
+    if (b.tier >= 25) { shape = "drop"; col = "--g3"; }
+    else if (b.tier >= 10) { shape = "square"; col = "--g1"; }
+    else { shape = "tri"; col = "--g4"; }
+  }
+  else if (b.type === "months_2") { shape = "pill"; col = "--g2"; }
+  else if (b.type === "months_3") { shape = "hex"; col = "--g7"; }
+  const [body, ey] = BLOB_SHAPES[shape];
+  const c = css(col);
+  const eye = col === "--g8" ? css("--aura-base") : "#fff";
+  return '<svg viewBox="0 0 64 64" aria-hidden="true">' +
+    '<g fill="' + c + '" stroke="' + c + '">' + body + '</g>' +
+    '<path d="M26 ' + ey + 'l1.6 7M36.5 ' + ey + 'l1.6 7" stroke="' + eye +
+    '" stroke-width="4.6" stroke-linecap="round" fill="none"/></svg>';
+}
 // Insignias agrupadas por jugador, para su ficha de detalle. Las provisionales
 // (campeón del mes en curso) van primero; el resto ya llega ordenado de más
 // reciente a más antigua desde el histórico.
@@ -2759,7 +2798,7 @@ function paintBadges() {
     const el = document.createElement("div");
     el.className = "badge" + (b.provisional ? " prov" : "");
     const ico = document.createElement("span");
-    ico.className = "bico"; ico.textContent = badgeIcon(b); el.appendChild(ico);
+    ico.className = "bico"; ico.innerHTML = badgeBlob(b); el.appendChild(ico);
     const box = document.createElement("div"); box.className = "btext";
     const title = document.createElement("div");
     title.className = "btitle"; title.textContent = badgeTitle(b); box.appendChild(title);
@@ -2838,9 +2877,18 @@ function badgeNav(rail, cards) {
 paintBadges();
 
 // ---- widgets de cartera: asignación por ticker (solo pesos, sin importes) ----
+// Color de cada ticker: la paleta plana de los blobs, repartida por orden de
+// aparición (la cartera de la liga se pinta primero, de mayor a menor peso)
+// para que las porciones vecinas de una tarta nunca repitan color. Un ticker
+// conserva su color en toda la página.
+// El naranja va el último: es también el color de Ana.
+const TICKER_PALETTE = ["--g1","--g4","--g3","--g8","--g5","--g6","--g7","--g2"];
+const TICKER_COLOR = {};
+let tickerNext = 0;
 function badgeColor(t) {
-  let h = 0; for (let i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) >>> 0;
-  return "hsl(" + (h % 360) + " 58% 52%)";
+  if (!(t in TICKER_COLOR))
+    TICKER_COLOR[t] = TICKER_PALETTE[tickerNext++ % TICKER_PALETTE.length];
+  return css(TICKER_COLOR[t]);
 }
 const fmtW = w => w.toFixed(w < 10 ? 1 : 0) + "%";
 // Agrupa la cola en «Otros» cuando hay más de 6 posiciones (misma regla que
@@ -3950,7 +3998,7 @@ function openPlayer(pid) {
     const wrap = h("div", "mbadges");
     myBadges.forEach(b => {
       const chip = h("div", "mbadge-chip" + (b.provisional ? " prov" : ""));
-      chip.appendChild(h("span", "i", badgeIcon(b)));
+      const ic = h("span", "i"); ic.innerHTML = badgeBlob(b); chip.appendChild(ic);
       chip.appendChild(h("span", "t", badgeTitle(b)));
       wrap.appendChild(chip);
     });

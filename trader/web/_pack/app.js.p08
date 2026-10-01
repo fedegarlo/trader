@@ -1,4 +1,66 @@
-;
+      const blob = document.createElement("span");
+      blob.className = "blob " + kind + (kind === "player" ? "" : " lg");
+      blob.setAttribute("aria-hidden", "true");
+      if (kind === "player" && color) blob.style.backgroundColor = color;
+      btn.appendChild(blob);
+      const an = document.createElement("span"); an.className = "an"; an.textContent = name;
+      btn.appendChild(an);
+      if (role) {
+        const ar = document.createElement("span"); ar.className = "ar"; ar.textContent = role;
+        btn.appendChild(ar);
+      }
+      btn.addEventListener("click", () => {
+        const t = document.querySelector('.turn[data-agent="' + agent + '"]');
+        if (t) t.scrollIntoView({behavior: "smooth", block: "start"});
+      });
+      strip.appendChild(btn);
+    };
+    add("warren", T.agentWarren, T.agentWarrenRole, null, "warren");
+    add("scout", T.agentScout, T.agentScoutRole, null, "scout");
+    (DATA.players || []).forEach(p => add("player", p.name, "", colorOf(p), "warren"));
+  }
+  const say = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value || "";
+  };
+  const leader = ranked[0];
+  if (leader) say("say-standings", T.chatStandings(leader.name, fmtPct(lastOf(leader).cum)));
+  else say("say-standings", T.noPlayersDot);
+  const best = DATA.players.length ? [...DATA.players].sort((a, b) =>
+    (lastOf(b).day - lastOf(a).day) || (lastOf(b).cum - lastOf(a).cum))[0] : null;
+  if (best) say("say-day", T.chatDay(best.name, fmtPct(lastOf(best).day)));
+  const m = DATA.monthly || {};
+  if (m.current) {
+    say("say-month", T.chatMonth(m.current.name, fmtPct(m.current.value),
+      monthLabel(m.current.month, m.current.month_year)));
+  } else if (m.previous) {
+    say("say-month", T.chatMonthPrev(m.previous.name, fmtPct(m.previous.value),
+      monthLabel(m.previous.month, m.previous.month_year)));
+  }
+  say("say-ops", T.chatOps);
+  say("say-news", T.chatNews);
+  say("say-ext", T.chatExt);
+  say("say-insights", T.chatInsights);
+  say("say-daily", T.chatDaily);
+  say("say-alloc", T.chatAlloc);
+  say("say-wallets", T.chatWallets);
+  say("say-monthly", T.chatMonthlyDetail);
+  say("say-goal", T.chatGoal);
+  say("say-badges", T.chatBadges);
+  say("say-pending", T.chatPending);
+  syncTurns();
+}
+paintChat();
+// Botones «Comprar»/«Vender» que abren la app de Revolut en el detalle del
+// valor. Ambos llevan al mismo detalle; desde ahí se elige comprar o vender.
+function revolutRow(sym) {
+  const href = "https://revolut.com/app/trading/stocks/" + encodeURIComponent(sym);
+  const box = h("div", "revolut");
+  [[T.buy, "buy", "▲"], [T.sell, "sell", "▼"]].forEach(([label, cls, ico]) => {
+    const a = document.createElement("a");
+    a.href = href;
+    a.className = "rev-btn " + cls;
+    a.innerHTML = '<span class="ic">' + ico + "</span>" + label;
     box.appendChild(a);
   });
   return box;
@@ -148,81 +210,3 @@ function openLeaderHelp() {
 
   const head = h("div", "mhead");
   const title = h("div", "mtitle");
-  title.appendChild(h("div", "t1", c.title));
-  title.appendChild(h("div", "t2", c.subtitle));
-  head.appendChild(title);
-  root.appendChild(head);
-
-  // preguntas y respuestas (la venta, mantener la rentabilidad, los flujos…)
-  c.qa.forEach(([q, a]) => {
-    root.appendChild(sectionEl(q, h("div", "mtext", a)));
-  });
-
-  // fórmulas: rentabilidad diaria (Dietz simple) y acumulada (geométrica)
-  const fsec = h("div", "msec");
-  fsec.appendChild(h("div", "h", c.formulaLabel));
-  const f1 = h("div", "formula");
-  f1.appendChild(h("span", "lbl", c.dailyLbl));
-  f1.appendChild(document.createTextNode(c.dailyFormula));
-  fsec.appendChild(f1);
-  const f2 = h("div", "formula");
-  f2.appendChild(h("span", "lbl", c.cumLbl));
-  f2.appendChild(document.createTextNode(c.cumFormula));
-  fsec.appendChild(f2);
-  root.appendChild(fsec);
-
-  root.appendChild(h("div", "mnote", c.note));
-  showModal(root);
-}
-const heroHelp = document.getElementById("hero-help");
-if (heroHelp) heroHelp.addEventListener("click", openLeaderHelp);
-
-// ---- la escala del restaurante (interrogante de los widgets del mes) ----
-// El widget solo canta la categoría; aquí está el baremo entero: qué
-// rentabilidad mensual da derecho a qué clase de sitio, con un precio
-// orientativo por persona y unos restaurantes de Madrid como vara de medir. La
-// fila del peldaño en el que está ese mes va resaltada.
-function openTreatHelp(info) {
-  const root = document.createElement("div");
-
-  const head = h("div", "mhead");
-  const title = h("div", "mtitle");
-  title.appendChild(h("div", "t1", T.treatTitle));
-  title.appendChild(h("div", "t2", T.treatSubtitle));
-  head.appendChild(title);
-  root.appendChild(head);
-
-  root.appendChild(h("div", "mtext", T.treatIntro));
-
-  const table = document.createElement("table");
-  table.className = "scale";
-  const cols = table.insertRow();
-  T.treatCols.forEach((c, i) => {
-    const th = document.createElement("th");
-    if (i === 1) th.className = "where";
-    th.textContent = c;
-    cols.appendChild(th);
-  });
-  TREAT_SCALE.forEach((step, i) => {
-    const tr = table.insertRow();
-    if (info && info.treat === i) tr.className = "on";
-    const rng = tr.insertCell();
-    rng.className = "rng"; rng.textContent = treatRange(i);
-    const where = tr.insertCell();
-    where.className = "where";
-    where.appendChild(h("span", "eur", step.euros));
-    where.appendChild(document.createTextNode(T.treatTiers[i]));
-    // los restaurantes son el ejemplo de a qué precio juega el peldaño
-    where.appendChild(h("span", "ex", (step.places || []).join(" · ")));
-    const price = tr.insertCell();
-    price.className = "price";
-    price.textContent = i === TREAT_SCALE.length - 1
-      ? T.treatPlus(treatMoney(step.price)) : treatMoney(step.price);
-  });
-  root.appendChild(sectionEl(T.treatScaleLbl, table));
-
-  root.appendChild(h("div", "mnote", T.treatNote));
-  showModal(root);
-}
-
-// ---- detall

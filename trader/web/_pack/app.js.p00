@@ -197,5 +197,3 @@ const MEDALS = ["🥇","🥈","🥉"];
     document.getElementById("gp-name").textContent = leader.name;
     const cum = document.getElementById("gp-cum");
     cum.textContent = fmtPct(last.cum);
-    cum.classList.add(last.cum >= 0 ? "pos" : "neg");
-    const row = document.get
