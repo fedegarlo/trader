@@ -6,7 +6,7 @@ publicar un ranking — todo en un repositorio público **sin exponer las
 operaciones ni los importes de nadie** (los extractos se suben cifrados).
 
 📊 **El ranking se publica en dos formatos**, actualizados automáticamente
-cada día de mercado por una GitHub Action:
+en la apertura y el cierre de cada día de mercado por una GitHub Action:
 
 - **Web (clasificación y widgets)**: `docs/index.html`, servida con GitHub Pages en
   **https://fedegarlo.github.io/trader/** (ver [Ver en web](#ver-en-web)).
@@ -215,8 +215,8 @@ cada ticker.
 
 Como la página es estática, ese dato es la **foto del momento del build** (por
 eso la tarjeta lleva siempre la hora a la que se tomó, y desaparece si se abre
-la página más de 6 horas después). El workflow del ranking pasa a propósito por
-las dos franjas para que el dato llegue a tiempo. No cuenta para la
+la página más de 6 horas después). El ranking se recalcula en la apertura y
+el cierre; la tarjeta enseña lo que hubiera en ese build. No cuenta para la
 clasificación: la jornada solo se cierra con el precio de cierre oficial.
 
 Con el **mercado cerrado**, el widget de *mejor del día* no se queda en blanco:
@@ -251,13 +251,13 @@ fichero se versiona igual que los precios y las series públicas.
 Para activarla, una sola vez:
 
 1. Ve a **Settings → Pages** del repositorio.
-2. En *Build and deployment*, elige **Deploy from a branch**,
-   rama **`main`**, carpeta **`/docs`**, y guarda.
+2. En *Build and deployment*, elige **GitHub Actions** (ya configurado
+   en este repo). El workflow de ranking publica `docs/` al final del
+   recálculo cuando esa carpeta cambia.
 
 En un par de minutos la web queda en
 `https://<usuario>.github.io/trader/` (para este repo:
-**https://fedegarlo.github.io/trader/**). Cada vez que la Action actualiza
-`docs/`, Pages redespliega solo.
+**https://fedegarlo.github.io/trader/**).
 
 ## Cómo funciona
 
@@ -270,12 +270,14 @@ equivalente al ingerirlo.
 ```
 extracto de Revolut (CSV o PDF) ──email──> buzón de la liga (privado)
                                             │
+              Apps Script (gmail-dispatch)  │ repository_dispatch email-recibido
+                                            ▼
                      GitHub Action (IMAP)   │ verifica el remitente por DMARC
                                             │ y CIFRA con el secret TRADER_KEY
                                             ▼
                         players/<id>/trades.csv.enc  (público, ilegible)
                                             │
-                     GitHub Action (diaria) │ descifra con el secret TRADER_KEY
+              GitHub Action (open + close)  │ descifra con el secret TRADER_KEY
                                             ▼
                         reconstruye posiciones día a día
                         valora al cierre (Yahoo Finance)
@@ -318,7 +320,10 @@ Para cada día natural se calcula:
 > frase por jugador (un secret `PLAYER_<ID>_KEY` cada uno).
 >
 > **Subida por email (recomendada):** el jugador envía su extracto (CSV o el
-> PDF "Account Statement") como adjunto a un buzón de la liga. Un workflow (`.github/workflows/inbox.yml`)
+> PDF "Account Statement") como adjunto a un buzón de la liga. Apps Script
+> ([`scripts/gmail-dispatch.gs`](scripts/gmail-dispatch.gs)) avisa al repo con
+> `repository_dispatch` tipo `email-recibido` (no hay cron de sondeo cada
+> 15 min). El workflow [`.github/workflows/ingest.yml`](.github/workflows/ingest.yml)
 > lo lee por IMAP, **verifica el remitente por DMARC** (no por el `From:`, que
 > es falsificable: mira la cabecera `Authentication-Results` que estampa el
 > servidor receptor y exige `dmarc=pass`), lo **cifra él mismo** con
@@ -347,16 +352,14 @@ Para cada día natural se calcula:
 >
 > **Ingesta directa por CSV (automatización, sin email):**
 > `python -m trader ingest-csv --player fede extracto.csv` (frase en `TRADER_KEY`)
-> y el workflow [`.github/workflows/ingest-csv.yml`](.github/workflows/ingest-csv.yml)
+> y el mismo workflow [`.github/workflows/ingest.yml`](.github/workflows/ingest.yml)
 > (`repository_dispatch` tipo `ingest-csv` con el CSV en base64). Misma fusión,
 > cifrado y publicación que el buzón; **no usa IMAP**. Pensado para la rutina
 > automática de Steve de Federico.
 >
 > **Alternativa: subida por token (web/CLI).** Con `docs/subir.html` el commit
-> va directo con el token del jugador (cifrado en el navegador, sin PR). Aquí
-> el jugador escribe con un token que da acceso a todo el repo, así que un
-> guardián de CI (`.github/workflows/guard.yml`) revierte cualquier push que
-> toque carpetas ajenas, según el mapa `PLAYER_OWNERS`. Ver
+> va directo con el token del jugador (cifrado en el navegador, sin PR) y
+> dispara `extracto-subido` para recalcular el ranking. Ver
 > [`players/README.md`](players/README.md).
 
 ## Empezar
@@ -410,10 +413,8 @@ data/public/                series diarias públicas en JSON (para gráficas)
 docs/index.html             la web del ranking 🏆 (GitHub Pages)
 docs/subir.html             página para subir tu extracto (cifra en el navegador, sin PR)
 docs/ranking.md             el ranking en Markdown
-.github/workflows/inbox.yml         ingesta extractos recibidos por email (IMAP + DMARC)
-.github/workflows/ingest-csv.yml    ingesta un CSV directo (dispatch, sin IMAP)
-.github/workflows/ranking.yml       recalcula y publica el ranking
-.github/workflows/guard.yml     revierte pushes que toquen carpetas ajenas (vía token)
+.github/workflows/ingest.yml    email (dispatch + IMAP) y CSV (dispatch de Steve)
+.github/workflows/ranking.yml   apertura/cierre + Pages si docs/ cambió
 examples/                   jugador de ejemplo con precios ficticios para probar
 tests/                      pytest
 ```

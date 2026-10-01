@@ -3,8 +3,8 @@
  *
  * Google Apps Script asociado a la cuenta del BUZÓN de la liga. Cada minuto
  * mira si hay correos nuevos con adjunto y, si los hay, dispara el workflow
- * `.github/workflows/inbox.yml` mediante un `repository_dispatch`. Así el
- * extracto se procesa en segundos, sin esperar al cron de GitHub Actions.
+ * `.github/workflows/ingest.yml` mediante un `repository_dispatch`. Así el
+ * extracto se procesa en segundos, sin cron de sondeo en Actions.
  *
  * El script NO lee ni cifra el CSV: solo "llama al timbre". El trabajo de
  * verificar DMARC, cifrar y commitear lo sigue haciendo el workflow por IMAP.
@@ -37,8 +37,8 @@
  *    ahí, `checkInbox` corre solo cada minuto.
  *
  * Para comprobar que funciona: envíate un correo con un CSV adjunto (sin
- * abrirlo), espera ~1 min y mira en GitHub -> Actions que se lanza "Ingesta
- * por email". El menú Ejecuciones del editor de Apps Script muestra los logs.
+ * abrirlo), espera ~1 min y mira en GitHub -> Actions que se lanza "Ingesta".
+ * El menú Ejecuciones del editor de Apps Script muestra los logs.
  */
 
 // Cada cuánto revisa el buzón (minutos). Google permite mínimo 1.

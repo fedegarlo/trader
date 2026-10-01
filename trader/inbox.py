@@ -2,8 +2,9 @@
 
 Idea: cada jugador **envía su extracto como adjunto a un buzón** de la liga,
 en cualquiera de los dos formatos de Revolut: el CSV que exporta la app o el
-PDF de cuenta ("Account Statement"). Un workflow programado ejecuta este
-módulo, que:
+PDF de cuenta ("Account Statement"). El workflow de ingesta
+(``ingest.yml``, disparado por ``repository_dispatch`` / Apps Script)
+ejecuta este módulo, que:
 
 1. Se conecta al buzón por IMAP y lee los correos no vistos.
 2. **Verifica el remitente por DMARC** (no por el ``From:`` a secas, que es
@@ -34,8 +35,9 @@ el buzón y se reintenten en cuanto llegue el fichero correcto.
 
 Hay un camino paralelo **sin IMAP** (:func:`ingest_csv`) para ingerir un CSV
 ya en mano —misma validación, fusión y cifrado—. Lo usa la CLI
-``python -m trader ingest-csv`` y el workflow ``ingest-csv.yml`` (p.ej. la
-rutina automática de Steve de Federico).
+``python -m trader ingest-csv`` y el mismo workflow ``ingest.yml`` con
+``repository_dispatch`` tipo ``ingest-csv`` (p.ej. la rutina automática
+de Steve de Federico).
 """
 
 from __future__ import annotations

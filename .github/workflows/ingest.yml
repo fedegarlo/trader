@@ -1,12 +1,22 @@
-name: Ingesta por email
+name: Ingesta
 
-# Cada jugador envía su extracto de Revolut —el CSV que exporta la app o el PDF
-# de cuenta ("Account Statement")— como adjunto a un buzón de la liga. Este
-# workflow lo lee por IMAP, verifica el remitente por DMARC, convierte el PDF a
-# CSV si hace falta, lo cifra con la frase de la liga y lo commitea en
-# players/<id>/. El jugador no necesita token de GitHub, ni ser colaborador, ni
-# cifrar nada: solo enviar un email. Los correos que no traen extracto se dejan
-# sin leer, para que el jugador los vea y pueda reenviar el fichero correcto.
+# Un solo workflow para los dos caminos de extracto:
+#
+# 1) Email: cada jugador envía su extracto de Revolut —el CSV que exporta la
+#    app o el PDF de cuenta ("Account Statement")— como adjunto al buzón de
+#    la liga. Apps Script (scripts/gmail-dispatch.gs) dispara
+#    repository_dispatch tipo `email-recibido` al llegar un correo; este
+#    job lee el buzón por IMAP, verifica el remitente por DMARC, convierte
+#    el PDF a CSV si hace falta, lo cifra con la frase de la liga y lo
+#    commitea en players/<id>/. Sin cron de sondeo: el correo es
+#    event-driven. Los correos que no traen extracto se dejan sin leer.
+#
+# 2) CSV directo (sin IMAP): la rutina automática de Steve de Federico
+#    (u otra automatización) lanza repository_dispatch tipo `ingest-csv`
+#    con el CSV en base64. Misma validación/fusión/cifrado que el buzón.
+#
+# El jugador no necesita token de GitHub, ni ser colaborador, ni cifrar
+# nada: solo enviar un email (o que Steve empuje el CSV).
 #
 # Configuración (una sola vez):
 #   Secrets  (Settings -> Secrets and variables -> Actions -> Secrets):
@@ -25,23 +35,30 @@ name: Ingesta por email
 #     IMAP_MAILBOX (def. INBOX),
 #     INBOX_TRUSTED_AUTHSERV (var, p.ej. mx.google.com): si se define, solo se
 #       confía en la cabecera Authentication-Results de ese servidor.
+#
+# Disparo CSV desde fuera:
+#   gh api repos/fedegarlo/trader/dispatches \
+#     -f event_type=ingest-csv \
+#     -f client_payload='{"player_id":"fede","csv_base64":"..."}'
+# `player_id` es opcional (defecto: fede). `csv_base64` es obligatorio.
+# Para probar a mano: Actions → Ingesta → Run workflow; si rellenas
+# csv_base64 se usa el camino CSV, si no se lee el buzón por IMAP.
 
 on:
-  # Disparo "instantáneo": el Apps Script de Gmail (scripts/gmail-dispatch.gs)
-  # lanza este evento en cuanto llega un correo con adjunto, así el extracto se
-  # procesa en segundos en vez de esperar al cron.
+  # Email: Apps Script llama al timbre. CSV: Steve / gh / automatización.
   repository_dispatch:
-    types: [email-recibido]
-  # Red de seguridad por si el Apps Script falla o no está configurado: revisa
-  # el buzón cada ~15 minutos igualmente (los cron de Actions son aproximados).
-  #
-  # Evitamos "*/15", que dispara en :00/:15/:30/:45: son los minutos más
-  # congestionados de GitHub Actions y ahí muchas ejecuciones se retrasan o se
-  # descartan. Fijar minutos poco concurridos (:07/:22/:37/:52) mantiene la
-  # cadencia de ~15 min pero con muchas menos pérdidas.
-  schedule:
-    - cron: "7,22,37,52 * * * *"
-  workflow_dispatch: {}
+    types: [email-recibido, ingest-csv]
+  workflow_dispatch:
+    inputs:
+      player_id:
+        description: Id del jugador (carpeta players/<id>/) — solo camino CSV
+        required: false
+        default: fede
+        type: string
+      csv_base64:
+        description: Extracto CSV en base64 (si se rellena, camino CSV; si no, IMAP)
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -52,19 +69,39 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  inbox:
+  ingest:
     runs-on: ubuntu-latest
     steps:
+      - name: Elegir camino
+        id: kind
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          DISPATCH_ACTION: ${{ github.event.action }}
+          HAS_CSV_INPUT: ${{ github.event_name == 'workflow_dispatch' && inputs.csv_base64 != '' }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "repository_dispatch" ] \
+             && [ "$DISPATCH_ACTION" = "ingest-csv" ]; then
+            echo "kind=csv" >> "$GITHUB_OUTPUT"
+          elif [ "$HAS_CSV_INPUT" = "true" ]; then
+            echo "kind=csv" >> "$GITHUB_OUTPUT"
+          else
+            echo "kind=email" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
 
       - name: Instalar dependencias
         run: pip install -r requirements.txt
 
       - name: Leer buzón e ingerir extractos
+        if: steps.kind.outputs.kind == 'email'
         env:
           TRADER_KEY: ${{ secrets.TRADER_KEY }}
           IMAP_HOST: ${{ secrets.IMAP_HOST }}
@@ -83,10 +120,42 @@ jobs:
           python -m trader inbox | tee -a "$GITHUB_STEP_SUMMARY"
           printf '```\n' >> "$GITHUB_STEP_SUMMARY"
 
-      # Ojo con el nombre: esto NO mira si ha llegado correo (eso lo dice el paso
-      # anterior), sino si algún extracto ha traído operaciones que no
+      - name: Ingerir CSV
+        if: steps.kind.outputs.kind == 'csv'
+        env:
+          TRADER_KEY: ${{ secrets.TRADER_KEY }}
+          PLAYER_EMAILS: ${{ vars.PLAYER_EMAILS }}
+          PLAYER_ID: ${{ github.event.client_payload.player_id || inputs.player_id || 'fede' }}
+          CSV_BASE64: ${{ github.event.client_payload.csv_base64 || inputs.csv_base64 }}
+        # El resultado se copia al resumen de la ejecución (la portada del run),
+        # de un vistazo se ve si el extracto traía operaciones nuevas.
+        run: |
+          set -euo pipefail
+          if [ -z "${CSV_BASE64:-}" ]; then
+            echo "Falta csv_base64 (client_payload del repository_dispatch" \
+                 "o el input csv_base64 del workflow_dispatch)." >&2
+            exit 1
+          fi
+          PLAYER_ID="${PLAYER_ID:-fede}"
+          CSV_FILE="$(mktemp /tmp/revolut-XXXXXX.csv)"
+          cleanup() { rm -f "$CSV_FILE"; }
+          trap cleanup EXIT
+          # -i ignora saltos de línea u otros no-alfabeto que meta el payload.
+          printf '%s' "$CSV_BASE64" | base64 -d -i > "$CSV_FILE"
+          if [ ! -s "$CSV_FILE" ]; then
+            echo "El CSV decodificado está vacío." >&2
+            exit 1
+          fi
+          printf '### Ingesta por CSV\n\n```\n' >> "$GITHUB_STEP_SUMMARY"
+          python -m trader ingest-csv --player "$PLAYER_ID" "$CSV_FILE" \
+            | tee -a "$GITHUB_STEP_SUMMARY"
+          printf '```\n' >> "$GITHUB_STEP_SUMMARY"
+
+      # Ojo con el nombre: esto NO mira si ha llegado correo/CSV (eso lo dice
+      # el paso anterior), sino si algún extracto ha traído operaciones que no
       # estuvieran ya registradas. Un extracto reenviado, o exportado antes de
       # que Revolut refleje las últimas operaciones, no cambia ningún fichero.
+      # Sin novedades no se lanza ranking ni publish (ahorro de minutos).
       - name: ¿Alguna operación nueva?
         id: changed
         run: |
@@ -109,6 +178,7 @@ jobs:
           # Hace falta también aquí: si la rama avanza mientras publicábamos,
           # este paso vuelve a lanzar el cálculo sobre la versión nueva.
           TRADER_KEY: ${{ secrets.TRADER_KEY }}
+          INGEST_KIND: ${{ steps.kind.outputs.kind }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -117,7 +187,12 @@ jobs:
             echo "Sin cambios que publicar"
             exit 0
           fi
-          git commit -m "Ingesta de extractos por email $(date -u +%F\ %H:%M)"
+          if [ "$INGEST_KIND" = "csv" ]; then
+            msg="Ingesta de extracto CSV $(date -u +%F\ %H:%M)"
+          else
+            msg="Ingesta de extractos por email $(date -u +%F\ %H:%M)"
+          fi
+          git commit -m "$msg"
           # Puede coincidir con el workflow de ranking, que regenera los mismos
           # ficheros derivados (data/, docs/) y empuja a la vez. En players/ sí
           # manda lo nuestro (el extracto recién ingerido es el dato de origen),
@@ -150,7 +225,7 @@ jobs:
                 echo "El extracto ya estaba publicado; nada que hacer."
                 exit 0
               fi
-              git commit -m "Ingesta de extractos por email $(date -u +%F\ %H:%M)"
+              git commit -m "$msg"
             else
               git commit --amend --no-edit
             fi
