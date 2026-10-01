@@ -1,0 +1,224 @@
+le de ticker ----
+function openTicker(sym) {
+  const t = TICKERS[sym];
+  if (!t) return;
+  const upC = css("--up"), downC = css("--down");
+  const root = document.createElement("div");
+
+  const head = h("div", "mhead");
+  head.appendChild(tickerLogoEl(t, 46));
+  const title = h("div", "mtitle");
+  const t1 = h("div", "t1");
+  t1.appendChild(document.createTextNode(t.ticker));
+  if (t.ret != null) {
+    const b = h("span", "mbadge" + (t.ret >= 0 ? "" : " neg"), fmtPct(t.ret));
+    t1.appendChild(b);
+  }
+  title.appendChild(t1);
+  title.appendChild(h("div", "t2", t.name));
+  head.appendChild(title);
+  root.appendChild(head);
+
+  const tiles = h("div", "tiles");
+  tiles.appendChild(tileEl(T.weightInLeague, fmtW(t.w)));
+  tiles.appendChild(tileEl(T.heldBy, T.playersCount(t.holders.length)));
+  tiles.appendChild(tileEl(T.variation, t.ret == null ? "—" : fmtPct(t.ret),
+    t.ret == null ? "" : (t.ret >= 0 ? "pos" : "neg")));
+  // Sesión extendida del valor (pre-market / after-hours), si la había cuando
+  // se generó la página: el precio fuera de horario y su variación frente al
+  // último cierre regular.
+  const ex = t.ext;
+  if (ex && ex.session && ex.pct != null)
+    tiles.appendChild(tileEl(
+      extLabel(ex.session) + " \\u00b7 " + extMoney(ex.price, ex.currency),
+      fmtPct(ex.pct), ex.pct >= 0 ? "pos" : "neg"));
+  root.appendChild(tiles);
+
+  const revSec = sectionEl(T.tradeOnRevolut, revolutRow(t.ticker));
+  revSec.appendChild(h("div", "rev-note", T.revNote(t.ticker)));
+  root.appendChild(revSec);
+
+  if (t.analyst) root.appendChild(analystSectionEl(t.analyst));
+
+  if (t.prices && t.prices.length >= 2) {
+    const vals = t.prices.map(p => p.close);
+    const spark = h("div", "mspark", sparkSVG(vals, t.ret >= 0 ? upC : downC, "tk"));
+    const from = t.prices[0].date, to = t.prices[t.prices.length - 1].date;
+    const sec = sectionEl(T.priceRange(fmtDate(from), fmtDate(to)), spark);
+    root.appendChild(sec);
+  }
+
+  if (t.holders.length) {
+    const list = document.createElement("div");
+    t.holders.forEach(hd => {
+      const row = h("div", "holder-row clk");
+      row.dataset.player = playerIdByName(hd.name) || "";
+      const nm = h("span", "nm");
+      const key = h("span", "key"); key.style.background = css(SLOTS[hd.slot % SLOTS.length]);
+      nm.appendChild(key); nm.appendChild(document.createTextNode(hd.name));
+      row.appendChild(nm);
+      row.appendChild(h("span", "w", T.ofPortfolio(fmtW(hd.w))));
+      list.appendChild(row);
+    });
+    root.appendChild(sectionEl(T.whoHasIt, list));
+  }
+
+  if (t.peers && t.peers.length) root.appendChild(peersSectionEl(t.peers));
+
+  root.appendChild(newsSectionEl(T.news, t.news || [], t.ticker));
+  root.appendChild(h("div", "mnote", T.tickerNote));
+  showModal(root);
+}
+
+function playerIdByName(name) {
+  const p = DATA.players.find(x => x.name === name);
+  return p ? p.id : null;
+}
+
+// ---- detalle de jugador ----
+function openPlayer(pid) {
+  const p = PLAYERS[pid];
+  if (!p) return;
+  const upC = css("--up"), downC = css("--down");
+  const days = p.days || [];
+  const last = days[days.length - 1] || {cum: 0, day: 0};
+  const rankIdx = ranked.findIndex(x => x.id === pid);
+  const bestDay = days.reduce((a, d) => d.day > a.day ? d : a, days[0] || {day: 0});
+  const worstDay = days.reduce((a, d) => d.day < a.day ? d : a, days[0] || {day: 0});
+  let streak = 0, sign = 0;
+  for (let i = days.length - 1; i >= 0; i--) {
+    const s = Math.sign(days[i].day);
+    if (i === days.length - 1) { sign = s; streak = s !== 0 ? 1 : 0; }
+    else if (s === sign && s !== 0) streak++;
+    else break;
+  }
+  const root = document.createElement("div");
+
+  const head = h("div", "mhead");
+  head.appendChild(monoEl(p.name, 46, colorOf(p)));
+  const title = h("div", "mtitle");
+  const t1 = h("div", "t1");
+  t1.appendChild(document.createTextNode(p.name));
+  if (rankIdx >= 0)
+    t1.appendChild(h("span", "mbadge rank", (MEDALS[rankIdx] || "#" + (rankIdx + 1))));
+  title.appendChild(t1);
+  title.appendChild(h("div", "t2", T.since(p.since ? fmtDate(p.since) : (days[0] || {}).date || "")));
+  head.appendChild(title);
+  root.appendChild(head);
+
+  if (p.suggestion) root.appendChild(sectionEl(T.nextStep, nextStepEl(p.suggestion)));
+
+  const tiles = h("div", "tiles");
+  tiles.appendChild(tileEl(T.cumPct, fmtPct(last.cum), last.cum >= 0 ? "pos" : "neg"));
+  tiles.appendChild(tileEl(T.bestDayTile, fmtPct(bestDay.day), "pos"));
+  tiles.appendChild(tileEl(T.worstDayTile, fmtPct(worstDay.day), worstDay.day < 0 ? "neg" : ""));
+  root.appendChild(tiles);
+
+  const tiles2 = h("div", "tiles");
+  tiles2.appendChild(tileEl(T.lastDayPct, fmtPct(last.day), last.day >= 0 ? "pos" : "neg"));
+  tiles2.appendChild(tileEl(T.streak, String(streak), sign > 0 ? "pos" : (sign < 0 ? "neg" : "")));
+  tiles2.children[1].querySelector(".k").textContent = T.streakLabel(sign, streak);
+  tiles2.appendChild(tileEl(T.sessions, String(days.length)));
+  root.appendChild(tiles2);
+
+  const myBadges = PLAYER_BADGES[pid] || [];
+  if (myBadges.length) {
+    const wrap = h("div", "mbadges");
+    myBadges.forEach(b => {
+      const chip = h("div", "mbadge-chip" + (b.provisional ? " prov" : ""));
+      chip.appendChild(h("span", "i", badgeIcon(b)));
+      chip.appendChild(h("span", "t", badgeTitle(b)));
+      wrap.appendChild(chip);
+    });
+    root.appendChild(sectionEl(T.badgesTitle, wrap));
+  }
+
+  if (days.length >= 2) {
+    const spark = h("div", "mspark",
+      sparkSVG(days.map(d => d.cum), last.cum >= 0 ? upC : downC, "pl", {baseline0: true}));
+    // la serie del jugador es toda la liga: mismo título que la gráfica grande
+    root.appendChild(sectionEl(T.cumTitle, spark));
+  }
+
+  if (p.holdings && p.holdings.length) {
+    const chips = h("div", "chips");
+    p.holdings.forEach(hh => {
+      const meta = TICKERS[hh.ticker] || {ticker: hh.ticker, domain: "", name: hh.ticker};
+      const chip = h("div", "chip-tk" + (TICKERS[hh.ticker] ? " clk" : ""));
+      if (TICKERS[hh.ticker]) chip.dataset.ticker = hh.ticker;
+      chip.appendChild(tickerLogoEl(meta, 22));
+      chip.appendChild(document.createTextNode(hh.ticker));
+      chip.appendChild(h("span", "w", fmtW(hh.w)));
+      chips.appendChild(chip);
+    });
+    root.appendChild(sectionEl(T.portfolioCount(p.holdings.length), chips));
+  }
+
+  const recent = days.slice(-6).reverse();
+  if (recent.length) {
+    const list = document.createElement("div");
+    recent.forEach(d => {
+      const row = h("div", "mini-row");
+      row.appendChild(h("span", "dt", fmtDate(d.date)));
+      row.appendChild(h("span", "v " + (d.day >= 0 ? "pos" : "neg"), fmtPct(d.day)));
+      list.appendChild(row);
+    });
+    root.appendChild(sectionEl(T.recentSessions, list));
+  }
+
+  if (p.holdings && p.holdings.length) {
+    // Los titulares de toda su cartera, no solo los de su primera posición.
+    const syms = p.holdings.map(hh => hh.ticker);
+    root.appendChild(newsSectionEl(T.portfolioNews, newsFor(syms, 6), syms[0]));
+  }
+  showModal(root);
+}
+
+// ---- detalle de una jornada (campeón del día) ----
+// Índice fecha -> { id de jugador -> su jornada }, para reunir en un vistazo la
+// rentabilidad de cada jugador ese día sin recorrer todo el dataset al abrir.
+const DAY_INDEX = {};
+DATA.players.forEach(p => (p.days || []).forEach(d => {
+  (DAY_INDEX[d.date] || (DAY_INDEX[d.date] = {}))[p.id] = d;
+}));
+
+// Muestra la rentabilidad de cada valor del jugador esa jornada (los % suman el
+// «% del día») y, debajo, el % del día del resto de jugadores. ``pid`` es el
+// jugador protagonista (el campeón del día); si falta o no tiene datos ese
+// día, se toma el mejor de la jornada.
+function openDayDetail(pid, iso) {
+  const perPlayer = DAY_INDEX[iso] || {};
+  let subject = PLAYERS[pid];
+  if (!subject || !perPlayer[pid]) {
+    let bestId = null, bestVal = -Infinity;
+    Object.keys(perPlayer).forEach(id => {
+      if (perPlayer[id].day > bestVal) { bestVal = perPlayer[id].day; bestId = id; }
+    });
+    subject = PLAYERS[bestId]; pid = bestId;
+  }
+  if (!subject) return;
+  const sd = perPlayer[pid] || {day: 0, bd: []};
+  const root = document.createElement("div");
+
+  const head = h("div", "mhead");
+  head.appendChild(monoEl(subject.name, 46, colorOf(subject)));
+  const title = h("div", "mtitle");
+  const t1 = h("div", "t1");
+  t1.appendChild(document.createTextNode(fmtDate(iso)));
+  t1.appendChild(h("span", "mbadge" + (sd.day >= 0 ? "" : " neg"), fmtPct(sd.day)));
+  title.appendChild(t1);
+  title.appendChild(h("div", "t2", subject.name));
+  head.appendChild(title);
+  root.appendChild(head);
+
+  // rentabilidad por valor: cada porción suma el % del día
+  const bd = sd.bd || [];
+  if (bd.length) {
+    const list = document.createElement("div");
+    const rows = bd.map(x => {
+      const row = h("div", "holder-row");
+      if (x.ticker && TICKERS[x.ticker]) { row.classList.add("clk"); row.dataset.ticker = x.ticker; }
+      const nm = h("span", "nm");
+      if (x.ticker) {
+        nm.appendChild(tickerLogoEl({ticker: x.ticker}, 26));
+        nm
