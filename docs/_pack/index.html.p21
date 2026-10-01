@@ -1,0 +1,171 @@
+(t => TICKERS[t.ticker] = t);
+const PLAYERS = {}; DATA.players.forEach(p => PLAYERS[p.id] = p);
+
+// ---- clasificación (ordenada por acumulado) ----
+// Se lee como una parrilla de F1 o una tabla de liga: primero, segundo,
+// tercero… con el acumulado de cada jugador y el % de la última jornada. En el
+// móvil no sobra ni una columna, así que solo van esos cuatro datos.
+const ranked = [...DATA.players].sort((a, b) => lastOf(b).cum - lastOf(a).cum);
+const MEDALS = ["🥇","🥈","🥉"];
+{
+  const t = document.getElementById("standings");
+  const mk = (tag, cls, text) => { const el = document.createElement(tag);
+    if (cls) el.className = cls; if (text !== undefined) el.textContent = text; return el; };
+  const head = t.insertRow();
+  T.rankCols.forEach((h, i) => {
+    const th = document.createElement("th");
+    th.textContent = h; if (i === 1) th.className = "name"; head.appendChild(th);
+  });
+  if (!ranked.length) {
+    const empty = mk("td", "empty", T.noPlayers);
+    empty.colSpan = T.rankCols.length;
+    t.insertRow().appendChild(empty);
+  }
+  ranked.forEach((p, i) => {
+    const last = lastOf(p);
+    const tr = t.insertRow();
+    tr.classList.add("clk"); tr.dataset.player = p.id;
+    if (i === 0) tr.classList.add("lead");
+    tr.appendChild(mk("td", "rank", MEDALS[i] || String(i + 1)));
+    tr.appendChild(mk("td", "name", p.name));
+    tr.appendChild(mk("td", "big " + (last.cum >= 0 ? "pos" : "neg"), fmtPct(last.cum)));
+    tr.appendChild(mk("td", last.day >= 0 ? "pos" : "neg", fmtPct(last.day)));
+  });
+}
+
+// ---- Gran Premio de Canadá: quién va ganando la general ----
+// El viaje es el premio de la clasificación general, así que la tarjeta abre
+// con el líder —su acumulado y la ventaja en puntos sobre el segundo— y con el
+// resto del podio; la parrilla completa sigue justo debajo, intacta. Líder y
+// podio abren la ficha del jugador por delegación (``data-player``).
+{
+  const gp = document.getElementById("gp");
+  const leader = ranked[0];
+  if (!leader) {
+    gp.style.display = "none";
+    document.querySelector(".gp-h2").classList.add("bare");
+  }
+  else {
+    const last = lastOf(leader);
+    // el color del líder tiñe su bloque (y luego su fila de la parrilla)
+    document.getElementById("hero-card").style.setProperty("--lead", colorOf(leader));
+    document.getElementById("gp-name").textContent = leader.name;
+    const cum = document.getElementById("gp-cum");
+    cum.textContent = fmtPct(last.cum);
+    cum.classList.add(last.cum >= 0 ? "pos" : "neg");
+    const row = document.getElementById("gp-lead");
+    row.classList.add("clk"); row.dataset.player = leader.id;
+    const second = ranked[1];
+    document.getElementById("gp-gap").textContent = second
+      ? T.gpGap(second.name, (last.cum - lastOf(second).cum).toFixed(2))
+      : T.gpSolo;
+    const chips = document.getElementById("gp-chips");
+    ranked.slice(1, 3).forEach((p, i) => {
+      const chip = document.createElement("div");
+      chip.className = "gp-chip clk"; chip.dataset.player = p.id;
+      const medal = document.createElement("span");
+      medal.className = "m"; medal.textContent = MEDALS[i + 1];
+      const name = document.createElement("span");
+      name.className = "n"; name.textContent = p.name;
+      const val = document.createElement("span");
+      val.className = "v " + (lastOf(p).cum >= 0 ? "pos" : "neg");
+      val.textContent = fmtPct(lastOf(p).cum);
+      chip.append(medal, name, val);
+      chips.appendChild(chip);
+    });
+    if (chips.children.length) document.getElementById("gp-podium").style.display = "";
+  }
+}
+
+// ---- pendientes de clave (extracto subido pero no descifrable) ----
+if (DATA.pending && DATA.pending.length) {
+  const names = DATA.pending.map(p => p.name).join(", ");
+  document.getElementById("pending").textContent = T.pendingText(names);
+  document.getElementById("pending-card").style.display = "";
+}
+
+// ---- curvas suaves ----
+// Une los puntos con un spline cúbico *monótono* (Fritsch–Carlson) en vez de
+// con segmentos rectos: se van los picos angulosos pero la curva no se inventa
+// subidas ni bajadas — entre dos puntos nunca se sale del rango de esos dos
+// puntos y en cada máximo o mínimo la pendiente es 0, así que el dibujo sigue
+// contando exactamente lo que dicen los datos.
+function smoothD(pts) {
+  const n = pts.length;
+  if (!n) return "";
+  const P = i => pts[i][0].toFixed(2) + " " + pts[i][1].toFixed(2);
+  if (n === 1) return "M" + P(0);
+  const dx = [], sl = [], m = [];
+  for (let i = 0; i < n - 1; i++) {
+    dx.push(pts[i + 1][0] - pts[i][0]);
+    sl.push(dx[i] === 0 ? 0 : (pts[i + 1][1] - pts[i][1]) / dx[i]);
+  }
+  m[0] = sl[0];
+  for (let i = 1; i < n - 1; i++) m[i] = sl[i - 1] * sl[i] <= 0 ? 0 : (sl[i - 1] + sl[i]) / 2;
+  m[n - 1] = sl[n - 2];
+  // recorte de las tangentes: es lo que garantiza que no haya sobreoscilación
+  for (let i = 0; i < n - 1; i++) {
+    if (sl[i] === 0) { m[i] = 0; m[i + 1] = 0; continue; }
+    const a = m[i] / sl[i], b = m[i + 1] / sl[i];
+    const h = Math.hypot(a, b);
+    if (h > 3) { m[i] = (3 * a / h) * sl[i]; m[i + 1] = (3 * b / h) * sl[i]; }
+  }
+  let d = "M" + P(0);
+  for (let i = 0; i < n - 1; i++) {
+    const t = dx[i] / 3;
+    d += " C" + (pts[i][0] + t).toFixed(2) + " " + (pts[i][1] + m[i] * t).toFixed(2) +
+      " " + (pts[i + 1][0] - t).toFixed(2) + " " + (pts[i + 1][1] - m[i + 1] * t).toFixed(2) +
+      " " + P(i + 1);
+  }
+  return d;
+}
+
+// ---- widgets tipo Revolut (gráficas de área con degradado) ----
+function sparkSVG(values, color, id, opts) {
+  const W = 100, H = 40, pad = 3;
+  // Con línea base en 0 la magnitud es honesta: una serie casi plana no se
+  // estira a toda la altura (evita la falsa «cuesta» con pocos puntos).
+  let mn = Math.min(...values), mx = Math.max(...values);
+  if (opts && opts.baseline0) { mn = Math.min(0, mn); mx = Math.max(0, mx); }
+  if (mx === mn) { mx += 1; mn -= 1; }
+  const xs = i => values.length < 2 ? W / 2 : (i / (values.length - 1)) * W;
+  const ys = v => pad + (1 - (v - mn) / (mx - mn)) * (H - 2 * pad);
+  const pts = values.map((v, i) => [xs(i), ys(v)]);
+  const line = smoothD(pts);
+  const area = line + " L" + xs(values.length - 1).toFixed(2) + " " + H +
+    " L" + xs(0).toFixed(2) + " " + H + " Z";
+  return '<svg class="spark" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-hidden="true">' +
+    '<defs><linearGradient id="sg' + id + '" x1="0" y1="0" x2="0" y2="1">' +
+    '<stop offset="0" stop-color="' + color + '" stop-opacity="0.34"/>' +
+    '<stop offset="1" stop-color="' + color + '" stop-opacity="0"/>' +
+    '</linearGradient></defs>' +
+    '<path d="' + area + '" fill="url(#sg' + id + ')"/>' +
+    '<path d="' + line + '" fill="none" stroke="' + color + '" stroke-width="2.4" ' +
+    'vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/>' +
+    '</svg>';
+}
+function paintWidgets() {
+  // Sin jugadores la clasificación ya enseña su propio mensaje vacío: solo se
+  // esconde lo que no tiene nada que contar (el mejor del día).
+  if (!DATA.players.length) {
+    document.getElementById("best-card").style.display = "none";
+    return;
+  }
+
+  // mejor del día (los fines de semana la última jornada ya es la del viernes;
+  // si hay empate en el % del día, desempata la rentabilidad acumulada)
+  const best = [...DATA.players].sort((a, b) =>
+    (lastOf(b).day - lastOf(a).day) || (lastOf(b).cum - lastOf(a).cum))[0];
+  const bd = lastOf(best);
+  const bestCard = document.getElementById("best-card");
+  const bDate = document.getElementById("best-date");
+  const bv = document.getElementById("best-val");
+  const bn = document.getElementById("best-name");
+  // Si todos los jugadores empatan a 0 en la jornada, el «mejor del día» no
+  // aporta nada (sería alguien con +0,00%): se oculta el widget.
+  const allZeroDay = DATA.players.every(p => Math.abs(lastOf(p).day) < 0.005);
+  if (allZeroDay) {
+    bestCard.style.display = "none";
+  } else {
+    bestCard.style.display = "";
+    // Con el mercado cerrado el widget NO se 
