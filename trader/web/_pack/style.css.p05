@@ -106,7 +106,11 @@ vo sigue al padding de la tarjeta */
   }
   .turn[hidden] { display: none; }
   .turn > .blob { margin-top: 18px; width: 40px; height: 40px; }
-  .turn-body { min-width: 0; display: grid; gap: 8px; }
+  /* ``minmax(0, 1fr)``: sin él la columna implícita del grid toma la anchura
+     mínima del contenido y un carrusel (las insignias) estira su tarjeta, y con
+     ella toda la página, hasta sumar el ancho de todas sus tarjetas. */
+  .turn-body { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .turn-body > * { min-width: 0; }
   .turn-who {
     display: flex; align-items: center; gap: 7px; padding-left: 4px;
     font-size: 13px; font-weight: 800; letter-spacing: -0.02em;

@@ -255,8 +255,9 @@
   .badge-rail::-webkit-scrollbar { display: none; }
   .badge-rail:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 18px; }
   .badge { position: relative; display: flex; align-items: flex-start; gap: 11px;
-           padding: 12px 13px; border-radius: 18px; background: var(--surface-2);
-           border: 1px solid var(--hair);
+           padding: 12px 14px; border-radius: 22px 22px 22px 8px;
+           background: var(--card-solid); border: 1px solid var(--ring);
+           box-shadow: 0 1px 1px rgba(11,10,16,0.03);
            flex: 0 0 clamp(196px, 72%, 232px); scroll-snap-align: start; }
   /* puntos del carrusel (o «3 / 27» si hay demasiadas para pintar un punto por
      insignia): indican en cuál se está y permiten saltar a otra. */
@@ -270,10 +271,10 @@
   .badge.prov { border-style: dashed; opacity: 0.9; }
   .badge .bico { font-size: 26px; line-height: 1; flex: 0 0 auto; }
   .badge .btext { min-width: 0; }
-  .badge .btitle { font-weight: 700; font-size: 14px; color: var(--ink); line-height: 1.2; }
+  .badge .btitle { font-weight: 800; font-size: 14px; letter-spacing: -0.02em; color: var(--ink); line-height: 1.2; }
   .badge .bwho { display: flex; align-items: center; gap: 5px; margin-top: 4px;
-                 font-size: 13px; font-weight: 600; color: var(--ink-2); }
-  .badge .bmeta { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-top: 3px; }
+                 font-size: 13px; font-weight: 700; letter-spacing: -0.015em; color: var(--ink-2); }
+  .badge .bmeta { font-size: 11.5px; color: var(--muted); font-weight: 600; margin-top: 3px; }
   .badge .ptag { font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
                  color: var(--muted); margin-top: 4px; }
   /* insignias compactas dentro de la ficha del jugador */
@@ -865,7 +866,11 @@
   }
   .turn[hidden] { display: none; }
   .turn > .blob { margin-top: 18px; width: 40px; height: 40px; }
-  .turn-body { min-width: 0; display: grid; gap: 8px; }
+  /* ``minmax(0, 1fr)``: sin él la columna implícita del grid toma la anchura
+     mínima del contenido y un carrusel (las insignias) estira su tarjeta, y con
+     ella toda la página, hasta sumar el ancho de todas sus tarjetas. */
+  .turn-body { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .turn-body > * { min-width: 0; }
   .turn-who {
     display: flex; align-items: center; gap: 7px; padding-left: 4px;
     font-size: 13px; font-weight: 800; letter-spacing: -0.02em;
