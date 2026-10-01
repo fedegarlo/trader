@@ -1087,6 +1087,15 @@ def test_canada_banner_heads_the_standings_card():
     assert ".gpban { display: flex; align-items: center; gap: 12px; margin: 0 -14px 12px;" in CSS
 
 
+def test_grand_prix_banners_are_flat_like_the_rest_of_the_chat():
+    """Sin degradados: las cabeceras de Canadá y Vancouver van planas, en los
+    tokens del tema, como la cabecera de cualquier otra tarjeta."""
+    assert "gradient" not in "".join(
+        rule for rule in CSS.split("}") if ".gpban" in rule or "-banner" in rule)
+    rule = CSS.split(".gpban {", 1)[1].split("}", 1)[0]
+    assert "color: var(--ink);" in rule and "#fff" not in rule
+
+
 def test_the_grand_prix_names_the_season_in_every_language():
     """El banner presenta la carrera: el Gran Premio 26/27, en los tres idiomas."""
     for locale in ("en", "ja", "fr"):
