@@ -25,3 +25,15 @@ def _series(n_days: int) -> list[DayResult]:
             ))
         day += timedelta(days=1)
     return out
+
+
+def test_payload_keeps_the_whole_series_since_the_start():
+    player = Player(player_id="fede", display_name="Fede")
+    series = _series(45)
+    payload = webpage.build_payload([(player, series)])
+    p = payload["players"][0]
+    assert len(p["days"]) == 45
+    assert p["days"][0]["date"] == series[0].day.isoformat()
+    assert p["days"][-1]["date"] == series[-1].day.isoformat()
+    assert p["since"] == series[0].day.isoformat()
+    assert p["days"][-1]["cum"] == round(45 * 1.0, 4)
