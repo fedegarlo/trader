@@ -4,7 +4,8 @@ Comandos:
   encrypt   Cifra un extracto (CSV o PDF de Revolut) para subirlo al repositorio.
   decrypt   Descifra un fichero .csv.enc (para comprobarlo en local).
   report    Calcula la serie diaria de un jugador y la muestra por pantalla.
-  ranking   Calcula todos los jugadores y genera docs/ranking.md + data/public/.
+  ranking   Calcula todos los jugadores y genera docs/ranking.md, la API de la
+            web (docs/api/league.json) y data/public/.
   inbox      Ingesta extractos recibidos por email (IMAP), verificando DMARC.
   ingest-csv Ingesta un extracto CSV directo (sin email), misma fusión/cifrado.
 """
@@ -202,12 +203,14 @@ def cmd_ranking(args: argparse.Namespace) -> None:
                   "convertir (el módulo lo indicará)", file=sys.stderr)
 
     content = report_mod.write_ranking(computed, out_path=args.out)
-    webpage.write_index(computed, out_path=args.html_out, pending=pending,
-                        allocation=allocation, holdings=holdings,
-                        prices=price_history, analysts=analysts,
-                        extended=extended, news=news,
-                        contributions=contributions, badges=badges,
-                        fx=fx_rates)
+    # La web es estática (docs/index.html + docs/assets/): del recálculo solo
+    # sale su API, el JSON que la página pide al abrirse.
+    webpage.write_api(computed, out_path=args.api_out, pending=pending,
+                      allocation=allocation, holdings=holdings,
+                      prices=price_history, analysts=analysts,
+                      extended=extended, news=news,
+                      contributions=contributions, badges=badges,
+                      fx=fx_rates)
     with open(args.pending_out, "w", encoding="utf-8") as fh:
         json.dump(pending, fh, ensure_ascii=False)
     print(content)
@@ -301,7 +304,8 @@ def main(argv: list[str] | None = None) -> None:
     p_rank.add_argument("--badges-file", default="data/badges.json",
                         help="histórico acumulativo de insignias (badges)")
     p_rank.add_argument("--out", default="docs/ranking.md")
-    p_rank.add_argument("--html-out", default="docs/index.html")
+    p_rank.add_argument("--api-out", default="docs/api/league.json",
+                        help="API de la web (el JSON que lee docs/index.html)")
     p_rank.add_argument("--pending-out", default="pending.json",
                         help="lista de extractos sin descifrar (para avisar en CI)")
     p_rank.add_argument("--offline", action="store_true")

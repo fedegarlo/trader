@@ -1,26 +1,28 @@
-"""Genera docs/index.html: dashboard estático para GitHub Pages.
+"""Genera la API de la web: ``docs/api/league.json``.
 
-Autocontenido (datos embebidos, sin CDNs). La portada es un **hilo de
-conversación** al estilo de los agentes (dibujitos + burbujas): Warren
-(Trader) y Scout (Watch) van contando la liga, y debajo de cada turno
-siguen los mismos módulos de siempre. De primero, el «Canada Grand Prix
-26/27»: el banner de turismo de Canadá hace de cabecera de la clasificación
-general —el viaje es el premio—, debajo va quién lo lleva ganado (líder y
-podio) y luego la clasificación en formato tabla (1º, 2º, 3º… con su
-acumulado y el % de la última jornada). El mes en curso se cuenta igual, con
-su propia carrera: el «Gran Premio de la ciudad de Vancouver», con el banner
-del ayuntamiento (vancouver.ca) de cabecera, el líder y el podio del mes, y
-detrás la gráfica de todos los jugadores. Las líneas van suavizadas (spline
-cúbico monótono, sin sobreoscilación) y el color se asigna a cada jugador por
-orden alfabético de id (estable: no cambia si cambia su posición en el
-ranking) de una paleta cálida: naranja, marrón y ocres.
+La web ya no se regenera en cada recálculo. ``docs/index.html`` y
+``docs/assets/`` son estáticos (un HTML, su CSS y su JS, que se editan a
+mano) y la página pide los datos a ``api/league.json`` al abrirse. Así cada
+recálculo del ranking solo escribe ese JSON —el diff de un «Actualizar
+ranking» son datos, no 270 KB de HTML—, y un cambio de diseño se publica sin
+tener que volver a calcular la liga (ni tener la frase para descifrar los
+extractos).
+
+La portada es un **hilo de conversación** al estilo de los agentes (Grok
+Bots): Warren (Trader) y Scout (Watch) contestan a las preguntas de siempre
+—quién va ganando, cómo fue la sesión, cómo va el mes…— y cada respuesta
+lleva su tarjeta. El «Canada Grand Prix 26/27» es la clasificación general
+contada como carrera y el mes en curso es el «Gran Premio de la ciudad de
+Vancouver». Las líneas van suavizadas (spline cúbico monótono, sin
+sobreoscilación) y el color se asigna a cada jugador por orden alfabético de
+id (estable: no cambia si cambia su posición en el ranking) de una paleta
+cálida: naranja, marrón y ocres.
 """
 
 from __future__ import annotations
 
 import json
 import os
-from pathlib import Path
 from datetime import date, datetime, time, timezone
 
 from .players import DEFAULT_GOAL, Player
@@ -70,6 +72,10 @@ TREAT_TIERS: list[dict] = [
      "places": ["DiverXO", "Coque", "DSTAgE"]},
 ]
 
+# Versión del formato de ``league.json``. Sube solo si cambia algo que la
+# página no sepa leer (renombrar o quitar claves); añadir claves no la cambia.
+API_VERSION = 1
+
 
 def treat_tier(value: float | None) -> int | None:
     """Peldaño de :data:`TREAT_TIERS` que le toca a una rentabilidad mensual.
@@ -86,42 +92,6 @@ def treat_tier(value: float | None) -> int | None:
             tier = i
     return tier
 
-
-
-def _read_web_text(web: Path, name: str) -> str:
-    """Lee ``trader/web/<name>`` o, si falta, concatena ``_pack/<name>.p*``.
-
-    Las partes son texto UTF-8 crudo (no gzip): así el ensamblado no depende
-    de un script extra y GitHub puede recibir el CSS/JS en trozos pequeños.
-    """
-    direct = web / name
-    if direct.is_file() and direct.stat().st_size:
-        return direct.read_text(encoding="utf-8")
-    parts = sorted((web / "_pack").glob(name + ".p*"))
-    if not parts:
-        raise FileNotFoundError(direct)
-    return "".join(p.read_text(encoding="utf-8") for p in parts)
-
-
-def _assemble_template() -> str:
-    """Junta cabecera, CSS, cuerpo y JS de ``trader/web`` en un HTML autocontenido."""
-    web = Path(__file__).resolve().parent / "web"
-    css = _read_web_text(web, "style.css")
-    head = _read_web_text(web, "head.html").replace("/* __PAGE_CSS__ */", css)
-    body = _read_web_text(web, "body.html")
-    boot = _read_web_text(web, "boot.js")
-    app = _read_web_text(web, "app.js")
-    return (
-        head
-        + body
-        + "<script>\n"
-        + boot
-        + app
-        + "</script>\n</body>\n</html>\n"
-    )
-
-
-_TEMPLATE = _assemble_template()
 
 
 def _allocation_weights(allocation: dict[str, float] | None) -> list[dict]:
@@ -746,9 +716,9 @@ def _updated_stamp(today: date | None) -> str:
     return f"{day.isoformat()} {now:%H:%M}"
 
 
-def write_index(
+def write_api(
     computed: list[tuple[Player, list[DayResult]]],
-    out_path: str = "docs/index.html",
+    out_path: str = "docs/api/league.json",
     today: date | None = None,
     last_days: int = 0,
     price_days: int = 30,
@@ -763,20 +733,31 @@ def write_index(
     badges: dict | None = None,
     fx: dict[str, float] | None = None,
 ) -> str:
-    payload = json.dumps(
-        build_payload(computed, last_days=last_days, price_days=price_days,
-                      pending=pending,
-                      allocation=allocation, holdings=holdings,
-                      prices=prices, analysts=analysts, extended=extended,
-                      news=news,
-                      contributions=contributions, badges=badges, fx=fx,
-                      today=today or date.today()),
-        ensure_ascii=False)
-    payload = payload.replace("</", "<\\/")  # nunca cerrar el <script> desde los datos
-    html = (_TEMPLATE
-            .replace("__UPDATED__", _updated_stamp(today))
-            .replace("__DATA__", payload))
+    """Escribe ``league.json``: lo único que cambia en la web con cada recálculo.
+
+    Es :func:`build_payload` tal cual más una cabecera: ``api`` (versión del
+    formato, :data:`API_VERSION`), ``updated`` (el sello «AAAA-MM-DD HH:MM» en
+    hora de Madrid que la página enseña como «actualizado») y ``generatedAt``
+    (el mismo instante en ISO UTC, para quien consuma la API desde fuera).
+
+    Va indentado a propósito: el JSON se versiona, y así el commit de cada
+    recálculo enseña línea a línea qué ha cambiado en vez de reescribir una
+    sola línea de 50 KB.
+    """
+    now = datetime.now(timezone.utc)
+    payload = build_payload(computed, last_days=last_days, price_days=price_days,
+                            pending=pending,
+                            allocation=allocation, holdings=holdings,
+                            prices=prices, analysts=analysts, extended=extended,
+                            news=news,
+                            contributions=contributions, badges=badges, fx=fx,
+                            today=today or date.today(), now=now)
+    doc = {"api": API_VERSION,
+           "updated": _updated_stamp(today),
+           "generatedAt": now.replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+           **payload}
     os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)
     with open(out_path, "w", encoding="utf-8") as fh:
-        fh.write(html)
+        json.dump(doc, fh, ensure_ascii=False, indent=1)
+        fh.write("\n")
     return out_path

@@ -8,17 +8,68 @@ operaciones ni los importes de nadie** (los extractos se suben cifrados).
 📊 **El ranking se publica en dos formatos**, actualizados automáticamente
 en la apertura y el cierre de cada día de mercado por una GitHub Action:
 
-- **Web (clasificación y widgets)**: `docs/index.html`, servida con GitHub Pages en
-  **https://fedegarlo.github.io/trader/** (ver [Ver en web](#ver-en-web)).
+- **Web (clasificación y widgets)**: una página estática (`docs/index.html`)
+  que lee los datos de su API, `docs/api/league.json`, servida con GitHub Pages
+  en **https://fedegarlo.github.io/trader/** (ver [Ver en web](#ver-en-web)).
 - **Markdown**: [`docs/ranking.md`](docs/ranking.md), legible directamente
   en GitHub.
 
 ## Ver en web
 
-La página es estática y autocontenida. Se lee como un **hilo de conversación**
-con dos agentes —**Warren** (Trader) y **Scout** (Watch)—: salen los dibujitos,
-cuentan quién va ganando el día, el mes y el acumulado desde el inicio, y
-debajo de cada turno siguen los mismos módulos de siempre. Abre con el
+La portada es un **chat de agentes al estilo de Grok Bots**: fondo casi negro,
+burbujas grises, avatares-blob de colores planos con dos ojitos, píldoras para
+las acciones y la barra de mensaje abajo. Tú preguntas lo de siempre —«¿quién va
+ganando?», «¿cómo fue la última sesión?», «¿cómo va octubre?», «¿qué ha
+comprado la gente?»…— en una burbuja clara a la derecha, y contestan dos
+agentes: **Warren** (Trader: clasificación, sesiones, meses, objetivo e
+insignias) y **Scout** (Watch: operaciones, noticias, sesión extendida y
+carteras), cada uno con su tarjeta y sus botones («Abrir Ana», «Cómo se
+calcula», «Ver la sesión»…). En escritorio se monta como una ventana de app,
+con el semáforo y un **carril de agentes** a la izquierda (la liga entera,
+Warren, Scout y cada jugador); en el móvil, cabecera con la píldora del agente
+en el centro, el idioma a la izquierda y el botón de **actualizar** a la
+derecha. Tocar a Warren o a Scout deja en el hilo solo sus respuestas.
+
+La **barra de mensaje** también contesta, sin ningún modelo detrás: escribe un
+jugador («ana»), un ticker o una empresa («nvda», «nvidia») o un tema
+(«noticias», «mes», «badges»… en inglés, español, francés o japonés) y el
+agente que toca responde con sus datos y un botón para abrir la ficha o saltar
+a su respuesta. Encima van las sugerencias (Clasificación, Sesión, Mes,
+Operaciones…), que llevan a cada respuesta del hilo. El **+** sigue siendo el
+envío de tu extracto por correo.
+
+El tema es oscuro, como el de Grok, y pasa a claro si el sistema lo pide.
+
+### ⚙️ HTML estático + API
+
+La web **ya no se genera en cada recálculo**. `docs/index.html`,
+`docs/assets/app.css`, `docs/assets/i18n.js` (los textos en inglés, japonés y
+francés) y `docs/assets/app.js` son ficheros fijos que se editan a mano, y la
+página pide los datos al abrirse a **`docs/api/league.json`**, que es lo único
+que escribe `python -m trader ranking` ([`trader/webpage.py`](trader/webpage.py),
+`write_api`). Así:
+
+- el commit de cada «Actualizar ranking» son datos (el JSON va indentado, y el
+  diff enseña línea a línea qué ha cambiado), no 270 KB de HTML;
+- un cambio de diseño se publica en Pages en cuanto llega a `main` (el workflow
+  de ranking tiene un disparo `push` para `docs/` que no recalcula nada), sin
+  esperar al siguiente recálculo ni necesitar la frase de la liga;
+- la app vuelve a pedir la API al volver a primer plano y con el botón de
+  actualizar (`cache: no-cache`: se revalida con ETag y solo baja si cambió).
+
+La API es el mismo payload de siempre con una cabecera: `api` (versión del
+formato), `updated` (el sello «AAAA-MM-DD HH:MM» en hora de Madrid) y
+`generatedAt` (ISO UTC). Solo trae porcentajes y pesos —los importes, solo de
+quien tenga `show_amounts`— exactamente como antes iban embebidos en la página.
+
+Para verla en local hace falta un servidor (el navegador no deja a `fetch`
+leer `file://`):
+
+```bash
+python -m http.server -d docs 8000   # y abre http://localhost:8000/
+```
+
+Los módulos son los de siempre. Abre con el
 **Canada Grand Prix 26/27**,
 que es la **clasificación general** contada como una carrera: de cabecera, el
 banner de turismo de Canadá (enlaza a la web oficial de Destination Canada en el
@@ -217,7 +268,7 @@ regular de cada ticker de la liga, más la **media ponderada por el peso de cada
 posición** en la cartera agregada. La misma información aparece en la ficha de
 cada ticker.
 
-Como la página es estática, ese dato es la **foto del momento del build** (por
+Como la API se escribe en cada recálculo, ese dato es la **foto del momento del build** (por
 eso la tarjeta lleva siempre la hora a la que se tomó, y desaparece si se abre
 la página más de 6 horas después). El ranking se recalcula en la apertura y
 el cierre; la tarjeta enseña lo que hubiera en ese build. No cuenta para la
@@ -257,7 +308,8 @@ Para activarla, una sola vez:
 1. Ve a **Settings → Pages** del repositorio.
 2. En *Build and deployment*, elige **GitHub Actions** (ya configurado
    en este repo). El workflow de ranking publica `docs/` al final del
-   recálculo cuando esa carpeta cambia.
+   recálculo cuando esa carpeta cambia, y también en cuanto llega a `main` un
+   cambio de la web (sin recalcular).
 
 En un par de minutos la web queda en
 `https://<usuario>.github.io/trader/` (para este repo:
@@ -286,7 +338,7 @@ extracto de Revolut (CSV o PDF) ──email──> buzón de la liga (privado)
                         reconstruye posiciones día a día
                         valora al cierre (Yahoo Finance)
                                             ▼
-                        docs/ranking.md  +  data/public/<id>.json
+          docs/api/league.json (la web)  +  docs/ranking.md  +  data/public/<id>.json
 ```
 
 La vía recomendada para subir el extracto es **por email** (el jugador solo
@@ -414,7 +466,9 @@ trader/extended.py          cotización fuera de horario (pre-market / after-hou
 trader/fx.py                cambio a euros para el objetivo de la liga (cacheado en data/prices/)
 trader/yahoo.py             sesión anónima de Yahoo (cookie + crumb) compartida
 data/public/                series diarias públicas en JSON (para gráficas)
-docs/index.html             la web del ranking 🏆 (GitHub Pages)
+docs/index.html             la web del ranking 🏆 (GitHub Pages): HTML estático
+docs/assets/                su CSS, sus textos (i18n.js) y su JS (app.js), estáticos
+docs/api/league.json        la API de la web: lo único que escribe el ranking
 docs/subir.html             página para subir tu extracto (cifra en el navegador, sin PR)
 docs/ranking.md             el ranking en Markdown
 .github/workflows/ingest.yml    email (dispatch + IMAP) y CSV (dispatch de Steve)
