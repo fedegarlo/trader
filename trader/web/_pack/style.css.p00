@@ -1,0 +1,26 @@
+:root {
+    color-scheme: light;
+    --ink: #0b0a10; --ink-2: #5b5966; --muted: #918f9d;
+    --surface: rgba(255,255,255,0.66);
+    --surface-2: rgba(255,255,255,0.42);
+    --card-solid: #f6f4fb;
+    --grid: rgba(11,10,16,0.08); --baseline: rgba(11,10,16,0.20);
+    --ring: rgba(11,10,16,0.07); --hair: rgba(11,10,16,0.06);
+    /* naranja de marca: tiñe botones, enlaces y estados activos. Tono
+       profundo para que el blanco encima del botón y el texto de los
+       enlaces se lean sobre el fondo claro. */
+    --accent: #c45400;
+    /* ganancias en verde y pérdidas en rojo (el código de color de toda la
+       vida en bolsa). El rojo tira a carmín, no a teja, para que no se
+       confunda con el naranja de la paleta de jugadores. */
+    --up: #0a7a3f; --down: #d92027;
+    --up-soft: rgba(10,122,63,0.14); --down-soft: rgba(217,32,39,0.14);
+    --s1: #2a78d6; --s2: #1baf7a; --s3: #eda100; --s4: #008300;
+    --s5: #4a3aa7; --s6: #e34948; --s7: #8a44cc; --s8: #eb6834;
+    /* paleta de jugadores: naranja y marrón para los dos primeros y, a partir
+       de ahí, tonos ocres (teja, oro viejo, cobre) para que todas las series
+       se lean como una misma familia de color. */
+    --p1: #e2670f; --p2: #7b4a21; --p3: #c08a12; --p4: #a63a1b;
+    --p5: #8a6a2c; --p6: #ef9b3d; --p7: #55381f; --p8: #b56a3a;
+    --aura-1: #ffe4c2; --aura-2: #dcd4ff; --aura-3: #ffd6ea; --aura-base: #efeaf8;
+  }
