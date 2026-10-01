@@ -1,4 +1,4 @@
-.appendChild(document.createTextNode(x.ticker));
+appendChild(document.createTextNode(x.ticker));
       } else {
         nm.appendChild(document.createTextNode("💵 " + T.dayCash));
       }
