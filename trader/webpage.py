@@ -49,7 +49,7 @@ GOAL_MONTH, GOAL_DAY = 8, 1
 #
 # - ``min``: rentabilidad mensual (en %) a partir de la cual se entra en él;
 #   ``None`` es el primero, el de los meses en negativo.
-# - ``euros``: los € de la categoría, como en cualquier guía.
+# - ``euros``: los € de la categoría, como en cualquier gía.
 # - ``price``: precio orientativo por persona (en euros, bebida incluida); en
 #   el último peldaño se lee como «a partir de».
 # - ``places``: restaurantes de Madrid de ejemplo, solo como referencia de a
@@ -88,14 +88,29 @@ def treat_tier(value: float | None) -> int | None:
 
 
 
+def _read_web_text(web: Path, name: str) -> str:
+    """Lee ``trader/web/<name>`` o, si falta, concatena ``_pack/<name>.p*``.
+
+    Las partes son texto UTF-8 crudo (no gzip): así el ensamblado no depende
+    de un script extra y GitHub puede recibir el CSS/JS en trozos pequeños.
+    """
+    direct = web / name
+    if direct.is_file() and direct.stat().st_size:
+        return direct.read_text(encoding="utf-8")
+    parts = sorted((web / "_pack").glob(name + ".p*"))
+    if not parts:
+        raise FileNotFoundError(direct)
+    return "".join(p.read_text(encoding="utf-8") for p in parts)
+
+
 def _assemble_template() -> str:
     """Junta cabecera, CSS, cuerpo y JS de ``trader/web`` en un HTML autocontenido."""
     web = Path(__file__).resolve().parent / "web"
-    css = (web / "style.css").read_text(encoding="utf-8")
-    head = (web / "head.html").read_text(encoding="utf-8").replace("/* __PAGE_CSS__ */", css)
-    body = (web / "body.html").read_text(encoding="utf-8")
-    boot = (web / "boot.js").read_text(encoding="utf-8")
-    app = (web / "app.js").read_text(encoding="utf-8")
+    css = _read_web_text(web, "style.css")
+    head = _read_web_text(web, "head.html").replace("/* __PAGE_CSS__ */", css)
+    body = _read_web_text(web, "body.html")
+    boot = _read_web_text(web, "boot.js")
+    app = _read_web_text(web, "app.js")
     return (
         head
         + body
@@ -113,7 +128,7 @@ def _allocation_weights(allocation: dict[str, float] | None) -> list[dict]:
     """Normaliza el valor de mercado agregado por ticker a pesos (%).
 
     Recibe ``{ticker: valor}`` (agregado de toda la liga) y devuelve una lista
-    ordenada de mayor a menor ``[{"ticker", "w"}]`` con el peso en porcentaje.
+    ordenada de mayor a menor ``[{\"ticker\", \"w\"}]`` con el peso en porcentaje.
     Solo se exponen pesos, nunca importes: el mix agregado no revela ni las
     operaciones ni el dinero de ningún jugador.
     """
@@ -125,83 +140,4 @@ def _allocation_weights(allocation: dict[str, float] | None) -> list[dict]:
     out = [{"ticker": t, "w": round(v / total * 100, 2)}
            for t, v in allocation.items() if v > 0]
     out.sort(key=lambda d: d["w"], reverse=True)
-    return out
-
-
-def _ticker_details(
-    allocation: dict[str, float] | None,
-    holdings: dict[str, dict[str, float]],
-    order: dict[str, int],
-    names: dict[str, str],
-    prices: dict[str, list[tuple]] | None,
-    price_days: int,
-    analysts: dict[str, dict] | None = None,
-    extended: dict[str, dict] | None = None,
-    news: dict[str, list[dict]] | None = None,
-) -> list[dict]:
-    """Detalle público por ticker para la vista de detalle de la web.
-
-    Para cada valor de la cartera agregada de la liga reúne: nombre y dominio
-    (para el logo), peso agregado (%), qué jugadores lo tienen con su peso
-    dentro de *su propia* cartera (solo %), y una mini-serie de precio de cierre
-    de los últimos ``price_days`` días con su variación. Esta ventana es solo
-    del contexto de mercado del valor: la competición (la gráfica del acumulado)
-    va siempre desde el inicio. Nada de esto expone importes ni operaciones:
-    pesos y precios públicos de mercado.
-    """
-    weights = _allocation_weights(allocation)
-    if not weights:
-        return []
-    prices = prices or {}
-    analysts = analysts or {}
-    extended = extended or {}
-    news = news or {}
-    out = []
-    for item in weights:
-        ticker = item["ticker"]
-        meta = ticker_meta(ticker)
-        peers = []
-        for peer in meta.get("peers", []):
-            pm = ticker_meta(peer)
-            peers.append({"ticker": peer, "name": pm["name"], "domain": pm["domain"]})
-        holders = []
-        for pid, hv in holdings.items():
-            for x in _allocation_weights(hv):
-                if x["ticker"] == ticker:
-                    holders.append({
-                        "name": names.get(pid, pid),
-                        "slot": order.get(pid, 0),
-                        "w": x["w"],
-                    })
-                    break
-        holders.sort(key=lambda h: h["w"], reverse=True)
-
-        raw = prices.get(ticker) or []
-        window = raw[-price_days:] if price_days else raw
-        series = [{"date": d.isoformat() if hasattr(d, "isoformat") else str(d),
-                   "close": round(float(c), 4)} for d, c in window]
-        ret = None
-        if len(series) >= 2 and series[0]["close"]:
-            ret = round((series[-1]["close"] / series[0]["close"] - 1.0) * 100, 2)
-
-        entry = {
-            "ticker": ticker,
-            "name": meta["name"],
-            "domain": meta["domain"],
-            "w": item["w"],
-            "holders": holders,
-            "prices": series,
-            "ret": ret,
-            "peers": peers,
-        }
-        consensus = analysts.get(ticker)
-        if consensus:
-            entry["analyst"] = consensus
-        ext = extended.get(ticker)
-        if ext:
-            entry["ext"] = ext
-        headlines = news.get(ticker)
-        if headlines:
-            entry["news"] = headlines
-        out.append(entry)
     return out
