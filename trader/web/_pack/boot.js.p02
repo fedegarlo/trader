@@ -1,4 +1,4 @@
-l: "目標までの進み具合。",
+までの進み具合。",
     chatBadges: "パルマレス。一度得たバッジは残る。",
     chatPending: "明細は届いているが、リーグのパスフレーズがまだ必要。",
     pendingTitle: "⏳ パスフレーズ待ち",
@@ -107,7 +107,7 @@ l: "目標までの進み具合。",
     dayNoBreakdown: "この取引日の銘柄別内訳はありません。",
     footer: "日次リターンはシンプルDietz法（入出金は損益に含めない）、累積は幾何連鎖" +
       "（時間加重収益率）。データ：暗号化されたRevolut明細 · Yahoo Financeの終値 · " +
-      "ロゴは <a href=\\"https://logo.dev\\" target=\\"_blank\\" rel=\\"noopener noreferrer\\">Logo.dev</a>。",
+      "ロゴは <a href=\"https://logo.dev\" target=\"_blank\" rel=\"noopener noreferrer\">Logo.dev</a>。",
     assets: n => "銘柄",
     others: "その他",
     donutAria: "重み付けによるポートフォリオ内訳",
@@ -217,4 +217,5 @@ l: "目標までの進み具合。",
     allPlayers: "Tous les joueurs",
     periodAll: "Depuis le début",
     agentWarren: "Warren",
-    agentWarrenRole: "
+    agentWarrenRole: "Trader",
+   
