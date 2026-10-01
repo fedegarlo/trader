@@ -139,4 +139,4 @@
       allGreen: () => "Vent dans le dos : toute la ligue termine dans le vert aujourd'hui.",
       surprise: (a, p) => a + " est la surprise du jour, en envolée de " + p + ".",
       deflate: (a, p) => a + " se dégonfle aujourd'hui : " + p + " sur la séance.",
-    
+   

@@ -52,7 +52,7 @@ function newsListEl(items) {
     }
     const bits = [];
     if (n.source) bits.push(n.source);
-    if (n.at && /^\d{4}-\d{2}-\d{2}/.test(n.at)) bits.push(fmtDate(n.at.slice(0, 10)));
+    if (n.at && /^\\d{4}-\\d{2}-\\d{2}/.test(n.at)) bits.push(fmtDate(n.at.slice(0, 10)));
     if (bits.length) meta.appendChild(document.createTextNode(bits.join(" · ")));
     if (meta.childNodes.length) a.appendChild(meta);
     box.appendChild(a);
@@ -110,7 +110,7 @@ function paintNews() {
 
   const withNews = syms.filter(s => ((TICKERS[s] || {}).news || []).length).length;
   document.getElementById("news-sub").textContent =
-    T.newsCount(items.length) + " · " + T.newsTickers(withNews);
+    T.newsCount(items.length) + " \\u00b7 " + T.newsTickers(withNews);
   document.getElementById("news-note").textContent = T.newsNote;
 
   const box = document.getElementById("news-feed");
@@ -127,9 +127,9 @@ function paintNews() {
     meta.appendChild(sym);
     const bits = [];
     if (n.source) bits.push(n.source);
-    if (n.at && /^\d{4}-\d{2}-\d{2}/.test(n.at)) bits.push(fmtDate(n.at.slice(0, 10)));
+    if (n.at && /^\\d{4}-\\d{2}-\\d{2}/.test(n.at)) bits.push(fmtDate(n.at.slice(0, 10)));
     if (bits.length)
-      meta.appendChild(document.createTextNode(" · " + bits.join(" · ")));
+      meta.appendChild(document.createTextNode(" \\u00b7 " + bits.join(" \\u00b7 ")));
     body.appendChild(meta);
     row.appendChild(body);
     box.appendChild(row);

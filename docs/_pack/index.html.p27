@@ -105,7 +105,7 @@ function paintGoal() {
   // en privado: es lo que explica cómo se cuenta el objetivo.
   const rates = Object.entries(g.fx || {});
   const fxBox = document.getElementById("goal-fx");
-  fxBox.textContent = rates.map(([cur, r]) => T.goalFx(cur, r.toFixed(4))).join(" \u00b7 ");
+  fxBox.textContent = rates.map(([cur, r]) => T.goalFx(cur, r.toFixed(4))).join(" \\u00b7 ");
   fxBox.style.display = rates.length ? "" : "none";
 }
 paintGoal();
@@ -117,7 +117,7 @@ paintGoal();
 // dato y, si quien abre la página lo hace mucho después, la tarjeta se esconde
 // en vez de enseñar un pre-market de hace horas como si fuera de ahora.
 const EXT_MAX_AGE = 6 * 3600;  // segundos
-const CUR_SYM = {USD: "$", EUR: "\u20ac", GBP: "\u00a3"};
+const CUR_SYM = {USD: "$", EUR: "\\u20ac", GBP: "\\u00a3"};
 const extLabel = session => session === "pre" ? T.extPre : T.extPost;
 function extMoney(v, cur) {
   const n = Number(v).toLocaleString("en-US",
@@ -138,7 +138,7 @@ function paintExtended() {
   card.style.display = "";
 
   document.getElementById("ext-title").textContent =
-    (m.session === "pre" ? "\ud83c\udf05 " : "\ud83c\udf19 ") + extLabel(m.session);
+    (m.session === "pre" ? "\\ud83c\\udf05 " : "\\ud83c\\udf19 ") + extLabel(m.session);
   document.getElementById("ext-when").textContent = T.extAt(fmtClock(m.asOf));
   // El titular es la variación media de la liga ponderada por el peso de cada
   // posición; si no se ha podido calcular, la tarjeta se queda en la lista.
@@ -146,7 +146,7 @@ function paintExtended() {
   val.textContent = m.pct == null ? "" : fmtPct(m.pct);
   val.className = "num " + (m.pct >= 0 ? "pos" : "neg");
   document.getElementById("ext-sub").textContent =
-    (m.pct == null ? T.extSession : T.extLeague) + " \u00b7 " +
+    (m.pct == null ? T.extSession : T.extLeague) + " \\u00b7 " +
     T.extHoldings(rows.length);
   document.getElementById("ext-note").textContent = T.extNote;
 
