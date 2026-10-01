@@ -1,0 +1,38 @@
+óvil) ----
+(function () {
+  let startY = 0, dy = 0, dragging = false;
+  const start = e => {
+    if (sheet.scrollTop > 0) { dragging = false; return; }  // deja hacer scroll interno
+    startY = e.touches[0].clientY; dy = 0; dragging = true;
+    sheet.style.transition = "none";
+  };
+  const move = e => {
+    if (!dragging) return;
+    dy = e.touches[0].clientY - startY;
+    if (dy <= 0 || sheet.scrollTop > 0) { sheet.style.transform = ""; sheet.style.opacity = ""; return; }
+    if (e.cancelable) e.preventDefault();       // captura el gesto, no hace scroll
+    sheet.style.transform = "translateY(" + dy + "px)";
+    sheet.style.opacity = String(Math.max(0.5, 1 - dy / 640));
+  };
+  const end = () => {
+    if (!dragging) return;
+    dragging = false;
+    sheet.style.transition = "";
+    if (dy > 110) {                             // umbral: continúa el gesto y cierra
+      sheet.style.transition = "transform .2s ease-in, opacity .2s ease-in";
+      sheet.style.transform = "translateY(100%)"; sheet.style.opacity = "0";
+      clearTimeout(closingTimer);
+      closingTimer = setTimeout(hideModal, 200);
+    } else { sheet.style.transform = ""; sheet.style.opacity = ""; }  // vuelve a su sitio
+  };
+  sheet.addEventListener("touchstart", start, {passive: true});
+  sheet.addEventListener("touchmove", move, {passive: false});
+  sheet.addEventListener("touchend", end);
+  sheet.addEventListener("touchcancel", end);
+  // un toque en la barra de agarre también cierra
+  document.querySelector(".grab").addEventListener("click", closeModal);
+})();
+
+</script>
+</body>
+</html>
