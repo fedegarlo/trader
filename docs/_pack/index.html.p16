@@ -148,4 +148,4 @@
       surprise: (a, p) => a + " is the day's surprise, soaring " + p + ".",
       deflate: (a, p) => a + " deflates today: " + p + " on the session.",
       backToGreen: (a, p) => a + " returns to green after a rough patch: " + p + ".",
-      duelTop: (a, b, g) => "Duel at the top: " + a  
+      duelTop: (a, b, g) => "Duel at the top: " + a
