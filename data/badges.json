@@ -72,6 +72,34 @@
       "player": "fede",
       "name": "Fede",
       "date": "2026-09-21"
+    },
+    {
+      "key": "champion:2026-09",
+      "recorded": "2026-10-01",
+      "type": "champion_month",
+      "player": "ana",
+      "name": "Ana",
+      "date": "2026-09-30",
+      "month": "2026-09",
+      "pct": 10.29
+    },
+    {
+      "key": "months_2:ana",
+      "recorded": "2026-10-01",
+      "type": "months_2",
+      "player": "ana",
+      "name": "Ana",
+      "date": "2026-09-30",
+      "month": "2026-09"
+    },
+    {
+      "key": "months_2:fede",
+      "recorded": "2026-10-01",
+      "type": "months_2",
+      "player": "fede",
+      "name": "Fede",
+      "date": "2026-09-30",
+      "month": "2026-09"
     }
   ],
   "record": {
