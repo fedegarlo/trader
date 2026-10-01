@@ -144,3 +144,4 @@ document.addEventListener("keydown", ev => {
   // un toque en la barra de agarre también cierra
   document.querySelector(".grab").addEventListener("click", closeModal);
 })();
+
