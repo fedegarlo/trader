@@ -1252,7 +1252,8 @@ function render() {
 
   const intro = h("div", "intro");
   intro.append(groupAv("xl"), txt("h1", null, T.appTitle), txt("p", null, T.introSub));
-  th.append(intro, txt("div", "day", T.today),
+  // sello de la API (hora de Madrid), no «hoy»: el recálculo ya lo escribe
+  th.append(intro, txt("div", "day", fmtStamp(DATA.updated)),
             sysLine(T.msgsFrom, sysTag("warren"), T.and, sysTag("scout")));
 
   const m = DATA.monthly || {};
