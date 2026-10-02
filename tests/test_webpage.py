@@ -1254,6 +1254,18 @@ def test_the_bots_blink_and_glance():
     assert "@media (prefers-reduced-motion: reduce)" in CSS
 
 
+def test_thread_date_shows_the_ranking_update_stamp():
+    """La etiqueta del hilo es el sello «updated» de la API, no la palabra «hoy»."""
+    body = _fn("render")
+    assert 'txt("div", "day", fmtStamp(DATA.updated))' in body
+    assert "T.today" not in APP
+    for locale in ("en", "ja", "fr"):
+        assert "today" not in _lang_keys(locale)
+    # el recálculo ya escribe el sello; fmtStamp solo lo lee en el idioma activo
+    assert "function fmtStamp(stamp)" in APP
+    assert re.search(r'updated: when =>', I18N_JS)
+
+
 def test_the_page_is_a_conversation_with_warren_and_scout():
     """La portada es un hilo: tú preguntas y Warren o Scout contestan con su tarjeta."""
     body = _fn("render")
