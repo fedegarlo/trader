@@ -1,3 +1,4 @@
+import email
 import json
 import os
 from email.message import EmailMessage
@@ -141,6 +142,89 @@ def test_process_accepts_any_registered_address_for_the_player(tmp_path):
         assert res.player_id == "fede"
         assert res.status in {"ingested", "unchanged"}
         assert res.status != "unauthorized"
+
+
+# PLAYER_EMAILS real del repo (Variable de Actions, vista en los logs de
+# ingesta). Ana no es ana@gmail.com (eso solo sale en los ejemplos).
+_LIGA_PLAYER_EMAILS = {
+    "fede": {
+        "emails": ["fedegarcia@icloud.com", "fgarcialorca@gmail.com",
+                   "fedegarcia@me.com"],
+        "name": "Fede",
+    },
+    "ana": {
+        "emails": ["carretero.anam@gmail.com"],
+        "name": "Ana",
+    },
+}
+
+GMAIL_DMARC = ("mx.google.com; dkim=pass header.i=@gmail.com; "
+               "dmarc=pass header.from=gmail.com")
+ME_DMARC = ("mx.google.com; dkim=pass header.i=@me.com; "
+            "dmarc=pass header.from=me.com")
+
+
+def _liga_emails():
+    return inbox.parse_player_emails(json.dumps(_LIGA_PLAYER_EMAILS))
+
+
+def _imap_email(from_header: str, *, auth=DMARC_PASS, attach=SAMPLE_CSV,
+                filename="extracto.csv", ctype="text/csv"):
+    """Correo como lo entrega IMAP: ``message_from_bytes`` (compat32).
+
+    ``EmailMessage`` reescribe el From (comilla, RFC 2047) y eso oculta el
+    fallo: hay que inyectar la cabecera cruda, UTF-8, como llega al buzón.
+    """
+    seed = _make_email(auth=auth, attach=attach, filename=filename, ctype=ctype)
+    raw = seed.as_bytes()
+    first, _sep, rest = raw.partition(b"\n")
+    if first.lower().startswith(b"from:"):
+        raw = rest
+    return email.message_from_bytes(
+        ("From: " + from_header + "\r\n").encode("utf-8") + raw)
+
+
+# ----- _sender_address (From: real de Ana y Fede vía IMAP) -----
+
+def test_sender_address_fede_utf8_display_name():
+    """iCloud/Mail mandan «Federico García» en UTF-8, sin RFC 2047."""
+    msg = _imap_email("Federico García <fedegarcia@icloud.com>")
+    assert inbox._sender_address(msg) == "fedegarcia@icloud.com"
+
+
+def test_sender_address_fede_apellido_coma_nombre():
+    msg = _imap_email("García, Federico <fedegarcia@icloud.com>")
+    assert inbox._sender_address(msg) == "fedegarcia@icloud.com"
+
+
+def test_sender_address_ana_apellido_coma_nombre():
+    msg = _imap_email("Carretero, Ana <carretero.anam@gmail.com>", auth=GMAIL_DMARC)
+    assert inbox._sender_address(msg) == "carretero.anam@gmail.com"
+
+
+def test_sender_address_ana_utf8_display_name():
+    msg = _imap_email("Ana María <carretero.anam@gmail.com>", auth=GMAIL_DMARC)
+    assert inbox._sender_address(msg) == "carretero.anam@gmail.com"
+
+
+def test_process_ingests_fede_and_ana_from_imap_display_names(tmp_path):
+    """Las dos formas que parseaddr perdía: acento UTF-8 y «Apellido, Nombre»."""
+    emails = _liga_emails()
+    cases = (
+        ("Federico García <fedegarcia@icloud.com>", DMARC_PASS, "fede"),
+        ("Fede García <fgarcialorca@gmail.com>", GMAIL_DMARC, "fede"),
+        ("Fede García <fedegarcia@me.com>", ME_DMARC, "fede"),
+        ("García, Federico <fedegarcia@icloud.com>", DMARC_PASS, "fede"),
+        ("Carretero, Ana <carretero.anam@gmail.com>", GMAIL_DMARC, "ana"),
+        ("Ana María <carretero.anam@gmail.com>", GMAIL_DMARC, "ana"),
+    )
+    for from_header, auth, player_id in cases:
+        res = inbox.process_message(
+            _imap_email(from_header, auth=auth), emails, "clave-liga",
+            str(tmp_path))
+        assert res.status != "unauthorized", from_header
+        assert res.player_id == player_id
+        assert res.status in {"ingested", "unchanged"}
 
 
 # ----- verify_sender_auth -----

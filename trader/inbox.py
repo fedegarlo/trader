@@ -52,7 +52,7 @@ import re
 from dataclasses import dataclass, field
 from datetime import date
 from email.message import Message
-from email.utils import parseaddr
+from email.utils import getaddresses
 
 from . import revolut, revolut_pdf, secretbox
 from .players import DEFAULT_GOAL
@@ -543,10 +543,39 @@ def ingest_csv(player_id: str, csv_text: str, passphrase: str,
                   detail + f"; cifrado en players/{player_id}/", warnings)
 
 
+def _sender_address(msg: Message) -> str:
+    """Dirección del ``From:``, robusta frente a cómo IMAP entrega el correo.
+
+    ``email.utils.parseaddr`` se queda vacío con dos formas habituales en este
+    buzón, las dos de gente de la liga:
+
+    * Nombre en UTF-8 sin RFC 2047 — ``Federico García <fedegarcia@icloud.com>``,
+      ``Fede García <fgarcialorca@gmail.com>``, ``Ana María <carretero.anam@gmail.com>``.
+      iCloud y Mail de Apple lo mandan así. ``message_from_bytes`` (política
+      compat32, la de :func:`run`) convierte esa cabecera en un ``Header`` y
+      ``parseaddr`` no extrae el correo.
+    * Orden español *apellido, nombre* sin comillar — ``García, Federico <…>``,
+      ``Carretero, Ana <carretero.anam@gmail.com>``. ``parseaddr`` trata la
+      coma como separador de destinatarios y descarta la dirección.
+
+    El remitente registrado acaba como ``unauthorized`` / «sin remitente».
+    Se recorre :func:`email.utils.getaddresses` sobre el texto de la cabecera
+    y se toma la primera dirección que sea un correo de verdad.
+    """
+    raw = msg.get("From")
+    if raw is None:
+        return ""
+    for _name, addr in getaddresses([str(raw)]):
+        addr = (addr or "").strip().lower()
+        if "@" in addr:
+            return addr
+    return ""
+
+
 def process_message(msg: Message, emails: dict[str, PlayerCfg], passphrase: str,
                     players_dir: str, trusted_authserv: str | None = None) -> Result:
     """Verifica, valida e ingesta un mensaje. No hace I/O de IMAP."""
-    sender = parseaddr(msg.get("From", ""))[1].strip().lower()
+    sender = _sender_address(msg)
     if not sender:
         return Result("unauthorized", detail="sin remitente")
     cfg = emails.get(sender)
