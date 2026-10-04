@@ -315,7 +315,9 @@ Para activarla, una sola vez:
 2. En *Build and deployment*, elige **GitHub Actions** (ya configurado
    en este repo). El workflow de ranking publica `docs/` al final del
    recálculo cuando esa carpeta cambia, y también en cuanto llega a `main` un
-   cambio de la web (sin recalcular).
+   cambio de la web (sin recalcular). La ingesta hace lo mismo: si commitea
+   `docs/` (operaciones nuevas), despliega Pages con esos docs; si no hay
+   novedades, no redespliega.
 
 En un par de minutos la web queda en
 `https://<usuario>.github.io/trader/` (para este repo:
@@ -477,7 +479,7 @@ docs/assets/                su CSS, sus textos (i18n.js) y su JS (app.js), está
 docs/api/league.json        la API de la web: lo único que escribe el ranking
 docs/subir.html             página para subir tu extracto (cifra en el navegador, sin PR)
 docs/ranking.md             el ranking en Markdown
-.github/workflows/ingest.yml    email (dispatch + IMAP) y CSV (dispatch de Steve)
+.github/workflows/ingest.yml    email (dispatch + IMAP), CSV y Pages si docs/ cambió
 .github/workflows/ranking.yml   apertura/cierre + Pages si docs/ cambió
 examples/                   jugador de ejemplo con precios ficticios para probar
 tests/                      pytest
