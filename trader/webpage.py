@@ -697,23 +697,42 @@ def build_payload(computed: list[tuple[Player, list[DayResult]]],
             "badges": badges or {}}
 
 
-def _updated_stamp(today: date | None) -> str:
-    """Sello de «actualizado» con fecha y hora (zona de Madrid, si está).
-
-    El build corre en UTC (GitHub Actions); mostramos la hora de Madrid para
-    la liga, con respaldo a UTC si no hay base de datos de zonas horaria. Si se
-    pasa ``today`` (builds reproducibles) se respeta esa fecha y se le añade la
-    hora actual.
-    """
-    tz = None
+def _madrid_tz():
+    """Zona de la liga. El build corre en UTC; el sello se publica en Madrid."""
     try:  # zoneinfo necesita tzdata; si falta, caemos a UTC
         from zoneinfo import ZoneInfo
-        tz = ZoneInfo("Europe/Madrid")
+        return ZoneInfo("Europe/Madrid")
     except Exception:
-        tz = timezone.utc
-    now = datetime.now(tz)
-    day = today or now.date()
-    return f"{day.isoformat()} {now:%H:%M}"
+        return timezone.utc
+
+
+def _as_madrid(instant: datetime) -> datetime:
+    """El mismo instante, leído en Europe/Madrid. Un naive se trata como UTC."""
+    tz = _madrid_tz()
+    if instant.tzinfo is None:
+        instant = instant.replace(tzinfo=timezone.utc)
+    return instant.astimezone(tz)
+
+
+def updated_stamp(today: date | None = None, now: datetime | None = None) -> str:
+    """Sello de «actualizado»: un solo instante en Europe/Madrid (``AAAA-MM-DD HH:MM``).
+
+    El build corre en UTC (GitHub Actions). Fecha y hora salen del mismo reloj
+    de Madrid: un recálculo a las 01:23 del 4 en Madrid no puede publicar el
+    día 3. No se usa ``date.today()`` —en el runner es el día UTC y mezclaría
+    el calendario de Londres/UTC con el reloj de Madrid—.
+
+    Si se pasa ``today`` (builds reproducibles) se respeta esa fecha y se le
+    añade la hora de ``now`` en Madrid. Si no, las dos piezas vienen de
+    ``now`` (o del instante actual) ya convertido a Madrid.
+    """
+    instant = _as_madrid(now) if now is not None else datetime.now(_madrid_tz())
+    day = today if today is not None else instant.date()
+    return f"{day.isoformat()} {instant:%H:%M}"
+
+
+def _updated_stamp(today: date | None = None, now: datetime | None = None) -> str:
+    return updated_stamp(today, now)
 
 
 def write_api(
@@ -732,6 +751,7 @@ def write_api(
     contributions: dict[str, dict[date, dict[str, float]]] | None = None,
     badges: dict | None = None,
     fx: dict[str, float] | None = None,
+    now: datetime | None = None,
 ) -> str:
     """Escribe ``league.json``: lo único que cambia en la web con cada recálculo.
 
@@ -744,17 +764,19 @@ def write_api(
     recálculo enseña línea a línea qué ha cambiado en vez de reescribir una
     sola línea de 50 KB.
     """
-    now = datetime.now(timezone.utc)
+    clock = now or datetime.now(timezone.utc)
     payload = build_payload(computed, last_days=last_days, price_days=price_days,
                             pending=pending,
                             allocation=allocation, holdings=holdings,
                             prices=prices, analysts=analysts, extended=extended,
                             news=news,
                             contributions=contributions, badges=badges, fx=fx,
-                            today=today or date.today(), now=now)
+                            today=today if today is not None else date.today(),
+                            now=clock)
+    utc = _as_madrid(clock).astimezone(timezone.utc).replace(microsecond=0)
     doc = {"api": API_VERSION,
-           "updated": _updated_stamp(today),
-           "generatedAt": now.replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+           "updated": updated_stamp(today, clock),
+           "generatedAt": utc.isoformat().replace("+00:00", "Z"),
            **payload}
     os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)
     with open(out_path, "w", encoding="utf-8") as fh:

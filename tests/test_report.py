@@ -1,8 +1,9 @@
 """Ganador de cada día del mes en el ranking."""
 
-from datetime import date
+import json
+from datetime import date, datetime, timezone
 
-from trader import report
+from trader import report, webpage
 from trader.players import Player
 from trader.portfolio import DayResult
 
@@ -60,10 +61,56 @@ def test_daily_winners_filters_by_month():
     assert [d.isoformat() for d, _, _ in winners] == ["2026-07-01"]
 
 
-def test_ranking_includes_daily_winners_section():
+def test_ranking_includes_daily_winners_section(tmp_path):
     content = report.write_ranking(
-        _computed(), out_path="/tmp/claude-0/ranking_test.md",
+        _computed(), out_path=str(tmp_path / "ranking.md"),
         today=date(2026, 7, 16),
+        now=datetime(2026, 10, 3, 23, 23, tzinfo=timezone.utc),
     )
     assert "## 🏅 Ganador de cada día (julio 2026)" in content
     assert "| 2026-07-14 | 🏅 Fede | +1.79% |" in content
+    assert "_Actualizado: 2026-07-16 01:23_" in content
+
+
+def test_ranking_actualizado_is_madrid_when_utc_is_still_yesterday(tmp_path, monkeypatch):
+    """El «Actualizado» del markdown es el mismo instante de Madrid que la API.
+
+    ``date.today()`` en Actions sigue en el 3; Madrid ya es el 4 a la 01:23.
+    El sello tiene que llevar día y hora de Madrid, no la fecha UTC a secas.
+    """
+    utc = datetime(2026, 10, 3, 23, 23, tzinfo=timezone.utc)
+
+    class _UtcDate(date):
+        @classmethod
+        def today(cls):
+            return date(2026, 10, 3)
+
+    monkeypatch.setattr(report, "date", _UtcDate)
+    monkeypatch.setattr(webpage, "date", _UtcDate)
+
+    content = report.write_ranking(
+        _computed(), out_path=str(tmp_path / "ranking.md"), now=utc)
+    assert "_Actualizado: 2026-10-04 01:23_" in content
+    assert "## 🏅 Ganador de cada día (octubre 2026)" in content
+
+
+def test_ranking_and_api_publish_the_same_madrid_stamp(tmp_path, monkeypatch):
+    """El markdown y league.json no pueden discrepar: mismo instante, misma zona."""
+    utc = datetime(2026, 10, 3, 23, 23, tzinfo=timezone.utc)
+
+    class _UtcDate(date):
+        @classmethod
+        def today(cls):
+            return date(2026, 10, 3)
+
+    monkeypatch.setattr(report, "date", _UtcDate)
+    monkeypatch.setattr(webpage, "date", _UtcDate)
+
+    out = webpage.write_api(
+        _computed(), out_path=str(tmp_path / "api" / "league.json"), now=utc)
+    with open(out, encoding="utf-8") as fh:
+        api = json.load(fh)
+    content = report.write_ranking(
+        _computed(), out_path=str(tmp_path / "ranking.md"), now=utc)
+    assert api["updated"] == "2026-10-04 01:23"
+    assert f"_Actualizado: {api['updated']}_" in content

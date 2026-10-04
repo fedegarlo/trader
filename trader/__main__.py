@@ -17,7 +17,7 @@ import getpass
 import json
 import os
 import sys
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 
 from . import analysts as analysts_mod
 from . import badges as badges_mod
@@ -202,7 +202,8 @@ def cmd_ranking(args: argparse.Namespace) -> None:
             print(f"AVISO: sin cambio {currency}->EUR, el objetivo no se puede "
                   "convertir (el módulo lo indicará)", file=sys.stderr)
 
-    content = report_mod.write_ranking(computed, out_path=args.out)
+    now = datetime.now(timezone.utc)
+    content = report_mod.write_ranking(computed, out_path=args.out, now=now)
     # La web es estática (docs/index.html + docs/assets/): del recálculo solo
     # sale su API, el JSON que la página pide al abrirse.
     webpage.write_api(computed, out_path=args.api_out, pending=pending,
@@ -210,7 +211,7 @@ def cmd_ranking(args: argparse.Namespace) -> None:
                       prices=price_history, analysts=analysts,
                       extended=extended, news=news,
                       contributions=contributions, badges=badges,
-                      fx=fx_rates)
+                      fx=fx_rates, now=now)
     with open(args.pending_out, "w", encoding="utf-8") as fh:
         json.dump(pending, fh, ensure_ascii=False)
     print(content)

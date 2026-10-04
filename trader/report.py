@@ -4,10 +4,11 @@ from __future__ import annotations
 
 import json
 import os
-from datetime import date
+from datetime import date, datetime
 
 from .players import Player
 from .portfolio import DayResult
+from .webpage import updated_stamp
 
 
 def _pct(value: float) -> str:
@@ -130,9 +131,14 @@ def write_ranking(
     computed: list[tuple[Player, list[DayResult]]],
     out_path: str = "docs/ranking.md",
     today: date | None = None,
+    now: datetime | None = None,
 ) -> str:
     """Ranking global ordenado por rentabilidad acumulada."""
-    today = today or date.today()
+    # El sello es el mismo instante de Madrid que publica la API (``updated``).
+    # Un ``today`` explícito (tests / build reproducible) se respeta; si no,
+    # fecha y hora salen de Madrid, no de ``date.today()`` (UTC en Actions).
+    stamp = updated_stamp(today, now)
+    today = today if today is not None else date.fromisoformat(stamp.split()[0])
     scored = []
     for player, series in computed:
         if not series:
@@ -145,7 +151,7 @@ def write_ranking(
     lines = [
         "# 🏆 Ranking de rentabilidad",
         "",
-        f"_Actualizado: {today.isoformat()}_",
+        f"_Actualizado: {stamp}_",
         "",
         "| # | Jugador | % acumulado | % último día | Desde |",
         "|---|---|---:|---:|---|",
