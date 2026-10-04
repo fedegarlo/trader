@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -8,26 +8,27 @@
      único que escribe `python -m trader ranking`. -->
 <meta name="theme-color" content="#111111" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-<meta name="description" content="Trader League: Warren and Scout follow a Revolut trading league — standings, sessions, trades and news.">
+<meta name="description" content="Liga de Traders: Warren y Scout siguen una liga de trading en Revolut — clasificación, sesiones, operaciones y noticias.">
 <link rel="icon" href="favicon.ico?v=2" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=2">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-android-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icon-ios.png?v=2">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Trader League">
-<meta property="og:description" content="Standings, sessions, trades and news of the Revolut trading league.">
+<meta property="og:locale" content="es_ES">
+<meta property="og:title" content="Liga de Traders">
+<meta property="og:description" content="Clasificación, sesiones, operaciones y noticias de la liga de trading en Revolut.">
 <meta property="og:url" content="https://fedegarlo.github.io/trader/">
 <meta property="og:image" content="https://fedegarlo.github.io/trader/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://fedegarlo.github.io/trader/og-image.png">
-<link rel="manifest" href="manifest.webmanifest" id="manifest-link">
-<meta name="apple-mobile-web-app-title" content="Trader League" id="app-title-meta">
-<title>Trader League</title>
-<link rel="stylesheet" href="assets/app.css?v=4">
-<script src="assets/i18n.js?v=4" defer></script>
-<script src="assets/app.js?v=4" defer></script>
+<link rel="manifest" href="manifest-es.webmanifest" id="manifest-link">
+<meta name="apple-mobile-web-app-title" content="Liga de Traders" id="app-title-meta">
+<title>Liga de Traders</title>
+<link rel="stylesheet" href="assets/app.css?v=5">
+<script src="assets/i18n.js?v=5" defer></script>
+<script src="assets/app.js?v=5" defer></script>
 </head>
 <body>
 <div class="app">
@@ -36,7 +37,7 @@
     <div class="lights" aria-hidden="true"><i></i><i></i><i></i></div>
     <div id="rail-list" style="display:contents"></div>
     <span class="spacer"></span>
-    <a class="rail-plus" id="rail-mail" href="mailto:ligatrader26@gmail.com" aria-label="Send positions">+</a>
+    <a class="rail-plus" id="rail-mail" href="mailto:ligatrader26@gmail.com" aria-label="Enviar posiciones">+</a>
   </nav>
 
   <section class="pane">
@@ -48,8 +49,8 @@
         <span class="caret" aria-hidden="true">▾</span>
       </button>
       <div class="tb-actions">
-        <button class="rbtn lang" id="lang-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="lang-menu"><span id="lang-label">EN</span></button>
-        <button class="rbtn" id="refresh" type="button" aria-label="Refresh">
+        <button class="rbtn lang" id="lang-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="lang-menu"><span id="lang-label">ES</span></button>
+        <button class="rbtn" id="refresh" type="button" aria-label="Actualizar">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>
         </button>
       </div>
@@ -69,11 +70,11 @@
     <form class="composer" id="composer" autocomplete="off">
       <div class="chips" id="chips"></div>
       <div class="box">
-        <a class="plus" id="upload-mail" href="mailto:ligatrader26@gmail.com" aria-label="Send positions">
+        <a class="plus" id="upload-mail" href="mailto:ligatrader26@gmail.com" aria-label="Enviar posiciones">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
         </a>
-        <input id="ask" type="text" enterkeyhint="send" autocapitalize="off" spellcheck="false" placeholder="Message Warren" aria-label="Message">
-        <button class="send" id="send" type="submit" disabled aria-label="Send">
+        <input id="ask" type="text" enterkeyhint="send" autocapitalize="off" spellcheck="false" placeholder="Mensaje a Warren" aria-label="Mensaje">
+        <button class="send" id="send" type="submit" disabled aria-label="Enviar">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg>
         </button>
       </div>
@@ -82,7 +83,7 @@
 </div>
 
 <div class="modal" id="modal" aria-hidden="true">
-  <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Detail">
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Detalle">
     <div class="grab"></div>
     <div id="modal-body"></div>
   </div>

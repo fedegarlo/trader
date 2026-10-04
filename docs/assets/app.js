@@ -56,6 +56,7 @@ function fmtStamp(stamp) {
   const y = m[1], mo = +m[2], d = +m[3], hm = m[4];
   const day = LANG === "ja" ? y + "年" + mo + "月" + d + "日"
     : LANG === "fr" ? d + NBSP + MONTHS.fr[mo - 1] + NBSP + y
+    : LANG === "es" ? d + NBSP + "de" + NBSP + MONTHS.es[mo - 1] + NBSP + "de" + NBSP + y
     : MONTHS.en[mo - 1] + NBSP + d + "," + NBSP + y;
   return hm ? day + (LANG === "ja" ? NBSP : NBSP + "·" + NBSP) + hm : day;
 }

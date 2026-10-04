@@ -638,7 +638,7 @@ def test_home_news_card_hides_itself_without_news():
 
 def test_home_news_card_is_translated_in_every_language():
     for key in ("leagueNews", "newsCount", "newsTickers", "newsNote", "qNews", "chatNews"):
-        assert I18N_JS.count("    " + key + ":") == 3, key
+        assert I18N_JS.count("    " + key + ":") == 4, key
 
 
 def test_home_news_rows_open_the_article_in_another_window():
@@ -1047,22 +1047,24 @@ def _lang_keys(code: str) -> set[str]:
     return set(re.findall(r"(?:^\s+|, )([A-Za-z]\w*):", _lang_block(code), re.M))
 
 
-def test_language_selector_offers_english_japanese_and_french():
+def test_language_selector_offers_spanish_english_japanese_and_french():
+    assert '{code: "es"' in I18N_JS
     assert '{code: "en"' in I18N_JS
     assert '{code: "ja"' in I18N_JS
     assert '{code: "fr"' in I18N_JS
     # el selector se pinta a partir de esa lista, no de un toggle de dos
     assert "LANGS.forEach(l => {" in APP
     # cada idioma con nombre propio tiene su manifest (nombre de la app)
+    assert os.path.exists("docs/manifest-es.webmanifest")
     assert os.path.exists("docs/manifest-ja.webmanifest")
     assert os.path.exists("docs/manifest-fr.webmanifest")
 
 
-def test_french_translates_every_string():
-    """Los tres idiomas cubren exactamente las mismas claves."""
+def test_every_language_translates_every_string():
+    """Los cuatro idiomas cubren exactamente las mismas claves."""
     en = _lang_keys("en")
     assert "appTitle" in en and "footer" in en and "qStandings" in en  # bloque leído
-    assert _lang_keys("fr") == en == _lang_keys("ja")
+    assert _lang_keys("fr") == en == _lang_keys("ja") == _lang_keys("es")
 
 
 def test_every_string_the_app_uses_is_translated():
@@ -1073,7 +1075,7 @@ def test_every_string_the_app_uses_is_translated():
 
 def test_canada_banner_links_to_the_official_tourism_site():
     assert 'gpBanner("ca-banner", T.caHref' in APP
-    for locale in ("en-ca", "ja-jp", "fr-fr"):
+    for locale in ("es-es", "en-ca", "ja-jp", "fr-fr"):
         assert "https://travel.destinationcanada.com/" + locale in I18N_JS
 
 
@@ -1097,8 +1099,8 @@ def test_grand_prix_banners_are_flat_like_the_rest_of_the_chat():
 
 
 def test_the_grand_prix_names_the_season_in_every_language():
-    """El banner presenta la carrera: el Gran Premio 26/27, en los tres idiomas."""
-    for locale in ("en", "ja", "fr"):
+    """El banner presenta la carrera: el Gran Premio 26/27, en los cuatro idiomas."""
+    for locale in ("es", "en", "ja", "fr"):
         title = re.search(r'gpTitle: "([^"]*)"', _lang_block(locale)).group(1)
         assert "26/27" in title, (locale, title)
         assert "GP" in title.upper() or "Grand Prix" in title, (locale, title)
@@ -1123,7 +1125,7 @@ def test_the_full_standings_table_survives_the_grand_prix():
     """La comparativa de siempre sigue entera: todos los jugadores, cuatro columnas."""
     assert "ranked = [...DATA.players].sort((a, b) => lastOf(b).cum - lastOf(a).cum);" in APP
     assert "ranked.forEach((p, i) => {" in _fn("standingsCard")  # no se corta en el podio
-    for locale in ("en", "ja", "fr"):
+    for locale in ("es", "en", "ja", "fr"):
         cols = re.search(r"rankCols: \[([^\]]*)\]", _lang_block(locale)).group(1)
         assert cols.count('"') == 8, (locale, cols)  # #, jugador, acumulado y jornada
 
@@ -1131,8 +1133,8 @@ def test_the_full_standings_table_survives_the_grand_prix():
 def test_vancouver_banner_links_to_the_official_city_site():
     """El banner del mes enlaza al ayuntamiento de Vancouver (vancouver.ca)."""
     assert 'gpBanner("vc-banner", T.vcHref' in APP
-    # el sitio del ayuntamiento solo está en inglés: mismo enlace en los tres
-    for locale in ("en", "ja", "fr"):
+    # el sitio del ayuntamiento solo está en inglés: mismo enlace en los cuatro
+    for locale in ("es", "en", "ja", "fr"):
         href = re.search(r'vcHref: "([^"]*)"', _lang_block(locale)).group(1)
         assert href == "https://vancouver.ca/", (locale, href)
 
@@ -1147,7 +1149,7 @@ def test_vancouver_banner_heads_the_current_month_card():
 
 def test_the_city_grand_prix_names_the_month_in_every_language():
     """El banner presenta la carrera del mes: el GP de Vancouver de ese mes."""
-    for locale in ("en", "ja", "fr"):
+    for locale in ("es", "en", "ja", "fr"):
         title = re.search(r"vgpTitle: ml => ([^\n]*)", _lang_block(locale)).group(1)
         assert "Vancouver" in title or "バンクーバー" in title, (locale, title)
         assert "GP" in title, (locale, title)
@@ -1178,7 +1180,7 @@ def test_the_monthly_chart_and_treat_survive_the_city_grand_prix():
 def test_both_grand_prix_banners_are_a_single_short_line_without_a_button():
     """Los banners son bajitos: titular, una línea de texto y ya. Sin botón."""
     assert "ccta" not in APP and "caCta" not in I18N_JS
-    for locale in ("en", "ja", "fr"):
+    for locale in ("es", "en", "ja", "fr"):
         for key in ("caSub", "vcSub"):
             sub = re.search(r'%s: "([^"]*)"' % key, _lang_block(locale)).group(1)
             assert len(sub) <= 45, (locale, key, sub)
@@ -1259,7 +1261,7 @@ def test_thread_date_shows_the_ranking_update_stamp():
     body = _fn("render")
     assert 'txt("div", "day", fmtStamp(DATA.updated))' in body
     assert "T.today" not in APP
-    for locale in ("en", "ja", "fr"):
+    for locale in ("es", "en", "ja", "fr"):
         assert "today" not in _lang_keys(locale)
     # el recálculo ya escribe el sello; fmtStamp solo lo lee en el idioma activo
     assert "function fmtStamp(stamp)" in APP
@@ -1376,3 +1378,12 @@ def test_the_published_api_has_what_the_page_reads():
                 "allocation", "market", "tickers", "monthly", "treatScale",
                 "dailyWinners", "badges"):
         assert key in api, key
+
+
+def test_spanish_is_the_default_language():
+    """Sin preferencia guardada, la web arranca en español."""
+    assert 'return "es";' in I18N_JS
+    assert '<html lang="es">' in HTML
+    assert 'href="manifest-es.webmanifest" id="manifest-link"' in HTML
+    # el inglés declara su manifest para poder volver a él desde el español
+    assert 'manifest: "manifest.webmanifest"' in I18N_JS
