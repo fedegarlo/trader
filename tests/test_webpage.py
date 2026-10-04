@@ -1301,6 +1301,37 @@ def test_the_message_bar_answers_with_the_league_data():
 
 # ---- la API: lo único que escribe el recálculo ----------------------------
 
+def test_updated_stamp_is_madrid_when_utc_is_still_yesterday(tmp_path, monkeypatch):
+    """UTC sigue en el día 3; Madrid ya es el 4: el sello publicado es Madrid.
+
+    El caso que mezclaba calendarios: ``date.today()`` en GitHub Actions
+    (2026-10-03) + ``datetime.now(Europe/Madrid)`` (01:23) publicaba
+    «2026-10-03 01:23». Fecha y hora tienen que ser el mismo instante.
+    Un ``date.today()`` implícito no puede pisar el día de Madrid.
+    """
+    utc = datetime(2026, 10, 3, 23, 23, tzinfo=timezone.utc)
+
+    class _UtcDate(date):
+        @classmethod
+        def today(cls):
+            return date(2026, 10, 3)
+
+    monkeypatch.setattr(webpage, "date", _UtcDate)
+
+    fede = Player(player_id="fede", display_name="Fede")
+    api = _api(tmp_path, [(fede, _series(5))], now=utc)
+    assert api["updated"] == "2026-10-04 01:23"
+    assert api["generatedAt"] == "2026-10-03T23:23:00Z"
+
+
+def test_updated_stamp_keeps_an_explicit_today(tmp_path):
+    """Un ``today`` pasado a propósito (build reproducible) se respeta."""
+    utc = datetime(2026, 10, 3, 23, 23, tzinfo=timezone.utc)
+    fede = Player(player_id="fede", display_name="Fede")
+    api = _api(tmp_path, [(fede, _series(5))], today=date(2026, 8, 5), now=utc)
+    assert api["updated"] == "2026-08-05 01:23"
+
+
 def test_write_api_writes_the_league_json(tmp_path):
     fede = Player(player_id="fede", display_name="Fede")
     out = webpage.write_api([(fede, _series(5))],
