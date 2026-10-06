@@ -1,7 +1,7 @@
 {
  "api": 1,
- "updated": "2026-10-04 01:12",
- "generatedAt": "2026-10-03T23:12:46Z",
+ "updated": "2026-10-06 17:12",
+ "generatedAt": "2026-10-06T15:12:35Z",
  "players": [
   {
    "id": "ana",
@@ -1063,14 +1063,52 @@
        "pct": 0.1697
       }
      ]
+    },
+    {
+     "date": "2026-10-05",
+     "day": 0.5988,
+     "cum": 19.019,
+     "bd": [
+      {
+       "ticker": "NVDA",
+       "pct": 0.3875
+      },
+      {
+       "ticker": "GOOGL",
+       "pct": 0.279
+      },
+      {
+       "ticker": "AMD",
+       "pct": -0.0676
+      }
+     ]
+    },
+    {
+     "date": "2026-10-06",
+     "day": 1.2204,
+     "cum": 20.4716,
+     "bd": [
+      {
+       "ticker": "AMD",
+       "pct": 0.8276
+      },
+      {
+       "ticker": "NVDA",
+       "pct": 0.2506
+      },
+      {
+       "ticker": "GOOGL",
+       "pct": 0.1391
+      }
+     ]
     }
    ],
    "months": [
     {
      "month": 10,
      "month_year": 2026,
-     "ret": 1.4503,
-     "cum": 18.3105
+     "ret": 3.3034,
+     "cum": 20.4716
     },
     {
      "month": 9,
@@ -1094,15 +1132,15 @@
    "holdings": [
     {
      "ticker": "GOOGL",
-     "w": 45.81
+     "w": 45.24
     },
     {
      "ticker": "AMD",
-     "w": 28.18
+     "w": 28.53
     },
     {
      "ticker": "NVDA",
-     "w": 26.0
+     "w": 26.23
     }
    ]
   },
@@ -2686,14 +2724,68 @@
      "end": 6407.9,
      "flow": 0.0,
      "pnl": 62.1
+    },
+    {
+     "date": "2026-10-05",
+     "day": 2.0301,
+     "cum": 14.0932,
+     "bd": [
+      {
+       "ticker": "NVDA",
+       "pct": 0.927
+      },
+      {
+       "ticker": "AVGO",
+       "pct": 0.4601
+      },
+      {
+       "ticker": "WDC",
+       "pct": 0.4113
+      },
+      {
+       "ticker": "GOOGL",
+       "pct": 0.2317
+      }
+     ],
+     "start": 6407.9,
+     "end": 6537.99,
+     "flow": 0.0,
+     "pnl": 130.09
+    },
+    {
+     "date": "2026-10-06",
+     "day": 1.1829,
+     "cum": 15.4428,
+     "bd": [
+      {
+       "ticker": "AVGO",
+       "pct": 0.892
+      },
+      {
+       "ticker": "NVDA",
+       "pct": 0.5855
+      },
+      {
+       "ticker": "WDC",
+       "pct": -0.4163
+      },
+      {
+       "ticker": "GOOGL",
+       "pct": 0.1151
+      }
+     ],
+     "start": 6537.99,
+     "end": 6615.32,
+     "flow": 0.0,
+     "pnl": 77.34
     }
    ],
    "months": [
     {
      "month": 10,
      "month_year": 2026,
-     "ret": 0.637,
-     "cum": 11.8231
+     "ret": 3.8946,
+     "cum": 15.4428
     },
     {
      "month": 9,
@@ -2717,26 +2809,26 @@
    "holdings": [
     {
      "ticker": "NVDA",
-     "w": 44.14
+     "w": 44.23
     },
     {
      "ticker": "GOOGL",
-     "w": 27.0
+     "w": 26.49
     },
     {
      "ticker": "AVGO",
-     "w": 22.33
+     "w": 22.97
     },
     {
      "ticker": "WDC",
-     "w": 6.53
+     "w": 6.31
     }
    ],
    "goal": {
     "target": 14000.0,
-    "pct": 40.66,
+    "pct": 41.96,
     "currency": "USD",
-    "value": 5692.14
+    "value": 5874.41
    }
   }
  ],
@@ -2744,9 +2836,9 @@
  "goal": {
   "target": 14000.0,
   "deadline": "2027-08-01",
-  "days": 302,
+  "days": 299,
   "fx": {
-   "USD": 0.8883
+   "USD": 0.888
   }
  },
  "operations": [
@@ -2818,23 +2910,23 @@
  "allocation": [
   {
    "ticker": "NVDA",
-   "w": 36.62
+   "w": 36.8
   },
   {
    "ticker": "GOOGL",
-   "w": 34.79
+   "w": 34.23
   },
   {
    "ticker": "AVGO",
-   "w": 13.08
+   "w": 13.49
   },
   {
    "ticker": "AMD",
-   "w": 11.67
+   "w": 11.78
   },
   {
    "ticker": "WDC",
-   "w": 3.83
+   "w": 3.71
   }
  ],
  "market": null,
@@ -2843,28 +2935,20 @@
    "ticker": "NVDA",
    "name": "NVIDIA",
    "domain": "nvidia.com",
-   "w": 36.62,
+   "w": 36.8,
    "holders": [
     {
      "name": "Fede",
      "slot": 1,
-     "w": 44.14
+     "w": 44.23
     },
     {
      "name": "Ana",
      "slot": 0,
-     "w": 26.0
+     "w": 26.23
     }
    ],
    "prices": [
-    {
-     "date": "2026-08-21",
-     "close": 214.72
-    },
-    {
-     "date": "2026-08-24",
-     "close": 208.48
-    },
     {
      "date": "2026-08-25",
      "close": 213.05
@@ -2976,9 +3060,17 @@
     {
      "date": "2026-10-02",
      "close": 233.95
+    },
+    {
+     "date": "2026-10-05",
+     "close": 238.9
+    },
+    {
+     "date": "2026-10-06",
+     "close": 242.09
     }
    ],
-   "ret": 8.96,
+   "ret": 13.63,
    "peers": [
     {
      "ticker": "AMD",
@@ -2998,39 +3090,39 @@
    ],
    "news": [
     {
-     "title": "History Says Coca-Cola Stock Holds Up When the S&P 500 Falls",
-     "link": "https://finnhub.io/api/news?id=323b34923195133a26af37257e6b26e48ff50058975d954f035b36dfb474f88c",
+     "title": "Stock Market Today: Dow Rises As Oil, Yields Fall; AMD, Nvidia, Tesla Shares Rally (Live Coverage)",
+     "link": "https://finnhub.io/api/news?id=17e181e56894175d3d48e8234373dbdf984acc756da331e92076e6fc53f1d371",
      "source": "Yahoo",
-     "at": "2026-10-03T21:43:01.000Z",
-     "desc": "The drinks giant beat the index in seven of the market's eight losing years since 1980. But is this record worth around 26 times earnings?"
+     "at": "2026-10-06T13:40:44.000Z",
+     "desc": "The Dow Jones index rises Tuesday as oil prices and yields fall. AMD, Nvidia and Tesla rally."
     },
     {
-     "title": "Elon Musk Said SpaceX AI Revenue Would Pass Everything Else by September. Did It?",
-     "link": "https://finnhub.io/api/news?id=75ea3bb4aa52d61d5f7821b55d352480d81645c483f7adfed7dfd3225b18303c",
+     "title": "S&P 500 hovers near record highs as Treasury yields ease: AlphaCheck",
+     "link": "https://finnhub.io/api/news?id=7ce0dd7d0847484c3b29b0e8949033699f01d6090d2a82cf927c075099f472e6",
      "source": "Yahoo",
-     "at": "2026-10-03T21:00:44.000Z",
-     "desc": "Elon Musk told SpaceX employees in August that AI revenue would overtake every other part of the business by September. The deadline has passed, and the numbers that will confirm or contradict him are weeks away from fi…"
+     "at": "2026-10-06T13:40:08.000Z",
+     "desc": "Stocks climbed on Tuesday as the S&P 500 headed toward a record."
     },
     {
-     "title": "4 Developments That Will Determine the Fate of Lucid and Potential Bankruptcy",
-     "link": "https://finnhub.io/api/news?id=a1fad3d021edf0e828dd341caa17cbab9dfbc9d9f55bbb363976d08c23a9c2f9",
+     "title": "Why CrowdStrike Stock Rallied Nearly 15% in September",
+     "link": "https://finnhub.io/api/news?id=4c4981d940bd75cd83353049deae5c65f5e6755ab71bd98b55cd6dcbdda3fad4",
      "source": "Yahoo",
-     "at": "2026-10-03T20:50:00.000Z",
-     "desc": "Lucid could prove a big winner for investors willing to accept that the company could also go bankrupt. Here are four critical projects for investors to keep an eye on while gauging if the young EV maker's turnaround ho…"
+     "at": "2026-10-06T13:38:02.000Z",
+     "desc": "Things are coming up roses for the cybersecurity specialist."
     },
     {
-     "title": "NuScale vs. Oklo vs. GE Vernova: Ranking 3 Nuclear Stocks By Backlog, Not Hype.",
-     "link": "https://finnhub.io/api/news?id=2b5f6fe7638bd3f1f5c4c82c20b7af15b0618e346b24f64d361a9590a8e4f2c8",
+     "title": "What Will Decide Broadcom Stock Performance Over The Next Six Months?",
+     "link": "https://finnhub.io/api/news?id=2d83225fbcdf76f5ad3d95e1dc63d6311f38fb737a619004ae49fb0ae8ad352b",
      "source": "Yahoo",
-     "at": "2026-10-03T20:25:00.000Z",
-     "desc": "Shares of small nuclear reactor providers are down big this year despite long-term growth potential."
+     "at": "2026-10-06T13:35:41.000Z",
+     "desc": "Broadcom (AVGO) stock has returned about 8% over the past twelve months through October 5, 2026, well short of the S&P 500's 16%. The stock has lagged despite management's promises. On the September 2, 2026 call, manage…"
     },
     {
-     "title": "Intel (INTC) Data Center Comeback: Real Recovery or Just a Supply Squeeze?",
-     "link": "https://finnhub.io/api/news?id=0114a7fa088f33b8185fa4d13720fadff0448f13f06eec2300d069b950bf31f2",
+     "title": "Tilray Brands: Is the Stock a Buy at Less Than $4?",
+     "link": "https://finnhub.io/api/news?id=ab5b4afbdea09b6f48adae352f6ff0e0b3a8d4969a29fe9240f38626b3ff32c9",
      "source": "Yahoo",
-     "at": "2026-10-03T19:57:50.000Z",
-     "desc": "Intel Corp. (NASDAQ:INTC) continues executing its AI-driven turnaround, backed by strong demand across CPUs, ASICs, advanced packaging, and its foundry network. Strategic moves include Nvidia partnership, SoftBank’s $2…"
+     "at": "2026-10-06T13:35:02.000Z",
+     "desc": "The stock is down big this year, but that doesn't mean it's overdue for a rally."
     }
    ]
   },
@@ -3038,28 +3130,20 @@
    "ticker": "GOOGL",
    "name": "Alphabet",
    "domain": "abc.xyz",
-   "w": 34.79,
+   "w": 34.23,
    "holders": [
     {
      "name": "Ana",
      "slot": 0,
-     "w": 45.81
+     "w": 45.24
     },
     {
      "name": "Fede",
      "slot": 1,
-     "w": 27.0
+     "w": 26.49
     }
    ],
    "prices": [
-    {
-     "date": "2026-08-21",
-     "close": 344.82
-    },
-    {
-     "date": "2026-08-24",
-     "close": 348.06
-    },
     {
      "date": "2026-08-25",
      "close": 346.96
@@ -3171,9 +3255,17 @@
     {
      "date": "2026-10-02",
      "close": 343.5
+    },
+    {
+     "date": "2026-10-05",
+     "close": 346.47
+    },
+    {
+     "date": "2026-10-06",
+     "close": 347.975
     }
    ],
-   "ret": -0.38,
+   "ret": 0.29,
    "peers": [
     {
      "ticker": "MSFT",
@@ -3193,39 +3285,39 @@
    ],
    "news": [
     {
-     "title": "Elon Musk Said SpaceX AI Revenue Would Pass Everything Else by September. Did It?",
-     "link": "https://finnhub.io/api/news?id=75ea3bb4aa52d61d5f7821b55d352480d81645c483f7adfed7dfd3225b18303c",
+     "title": "Google and Constellation Sign a 3.6 GW Deal: The Bigger Half Isn’t the Nuclear",
+     "link": "https://finnhub.io/api/news?id=93a7dccb99d34c679f2e18826a66ceabeee160c2ae76da9d513fc72e5d8fa2c0",
      "source": "Yahoo",
-     "at": "2026-10-03T21:00:44.000Z",
-     "desc": "Elon Musk told SpaceX employees in August that AI revenue would overtake every other part of the business by September. The deadline has passed, and the numbers that will confirm or contradict him are weeks away from fi…"
+     "at": "2026-10-06T13:40:41.000Z",
+     "desc": "Constellation Energy (CEG:NASDAQ) shares rose about 3% premarket on Tuesday, October 6, to about $276, after Constellation and Alphabet (GOOGL:NASDAQ) unit Google announced a power deal covering 3,590 megawatts on PJM,…"
     },
     {
-     "title": "Alphabet (GOOGL) Prevails In Two US Antitrust Lawsuits",
-     "link": "https://finnhub.io/api/news?id=a67b61ce3b52370842677277426eb40658fad73d45752068de23fd418bbe9301",
+     "title": "Google & Constellation Energy ink $1B nuclear agreement, but this deal isn't unique",
+     "link": "https://finnhub.io/api/news?id=29dbe8d231c4e2b6b275de100fdf06358b0c3193cbe45b1c5aefa07d779e4008",
      "source": "Yahoo",
-     "at": "2026-10-03T19:07:29.000Z",
-     "desc": "Alphabet (NasdaqGS: GOOGL) reportedly won two separate US antitrust cases in late September, easing immediate legal pressure on Google. Google is helping form a cross industry coalition focused on AI data center develop…"
+     "at": "2026-10-06T13:40:22.000Z",
+     "desc": "The 8:30 Hosts Julie Hyman, Pras Subramanian, and Jake Conley discuss Google (GOOG, GOOGL) and Constellation Energy's (CEG) recently signed $1 billion nuclear energy deal."
     },
     {
-     "title": "The S&P 500 Is Not Enough: My 3-Stock Starter Portfolio for New Investors",
-     "link": "https://finnhub.io/api/news?id=1808834a7d9308a7a154d508d24cd51f3a2a5c1e021d54fa4ef43aedd91d1b3f",
+     "title": "Google Nuke Deal Jolts Constellation Energy To Top Of S&P 500",
+     "link": "https://finnhub.io/api/news?id=7e18ab404af9c9282e2757715b08eae41004e04bad1a5a25594051ebec36d6e3",
      "source": "Yahoo",
-     "at": "2026-10-03T17:35:00.000Z",
-     "desc": "An S&P 500 index fund is a fine foundation -- Amazon, Meta Platforms, and Alphabet give beginners three quality growth stocks on top of it."
+     "at": "2026-10-06T13:39:26.000Z",
+     "desc": "The Google deal will be like adding a nuclear reactor to the grid, but faster."
     },
     {
-     "title": "Bessent says rising Treasury yields reflect global trend, not cause for alarm",
-     "link": "https://finnhub.io/api/news?id=6b016cf61ebf32d4cd0bb0fecf7d771684b2ace93626da9201667981ff9f8bea",
+     "title": "Google signs 20-year nuclear deal with Constellation Energy to power AI build-out",
+     "link": "https://finnhub.io/api/news?id=e88aa16940f3f97f9d1bb71d1f46355aaa9a5b7a04a3eae38841ee8765e70abb",
      "source": "Yahoo",
-     "at": "2026-10-03T17:19:38.000Z",
-     "desc": "Investing.com -- U.S. Treasury Secretary Scott Bessent said the recent rise in Treasury yields largely reflects a broader global increase in borrowing costs and does not, by itself, warrant concern, even as inflation pr…"
+     "at": "2026-10-06T13:11:04.000Z",
+     "desc": "Google has signed a 20-year deal to purchase power from Constellation Energy."
     },
     {
-     "title": "AI's 'labor enhancement' will be 'more powerful' than job displacements: Mohamed El-Erian",
-     "link": "https://finnhub.io/api/news?id=c285f5d2803494c097c2205c87efd5e8d9d25e16648046a1e3797d997a8759aa",
+     "title": "Invoca Launches Data + AI Home Services Solution That Turns Leads Into Booked Jobs",
+     "link": "https://finnhub.io/api/news?id=334922c2fcf758b1a736ad1713ced59f96c2e9b082b86ed84f47311d02fff58d",
      "source": "Yahoo",
-     "at": "2026-10-03T12:00:00.000Z",
-     "desc": "The US labor market grew by 29,000 nonfarm payroll jobs in the month of September, according to the US Bureau of Labor Statistics (BLS) — far below economists' forecasts of 90,000.The unemployment rate ticked up to 4.2%…"
+     "at": "2026-10-06T13:00:00.000Z",
+     "desc": "Invoca, the AI-powered leader in revenue execution, today announced a new data + AI solution for home services. The solution ensures every digital and phone lead gets a timely, personalized response that maximizes conve…"
     }
    ]
   },
@@ -3233,23 +3325,15 @@
    "ticker": "AVGO",
    "name": "Broadcom",
    "domain": "broadcom.com",
-   "w": 13.08,
+   "w": 13.49,
    "holders": [
     {
      "name": "Fede",
      "slot": 1,
-     "w": 22.33
+     "w": 22.97
     }
    ],
    "prices": [
-    {
-     "date": "2026-08-21",
-     "close": 368.45
-    },
-    {
-     "date": "2026-08-24",
-     "close": 358.76
-    },
     {
      "date": "2026-08-25",
      "close": 356.74
@@ -3361,9 +3445,17 @@
     {
      "date": "2026-10-02",
      "close": 355.14
+    },
+    {
+     "date": "2026-10-05",
+     "close": 362.51
+    },
+    {
+     "date": "2026-10-06",
+     "close": 377.0901
     }
    ],
-   "ret": -3.61,
+   "ret": 5.7,
    "peers": [
     {
      "ticker": "QCOM",
@@ -3383,39 +3475,39 @@
    ],
    "news": [
     {
-     "title": "Should You Forget Palantir and Buy These 2 Artificial Intelligence (AI) Stocks Instead?",
-     "link": "https://finnhub.io/api/news?id=db63711fde47479f87b937ccbefd3948dd0b38e6d6ed1d93d16ec2e49a53b6f6",
+     "title": "What Will Decide Broadcom Stock Performance Over The Next Six Months?",
+     "link": "https://finnhub.io/api/news?id=2d83225fbcdf76f5ad3d95e1dc63d6311f38fb737a619004ae49fb0ae8ad352b",
      "source": "Yahoo",
-     "at": "2026-10-03T11:19:00.000Z",
-     "desc": "Broadcom and Applied Digital could be smarter AI infrastructure plays right now."
+     "at": "2026-10-06T13:35:41.000Z",
+     "desc": "Broadcom (AVGO) stock has returned about 8% over the past twelve months through October 5, 2026, well short of the S&P 500's 16%. The stock has lagged despite management's promises. On the September 2, 2026 call, manage…"
     },
     {
-     "title": "If You'd Invested $1,000 in Broadcom's 2009 IPO, Here's How Much You'd Have Today",
-     "link": "https://finnhub.io/api/news?id=de6f4ce86dda1edc47278627dde91333c4e95c639dffff81f77b0de5e4686a17",
+     "title": "Nvidia Turned $10,000 Into More Than $1.3 Million. Can It Happen Again?",
+     "link": "https://finnhub.io/api/news?id=8a727c4024cc4ddf8d9d697158739be6f84f9295ecb6442fd87dae387e523d36",
      "source": "Yahoo",
-     "at": "2026-10-03T10:35:00.000Z",
-     "desc": "A surprising amount of its returns have come from dividends."
+     "at": "2026-10-06T13:30:55.000Z",
+     "desc": "A $10,000 bet on Nvidia a decade ago quietly became a life-changing sum, but with a $5.57 trillion market cap, the same math no longer applies the same way. Here is how much runway our model still sees."
     },
     {
-     "title": "Prediction: This AI Chip Stock Will Be the Biggest Winner of 2027 (Hint: It’s Not Nvidia, AMD, or Broadcom)",
-     "link": "https://finnhub.io/api/news?id=3cbc6c6c0489fd7871ef6ef60d42c8e47422fbe7010e81af63fcff7e378e40de",
+     "title": "Broadcom (AVGO) Eyes Huge AI Revenue Growth, Is The Stock Getting Too Pricey?",
+     "link": "https://finnhub.io/api/news?id=809d901c8baea12c712eaeb23f68588fbc0cca06fd8274e542f3ed5040a46bcd",
      "source": "Yahoo",
-     "at": "2026-10-03T09:40:01.000Z",
-     "desc": "TSMC is the world's largest semiconductor foundry, which gives it immense pricing power."
+     "at": "2026-10-06T13:05:50.000Z",
+     "desc": "Broadcom (AVGO) is back in focus after management outlined ambitious AI revenue projections, pointing to US$115b in 2027 and US$230b in 2028, supported by long-term chip partnerships and heavy hyperscaler data-center sp…"
     },
     {
-     "title": "Skyworks: The Qorvo Deal Could Finally Change The Investment Case",
-     "link": "https://finnhub.io/api/news?id=84c6b97a573c7b1e05a87d1ef5799a3ab3bba145cff7aa48badde4f304d41389",
-     "source": "SeekingAlpha",
-     "at": "2026-10-03T07:47:12.000Z",
-     "desc": "Skyworks is an analog and mixed-signal semiconductor company focused mainly on RF and connectivity products. Learn why SWKS stock is a buy."
+     "title": "The Fed’s Rate Hike Isn’t A Headwind For Nvidia For Several Reasons",
+     "link": "https://finnhub.io/api/news?id=b7ff3229e5e1418aca70479b46ee3ff02ac53cd67babb8a5ff4c8e675ed98432",
+     "source": "Yahoo",
+     "at": "2026-10-06T12:45:12.000Z",
+     "desc": "The Fed just pushed rates higher and the 10-year Treasury sits above 5%, conditions that typically punish growth stocks hard. NVIDIA may be built differently enough that the standard playbook simply does not apply."
     },
     {
-     "title": "Broadcom’s $42 Billion Loan to Anthropic Turns the Chipmaker Into Its Customer’s Bank",
-     "link": "https://finnhub.io/api/news?id=0abd9abfa2ae1bcdb75673375a1ae02548e1165c3de123394c9ee29021f55200",
+     "title": "Morgan Stanley: Nvidia, Broadcom shielded from data-center power crunch",
+     "link": "https://finnhub.io/api/news?id=538600e1068dae3bf7f4e7826a4f0f596091c3bf73b5ca2fae73d02923f6df72",
      "source": "Yahoo",
-     "at": "2026-10-03T07:38:43.000Z",
-     "desc": "Anthropic’s S-1 filing establishes a $518 billion compute commitment as the definitive ceiling for its operational capacity. Beneath this aggregate figure, a $42 billion convertible note facility from Broadcom serves as…"
+     "at": "2026-10-06T12:03:14.000Z",
+     "desc": "Secondary chip suppliers — including makers of memory, optical, and power-management components — face the greater risk of order disruptions"
     }
    ]
   },
@@ -3423,23 +3515,15 @@
    "ticker": "AMD",
    "name": "AMD",
    "domain": "amd.com",
-   "w": 11.67,
+   "w": 11.78,
    "holders": [
     {
      "name": "Ana",
      "slot": 0,
-     "w": 28.18
+     "w": 28.53
     }
    ],
    "prices": [
-    {
-     "date": "2026-08-21",
-     "close": 473.25
-    },
-    {
-     "date": "2026-08-24",
-     "close": 456.75
-    },
     {
      "date": "2026-08-25",
      "close": 479.18
@@ -3551,9 +3635,17 @@
     {
      "date": "2026-10-02",
      "close": 633.91
+    },
+    {
+     "date": "2026-10-05",
+     "close": 631.75
+    },
+    {
+     "date": "2026-10-06",
+     "close": 658.34
     }
    ],
-   "ret": 33.95,
+   "ret": 37.39,
    "peers": [
     {
      "ticker": "NVDA",
@@ -3573,39 +3665,39 @@
    ],
    "news": [
     {
-     "title": "Jim Cramer Views Intel (INTC) As A Winning Turnaround Amid CPU Demand Growth",
-     "link": "https://finnhub.io/api/news?id=4f32ed5ec533911367fbefe8ea540b624cff620755f1ff4b792371f8ae0b31a7",
+     "title": "Stock Market Today: Dow Rises As Oil, Yields Fall; AMD, Nvidia, Tesla Shares Rally (Live Coverage)",
+     "link": "https://finnhub.io/api/news?id=17e181e56894175d3d48e8234373dbdf984acc756da331e92076e6fc53f1d371",
      "source": "Yahoo",
-     "at": "2026-10-03T20:10:26.000Z",
-     "desc": "During the September 28 episode of Mad Money, Jim Cramer addressed Intel Corporation (NASDAQ:INTC) and its ongoing business transformation, as he said: Members of the CNBC Investing Club know I’ve been resolute though t…"
+     "at": "2026-10-06T13:40:44.000Z",
+     "desc": "The Dow Jones index rises Tuesday as oil prices and yields fall. AMD, Nvidia and Tesla rally."
     },
     {
-     "title": "Can AMD’s CPU Business Fund Its AI Chip Ambitions?",
-     "link": "https://finnhub.io/api/news?id=a7bfaeadebd575188d152c345c9fbabf0175dc885806bf3cd3c62091296909a6",
+     "title": "Lisa Su Says AI Demand Will Stay ‘Very, Very High’ for Years as AMD Races to Add Supply",
+     "link": "https://finnhub.io/api/news?id=cac0f65dbfc159b0714adc0c403527d74a4d55a70d487f42c12b66ea4217e584",
      "source": "Yahoo",
-     "at": "2026-10-03T15:22:36.000Z",
-     "desc": "Advanced Micro Devices, Inc. (NASDAQ:AMD) has an advantage that a new accelerator company would struggle to replicate: an established processor business that sells into both servers and personal computers. Those product…"
+     "at": "2026-10-06T13:39:41.000Z",
+     "desc": "Advanced Micro Devices Inc. (NASDAQ:AMD) CEO Lisa Su says demand for AI and computing capacity will stay elevated for years, forcing the chipmaker to substantially increase supply again in 2027 even after expanding capa…"
     },
     {
-     "title": "Prediction: This AI Chip Stock Will Be the Biggest Winner of 2027 (Hint: It’s Not Nvidia, AMD, or Broadcom)",
-     "link": "https://finnhub.io/api/news?id=3cbc6c6c0489fd7871ef6ef60d42c8e47422fbe7010e81af63fcff7e378e40de",
+     "title": "What Will Decide Broadcom Stock Performance Over The Next Six Months?",
+     "link": "https://finnhub.io/api/news?id=2d83225fbcdf76f5ad3d95e1dc63d6311f38fb737a619004ae49fb0ae8ad352b",
      "source": "Yahoo",
-     "at": "2026-10-03T09:40:01.000Z",
-     "desc": "TSMC is the world's largest semiconductor foundry, which gives it immense pricing power."
+     "at": "2026-10-06T13:35:41.000Z",
+     "desc": "Broadcom (AVGO) stock has returned about 8% over the past twelve months through October 5, 2026, well short of the S&P 500's 16%. The stock has lagged despite management's promises. On the September 2, 2026 call, manage…"
     },
     {
-     "title": "Intel Was Worth About 28 Times as Much as AMD 10 Years Ago. Now AMD Is Worth About 60% More.",
-     "link": "https://finnhub.io/api/news?id=a816f75853bc3bf992a77481d9c15a118ffff20d25f14404dd94d96f084a779b",
+     "title": "Nvidia Turned $10,000 Into More Than $1.3 Million. Can It Happen Again?",
+     "link": "https://finnhub.io/api/news?id=8a727c4024cc4ddf8d9d697158739be6f84f9295ecb6442fd87dae387e523d36",
      "source": "Yahoo",
-     "at": "2026-10-03T09:32:01.000Z",
-     "desc": "Can Intel's plants win back what AMD took one server chip at a time?"
+     "at": "2026-10-06T13:30:55.000Z",
+     "desc": "A $10,000 bet on Nvidia a decade ago quietly became a life-changing sum, but with a $5.57 trillion market cap, the same math no longer applies the same way. Here is how much runway our model still sees."
     },
     {
-     "title": "Micron, Nike, Meta and More: 5 Stocks Investors Couldn't Stop Buzzing About This Week",
-     "link": "https://finnhub.io/api/news?id=4ad332166f4319c2fcf4c9006101bd1eff1553040404abe77f126421aed826ae",
-     "source": "Benzinga",
-     "at": "2026-10-03T08:30:20.000Z",
-     "desc": "Retail investors talked up five hot stocks during the week (Sept. 28 to Oct. 2) on X and Reddit's r/WallStreetBets: MU, NKE, META, AMD, GOOG."
+     "title": "3 Overlooked Growth Stocks Powering Every AI Chip Nvidia and AMD Build",
+     "link": "https://finnhub.io/api/news?id=a92035033a69cef9fcdc1ab00704e5c4225413d100a0ca1e45f1eee626ba166d",
+     "source": "Yahoo",
+     "at": "2026-10-06T13:08:00.000Z",
+     "desc": "These companies are essential to the development of every chip sold by Nvidia and AMD."
     }
    ]
   },
@@ -3613,23 +3705,15 @@
    "ticker": "WDC",
    "name": "Western Digital",
    "domain": "westerndigital.com",
-   "w": 3.83,
+   "w": 3.71,
    "holders": [
     {
      "name": "Fede",
      "slot": 1,
-     "w": 6.53
+     "w": 6.31
     }
    ],
    "prices": [
-    {
-     "date": "2026-08-21",
-     "close": 459.44
-    },
-    {
-     "date": "2026-08-24",
-     "close": 435.38
-    },
     {
      "date": "2026-08-25",
      "close": 450.75
@@ -3741,9 +3825,17 @@
     {
      "date": "2026-10-02",
      "close": 415.29
+    },
+    {
+     "date": "2026-10-05",
+     "close": 441.64
+    },
+    {
+     "date": "2026-10-06",
+     "close": 414.43
     }
    ],
-   "ret": -9.61,
+   "ret": -8.06,
    "peers": [
     {
      "ticker": "MU",
@@ -3763,53 +3855,80 @@
    ],
    "news": [
     {
-     "title": "Western Digital: Buy Aggressively Because The Market Is Wrong",
-     "link": "https://finnhub.io/api/news?id=55ea776d3c9a22e8f76633feffbcff2648878cd55841d3c64d2a301cf36cd7be",
-     "source": "SeekingAlpha",
-     "at": "2026-10-03T08:06:58.000Z",
-     "desc": "Western Digitalâs cloud business accounts for nearly 90% of revenue, with AI supporting high-capacity HDD demand. Learn why WDC stock is a strong buy."
+     "title": "Tuesday's session: gap up and gap down stock in the S&P500 index",
+     "link": "https://finnhub.io/api/news?id=293a1e63d2d9f8d35ccf43537079ef2352e40d44a0deea52ecbe4d188ab55d23",
+     "source": "ChartMill",
+     "at": "2026-10-06T14:35:02.000Z",
+     "desc": "Let's take a look at the S&P500 stocks that are experiencing notable price gaps in today's session on Tuesday. Discover the gap up and gap down stocks in the S&P500 index."
     },
     {
-     "title": "Stock-Split Watch: Is Sandisk Next?",
-     "link": "https://finnhub.io/api/news?id=7382dd078726ca1312286198661e7432042f2f1651d61155f63371c8cc168eda",
+     "title": "Stock Market Today: Dow Rises As Oil, Yields Fall; AMD, Nvidia, Tesla Shares Rally (Live Coverage)",
+     "link": "https://finnhub.io/api/news?id=17e181e56894175d3d48e8234373dbdf984acc756da331e92076e6fc53f1d371",
      "source": "Yahoo",
-     "at": "2026-10-03T04:20:00.000Z",
-     "desc": "Sandisk now has the second-highest nominal stock price among tech stocks."
+     "at": "2026-10-06T13:40:44.000Z",
+     "desc": "The Dow Jones index rises Tuesday as oil prices and yields fall. AMD, Nvidia and Tesla rally."
+    },
+    {
+     "title": "Seagate, Western Digital stocks slip as Toshiba's AI storage push rattles sector",
+     "link": "https://finnhub.io/api/news?id=548c326d6d6e6d6fd1a00cc1e0f6818be9583b854019af427c245c5396bf7a84",
+     "source": "Yahoo",
+     "at": "2026-10-06T13:35:25.000Z",
+     "desc": "Seagate Technology and Western Digital shares declined on Tuesday as the hard disk drive sector continued to be volatile."
+    },
+    {
+     "title": "Seagate and Western Digital Drop. The Hot Tech Stocks Have a Big Toshiba Problem.",
+     "link": "https://finnhub.io/api/news?id=eb2571c995229ec3d6b9c62a277a3ac1fdf5765e9c67b16d3c52d90c126c2620",
+     "source": "Yahoo",
+     "at": "2026-10-06T12:49:00.000Z",
+     "desc": "Seagate stock was edging down following a report it is competing with Toshiba over a crucial acquisition in the hard-disk drive space."
+    },
+    {
+     "title": "Western Digital (WDC) Is Considered a Good Investment by Brokers: Is That True?",
+     "link": "https://finnhub.io/api/news?id=ff27582f0c0944a7760472fa28f03241b6c35cff20cf31864996929cd7327d54",
+     "source": "Yahoo",
+     "at": "2026-10-06T12:30:03.000Z",
+     "desc": "Based on the average brokerage recommendation (ABR), Western Digital (WDC) should be added to one's portfolio. Wall Street analysts' overly optimistic recommendations cast doubt on the effectiveness of this highly sough…"
     }
    ]
   }
  ],
  "monthly": {
   "current": {
-   "name": "Ana",
-   "value": 1.45,
-   "treat": 1,
-   "slot": 0,
+   "name": "Fede",
+   "value": 3.89,
+   "treat": 2,
+   "slot": 1,
    "month": 10,
    "month_year": 2026,
    "dates": [
     "2026-10-01",
-    "2026-10-02"
+    "2026-10-02",
+    "2026-10-05",
+    "2026-10-06"
    ],
    "series": [
-    {
-     "id": "ana",
-     "name": "Ana",
-     "slot": 0,
-     "value": 1.45,
-     "cum": [
-      -0.0435,
-      1.4503
-     ]
-    },
     {
      "id": "fede",
      "name": "Fede",
      "slot": 1,
-     "value": 0.64,
+     "value": 3.89,
      "cum": [
       -0.3382,
-      0.637
+      0.637,
+      2.68,
+      3.8946
+     ]
+    },
+    {
+     "id": "ana",
+     "name": "Ana",
+     "slot": 0,
+     "value": 3.3,
+     "cum": [
+      -0.0435,
+      1.4503,
+      2.0578,
+      3.3034
      ]
     }
    ]
@@ -3963,6 +4082,28 @@
   "month_year": 2026,
   "rows": [
    {
+    "date": "2026-10-06",
+    "names": [
+     "Ana"
+    ],
+    "ids": [
+     "ana"
+    ],
+    "slot": 0,
+    "value": 1.22
+   },
+   {
+    "date": "2026-10-05",
+    "names": [
+     "Fede"
+    ],
+    "ids": [
+     "fede"
+    ],
+    "slot": 1,
+    "value": 2.03
+   },
+   {
     "date": "2026-10-02",
     "names": [
      "Ana"
@@ -4103,14 +4244,14 @@
   "provisional": [
    {
     "type": "champion_month",
-    "player": "ana",
-    "name": "Ana",
-    "date": "2026-10-02",
+    "player": "fede",
+    "name": "Fede",
+    "date": "2026-10-06",
     "month": "2026-10",
-    "pct": 1.45,
+    "pct": 3.89,
     "key": "champion:2026-10",
     "provisional": true,
-    "slot": 0
+    "slot": 1
    }
   ],
   "record": {
