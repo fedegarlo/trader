@@ -537,12 +537,21 @@
     },
     {
       "date": "2026-10-06",
-      "daily_return_pct": 0.6801,
-      "cumulative_return_pct": 14.8691,
+      "daily_return_pct": 0.5005,
+      "cumulative_return_pct": 14.6642,
       "start_value": 6537.99,
-      "end_value": 6582.45,
+      "end_value": 6570.71,
       "external_flow": 0.0,
-      "pnl": 44.46
+      "pnl": 32.72
+    },
+    {
+      "date": "2026-10-07",
+      "daily_return_pct": -0.6139,
+      "cumulative_return_pct": 13.9603,
+      "start_value": 6570.71,
+      "end_value": 6530.37,
+      "external_flow": 0.0,
+      "pnl": -40.34
     }
   ]
 }
