@@ -1,7 +1,7 @@
 {
  "api": 1,
- "updated": "2026-10-08 07:35",
- "generatedAt": "2026-10-08T05:35:31Z",
+ "updated": "2026-10-08 07:36",
+ "generatedAt": "2026-10-08T05:36:43Z",
  "players": [
   {
    "id": "ana",
@@ -2874,7 +2874,7 @@
     "target": 14000.0,
     "pct": 35.23,
     "currency": "USD",
-    "value": 4931.79
+    "value": 4932.34
    }
   }
  ],
@@ -2884,7 +2884,7 @@
   "deadline": "2027-08-01",
   "days": 297,
   "fx": {
-   "USD": 0.8923
+   "USD": 0.8924
   }
  },
  "operations": [
