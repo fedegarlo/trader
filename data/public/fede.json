@@ -528,30 +528,30 @@
     },
     {
       "date": "2026-10-05",
-      "daily_return_pct": 2.0301,
-      "cumulative_return_pct": 14.0932,
+      "daily_return_pct": 1.6938,
+      "cumulative_return_pct": 13.7171,
       "start_value": 6407.9,
-      "end_value": 6537.99,
+      "end_value": 6516.44,
       "external_flow": 0.0,
-      "pnl": 130.09
+      "pnl": 108.54
     },
     {
       "date": "2026-10-06",
-      "daily_return_pct": 0.5005,
-      "cumulative_return_pct": 14.6642,
-      "start_value": 6537.99,
-      "end_value": 6570.71,
-      "external_flow": 0.0,
-      "pnl": 32.72
+      "daily_return_pct": 0.6137,
+      "cumulative_return_pct": 14.415,
+      "start_value": 6516.44,
+      "end_value": 5553.36,
+      "external_flow": -1000.0,
+      "pnl": 36.92
     },
     {
       "date": "2026-10-07",
-      "daily_return_pct": -0.1516,
-      "cumulative_return_pct": 14.4904,
-      "start_value": 6570.71,
-      "end_value": 6560.75,
+      "daily_return_pct": -0.4736,
+      "cumulative_return_pct": 13.8731,
+      "start_value": 5553.36,
+      "end_value": 5527.06,
       "external_flow": 0.0,
-      "pnl": -9.96
+      "pnl": -26.3
     }
   ]
 }

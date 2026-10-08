@@ -1,7 +1,7 @@
 {
  "api": 1,
- "updated": "2026-10-08 07:05",
- "generatedAt": "2026-10-08T05:05:18Z",
+ "updated": "2026-10-08 07:35",
+ "generatedAt": "2026-10-08T05:35:31Z",
  "players": [
   {
    "id": "ana",
@@ -2746,12 +2746,12 @@
     },
     {
      "date": "2026-10-05",
-     "day": 2.0301,
-     "cum": 14.0932,
+     "day": 1.6938,
+     "cum": 13.7171,
      "bd": [
       {
        "ticker": "NVDA",
-       "pct": 0.927
+       "pct": 0.5907
       },
       {
        "ticker": "AVGO",
@@ -2767,71 +2767,71 @@
       }
      ],
      "start": 6407.9,
-     "end": 6537.99,
+     "end": 6516.44,
      "flow": 0.0,
-     "pnl": 130.09
+     "pnl": 108.54
     },
     {
      "date": "2026-10-06",
-     "day": 0.5005,
-     "cum": 14.6642,
+     "day": 0.6137,
+     "cum": 14.415,
      "bd": [
       {
        "ticker": "AVGO",
-       "pct": 0.8137
+       "pct": 0.988
       },
       {
        "ticker": "WDC",
-       "pct": -0.4682
+       "pct": -0.5088
       },
       {
        "ticker": "GOOGL",
-       "pct": 0.0925
+       "pct": 0.1006
       },
       {
        "ticker": "NVDA",
-       "pct": 0.0624
+       "pct": 0.0339
       }
      ],
-     "start": 6537.99,
-     "end": 6570.71,
-     "flow": 0.0,
-     "pnl": 32.72
+     "start": 6516.44,
+     "end": 5553.36,
+     "flow": -1000.0,
+     "pnl": 36.92
     },
     {
      "date": "2026-10-07",
-     "day": -0.1516,
-     "cum": 14.4904,
+     "day": -0.4736,
+     "cum": 13.8731,
      "bd": [
       {
-       "ticker": "NVDA",
-       "pct": -0.3233
+       "ticker": "SPCX",
+       "pct": -0.4351
       },
       {
        "ticker": "GOOGL",
-       "pct": 0.2146
+       "pct": 0.2539
+      },
+      {
+       "ticker": "NVDA",
+       "pct": -0.1912
       },
       {
        "ticker": "WDC",
-       "pct": -0.0856
-      },
-      {
-       "ticker": "AVGO",
-       "pct": 0.0426
+       "pct": -0.1012
       }
      ],
-     "start": 6570.71,
-     "end": 6560.75,
+     "start": 5553.36,
+     "end": 5527.06,
      "flow": 0.0,
-     "pnl": -9.96
+     "pnl": -26.3
     }
    ],
    "months": [
     {
      "month": 10,
      "month_year": 2026,
-     "ret": 3.0375,
-     "cum": 14.4904
+     "ret": 2.4819,
+     "cum": 13.8731
     },
     {
      "month": 9,
@@ -2854,27 +2854,27 @@
    ],
    "holdings": [
     {
-     "ticker": "NVDA",
-     "w": 43.75
+     "ticker": "SPCX",
+     "w": 33.97
     },
     {
      "ticker": "GOOGL",
-     "w": 26.9
+     "w": 32.3
     },
     {
-     "ticker": "AVGO",
-     "w": 23.12
+     "ticker": "NVDA",
+     "w": 26.26
     },
     {
      "ticker": "WDC",
-     "w": 6.23
+     "w": 7.47
     }
    ],
    "goal": {
     "target": 14000.0,
-    "pct": 41.81,
+    "pct": 35.23,
     "currency": "USD",
-    "value": 5852.84
+    "value": 4931.79
    }
   }
  ],
@@ -2884,10 +2884,34 @@
   "deadline": "2027-08-01",
   "days": 297,
   "fx": {
-   "USD": 0.8921
+   "USD": 0.8923
   }
  },
  "operations": [
+  {
+   "date": "2026-10-07",
+   "id": "fede",
+   "name": "Fede",
+   "slot": 1,
+   "kind": "BUY",
+   "ticker": "SPCX"
+  },
+  {
+   "date": "2026-10-06",
+   "id": "fede",
+   "name": "Fede",
+   "slot": 1,
+   "kind": "SELL",
+   "ticker": "AVGO"
+  },
+  {
+   "date": "2026-10-05",
+   "id": "fede",
+   "name": "Fede",
+   "slot": 1,
+   "kind": "SELL",
+   "ticker": "NVDA"
+  },
   {
    "date": "2026-10-02",
    "id": "ana",
@@ -2927,66 +2951,237 @@
    "slot": 1,
    "kind": "SELL",
    "ticker": "TSM"
-  },
-  {
-   "date": "2026-09-23",
-   "id": "ana",
-   "name": "Ana",
-   "slot": 0,
-   "kind": "SELL",
-   "ticker": "PLTR"
-  },
-  {
-   "date": "2026-09-22",
-   "id": "fede",
-   "name": "Fede",
-   "slot": 1,
-   "kind": "BUY",
-   "ticker": "NVDA"
-  },
-  {
-   "date": "2026-09-22",
-   "id": "fede",
-   "name": "Fede",
-   "slot": 1,
-   "kind": "SELL",
-   "ticker": "TSM"
   }
  ],
  "allocation": [
   {
-   "ticker": "NVDA",
-   "w": 36.38
-  },
-  {
    "ticker": "GOOGL",
-   "w": 34.75
+   "w": 38.52
   },
   {
-   "ticker": "AVGO",
-   "w": 13.57
+   "ticker": "NVDA",
+   "w": 26.1
+  },
+  {
+   "ticker": "SPCX",
+   "w": 18.42
   },
   {
    "ticker": "AMD",
-   "w": 11.64
+   "w": 12.91
   },
   {
    "ticker": "WDC",
-   "w": 3.65
+   "w": 4.05
   }
  ],
  "market": null,
  "tickers": [
   {
+   "ticker": "GOOGL",
+   "name": "Alphabet",
+   "domain": "abc.xyz",
+   "w": 38.52,
+   "holders": [
+    {
+     "name": "Ana",
+     "slot": 0,
+     "w": 45.9
+    },
+    {
+     "name": "Fede",
+     "slot": 1,
+     "w": 32.3
+    }
+   ],
+   "prices": [
+    {
+     "date": "2026-08-26",
+     "close": 342.0
+    },
+    {
+     "date": "2026-08-27",
+     "close": 340.65
+    },
+    {
+     "date": "2026-08-28",
+     "close": 346.59
+    },
+    {
+     "date": "2026-08-31",
+     "close": 339.35
+    },
+    {
+     "date": "2026-09-01",
+     "close": 335.02
+    },
+    {
+     "date": "2026-09-02",
+     "close": 337.12
+    },
+    {
+     "date": "2026-09-03",
+     "close": 342.48
+    },
+    {
+     "date": "2026-09-04",
+     "close": 338.46
+    },
+    {
+     "date": "2026-09-08",
+     "close": 338.36
+    },
+    {
+     "date": "2026-09-09",
+     "close": 330.65
+    },
+    {
+     "date": "2026-09-10",
+     "close": 332.6
+    },
+    {
+     "date": "2026-09-11",
+     "close": 338.5
+    },
+    {
+     "date": "2026-09-14",
+     "close": 349.39
+    },
+    {
+     "date": "2026-09-15",
+     "close": 344.98
+    },
+    {
+     "date": "2026-09-16",
+     "close": 342.87
+    },
+    {
+     "date": "2026-09-17",
+     "close": 347.33
+    },
+    {
+     "date": "2026-09-18",
+     "close": 349.54
+    },
+    {
+     "date": "2026-09-21",
+     "close": 354.97
+    },
+    {
+     "date": "2026-09-22",
+     "close": 351.16
+    },
+    {
+     "date": "2026-09-23",
+     "close": 337.83
+    },
+    {
+     "date": "2026-09-24",
+     "close": 342.36
+    },
+    {
+     "date": "2026-09-25",
+     "close": 343.92
+    },
+    {
+     "date": "2026-09-28",
+     "close": 342.75
+    },
+    {
+     "date": "2026-09-29",
+     "close": 340.92
+    },
+    {
+     "date": "2026-09-30",
+     "close": 344.08
+    },
+    {
+     "date": "2026-10-01",
+     "close": 338.24
+    },
+    {
+     "date": "2026-10-02",
+     "close": 343.5
+    },
+    {
+     "date": "2026-10-05",
+     "close": 346.47
+    },
+    {
+     "date": "2026-10-06",
+     "close": 347.68
+    },
+    {
+     "date": "2026-10-07",
+     "close": 350.5
+    }
+   ],
+   "ret": 2.49,
+   "peers": [
+    {
+     "ticker": "MSFT",
+     "name": "Microsoft",
+     "domain": "microsoft.com"
+    },
+    {
+     "ticker": "META",
+     "name": "Meta Platforms",
+     "domain": "meta.com"
+    },
+    {
+     "ticker": "AMZN",
+     "name": "Amazon",
+     "domain": "amazon.com"
+    }
+   ],
+   "news": [
+    {
+     "title": "Big Tech Keeps Signing Nuclear Deals With the Same Company. Here's Who It Is and Why That Matters More Than Any Single Deal.",
+     "link": "https://finnhub.io/api/news?id=cd1ad68b386ef987171dcb0a672b6e4c2107679166711574ec6873afd363a82b",
+     "source": "Yahoo",
+     "at": "2026-10-08T01:35:00.000Z",
+     "desc": "Constellation Energy just inked another nuclear power deal, underscoring how well the company is positioned to meet demand."
+    },
+    {
+     "title": "Baskin Financial Q3 2026 Newsletter",
+     "link": "https://finnhub.io/api/news?id=eb365455f7a5a9ba78388c93ea3365159c1a0e43e5721bccd6a247400857b59d",
+     "source": "SeekingAlpha",
+     "at": "2026-10-08T00:05:00.000Z",
+     "desc": "AI has caught the imagination of investors who are apparently willing to pay almost any price to participate in the boom."
+    },
+    {
+     "title": "Why NorthWestern Energy Group Stock Soared on Wednesday",
+     "link": "https://finnhub.io/api/news?id=26d6d4a9f6cde5628bf68317ce549ce1ab0c47798bff251e2eccd575fd941494",
+     "source": "Yahoo",
+     "at": "2026-10-07T23:16:53.000Z",
+     "desc": "The company it's merging with announced a splashy new power supply deal with a tech industry titan."
+    },
+    {
+     "title": "What Happens To IBM Stock If Its Slowdown Lasts?",
+     "link": "https://finnhub.io/api/news?id=63751dfd0ba45e251e05f6487254cc994a85f171e9b56f25541cb57bdb614c7e",
+     "source": "Yahoo",
+     "at": "2026-10-07T22:47:25.000Z",
+     "desc": "Over the past three months, IBM (IBM) stock lost 26%, while the S&P 500 gained 4.8%. During its July 22, 2026 earnings call, management acknowledged that second quarter results fell short of expectations. Tens of large…"
+    },
+    {
+     "title": "Banks Under Pressure from Spiking Yields Ahead of Q3 Results",
+     "link": "https://finnhub.io/api/news?id=e32c3ce81ead13bd51895057067c403482588adce9d9d9671a0d42dba7ebd823",
+     "source": "Yahoo",
+     "at": "2026-10-07T22:10:00.000Z",
+     "desc": "Higher interest rates are generally seen as beneficial for the likes of JPMorgan and Wells Fargo, but spiking yields of the type we have been experiencing are negative for these banks from several angles."
+    }
+   ]
+  },
+  {
    "ticker": "NVDA",
    "name": "NVIDIA",
    "domain": "nvidia.com",
-   "w": 36.38,
+   "w": 26.1,
    "holders": [
     {
      "name": "Fede",
      "slot": 1,
-     "w": 43.75
+     "w": 26.26
     },
     {
      "name": "Ana",
@@ -3173,387 +3368,192 @@
    ]
   },
   {
-   "ticker": "GOOGL",
-   "name": "Alphabet",
-   "domain": "abc.xyz",
-   "w": 34.75,
+   "ticker": "SPCX",
+   "name": "SpaceX",
+   "domain": "spacex.com",
+   "w": 18.42,
    "holders": [
-    {
-     "name": "Ana",
-     "slot": 0,
-     "w": 45.9
-    },
     {
      "name": "Fede",
      "slot": 1,
-     "w": 26.9
+     "w": 33.97
     }
    ],
    "prices": [
     {
      "date": "2026-08-26",
-     "close": 342.0
+     "close": 139.63
     },
     {
      "date": "2026-08-27",
-     "close": 340.65
+     "close": 140.87
     },
     {
      "date": "2026-08-28",
-     "close": 346.59
+     "close": 141.5
     },
     {
      "date": "2026-08-31",
-     "close": 339.35
+     "close": 143.69
     },
     {
      "date": "2026-09-01",
-     "close": 335.02
+     "close": 142.23
     },
     {
      "date": "2026-09-02",
-     "close": 337.12
+     "close": 140.71
     },
     {
      "date": "2026-09-03",
-     "close": 342.48
+     "close": 149.74
     },
     {
      "date": "2026-09-04",
-     "close": 338.46
+     "close": 147.95
     },
     {
      "date": "2026-09-08",
-     "close": 338.36
+     "close": 153.47
     },
     {
      "date": "2026-09-09",
-     "close": 330.65
+     "close": 147.55
     },
     {
      "date": "2026-09-10",
-     "close": 332.6
+     "close": 148.18
     },
     {
      "date": "2026-09-11",
-     "close": 338.5
+     "close": 151.21
     },
     {
      "date": "2026-09-14",
-     "close": 349.39
+     "close": 148.15
     },
     {
      "date": "2026-09-15",
-     "close": 344.98
+     "close": 143.49
     },
     {
      "date": "2026-09-16",
-     "close": 342.87
+     "close": 150.88
     },
     {
      "date": "2026-09-17",
-     "close": 347.33
+     "close": 154.81
     },
     {
      "date": "2026-09-18",
-     "close": 349.54
+     "close": 152.71
     },
     {
      "date": "2026-09-21",
-     "close": 354.97
+     "close": 151.85
     },
     {
      "date": "2026-09-22",
-     "close": 351.16
+     "close": 154.72
     },
     {
      "date": "2026-09-23",
-     "close": 337.83
+     "close": 148.36
     },
     {
      "date": "2026-09-24",
-     "close": 342.36
+     "close": 148.03
     },
     {
      "date": "2026-09-25",
-     "close": 343.92
+     "close": 148.68
     },
     {
      "date": "2026-09-28",
-     "close": 342.75
+     "close": 145.47
     },
     {
      "date": "2026-09-29",
-     "close": 340.92
+     "close": 149.24
     },
     {
      "date": "2026-09-30",
-     "close": 344.08
+     "close": 150.86
     },
     {
      "date": "2026-10-01",
-     "close": 338.24
+     "close": 148.07
     },
     {
      "date": "2026-10-02",
-     "close": 343.5
+     "close": 158.96
     },
     {
      "date": "2026-10-05",
-     "close": 346.47
+     "close": 171.09
     },
     {
      "date": "2026-10-06",
-     "close": 347.68
+     "close": 171.92
     },
     {
      "date": "2026-10-07",
-     "close": 350.5
+     "close": 167.6
     }
    ],
-   "ret": 2.49,
+   "ret": 20.03,
    "peers": [
     {
-     "ticker": "MSFT",
-     "name": "Microsoft",
-     "domain": "microsoft.com"
+     "ticker": "BA",
+     "name": "Boeing",
+     "domain": "boeing.com"
     },
     {
-     "ticker": "META",
-     "name": "Meta Platforms",
-     "domain": "meta.com"
+     "ticker": "RKLB",
+     "name": "RKLB",
+     "domain": ""
     },
     {
-     "ticker": "AMZN",
-     "name": "Amazon",
-     "domain": "amazon.com"
+     "ticker": "LMT",
+     "name": "LMT",
+     "domain": ""
     }
    ],
    "news": [
     {
-     "title": "Big Tech Keeps Signing Nuclear Deals With the Same Company. Here's Who It Is and Why That Matters More Than Any Single Deal.",
-     "link": "https://finnhub.io/api/news?id=cd1ad68b386ef987171dcb0a672b6e4c2107679166711574ec6873afd363a82b",
+     "title": "Jim Cramer Draws a Line Between Rocket Lab (RKLB) and SpaceX (SPCX)",
+     "link": "https://finnhub.io/api/news?id=418d396fee84cee71ea859d363a749070224483485d33ed43d0c05c2c1650038",
      "source": "Yahoo",
-     "at": "2026-10-08T01:35:00.000Z",
-     "desc": "Constellation Energy just inked another nuclear power deal, underscoring how well the company is positioned to meet demand."
+     "at": "2026-10-08T03:45:42.000Z",
+     "desc": "During the October 1 episode of Mad Money, Jim Cramer discussed Rocket Lab Corporation (NASDAQ:RKLB) while reviewing the Nasdaq 100’s third-quarter performance. He pointed investors toward Space Exploration Technologies…"
     },
     {
-     "title": "Baskin Financial Q3 2026 Newsletter",
-     "link": "https://finnhub.io/api/news?id=eb365455f7a5a9ba78388c93ea3365159c1a0e43e5721bccd6a247400857b59d",
-     "source": "SeekingAlpha",
-     "at": "2026-10-08T00:05:00.000Z",
-     "desc": "AI has caught the imagination of investors who are apparently willing to pay almost any price to participate in the boom."
-    },
-    {
-     "title": "Why NorthWestern Energy Group Stock Soared on Wednesday",
-     "link": "https://finnhub.io/api/news?id=26d6d4a9f6cde5628bf68317ce549ce1ab0c47798bff251e2eccd575fd941494",
+     "title": "SpaceX Reportedly Wants to Borrow $40 Billion for Nvidia Chips Despite a $100 Billion Cash Pile",
+     "link": "https://finnhub.io/api/news?id=cc888a53ea1ee7d37fc1b5660dc03e9a1bf780b2bafb9ee79118bd2a90f8b292",
      "source": "Yahoo",
-     "at": "2026-10-07T23:16:53.000Z",
-     "desc": "The company it's merging with announced a splashy new power supply deal with a tech industry titan."
+     "at": "2026-10-08T03:43:02.000Z",
+     "desc": "Why would the rocket and AI giant add more debt with so much money in the bank?"
     },
     {
-     "title": "What Happens To IBM Stock If Its Slowdown Lasts?",
-     "link": "https://finnhub.io/api/news?id=63751dfd0ba45e251e05f6487254cc994a85f171e9b56f25541cb57bdb614c7e",
+     "title": "Why Tesla (TSLA) Is Up 6.7% After Unveiling Terafab AI Chip Complex And Major New Credit Lines",
+     "link": "https://finnhub.io/api/news?id=a21dec46af7519aa244c90813f338e954f2f242feacce6184a50b36835827403",
      "source": "Yahoo",
-     "at": "2026-10-07T22:47:25.000Z",
-     "desc": "Over the past three months, IBM (IBM) stock lost 26%, while the S&P 500 gained 4.8%. During its July 22, 2026 earnings call, management acknowledged that second quarter results fell short of expectations. Tens of large…"
+     "at": "2026-10-08T03:20:13.000Z",
+     "desc": "In the past week, Tesla reported third-quarter 2026 output of over 464,000 vehicles, deliveries above 486,000, and 13.7 GWh of deployed energy storage while also arranging US$30.00 billion in new unsecured credit facili…"
     },
     {
-     "title": "Banks Under Pressure from Spiking Yields Ahead of Q3 Results",
-     "link": "https://finnhub.io/api/news?id=e32c3ce81ead13bd51895057067c403482588adce9d9d9671a0d42dba7ebd823",
+     "title": "SPCX Stock Climbs Overnight: Jim Cramer Says SpaceX Could Become Nvidia's Largest Customer, Ives Backs $40B Chip Financing",
+     "link": "https://finnhub.io/api/news?id=b8b387287f4fb614b96b275182e2bc2c6cf06033bcc410d0302e9d0d944ad345",
      "source": "Yahoo",
-     "at": "2026-10-07T22:10:00.000Z",
-     "desc": "Higher interest rates are generally seen as beneficial for the likes of JPMorgan and Wells Fargo, but spiking yields of the type we have been experiencing are negative for these banks from several angles."
-    }
-   ]
-  },
-  {
-   "ticker": "AVGO",
-   "name": "Broadcom",
-   "domain": "broadcom.com",
-   "w": 13.57,
-   "holders": [
-    {
-     "name": "Fede",
-     "slot": 1,
-     "w": 23.12
-    }
-   ],
-   "prices": [
-    {
-     "date": "2026-08-26",
-     "close": 355.59
+     "at": "2026-10-08T03:18:52.000Z",
+     "desc": "Cramer forecast $3 billion to $4 billion in monthly compute-rental revenue, highlighting demand from Google and Anthropic."
     },
     {
-     "date": "2026-08-27",
-     "close": 371.54
-    },
-    {
-     "date": "2026-08-28",
-     "close": 368.79
-    },
-    {
-     "date": "2026-08-31",
-     "close": 370.34
-    },
-    {
-     "date": "2026-09-01",
-     "close": 369.68
-    },
-    {
-     "date": "2026-09-02",
-     "close": 367.24
-    },
-    {
-     "date": "2026-09-03",
-     "close": 357.16
-    },
-    {
-     "date": "2026-09-04",
-     "close": 357.9
-    },
-    {
-     "date": "2026-09-08",
-     "close": 368.56
-    },
-    {
-     "date": "2026-09-09",
-     "close": 364.38
-    },
-    {
-     "date": "2026-09-10",
-     "close": 360.83
-    },
-    {
-     "date": "2026-09-11",
-     "close": 361.99
-    },
-    {
-     "date": "2026-09-14",
-     "close": 344.72
-    },
-    {
-     "date": "2026-09-15",
-     "close": 339.27
-    },
-    {
-     "date": "2026-09-16",
-     "close": 339.51
-    },
-    {
-     "date": "2026-09-17",
-     "close": 347.3
-    },
-    {
-     "date": "2026-09-18",
-     "close": 357.61
-    },
-    {
-     "date": "2026-09-21",
-     "close": 362.66
-    },
-    {
-     "date": "2026-09-22",
-     "close": 364.54
-    },
-    {
-     "date": "2026-09-23",
-     "close": 354.99
-    },
-    {
-     "date": "2026-09-24",
-     "close": 350.36
-    },
-    {
-     "date": "2026-09-25",
-     "close": 352.81
-    },
-    {
-     "date": "2026-09-28",
-     "close": 349.57
-    },
-    {
-     "date": "2026-09-29",
-     "close": 355.1
-    },
-    {
-     "date": "2026-09-30",
-     "close": 351.19
-    },
-    {
-     "date": "2026-10-01",
-     "close": 343.64
-    },
-    {
-     "date": "2026-10-02",
-     "close": 355.14
-    },
-    {
-     "date": "2026-10-05",
-     "close": 362.51
-    },
-    {
-     "date": "2026-10-06",
-     "close": 375.81
-    },
-    {
-     "date": "2026-10-07",
-     "close": 376.51
-    }
-   ],
-   "ret": 5.88,
-   "peers": [
-    {
-     "ticker": "QCOM",
-     "name": "Qualcomm",
-     "domain": "qualcomm.com"
-    },
-    {
-     "ticker": "NVDA",
-     "name": "NVIDIA",
-     "domain": "nvidia.com"
-    },
-    {
-     "ticker": "AMD",
-     "name": "AMD",
-     "domain": "amd.com"
-    }
-   ],
-   "news": [
-    {
-     "title": "Baskin Financial Q3 2026 Newsletter",
-     "link": "https://finnhub.io/api/news?id=eb365455f7a5a9ba78388c93ea3365159c1a0e43e5721bccd6a247400857b59d",
-     "source": "SeekingAlpha",
-     "at": "2026-10-08T00:05:00.000Z",
-     "desc": "AI has caught the imagination of investors who are apparently willing to pay almost any price to participate in the boom."
-    },
-    {
-     "title": "Broadcom, Oracle And SpaceX Tap Private Credit For AI Hardware: Report",
-     "link": "https://finnhub.io/api/news?id=26cf7b9a80014b18d22440f9bf485fb8d74828f9595f1ce73c769f2a1edd120b",
+     "title": "Goldman Sachs revamps SpaceX stock estimates before crucial earnings test",
+     "link": "https://finnhub.io/api/news?id=15116e37bdd1a42d2b1fdfa8b2ef1099925cc5bccd2941c35256f91dfc6cc141",
      "source": "Yahoo",
-     "at": "2026-10-07T23:37:58.000Z",
-     "desc": "Broadcom has been working in recent weeks to arrange more than $50 billion in financing for a custom AI chip it is developing with OpenAI, The Wall Street Journal reported."
-    },
-    {
-     "title": "Broadcom (AVGO) Is Seen As Resilient To 32 Gigawatt Power Shortfalls",
-     "link": "https://finnhub.io/api/news?id=9ec579a99d207e301a74fc89486a4641555748dc2b5b22da8be42253ee02e1dd",
-     "source": "Yahoo",
-     "at": "2026-10-07T23:17:11.000Z",
-     "desc": "Morgan Stanley flags Broadcom (NasdaqGS:AVGO) as relatively resilient to U.S. data-center power shortages affecting AI buildouts. The bank frames a 32-gigawatt U.S. data-center power shortfall as a risk for many AI hard…"
-    },
-    {
-     "title": "Broadcom Holds Early Talks About Financing Deal for OpenAI Chips",
-     "link": "https://finnhub.io/api/news?id=3af21f1c5d1f8df13b4d9213e32f59a0fbadf655ca3507a7621b274bf3902bb2",
-     "source": "Yahoo",
-     "at": "2026-10-07T23:07:17.000Z",
-     "desc": "Broadcom Inc., fresh off the launch of a $60 billion debt financing to help fund Anthropic PBC’s artificial intelligence build-out, is already sketching out plans for its next blockbuster deal."
-    },
-    {
-     "title": "What Are AVGO Stock Investors Betting On?",
-     "link": "https://finnhub.io/api/news?id=fe6c2b41f319d645bd53217a37d78a23c4388554fc9dfe3c9e1b3a8fd1ab80fb",
-     "source": "Yahoo",
-     "at": "2026-10-07T22:38:41.000Z",
-     "desc": "Broadcom (AVGO) stock currently trades at 39.5 times its earnings over the past twelve months, a multiple based on adjusted earnings with stock-based pay added back. Paying such a steep price for a single year of profit…"
+     "at": "2026-10-08T02:03:00.000Z",
+     "desc": "SpaceX’s next earnings test may hinge on one business."
     }
    ]
   },
@@ -3561,7 +3561,7 @@
    "ticker": "AMD",
    "name": "AMD",
    "domain": "amd.com",
-   "w": 11.64,
+   "w": 12.91,
    "holders": [
     {
      "name": "Ana",
@@ -3751,12 +3751,12 @@
    "ticker": "WDC",
    "name": "Western Digital",
    "domain": "westerndigital.com",
-   "w": 3.65,
+   "w": 4.05,
    "holders": [
     {
      "name": "Fede",
      "slot": 1,
-     "w": 6.23
+     "w": 7.47
     }
    ],
    "prices": [
@@ -3940,10 +3940,10 @@
  ],
  "monthly": {
   "current": {
-   "name": "Fede",
-   "value": 3.04,
+   "name": "Ana",
+   "value": 2.78,
    "treat": 2,
-   "slot": 1,
+   "slot": 0,
    "month": 10,
    "month_year": 2026,
    "dates": [
@@ -3955,19 +3955,6 @@
    ],
    "series": [
     {
-     "id": "fede",
-     "name": "Fede",
-     "slot": 1,
-     "value": 3.04,
-     "cum": [
-      -0.3382,
-      0.637,
-      2.68,
-      3.1939,
-      3.0375
-     ]
-    },
-    {
      "id": "ana",
      "name": "Ana",
      "slot": 0,
@@ -3978,6 +3965,19 @@
       2.0578,
       2.7614,
       2.7765
+     ]
+    },
+    {
+     "id": "fede",
+     "name": "Fede",
+     "slot": 1,
+     "value": 2.48,
+     "cum": [
+      -0.3382,
+      0.637,
+      2.3416,
+      2.9696,
+      2.4819
      ]
     }
    ]
@@ -4161,7 +4161,7 @@
      "fede"
     ],
     "slot": 1,
-    "value": 2.03
+    "value": 1.69
    },
    {
     "date": "2026-10-02",
@@ -4304,14 +4304,14 @@
   "provisional": [
    {
     "type": "champion_month",
-    "player": "fede",
-    "name": "Fede",
+    "player": "ana",
+    "name": "Ana",
     "date": "2026-10-07",
     "month": "2026-10",
-    "pct": 3.04,
+    "pct": 2.78,
     "key": "champion:2026-10",
     "provisional": true,
-    "slot": 1
+    "slot": 0
    }
   ],
   "record": {
