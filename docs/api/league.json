@@ -1,7 +1,7 @@
 {
  "api": 1,
- "updated": "2026-10-08 07:41",
- "generatedAt": "2026-10-08T05:41:51Z",
+ "updated": "2026-10-08 22:06",
+ "generatedAt": "2026-10-08T20:06:09Z",
  "players": [
   {
    "id": "ana",
@@ -1120,14 +1120,33 @@
        "pct": -0.1368
       }
      ]
+    },
+    {
+     "date": "2026-10-08",
+     "day": -2.3038,
+     "cum": 16.9822,
+     "bd": [
+      {
+       "ticker": "AMD",
+       "pct": -1.558
+      },
+      {
+       "ticker": "NVDA",
+       "pct": -0.5406
+      },
+      {
+       "ticker": "GOOGL",
+       "pct": -0.2051
+      }
+     ]
     }
    ],
    "months": [
     {
      "month": 10,
      "month_year": 2026,
-     "ret": 2.6768,
-     "cum": 19.7408
+     "ret": 0.3113,
+     "cum": 16.9822
     },
     {
      "month": 9,
@@ -1151,15 +1170,15 @@
    "holdings": [
     {
      "ticker": "AMD",
-     "w": 43.98
+     "w": 43.37
     },
     {
      "ticker": "GOOGL",
-     "w": 35.8
+     "w": 36.5
     },
     {
      "ticker": "NVDA",
-     "w": 20.21
+     "w": 20.13
     }
    ]
   },
@@ -2824,14 +2843,41 @@
      "end": 5527.06,
      "flow": 0.0,
      "pnl": -26.3
+    },
+    {
+     "date": "2026-10-08",
+     "day": -2.577,
+     "cum": 10.9386,
+     "bd": [
+      {
+       "ticker": "SPCX",
+       "pct": -1.3991
+      },
+      {
+       "ticker": "NVDA",
+       "pct": -0.7588
+      },
+      {
+       "ticker": "WDC",
+       "pct": -0.2192
+      },
+      {
+       "ticker": "GOOGL",
+       "pct": -0.1999
+      }
+     ],
+     "start": 5527.06,
+     "end": 5384.62,
+     "flow": 0.0,
+     "pnl": -142.43
     }
    ],
    "months": [
     {
      "month": 10,
      "month_year": 2026,
-     "ret": 2.4819,
-     "cum": 13.8731
+     "ret": -0.1591,
+     "cum": 10.9386
     },
     {
      "month": 9,
@@ -2855,26 +2901,26 @@
    "holdings": [
     {
      "ticker": "SPCX",
-     "w": 33.97
+     "w": 33.43
     },
     {
      "ticker": "GOOGL",
-     "w": 32.3
+     "w": 32.96
     },
     {
      "ticker": "NVDA",
-     "w": 26.26
+     "w": 26.17
     },
     {
      "ticker": "WDC",
-     "w": 7.47
+     "w": 7.45
     }
    ],
    "goal": {
     "target": 14000.0,
-    "pct": 35.23,
+    "pct": 34.28,
     "currency": "USD",
-    "value": 4932.34
+    "value": 4799.85
    }
   }
  ],
@@ -2884,7 +2930,7 @@
   "deadline": "2027-08-01",
   "days": 297,
   "fx": {
-   "USD": 0.8924
+   "USD": 0.8914
   }
  },
  "operations": [
@@ -2956,23 +3002,23 @@
  "allocation": [
   {
    "ticker": "GOOGL",
-   "w": 34.12
+   "w": 34.8
   },
   {
    "ticker": "NVDA",
-   "w": 23.12
+   "w": 23.03
   },
   {
    "ticker": "AMD",
-   "w": 22.86
+   "w": 22.55
   },
   {
    "ticker": "SPCX",
-   "w": 16.31
+   "w": 16.04
   },
   {
    "ticker": "WDC",
-   "w": 3.59
+   "w": 3.57
   }
  ],
  "market": null,
@@ -2981,24 +3027,20 @@
    "ticker": "GOOGL",
    "name": "Alphabet",
    "domain": "abc.xyz",
-   "w": 34.12,
+   "w": 34.8,
    "holders": [
     {
      "name": "Ana",
      "slot": 0,
-     "w": 35.8
+     "w": 36.5
     },
     {
      "name": "Fede",
      "slot": 1,
-     "w": 32.3
+     "w": 32.96
     }
    ],
    "prices": [
-    {
-     "date": "2026-08-26",
-     "close": 342.0
-    },
     {
      "date": "2026-08-27",
      "close": 340.65
@@ -3114,9 +3156,13 @@
     {
      "date": "2026-10-07",
      "close": 350.5
+    },
+    {
+     "date": "2026-10-08",
+     "close": 348.29
     }
    ],
-   "ret": 2.49,
+   "ret": 2.24,
    "peers": [
     {
      "ticker": "MSFT",
@@ -3136,39 +3182,39 @@
    ],
    "news": [
     {
-     "title": "Big Tech Keeps Signing Nuclear Deals With the Same Company. Here's Who It Is and Why That Matters More Than Any Single Deal.",
-     "link": "https://finnhub.io/api/news?id=cd1ad68b386ef987171dcb0a672b6e4c2107679166711574ec6873afd363a82b",
-     "source": "Yahoo",
-     "at": "2026-10-08T01:35:00.000Z",
-     "desc": "Constellation Energy just inked another nuclear power deal, underscoring how well the company is positioned to meet demand."
+     "title": "Exploring the top movers within the dow jones index during today's session.",
+     "link": "https://finnhub.io/api/news?id=d02e79ecef043a92ebba46248d20db4281c6aa7162d4da8ddbe12ca8c3b04577",
+     "source": "ChartMill",
+     "at": "2026-10-08T19:10:15.000Z",
+     "desc": "Stay updated with the movement of dow jones stocks in today's session. Discover which dow jones stocks are making waves on Thursday."
     },
     {
-     "title": "Baskin Financial Q3 2026 Newsletter",
-     "link": "https://finnhub.io/api/news?id=eb365455f7a5a9ba78388c93ea3365159c1a0e43e5721bccd6a247400857b59d",
-     "source": "SeekingAlpha",
-     "at": "2026-10-08T00:05:00.000Z",
-     "desc": "AI has caught the imagination of investors who are apparently willing to pay almost any price to participate in the boom."
+     "title": "Southlight Services Announces Our Strategic Collaboration with Google to Deliver Google Voice Carrier Link Across North America",
+     "link": "https://finnhub.io/api/news?id=b7a7ac6fc81bbed9453d7078fb5a908108e6b39035ebfaa043f8809b587c8543",
+     "source": "Yahoo",
+     "at": "2026-10-08T17:24:00.000Z",
+     "desc": "Southlight Services, a leading provider of digital transformation and telecommunications solutions, today announced a strategic collaboration with Google that significantly expands its role in delivering Google's enterp…"
     },
     {
-     "title": "Why NorthWestern Energy Group Stock Soared on Wednesday",
-     "link": "https://finnhub.io/api/news?id=26d6d4a9f6cde5628bf68317ce549ce1ab0c47798bff251e2eccd575fd941494",
+     "title": "How Jeff Bezos added $102 billion to his fortune in one month",
+     "link": "https://finnhub.io/api/news?id=0a1449109ea69c6080a87f4a62122bde7cbcdb1873fc8abef298ad9038975165",
      "source": "Yahoo",
-     "at": "2026-10-07T23:16:53.000Z",
-     "desc": "The company it's merging with announced a splashy new power supply deal with a tech industry titan."
+     "at": "2026-10-08T17:07:00.000Z",
+     "desc": "The Amazon founder’s September surge came entirely from two private holdings."
     },
     {
-     "title": "What Happens To IBM Stock If Its Slowdown Lasts?",
-     "link": "https://finnhub.io/api/news?id=63751dfd0ba45e251e05f6487254cc994a85f171e9b56f25541cb57bdb614c7e",
+     "title": "58 Analysts, Zero Sells: Amazon’s Price Target Is a Rare Consensus",
+     "link": "https://finnhub.io/api/news?id=2863e5f02a03560b233d72e70bd93d9e8b367b58904bbf6718ab1acf3ecaeeed",
      "source": "Yahoo",
-     "at": "2026-10-07T22:47:25.000Z",
-     "desc": "Over the past three months, IBM (IBM) stock lost 26%, while the S&P 500 gained 4.8%. During its July 22, 2026 earnings call, management acknowledged that second quarter results fell short of expectations. Tens of large…"
+     "at": "2026-10-08T16:30:51.000Z",
+     "desc": "Fifty-eight analysts cover Amazon and not one rates it a sell, yet the stock still sits well below its 52-week high while free cash flow turns negative and capital spending surges to levels that would make most CFOs fli…"
     },
     {
-     "title": "Banks Under Pressure from Spiking Yields Ahead of Q3 Results",
-     "link": "https://finnhub.io/api/news?id=e32c3ce81ead13bd51895057067c403482588adce9d9d9671a0d42dba7ebd823",
+     "title": "Apple Rises 24% YTD: Should You Buy, Sell or Hold the AAPL Stock?",
+     "link": "https://finnhub.io/api/news?id=d8198785af06b9d16ca957c2452cee162f4ac74103f5d3c648f23a87bf208ddb",
      "source": "Yahoo",
-     "at": "2026-10-07T22:10:00.000Z",
-     "desc": "Higher interest rates are generally seen as beneficial for the likes of JPMorgan and Wells Fargo, but spiking yields of the type we have been experiencing are negative for these banks from several angles."
+     "at": "2026-10-08T16:29:00.000Z",
+     "desc": "AAPL shares have surged 24% YTD, fueled by iPhone demand, Services growth and AI prospects. Yet premium valuation and supply constraints warrant caution."
     }
    ]
   },
@@ -3176,24 +3222,20 @@
    "ticker": "NVDA",
    "name": "NVIDIA",
    "domain": "nvidia.com",
-   "w": 23.12,
+   "w": 23.03,
    "holders": [
     {
      "name": "Fede",
      "slot": 1,
-     "w": 26.26
+     "w": 26.17
     },
     {
      "name": "Ana",
      "slot": 0,
-     "w": 20.21
+     "w": 20.13
     }
    ],
    "prices": [
-    {
-     "date": "2026-08-26",
-     "close": 209.66
-    },
     {
      "date": "2026-08-27",
      "close": 227.98
@@ -3309,9 +3351,13 @@
     {
      "date": "2026-10-07",
      "close": 237.47
+    },
+    {
+     "date": "2026-10-08",
+     "close": 230.48
     }
    ],
-   "ret": 13.26,
+   "ret": 1.1,
    "peers": [
     {
      "ticker": "AMD",
@@ -3331,39 +3377,39 @@
    ],
    "news": [
     {
-     "title": "SpaceX Reportedly Wants to Borrow $40 Billion for Nvidia Chips Despite a $100 Billion Cash Pile",
-     "link": "https://finnhub.io/api/news?id=cc888a53ea1ee7d37fc1b5660dc03e9a1bf780b2bafb9ee79118bd2a90f8b292",
-     "source": "Yahoo",
-     "at": "2026-10-08T03:43:02.000Z",
-     "desc": "Why would the rocket and AI giant add more debt with so much money in the bank?"
+     "title": "Exploring the top movers within the dow jones index during today's session.",
+     "link": "https://finnhub.io/api/news?id=d02e79ecef043a92ebba46248d20db4281c6aa7162d4da8ddbe12ca8c3b04577",
+     "source": "ChartMill",
+     "at": "2026-10-08T19:10:15.000Z",
+     "desc": "Stay updated with the movement of dow jones stocks in today's session. Discover which dow jones stocks are making waves on Thursday."
     },
     {
-     "title": "MSFT Stock On 4-Day Winning Streak: Microsoft Takes On Apple's Macs With Nvidia-Powered Surface Ultra, More On-Device AI",
-     "link": "https://finnhub.io/api/news?id=268d09bdbd448ce19249fa8a75b58c90a52f2dbad958d1f9a54846bbc108ef59",
-     "source": "Yahoo",
-     "at": "2026-10-08T03:28:43.000Z",
-     "desc": "Microsoft is pushing Windows deeper into the local-AI era with Nvidia-powered Surface, on-device models and hybrid Copilot features."
+     "title": "Looking for the most active stocks in the S&P500 index on Thursday?",
+     "link": "https://finnhub.io/api/news?id=e8f0d85eb95a24026ef2036ad49410e7fd9a4f34d744d8ecfa17937b899da51a",
+     "source": "ChartMill",
+     "at": "2026-10-08T18:05:04.000Z",
+     "desc": "Stay informed about the most active stocks in the S&P500 index on Thursday's session. Discover the stocks that are generating the highest trading volume and driving market activity."
     },
     {
-     "title": "CoreWeave Can Raise Prices Twice in Three Months. Can It Afford to Keep Building?",
-     "link": "https://finnhub.io/api/news?id=ebd1ea07ee8690c5ed2f0c83f7360c52763a5f622686507b6cc406ac13ec7759",
-     "source": "Yahoo",
-     "at": "2026-10-08T03:26:47.000Z",
-     "desc": "CoreWeave Inc. (NASDAQ:CRWV) has raised per-hour GPU prices twice, first by 25% across all products in July 2026 and then by another 10% over the past two to three months. UBS analyst Karl Keirstead sees the pricing gai…"
+     "title": "These stocks are making the most noise in today's session.",
+     "link": "https://finnhub.io/api/news?id=486ec9b62192404986b037c11f7a81fd99615022a57cd4f009110a968bcde536",
+     "source": "ChartMill",
+     "at": "2026-10-08T18:00:00.000Z",
+     "desc": "Stay updated with the latest market activity on Thursday. Explore the most active stocks in today's session and stay informed about the stocks that are in the spotlight."
     },
     {
-     "title": "Fed Minutes Suggest That More Interest Rate Hikes Could Be Necessary to Calm Persistent Inflation",
-     "link": "https://finnhub.io/api/news?id=58ddf2d8da3d4da09512b933f3000f3f6a927b6b58df01dc5b8b9f7544268ac0",
+     "title": "AI compute needs are 'going to be insane': Box CEO Aaron Levie",
+     "link": "https://finnhub.io/api/news?id=097ee8e2efa14d09cdd19d6a820dff2d18ace8af911a5e2a01900493872be9fd",
      "source": "Yahoo",
-     "at": "2026-10-08T03:19:51.000Z",
-     "desc": "The Fed is focused on taming inflation, but will it have to raise rates to do it?"
+     "at": "2026-10-08T17:56:14.000Z",
+     "desc": "Maybe the AI bulls are right: We are early innings in the AI boom, and bubble fears are way overblown."
     },
     {
-     "title": "SPCX Stock Climbs Overnight: Jim Cramer Says SpaceX Could Become Nvidia's Largest Customer, Ives Backs $40B Chip Financing",
-     "link": "https://finnhub.io/api/news?id=b8b387287f4fb614b96b275182e2bc2c6cf06033bcc410d0302e9d0d944ad345",
+     "title": "Palantir Looks Like a Consulting Company. Its Numbers Tell a Different Story.",
+     "link": "https://finnhub.io/api/news?id=0d56efe9debf9d0b56130102fa21be3e9bf10771c8e0a85eeef74111cdfa438b",
      "source": "Yahoo",
-     "at": "2026-10-08T03:18:52.000Z",
-     "desc": "Cramer forecast $3 billion to $4 billion in monthly compute-rental revenue, highlighting demand from Google and Anthropic."
+     "at": "2026-10-08T17:35:00.000Z",
+     "desc": "Palantir is often criticized by skeptics of being a consulting firm and not a software-as-a-service company."
     }
    ]
   },
@@ -3371,19 +3417,15 @@
    "ticker": "AMD",
    "name": "AMD",
    "domain": "amd.com",
-   "w": 22.86,
+   "w": 22.55,
    "holders": [
     {
      "name": "Ana",
      "slot": 0,
-     "w": 43.98
+     "w": 43.37
     }
    ],
    "prices": [
-    {
-     "date": "2026-08-26",
-     "close": 480.93
-    },
     {
      "date": "2026-08-27",
      "close": 476.67
@@ -3499,9 +3541,13 @@
     {
      "date": "2026-10-07",
      "close": 645.86
+    },
+    {
+     "date": "2026-10-08",
+     "close": 620.68
     }
    ],
-   "ret": 34.29,
+   "ret": 30.21,
    "peers": [
     {
      "ticker": "NVDA",
@@ -3521,39 +3567,39 @@
    ],
    "news": [
     {
-     "title": "Why Did HPE, ANET, NTAP Stocks Surge To 52-Week Highs Today?",
-     "link": "https://finnhub.io/api/news?id=ba7ea5d56061d072f176055fd9ce8a167093e70e790096d090594a7bda98a2a5",
+     "title": "AI compute needs are 'going to be insane': Box CEO Aaron Levie",
+     "link": "https://finnhub.io/api/news?id=097ee8e2efa14d09cdd19d6a820dff2d18ace8af911a5e2a01900493872be9fd",
      "source": "Yahoo",
-     "at": "2026-10-08T03:52:39.000Z",
-     "desc": "Investors looked beyond major cloud providers and focused on the hardware, networking and storage companies supporting the next wave of AI deployments."
+     "at": "2026-10-08T17:56:14.000Z",
+     "desc": "Maybe the AI bulls are right: We are early innings in the AI boom, and bubble fears are way overblown."
     },
     {
-     "title": "AMD (AMD) Stock May Be Fully Valued On Citi's $800 Target",
-     "link": "https://finnhub.io/api/news?id=c62e889f0b7d0186b19fdc4c7cbd7f4d61b5cc94c50eae4ae56a61af27d5ad99",
+     "title": "The AI Trade Is Alive and Well as Bond Yields Keep Rising",
+     "link": "https://finnhub.io/api/news?id=b33cd4c45f87f79dfa6fbcba907be06a03b2243abe80c16cd7006fa3ffb701e0",
      "source": "Yahoo",
-     "at": "2026-10-08T03:17:01.000Z",
-     "desc": "Advanced Micro Devices has turned into one of the market’s most closely watched AI chip stories, and after a share price near US$645.86, the key question is whether that level can be explained by the cash flows the busi…"
+     "at": "2026-10-08T17:53:00.000Z",
+     "desc": "The spike in the 10-Year Treasury is alarming. But investors can take solace in the fact that AI spending will lead to strong earnings for chips and other tech companies."
     },
     {
-     "title": "S&P 500 And Nasdaq 100 Slip From Record Highs Amid Pressure From Soaring Treasury Yields — SPCX, AMD, NVDA, MRVL In Focus",
-     "link": "https://finnhub.io/api/news?id=50352b28347a16ef361adee73323be4f5be5b71231708705135708bc7bebdb49",
+     "title": "AMD vs. Intel: Which Chip Stock Has More Upside From Here?",
+     "link": "https://finnhub.io/api/news?id=98020f9bfdb050361c5c8f0c2941350ed505cd932925f96ab5709590d338163e",
      "source": "Yahoo",
-     "at": "2026-10-07T22:50:51.000Z",
-     "desc": "The 30-year bond yield hit its highest level since May 2002 at 5.732%."
+     "at": "2026-10-08T16:50:00.000Z",
+     "desc": "They are both profiting from the AI boom, but one of them looks more attractive right now."
     },
     {
-     "title": "What Are AVGO Stock Investors Betting On?",
-     "link": "https://finnhub.io/api/news?id=fe6c2b41f319d645bd53217a37d78a23c4388554fc9dfe3c9e1b3a8fd1ab80fb",
+     "title": "Meta Muse gives AMD and Intel investors a reason to cheer",
+     "link": "https://finnhub.io/api/news?id=5ef1fe61dbb9087e761b798c2bb6d9b295b8745f6e19ca4c69f2effe97d7464d",
      "source": "Yahoo",
-     "at": "2026-10-07T22:38:41.000Z",
-     "desc": "Broadcom (AVGO) stock currently trades at 39.5 times its earnings over the past twelve months, a multiple based on adjusted earnings with stock-based pay added back. Paying such a steep price for a single year of profit…"
+     "at": "2026-10-08T16:33:00.000Z",
+     "desc": "Something is changing in the AI trade, and investors are starting to notice."
     },
     {
-     "title": "What Is Really Behind Micron Stock's Run?",
-     "link": "https://finnhub.io/api/news?id=56789c56d46d94c18e2e6fb4cfbe035fac0296953fc1f1070d05812ee4e4b29c",
+     "title": "What could trigger a US debt crisis? Sozzi discusses with economist Kenneth Rogoff",
+     "link": "https://finnhub.io/api/news?id=ba7dba3492558ae45a4c107b3c7791a564e600f8ffb29d9f44734d43b6103ca1",
      "source": "Yahoo",
-     "at": "2026-10-07T22:25:39.000Z",
-     "desc": "Investors may still think profit at Micron Technology (MU) moves with memory chip prices. The company did run an operating loss three years ago. Yet the stock returned 457% in the past twelve months, a climb that appear…"
+     "at": "2026-10-08T16:03:19.000Z",
+     "desc": "Yahoo Finance Executive Editor Brian Sozzi takes a look at the biggest stories as the trading day kicks off, weighing in on PepsiCo's (PEP) latest earnings results, General Motors' (GM) latest update, and more. Sozzi al…"
     }
    ]
   },
@@ -3561,19 +3607,15 @@
    "ticker": "SPCX",
    "name": "SpaceX",
    "domain": "spacex.com",
-   "w": 16.31,
+   "w": 16.04,
    "holders": [
     {
      "name": "Fede",
      "slot": 1,
-     "w": 33.97
+     "w": 33.43
     }
    ],
    "prices": [
-    {
-     "date": "2026-08-26",
-     "close": 139.63
-    },
     {
      "date": "2026-08-27",
      "close": 140.87
@@ -3689,9 +3731,13 @@
     {
      "date": "2026-10-07",
      "close": 167.6
+    },
+    {
+     "date": "2026-10-08",
+     "close": 160.57
     }
    ],
-   "ret": 20.03,
+   "ret": 13.98,
    "peers": [
     {
      "ticker": "BA",
@@ -3711,39 +3757,39 @@
    ],
    "news": [
     {
-     "title": "Jim Cramer Draws a Line Between Rocket Lab (RKLB) and SpaceX (SPCX)",
-     "link": "https://finnhub.io/api/news?id=418d396fee84cee71ea859d363a749070224483485d33ed43d0c05c2c1650038",
+     "title": "Oracle stock falls on more debt to fund AI chip buying, Open AI revenue disclosure",
+     "link": "https://finnhub.io/api/news?id=365876ff2d29ee64f387574fd6b7079725dc7c9d226fdb59c768e438d32400b5",
      "source": "Yahoo",
-     "at": "2026-10-08T03:45:42.000Z",
-     "desc": "During the October 1 episode of Mad Money, Jim Cramer discussed Rocket Lab Corporation (NASDAQ:RKLB) while reviewing the Nasdaq 100’s third-quarter performance. He pointed investors toward Space Exploration Technologies…"
+     "at": "2026-10-08T18:02:33.000Z",
+     "desc": "The AI build-out is getting expensive."
     },
     {
-     "title": "SpaceX Reportedly Wants to Borrow $40 Billion for Nvidia Chips Despite a $100 Billion Cash Pile",
-     "link": "https://finnhub.io/api/news?id=cc888a53ea1ee7d37fc1b5660dc03e9a1bf780b2bafb9ee79118bd2a90f8b292",
+     "title": "Nvidia and SpaceX: Top Analyst Daniel Ives Says These 2 AI Giants Have More Room to Run",
+     "link": "https://finnhub.io/api/news?id=bd9f326fe88bdbdccb4ed56c3ec60228c02d912931c67f7f41734ea34075573c",
      "source": "Yahoo",
-     "at": "2026-10-08T03:43:02.000Z",
-     "desc": "Why would the rocket and AI giant add more debt with so much money in the bank?"
+     "at": "2026-10-08T17:20:00.000Z",
+     "desc": "The AI industry continues to expand at a pace that has raised expectations for its long-term economic impact. Of the 13 companies on Wall Street valued at more than $1 trillion, 11 have significant exposure to the AI bo…"
     },
     {
-     "title": "Why Tesla (TSLA) Is Up 6.7% After Unveiling Terafab AI Chip Complex And Major New Credit Lines",
-     "link": "https://finnhub.io/api/news?id=a21dec46af7519aa244c90813f338e954f2f242feacce6184a50b36835827403",
+     "title": "American Airlines to equip over 1,000 aircraft with SpaceX’s Starlink Wi-Fi",
+     "link": "https://finnhub.io/api/news?id=6dafe28b7733d04efa97c398c15285d87a53104e316cd781325bc1ab0f792e58",
      "source": "Yahoo",
-     "at": "2026-10-08T03:20:13.000Z",
-     "desc": "In the past week, Tesla reported third-quarter 2026 output of over 464,000 vehicles, deliveries above 486,000, and 13.7 GWh of deployed energy storage while also arranging US$30.00 billion in new unsecured credit facili…"
+     "at": "2026-10-08T17:12:02.000Z",
+     "desc": "Investing.com -- American Airlines Group (NASDAQ:AAL) plans to equip its entire mainline fleet with SpaceX's (NASDAQ:SPCX) Starlink satellite internet service, significantly expanding its high-speed connectivity initiat…"
     },
     {
-     "title": "SPCX Stock Climbs Overnight: Jim Cramer Says SpaceX Could Become Nvidia's Largest Customer, Ives Backs $40B Chip Financing",
-     "link": "https://finnhub.io/api/news?id=b8b387287f4fb614b96b275182e2bc2c6cf06033bcc410d0302e9d0d944ad345",
+     "title": "AST SpaceMobile Sinks 7% as Satellite Rival Clears Regulatory Hurdle; Rocket Lab Drops 4%, Planet Labs Falls 5%",
+     "link": "https://finnhub.io/api/news?id=f036c6be9c02f5c0b58dad1a69fa77d65b646c1ea7e8290548d1e508d9376ddc",
      "source": "Yahoo",
-     "at": "2026-10-08T03:18:52.000Z",
-     "desc": "Cramer forecast $3 billion to $4 billion in monthly compute-rental revenue, highlighting demand from Google and Anthropic."
+     "at": "2026-10-08T16:43:31.000Z",
+     "desc": "A regulator just handed SpaceX permission to reach ordinary phones without touching a wireless carrier, and that single order is reshaping which space companies investors trust with their money."
     },
     {
-     "title": "Goldman Sachs revamps SpaceX stock estimates before crucial earnings test",
-     "link": "https://finnhub.io/api/news?id=15116e37bdd1a42d2b1fdfa8b2ef1099925cc5bccd2941c35256f91dfc6cc141",
+     "title": "Chipotle, Starbucks, Palantir, Intel, SpaceX, Wolfspeed, and More Stocks That Explain Today’s Market",
+     "link": "https://finnhub.io/api/news?id=2b8797c240c040153f37eb29a69a6ef97c497a4fd948366170ac851986f840c2",
      "source": "Yahoo",
-     "at": "2026-10-08T02:03:00.000Z",
-     "desc": "SpaceX’s next earnings test may hinge on one business."
+     "at": "2026-10-08T16:38:00.000Z",
+     "desc": "Chipotle trades higher following a report that Starbucks had looked into a possible takeover of the burrito chain."
     }
    ]
   },
@@ -3751,19 +3797,15 @@
    "ticker": "WDC",
    "name": "Western Digital",
    "domain": "westerndigital.com",
-   "w": 3.59,
+   "w": 3.57,
    "holders": [
     {
      "name": "Fede",
      "slot": 1,
-     "w": 7.47
+     "w": 7.45
     }
    ],
    "prices": [
-    {
-     "date": "2026-08-26",
-     "close": 468.88
-    },
     {
      "date": "2026-08-27",
      "close": 462.0
@@ -3879,9 +3921,13 @@
     {
      "date": "2026-10-07",
      "close": 405.42
+    },
+    {
+     "date": "2026-10-08",
+     "close": 393.31
     }
    ],
-   "ret": -13.53,
+   "ret": -14.87,
    "peers": [
     {
      "ticker": "MU",
@@ -3901,39 +3947,39 @@
    ],
    "news": [
     {
+     "title": "Western Digital Crushed the S&P 500 Over 10 Years. Now AI Is Changing Everything",
+     "link": "https://finnhub.io/api/news?id=d54b0be258041b9da4d86ed68dc2918fe58f4016773d9db9ea827d413837968a",
+     "source": "Yahoo",
+     "at": "2026-10-08T16:45:14.000Z",
+     "desc": "Western Digital survived two brutal price halvings, a five-year dividend blackout, and an activist breakup campaign before AI storage demand rewrote the story. Whether that rewrite holds depends on one unpredictable cus…"
+    },
+    {
+     "title": "WD to Announce First Quarter Fiscal Year 2027 Financial Results on October 22, 2026",
+     "link": "https://finnhub.io/api/news?id=970e1f39c2f4560ddf6852c7a3ccb1e5e85899bd17d937387d11beef08531b56",
+     "source": "Yahoo",
+     "at": "2026-10-08T13:00:00.000Z",
+     "desc": "SAN JOSE, Calif., October 08, 2026--Western Digital Corporation (Nasdaq: WDC) plans to announce its first quarter fiscal year 2027 financial results after the market closes on Thursday, October 22, 2026. The company wil…"
+    },
+    {
+     "title": "3 Market-Beating Stocks Worth Investigating",
+     "link": "https://finnhub.io/api/news?id=a79ebe4515d92c716ba015d4fb222a5fefcf63b21de62493485afea7e23772e4",
+     "source": "Yahoo",
+     "at": "2026-10-08T12:00:09.000Z",
+     "desc": "The best-performing stocks typically have robust sales growth, increasing margins, and rising returns on capital, and those that can maintain this trifecta year in and year out often become the legends of the investing…"
+    },
+    {
+     "title": "Zacks.com featured highlights Seagate Technology, Western Digital and Dell",
+     "link": "https://finnhub.io/api/news?id=6c0552d86ff7935845c7b1551952d3cb91a83ac0987c630990ad67b620f3b427",
+     "source": "Yahoo",
+     "at": "2026-10-08T06:16:00.000Z",
+     "desc": "Seagate Technology, Western Digital and Dell have been highlighted in this Screen of The Week article."
+    },
+    {
      "title": "What Is Really Behind Micron Stock's Run?",
      "link": "https://finnhub.io/api/news?id=56789c56d46d94c18e2e6fb4cfbe035fac0296953fc1f1070d05812ee4e4b29c",
      "source": "Yahoo",
      "at": "2026-10-07T22:25:39.000Z",
      "desc": "Investors may still think profit at Micron Technology (MU) moves with memory chip prices. The company did run an operating loss three years ago. Yet the stock returned 457% in the past twelve months, a climb that appear…"
-    },
-    {
-     "title": "Is Western Digital (WDC) Fully Valued After Toshiba's HDD Expansion Plan?",
-     "link": "https://finnhub.io/api/news?id=cc8d4598ab9e15d1cdac4bc6ea3f9d8762b18ee6789dcf7bcaed1664c36acb40",
-     "source": "Yahoo",
-     "at": "2026-10-07T22:16:51.000Z",
-     "desc": "Western Digital (WDC) is back in focus after Toshiba outlined plans to almost double hard disk drive output for AI data centers, a move that triggered a sharp swing in the stock. Western Digital’s share price has pulled…"
-    },
-    {
-     "title": "SanDisk's Forecast And Its Chart Now Say The Same Thing. Pay Attention.",
-     "link": "https://finnhub.io/api/news?id=3cc2a6891003e790cdc7dfed0dec55c049f751c44b193a5525810f00e0979c90",
-     "source": "Yahoo",
-     "at": "2026-10-07T20:05:12.000Z",
-     "desc": "SanDisk (SNDK) issued its fiscal first-quarter forecast on August 5, 2026. The stock fell at first, but as of October 6, 2026, it sits 16.3% above its close before that release. Over the same period, the S&P 500 added 1…"
-    },
-    {
-     "title": "How Much Should One Number Worry Seagate Technology Stock Holders?",
-     "link": "https://finnhub.io/api/news?id=1f287877d1033f99c28692a42f23cee522293327bd3a597d1706dcde892a7ee5",
-     "source": "Yahoo",
-     "at": "2026-10-07T19:45:17.000Z",
-     "desc": "Seagate Technology (STX) converted 34.7% of its revenue into operating profit over the last twelve months, up from 21.1% a year earlier. Investors should pay close attention to this operating margin because the stock cu…"
-    },
-    {
-     "title": "Western Digital Stock Has One Thing Left To Prove",
-     "link": "https://finnhub.io/api/news?id=3cc0284dd0a34c88703454fc0eeeb3b69ad151985d88c18e43ee3b4d35575a77",
-     "source": "Yahoo",
-     "at": "2026-10-07T18:44:09.000Z",
-     "desc": "Western Digital (WDC) could soon see fresh demand from a new base of customers. Management notes that AI labs, newer cloud companies, and an autonomous vehicle maker are increasingly seeking the manufacturer out for sto…"
     }
    ]
   }
@@ -3941,8 +3987,8 @@
  "monthly": {
   "current": {
    "name": "Ana",
-   "value": 2.68,
-   "treat": 2,
+   "value": 0.31,
+   "treat": 1,
    "slot": 0,
    "month": 10,
    "month_year": 2026,
@@ -3951,33 +3997,36 @@
     "2026-10-02",
     "2026-10-05",
     "2026-10-06",
-    "2026-10-07"
+    "2026-10-07",
+    "2026-10-08"
    ],
    "series": [
     {
      "id": "ana",
      "name": "Ana",
      "slot": 0,
-     "value": 2.68,
+     "value": 0.31,
      "cum": [
       -0.0435,
       1.4503,
       2.0578,
       2.7614,
-      2.6768
+      2.6768,
+      0.3113
      ]
     },
     {
      "id": "fede",
      "name": "Fede",
      "slot": 1,
-     "value": 2.48,
+     "value": -0.16,
      "cum": [
       -0.3382,
       0.637,
       2.3416,
       2.9696,
-      2.4819
+      2.4819,
+      -0.1591
      ]
     }
    ]
@@ -4130,6 +4179,17 @@
   "month": 10,
   "month_year": 2026,
   "rows": [
+   {
+    "date": "2026-10-08",
+    "names": [
+     "Ana"
+    ],
+    "ids": [
+     "ana"
+    ],
+    "slot": 0,
+    "value": -2.3
+   },
    {
     "date": "2026-10-07",
     "names": [
@@ -4306,9 +4366,9 @@
     "type": "champion_month",
     "player": "ana",
     "name": "Ana",
-    "date": "2026-10-07",
+    "date": "2026-10-08",
     "month": "2026-10",
-    "pct": 2.68,
+    "pct": 0.31,
     "key": "champion:2026-10",
     "provisional": true,
     "slot": 0
