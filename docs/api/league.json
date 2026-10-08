@@ -1,7 +1,7 @@
 {
  "api": 1,
- "updated": "2026-10-08 22:06",
- "generatedAt": "2026-10-08T20:06:09Z",
+ "updated": "2026-10-08 23:08",
+ "generatedAt": "2026-10-08T21:08:44Z",
  "players": [
   {
    "id": "ana",
@@ -2918,9 +2918,9 @@
    ],
    "goal": {
     "target": 14000.0,
-    "pct": 34.28,
+    "pct": 34.3,
     "currency": "USD",
-    "value": 4799.85
+    "value": 4801.47
    }
   }
  ],
@@ -2930,7 +2930,7 @@
   "deadline": "2027-08-01",
   "days": 297,
   "fx": {
-   "USD": 0.8914
+   "USD": 0.8917
   }
  },
  "operations": [
@@ -3182,6 +3182,20 @@
    ],
    "news": [
     {
+     "title": "Google Workspace Gets AI Agents. What It Means for Alphabet Stock.",
+     "link": "https://finnhub.io/api/news?id=18a6e4f3fd83a2148005016c7c660e9c2e3f004463b2b722b67b304b5f82b05b",
+     "source": "Yahoo",
+     "at": "2026-10-08T19:26:00.000Z",
+     "desc": "Google’s new Gemini agent can complete tasks across workplace apps, intensifying competition with OpenAI and Microsoft for business customers."
+    },
+    {
+     "title": "Exclusive: Moomoo adds 24/7 Apple Pay, Google Pay deposits via Visa, Checkout.com",
+     "link": "https://finnhub.io/api/news?id=e0b736f5c8e8135e15a5915d53f7eca8718785231f5772ef8b69680bfb642e24",
+     "source": "Yahoo",
+     "at": "2026-10-08T19:15:58.000Z",
+     "desc": "Investing.com -- Moomoo, the trading platform owned by Nasdaq-listed Futu Holdings, is rolling out real-time account deposits through Apple Pay and Google Pay in partnership with Visa and Checkout.com, Investing.com has…"
+    },
+    {
      "title": "Exploring the top movers within the dow jones index during today's session.",
      "link": "https://finnhub.io/api/news?id=d02e79ecef043a92ebba46248d20db4281c6aa7162d4da8ddbe12ca8c3b04577",
      "source": "ChartMill",
@@ -3189,32 +3203,18 @@
      "desc": "Stay updated with the movement of dow jones stocks in today's session. Discover which dow jones stocks are making waves on Thursday."
     },
     {
-     "title": "Southlight Services Announces Our Strategic Collaboration with Google to Deliver Google Voice Carrier Link Across North America",
-     "link": "https://finnhub.io/api/news?id=b7a7ac6fc81bbed9453d7078fb5a908108e6b39035ebfaa043f8809b587c8543",
+     "title": "Trump Made His Biggest August Buy a Tech Giant That Jumped Over 30% in Seven Weeks",
+     "link": "https://finnhub.io/api/news?id=8f1bc3071b3abaa2384000f2fdfe229247f2ca6a1340255e6f3c83acbf413eeb",
      "source": "Yahoo",
-     "at": "2026-10-08T17:24:00.000Z",
-     "desc": "Southlight Services, a leading provider of digital transformation and telecommunications solutions, today announced a strategic collaboration with Google that significantly expands its role in delivering Google's enterp…"
+     "at": "2026-10-08T19:00:47.000Z",
+     "desc": "President Trump's largest August stock purchase landed in a tech company already moving fast, and the trade raises questions about what investors betting on AI and advertising growth are actually pricing in."
     },
     {
-     "title": "How Jeff Bezos added $102 billion to his fortune in one month",
-     "link": "https://finnhub.io/api/news?id=0a1449109ea69c6080a87f4a62122bde7cbcdb1873fc8abef298ad9038975165",
+     "title": "SpaceX's Google AI Pact Is Worth Up to $29 Billion, but Investors Shouldn't Bank on It",
+     "link": "https://finnhub.io/api/news?id=b0b95231046f0b8310670691279696082bc8932af91ec411878d0c7dabfd9a3b",
      "source": "Yahoo",
-     "at": "2026-10-08T17:07:00.000Z",
-     "desc": "The Amazon founder’s September surge came entirely from two private holdings."
-    },
-    {
-     "title": "58 Analysts, Zero Sells: Amazon’s Price Target Is a Rare Consensus",
-     "link": "https://finnhub.io/api/news?id=2863e5f02a03560b233d72e70bd93d9e8b367b58904bbf6718ab1acf3ecaeeed",
-     "source": "Yahoo",
-     "at": "2026-10-08T16:30:51.000Z",
-     "desc": "Fifty-eight analysts cover Amazon and not one rates it a sell, yet the stock still sits well below its 52-week high while free cash flow turns negative and capital spending surges to levels that would make most CFOs fli…"
-    },
-    {
-     "title": "Apple Rises 24% YTD: Should You Buy, Sell or Hold the AAPL Stock?",
-     "link": "https://finnhub.io/api/news?id=d8198785af06b9d16ca957c2452cee162f4ac74103f5d3c648f23a87bf208ddb",
-     "source": "Yahoo",
-     "at": "2026-10-08T16:29:00.000Z",
-     "desc": "AAPL shares have surged 24% YTD, fueled by iPhone demand, Services growth and AI prospects. Yet premium valuation and supply constraints warrant caution."
+     "at": "2026-10-08T18:54:00.000Z",
+     "desc": "Space Exploration Technologies' biggest growth driver now is its AI segment, but those revenues lack protection against a key risk."
     }
    ]
   },
@@ -3377,39 +3377,39 @@
    ],
    "news": [
     {
-     "title": "Exploring the top movers within the dow jones index during today's session.",
-     "link": "https://finnhub.io/api/news?id=d02e79ecef043a92ebba46248d20db4281c6aa7162d4da8ddbe12ca8c3b04577",
-     "source": "ChartMill",
-     "at": "2026-10-08T19:10:15.000Z",
-     "desc": "Stay updated with the movement of dow jones stocks in today's session. Discover which dow jones stocks are making waves on Thursday."
-    },
-    {
-     "title": "Looking for the most active stocks in the S&P500 index on Thursday?",
-     "link": "https://finnhub.io/api/news?id=e8f0d85eb95a24026ef2036ad49410e7fd9a4f34d744d8ecfa17937b899da51a",
-     "source": "ChartMill",
-     "at": "2026-10-08T18:05:04.000Z",
-     "desc": "Stay informed about the most active stocks in the S&P500 index on Thursday's session. Discover the stocks that are generating the highest trading volume and driving market activity."
-    },
-    {
-     "title": "These stocks are making the most noise in today's session.",
-     "link": "https://finnhub.io/api/news?id=486ec9b62192404986b037c11f7a81fd99615022a57cd4f009110a968bcde536",
-     "source": "ChartMill",
-     "at": "2026-10-08T18:00:00.000Z",
-     "desc": "Stay updated with the latest market activity on Thursday. Explore the most active stocks in today's session and stay informed about the stocks that are in the spotlight."
-    },
-    {
-     "title": "AI compute needs are 'going to be insane': Box CEO Aaron Levie",
-     "link": "https://finnhub.io/api/news?id=097ee8e2efa14d09cdd19d6a820dff2d18ace8af911a5e2a01900493872be9fd",
+     "title": "Sector Update: Tech Stocks Fall Late Afternoon",
+     "link": "https://finnhub.io/api/news?id=41cc899fae1c361b4d4d29d0aa19c406dce6c54fdf154e5304f99a33169c7ff6",
      "source": "Yahoo",
-     "at": "2026-10-08T17:56:14.000Z",
-     "desc": "Maybe the AI bulls are right: We are early innings in the AI boom, and bubble fears are way overblown."
+     "at": "2026-10-08T19:51:42.000Z",
+     "desc": "Tech stocks were lower late Thursday afternoon, with the State Street Technology Select Sector SPDR"
     },
     {
-     "title": "Palantir Looks Like a Consulting Company. Its Numbers Tell a Different Story.",
-     "link": "https://finnhub.io/api/news?id=0d56efe9debf9d0b56130102fa21be3e9bf10771c8e0a85eeef74111cdfa438b",
+     "title": "Why there's a spotlight on Trump's relationship with Big Tech and corporate America",
+     "link": "https://finnhub.io/api/news?id=d78c8fbf5f06e6c5fa4a4719862b408f5d1e6919ccf19e784aacb9d470650dbb",
      "source": "Yahoo",
-     "at": "2026-10-08T17:35:00.000Z",
-     "desc": "Palantir is often criticized by skeptics of being a consulting firm and not a software-as-a-service company."
+     "at": "2026-10-08T19:42:53.000Z",
+     "desc": "President Trump disclosed the trades he made in August, including shares of tech companies like Microsoft (MSFT), Nvidia (NVDA), and SpaceX (SPCX). Trump also honored the CEOs of many of those companies after the disclo…"
+    },
+    {
+     "title": "Here's What a $10,000 Investment in Marvell Stock Could Be Worth in 2031 (Hint: It's a Lot)",
+     "link": "https://finnhub.io/api/news?id=c009f9fe1902e3d1b398f44a43aae35bfaca0db72f2df6dea2fe1179c06c1c0a",
+     "source": "Yahoo",
+     "at": "2026-10-08T19:35:00.000Z",
+     "desc": "As artificial intelligence (AI) infrastructure spending accelerates, Marvell is quietly positioned for lucrative gains."
+    },
+    {
+     "title": "The S&P 500 Would Be Green Without Tech",
+     "link": "https://finnhub.io/api/news?id=9c8a16a8e38fb9447c21abbffa77c7b934bd27b35c2d1fdcc50842fb18024fa9",
+     "source": "Yahoo",
+     "at": "2026-10-08T19:26:21.000Z",
+     "desc": "Tech led the S&P 500's decline on Thursday and without the sector's contributions the index would have been rising."
+    },
+    {
+     "title": "3 Nuclear Energy Stocks Down 40% or More From Their Highs -- Only 1 Is a Real Opportunity Right Now.",
+     "link": "https://finnhub.io/api/news?id=2d15fc2911badd8f8a73ca44d6b9dee5b2d284e885d9698fc379ea8b8823b9df",
+     "source": "Yahoo",
+     "at": "2026-10-08T19:25:00.000Z",
+     "desc": "NuScale, Oklo, and BWX Technologies have all pulled back from their record highs."
     }
    ]
   },
@@ -3567,6 +3567,20 @@
    ],
    "news": [
     {
+     "title": "OpenAI Revenue $20B Below Previous Reports, ORCL, NVDA Tumble",
+     "link": "https://finnhub.io/api/news?id=7b5450d95ef0117ef0aa64abacf0e304c1404c4aa4daa5ba92a35691c67d913f",
+     "source": "Yahoo",
+     "at": "2026-10-08T18:18:39.000Z",
+     "desc": "AI stocks fell Thursday as new figures put OpenAI’s annualized revenue roughly $20 billion below previous reports, raising questions about the sector’s growth. The ChatGPT maker told investors its annualized revenue was…"
+    },
+    {
+     "title": "Is Marvell Stock Priced Right Against Its Peers?",
+     "link": "https://finnhub.io/api/news?id=ad1203e9d7e840ed67a3a8fc16415cdf88a8a9774531117658b9c1415b893fb9",
+     "source": "Yahoo",
+     "at": "2026-10-08T17:58:39.000Z",
+     "desc": "Investors in Marvell Technology (MRVL) have seen the stock return 220.8% over the past twelve months, making it the top performer in a group of five chipmakers. That peer group includes NVIDIA, Broadcom, Advanced Micro…"
+    },
+    {
      "title": "AI compute needs are 'going to be insane': Box CEO Aaron Levie",
      "link": "https://finnhub.io/api/news?id=097ee8e2efa14d09cdd19d6a820dff2d18ace8af911a5e2a01900493872be9fd",
      "source": "Yahoo",
@@ -3586,20 +3600,6 @@
      "source": "Yahoo",
      "at": "2026-10-08T16:50:00.000Z",
      "desc": "They are both profiting from the AI boom, but one of them looks more attractive right now."
-    },
-    {
-     "title": "Meta Muse gives AMD and Intel investors a reason to cheer",
-     "link": "https://finnhub.io/api/news?id=5ef1fe61dbb9087e761b798c2bb6d9b295b8745f6e19ca4c69f2effe97d7464d",
-     "source": "Yahoo",
-     "at": "2026-10-08T16:33:00.000Z",
-     "desc": "Something is changing in the AI trade, and investors are starting to notice."
-    },
-    {
-     "title": "What could trigger a US debt crisis? Sozzi discusses with economist Kenneth Rogoff",
-     "link": "https://finnhub.io/api/news?id=ba7dba3492558ae45a4c107b3c7791a564e600f8ffb29d9f44734d43b6103ca1",
-     "source": "Yahoo",
-     "at": "2026-10-08T16:03:19.000Z",
-     "desc": "Yahoo Finance Executive Editor Brian Sozzi takes a look at the biggest stories as the trading day kicks off, weighing in on PepsiCo's (PEP) latest earnings results, General Motors' (GM) latest update, and more. Sozzi al…"
     }
    ]
   },
@@ -3757,39 +3757,39 @@
    ],
    "news": [
     {
-     "title": "Oracle stock falls on more debt to fund AI chip buying, Open AI revenue disclosure",
-     "link": "https://finnhub.io/api/news?id=365876ff2d29ee64f387574fd6b7079725dc7c9d226fdb59c768e438d32400b5",
+     "title": "Why there's a spotlight on Trump's relationship with Big Tech and corporate America",
+     "link": "https://finnhub.io/api/news?id=d78c8fbf5f06e6c5fa4a4719862b408f5d1e6919ccf19e784aacb9d470650dbb",
      "source": "Yahoo",
-     "at": "2026-10-08T18:02:33.000Z",
-     "desc": "The AI build-out is getting expensive."
+     "at": "2026-10-08T19:42:53.000Z",
+     "desc": "President Trump disclosed the trades he made in August, including shares of tech companies like Microsoft (MSFT), Nvidia (NVDA), and SpaceX (SPCX). Trump also honored the CEOs of many of those companies after the disclo…"
     },
     {
-     "title": "Nvidia and SpaceX: Top Analyst Daniel Ives Says These 2 AI Giants Have More Room to Run",
-     "link": "https://finnhub.io/api/news?id=bd9f326fe88bdbdccb4ed56c3ec60228c02d912931c67f7f41734ea34075573c",
+     "title": "Intuitive Machines (LUNR) Is Scaling Up Its Satellite Communications Footing. What Lies Ahead?",
+     "link": "https://finnhub.io/api/news?id=80159ba4857d0e3c9d94a47109e73d633072d8046c2f537d31377288bd18918c",
      "source": "Yahoo",
-     "at": "2026-10-08T17:20:00.000Z",
-     "desc": "The AI industry continues to expand at a pace that has raised expectations for its long-term economic impact. Of the 13 companies on Wall Street valued at more than $1 trillion, 11 have significant exposure to the AI bo…"
+     "at": "2026-10-08T19:38:20.000Z",
+     "desc": "Intuitive Machines Inc. (NASDAQ:LUNR) is scaling up its satellite communications footprint. Following its acquisition of Lanteris Space Systems in January 2026, the company has been extending resources across data proce…"
     },
     {
-     "title": "American Airlines to equip over 1,000 aircraft with SpaceX’s Starlink Wi-Fi",
-     "link": "https://finnhub.io/api/news?id=6dafe28b7733d04efa97c398c15285d87a53104e316cd781325bc1ab0f792e58",
+     "title": "ASTS, SPCX And NN Stocks Slide: Clear Street Calls FCC Meeting Agenda Mixed For AST SpaceMobile",
+     "link": "https://finnhub.io/api/news?id=a5c9b06e1ffa59b3dec66caea402180bbb923b7309e41284e8d73a72c251c537",
      "source": "Yahoo",
-     "at": "2026-10-08T17:12:02.000Z",
-     "desc": "Investing.com -- American Airlines Group (NASDAQ:AAL) plans to equip its entire mainline fleet with SpaceX's (NASDAQ:SPCX) Starlink satellite internet service, significantly expanding its high-speed connectivity initiat…"
+     "at": "2026-10-08T19:27:33.000Z",
+     "desc": "Clear Street called the FCC’s October 29 agenda a mixed signal for AST SpaceMobile, favoring its carrier partnerships while flagging a real but narrow auction risk, and kept its ‘Buy’ rating."
     },
     {
-     "title": "AST SpaceMobile Sinks 7% as Satellite Rival Clears Regulatory Hurdle; Rocket Lab Drops 4%, Planet Labs Falls 5%",
-     "link": "https://finnhub.io/api/news?id=f036c6be9c02f5c0b58dad1a69fa77d65b646c1ea7e8290548d1e508d9376ddc",
+     "title": "Trump Made His Biggest August Buy a Tech Giant That Jumped Over 30% in Seven Weeks",
+     "link": "https://finnhub.io/api/news?id=8f1bc3071b3abaa2384000f2fdfe229247f2ca6a1340255e6f3c83acbf413eeb",
      "source": "Yahoo",
-     "at": "2026-10-08T16:43:31.000Z",
-     "desc": "A regulator just handed SpaceX permission to reach ordinary phones without touching a wireless carrier, and that single order is reshaping which space companies investors trust with their money."
+     "at": "2026-10-08T19:00:47.000Z",
+     "desc": "President Trump's largest August stock purchase landed in a tech company already moving fast, and the trade raises questions about what investors betting on AI and advertising growth are actually pricing in."
     },
     {
-     "title": "Chipotle, Starbucks, Palantir, Intel, SpaceX, Wolfspeed, and More Stocks That Explain Today’s Market",
-     "link": "https://finnhub.io/api/news?id=2b8797c240c040153f37eb29a69a6ef97c497a4fd948366170ac851986f840c2",
+     "title": "SpaceX's Google AI Pact Is Worth Up to $29 Billion, but Investors Shouldn't Bank on It",
+     "link": "https://finnhub.io/api/news?id=b0b95231046f0b8310670691279696082bc8932af91ec411878d0c7dabfd9a3b",
      "source": "Yahoo",
-     "at": "2026-10-08T16:38:00.000Z",
-     "desc": "Chipotle trades higher following a report that Starbucks had looked into a possible takeover of the burrito chain."
+     "at": "2026-10-08T18:54:00.000Z",
+     "desc": "Space Exploration Technologies' biggest growth driver now is its AI segment, but those revenues lack protection against a key risk."
     }
    ]
   },
