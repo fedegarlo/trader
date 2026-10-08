@@ -1,7 +1,7 @@
 {
  "api": 1,
- "updated": "2026-10-08 07:36",
- "generatedAt": "2026-10-08T05:36:43Z",
+ "updated": "2026-10-08 07:41",
+ "generatedAt": "2026-10-08T05:41:12Z",
  "players": [
   {
    "id": "ana",
@@ -1104,20 +1104,20 @@
     },
     {
      "date": "2026-10-07",
-     "day": 0.0147,
-     "cum": 19.8572,
+     "day": -0.0824,
+     "cum": 19.7408,
      "bd": [
       {
        "ticker": "GOOGL",
        "pct": 0.2615
       },
       {
-       "ticker": "NVDA",
-       "pct": -0.1368
+       "ticker": "AMD",
+       "pct": -0.2071
       },
       {
-       "ticker": "AMD",
-       "pct": -0.11
+       "ticker": "NVDA",
+       "pct": -0.1368
       }
      ]
     }
@@ -1126,8 +1126,8 @@
     {
      "month": 10,
      "month_year": 2026,
-     "ret": 2.7765,
-     "cum": 19.8572
+     "ret": 2.6768,
+     "cum": 19.7408
     },
     {
      "month": 9,
@@ -1150,16 +1150,16 @@
    ],
    "holdings": [
     {
-     "ticker": "GOOGL",
-     "w": 45.9
+     "ticker": "AMD",
+     "w": 43.98
     },
     {
-     "ticker": "AMD",
-     "w": 28.19
+     "ticker": "GOOGL",
+     "w": 35.8
     },
     {
      "ticker": "NVDA",
-     "w": 25.91
+     "w": 20.21
     }
    ]
   },
@@ -2897,6 +2897,14 @@
    "ticker": "SPCX"
   },
   {
+   "date": "2026-10-07",
+   "id": "ana",
+   "name": "Ana",
+   "slot": 0,
+   "kind": "BUY",
+   "ticker": "AMD"
+  },
+  {
    "date": "2026-10-06",
    "id": "fede",
    "name": "Fede",
@@ -2943,36 +2951,28 @@
    "slot": 1,
    "kind": "BUY",
    "ticker": "NVDA"
-  },
-  {
-   "date": "2026-09-25",
-   "id": "fede",
-   "name": "Fede",
-   "slot": 1,
-   "kind": "SELL",
-   "ticker": "TSM"
   }
  ],
  "allocation": [
   {
    "ticker": "GOOGL",
-   "w": 38.52
+   "w": 34.12
   },
   {
    "ticker": "NVDA",
-   "w": 26.1
-  },
-  {
-   "ticker": "SPCX",
-   "w": 18.42
+   "w": 23.12
   },
   {
    "ticker": "AMD",
-   "w": 12.91
+   "w": 22.86
+  },
+  {
+   "ticker": "SPCX",
+   "w": 16.31
   },
   {
    "ticker": "WDC",
-   "w": 4.05
+   "w": 3.59
   }
  ],
  "market": null,
@@ -2981,12 +2981,12 @@
    "ticker": "GOOGL",
    "name": "Alphabet",
    "domain": "abc.xyz",
-   "w": 38.52,
+   "w": 34.12,
    "holders": [
     {
      "name": "Ana",
      "slot": 0,
-     "w": 45.9
+     "w": 35.8
     },
     {
      "name": "Fede",
@@ -3176,7 +3176,7 @@
    "ticker": "NVDA",
    "name": "NVIDIA",
    "domain": "nvidia.com",
-   "w": 26.1,
+   "w": 23.12,
    "holders": [
     {
      "name": "Fede",
@@ -3186,7 +3186,7 @@
     {
      "name": "Ana",
      "slot": 0,
-     "w": 25.91
+     "w": 20.21
     }
    ],
    "prices": [
@@ -3368,10 +3368,200 @@
    ]
   },
   {
+   "ticker": "AMD",
+   "name": "AMD",
+   "domain": "amd.com",
+   "w": 22.86,
+   "holders": [
+    {
+     "name": "Ana",
+     "slot": 0,
+     "w": 43.98
+    }
+   ],
+   "prices": [
+    {
+     "date": "2026-08-26",
+     "close": 480.93
+    },
+    {
+     "date": "2026-08-27",
+     "close": 476.67
+    },
+    {
+     "date": "2026-08-28",
+     "close": 465.58
+    },
+    {
+     "date": "2026-08-31",
+     "close": 470.72
+    },
+    {
+     "date": "2026-09-01",
+     "close": 459.61
+    },
+    {
+     "date": "2026-09-02",
+     "close": 457.06
+    },
+    {
+     "date": "2026-09-03",
+     "close": 456.16
+    },
+    {
+     "date": "2026-09-04",
+     "close": 477.57
+    },
+    {
+     "date": "2026-09-08",
+     "close": 505.74
+    },
+    {
+     "date": "2026-09-09",
+     "close": 521.1
+    },
+    {
+     "date": "2026-09-10",
+     "close": 503.6
+    },
+    {
+     "date": "2026-09-11",
+     "close": 516.13
+    },
+    {
+     "date": "2026-09-14",
+     "close": 493.41
+    },
+    {
+     "date": "2026-09-15",
+     "close": 504.2
+    },
+    {
+     "date": "2026-09-16",
+     "close": 512.5
+    },
+    {
+     "date": "2026-09-17",
+     "close": 545.09
+    },
+    {
+     "date": "2026-09-18",
+     "close": 559.82
+    },
+    {
+     "date": "2026-09-21",
+     "close": 615.52
+    },
+    {
+     "date": "2026-09-22",
+     "close": 623.77
+    },
+    {
+     "date": "2026-09-23",
+     "close": 614.61
+    },
+    {
+     "date": "2026-09-24",
+     "close": 629.26
+    },
+    {
+     "date": "2026-09-25",
+     "close": 630.63
+    },
+    {
+     "date": "2026-09-28",
+     "close": 607.87
+    },
+    {
+     "date": "2026-09-29",
+     "close": 607.57
+    },
+    {
+     "date": "2026-09-30",
+     "close": 611.76
+    },
+    {
+     "date": "2026-10-01",
+     "close": 615.73
+    },
+    {
+     "date": "2026-10-02",
+     "close": 633.91
+    },
+    {
+     "date": "2026-10-05",
+     "close": 631.75
+    },
+    {
+     "date": "2026-10-06",
+     "close": 649.42
+    },
+    {
+     "date": "2026-10-07",
+     "close": 645.86
+    }
+   ],
+   "ret": 34.29,
+   "peers": [
+    {
+     "ticker": "NVDA",
+     "name": "NVIDIA",
+     "domain": "nvidia.com"
+    },
+    {
+     "ticker": "INTC",
+     "name": "Intel",
+     "domain": "intel.com"
+    },
+    {
+     "ticker": "TSM",
+     "name": "Taiwan Semiconductor",
+     "domain": "tsmc.com"
+    }
+   ],
+   "news": [
+    {
+     "title": "Why Did HPE, ANET, NTAP Stocks Surge To 52-Week Highs Today?",
+     "link": "https://finnhub.io/api/news?id=ba7ea5d56061d072f176055fd9ce8a167093e70e790096d090594a7bda98a2a5",
+     "source": "Yahoo",
+     "at": "2026-10-08T03:52:39.000Z",
+     "desc": "Investors looked beyond major cloud providers and focused on the hardware, networking and storage companies supporting the next wave of AI deployments."
+    },
+    {
+     "title": "AMD (AMD) Stock May Be Fully Valued On Citi's $800 Target",
+     "link": "https://finnhub.io/api/news?id=c62e889f0b7d0186b19fdc4c7cbd7f4d61b5cc94c50eae4ae56a61af27d5ad99",
+     "source": "Yahoo",
+     "at": "2026-10-08T03:17:01.000Z",
+     "desc": "Advanced Micro Devices has turned into one of the market’s most closely watched AI chip stories, and after a share price near US$645.86, the key question is whether that level can be explained by the cash flows the busi…"
+    },
+    {
+     "title": "S&P 500 And Nasdaq 100 Slip From Record Highs Amid Pressure From Soaring Treasury Yields — SPCX, AMD, NVDA, MRVL In Focus",
+     "link": "https://finnhub.io/api/news?id=50352b28347a16ef361adee73323be4f5be5b71231708705135708bc7bebdb49",
+     "source": "Yahoo",
+     "at": "2026-10-07T22:50:51.000Z",
+     "desc": "The 30-year bond yield hit its highest level since May 2002 at 5.732%."
+    },
+    {
+     "title": "What Are AVGO Stock Investors Betting On?",
+     "link": "https://finnhub.io/api/news?id=fe6c2b41f319d645bd53217a37d78a23c4388554fc9dfe3c9e1b3a8fd1ab80fb",
+     "source": "Yahoo",
+     "at": "2026-10-07T22:38:41.000Z",
+     "desc": "Broadcom (AVGO) stock currently trades at 39.5 times its earnings over the past twelve months, a multiple based on adjusted earnings with stock-based pay added back. Paying such a steep price for a single year of profit…"
+    },
+    {
+     "title": "What Is Really Behind Micron Stock's Run?",
+     "link": "https://finnhub.io/api/news?id=56789c56d46d94c18e2e6fb4cfbe035fac0296953fc1f1070d05812ee4e4b29c",
+     "source": "Yahoo",
+     "at": "2026-10-07T22:25:39.000Z",
+     "desc": "Investors may still think profit at Micron Technology (MU) moves with memory chip prices. The company did run an operating loss three years ago. Yet the stock returned 457% in the past twelve months, a climb that appear…"
+    }
+   ]
+  },
+  {
    "ticker": "SPCX",
    "name": "SpaceX",
    "domain": "spacex.com",
-   "w": 18.42,
+   "w": 16.31,
    "holders": [
     {
      "name": "Fede",
@@ -3558,200 +3748,10 @@
    ]
   },
   {
-   "ticker": "AMD",
-   "name": "AMD",
-   "domain": "amd.com",
-   "w": 12.91,
-   "holders": [
-    {
-     "name": "Ana",
-     "slot": 0,
-     "w": 28.19
-    }
-   ],
-   "prices": [
-    {
-     "date": "2026-08-26",
-     "close": 480.93
-    },
-    {
-     "date": "2026-08-27",
-     "close": 476.67
-    },
-    {
-     "date": "2026-08-28",
-     "close": 465.58
-    },
-    {
-     "date": "2026-08-31",
-     "close": 470.72
-    },
-    {
-     "date": "2026-09-01",
-     "close": 459.61
-    },
-    {
-     "date": "2026-09-02",
-     "close": 457.06
-    },
-    {
-     "date": "2026-09-03",
-     "close": 456.16
-    },
-    {
-     "date": "2026-09-04",
-     "close": 477.57
-    },
-    {
-     "date": "2026-09-08",
-     "close": 505.74
-    },
-    {
-     "date": "2026-09-09",
-     "close": 521.1
-    },
-    {
-     "date": "2026-09-10",
-     "close": 503.6
-    },
-    {
-     "date": "2026-09-11",
-     "close": 516.13
-    },
-    {
-     "date": "2026-09-14",
-     "close": 493.41
-    },
-    {
-     "date": "2026-09-15",
-     "close": 504.2
-    },
-    {
-     "date": "2026-09-16",
-     "close": 512.5
-    },
-    {
-     "date": "2026-09-17",
-     "close": 545.09
-    },
-    {
-     "date": "2026-09-18",
-     "close": 559.82
-    },
-    {
-     "date": "2026-09-21",
-     "close": 615.52
-    },
-    {
-     "date": "2026-09-22",
-     "close": 623.77
-    },
-    {
-     "date": "2026-09-23",
-     "close": 614.61
-    },
-    {
-     "date": "2026-09-24",
-     "close": 629.26
-    },
-    {
-     "date": "2026-09-25",
-     "close": 630.63
-    },
-    {
-     "date": "2026-09-28",
-     "close": 607.87
-    },
-    {
-     "date": "2026-09-29",
-     "close": 607.57
-    },
-    {
-     "date": "2026-09-30",
-     "close": 611.76
-    },
-    {
-     "date": "2026-10-01",
-     "close": 615.73
-    },
-    {
-     "date": "2026-10-02",
-     "close": 633.91
-    },
-    {
-     "date": "2026-10-05",
-     "close": 631.75
-    },
-    {
-     "date": "2026-10-06",
-     "close": 649.42
-    },
-    {
-     "date": "2026-10-07",
-     "close": 645.86
-    }
-   ],
-   "ret": 34.29,
-   "peers": [
-    {
-     "ticker": "NVDA",
-     "name": "NVIDIA",
-     "domain": "nvidia.com"
-    },
-    {
-     "ticker": "INTC",
-     "name": "Intel",
-     "domain": "intel.com"
-    },
-    {
-     "ticker": "TSM",
-     "name": "Taiwan Semiconductor",
-     "domain": "tsmc.com"
-    }
-   ],
-   "news": [
-    {
-     "title": "Why Did HPE, ANET, NTAP Stocks Surge To 52-Week Highs Today?",
-     "link": "https://finnhub.io/api/news?id=ba7ea5d56061d072f176055fd9ce8a167093e70e790096d090594a7bda98a2a5",
-     "source": "Yahoo",
-     "at": "2026-10-08T03:52:39.000Z",
-     "desc": "Investors looked beyond major cloud providers and focused on the hardware, networking and storage companies supporting the next wave of AI deployments."
-    },
-    {
-     "title": "AMD (AMD) Stock May Be Fully Valued On Citi's $800 Target",
-     "link": "https://finnhub.io/api/news?id=c62e889f0b7d0186b19fdc4c7cbd7f4d61b5cc94c50eae4ae56a61af27d5ad99",
-     "source": "Yahoo",
-     "at": "2026-10-08T03:17:01.000Z",
-     "desc": "Advanced Micro Devices has turned into one of the market’s most closely watched AI chip stories, and after a share price near US$645.86, the key question is whether that level can be explained by the cash flows the busi…"
-    },
-    {
-     "title": "S&P 500 And Nasdaq 100 Slip From Record Highs Amid Pressure From Soaring Treasury Yields — SPCX, AMD, NVDA, MRVL In Focus",
-     "link": "https://finnhub.io/api/news?id=50352b28347a16ef361adee73323be4f5be5b71231708705135708bc7bebdb49",
-     "source": "Yahoo",
-     "at": "2026-10-07T22:50:51.000Z",
-     "desc": "The 30-year bond yield hit its highest level since May 2002 at 5.732%."
-    },
-    {
-     "title": "What Are AVGO Stock Investors Betting On?",
-     "link": "https://finnhub.io/api/news?id=fe6c2b41f319d645bd53217a37d78a23c4388554fc9dfe3c9e1b3a8fd1ab80fb",
-     "source": "Yahoo",
-     "at": "2026-10-07T22:38:41.000Z",
-     "desc": "Broadcom (AVGO) stock currently trades at 39.5 times its earnings over the past twelve months, a multiple based on adjusted earnings with stock-based pay added back. Paying such a steep price for a single year of profit…"
-    },
-    {
-     "title": "What Is Really Behind Micron Stock's Run?",
-     "link": "https://finnhub.io/api/news?id=56789c56d46d94c18e2e6fb4cfbe035fac0296953fc1f1070d05812ee4e4b29c",
-     "source": "Yahoo",
-     "at": "2026-10-07T22:25:39.000Z",
-     "desc": "Investors may still think profit at Micron Technology (MU) moves with memory chip prices. The company did run an operating loss three years ago. Yet the stock returned 457% in the past twelve months, a climb that appear…"
-    }
-   ]
-  },
-  {
    "ticker": "WDC",
    "name": "Western Digital",
    "domain": "westerndigital.com",
-   "w": 4.05,
+   "w": 3.59,
    "holders": [
     {
      "name": "Fede",
@@ -3941,7 +3941,7 @@
  "monthly": {
   "current": {
    "name": "Ana",
-   "value": 2.78,
+   "value": 2.68,
    "treat": 2,
    "slot": 0,
    "month": 10,
@@ -3958,13 +3958,13 @@
      "id": "ana",
      "name": "Ana",
      "slot": 0,
-     "value": 2.78,
+     "value": 2.68,
      "cum": [
       -0.0435,
       1.4503,
       2.0578,
       2.7614,
-      2.7765
+      2.6768
      ]
     },
     {
@@ -4139,7 +4139,7 @@
      "ana"
     ],
     "slot": 0,
-    "value": 0.01
+    "value": -0.08
    },
    {
     "date": "2026-10-06",
@@ -4308,7 +4308,7 @@
     "name": "Ana",
     "date": "2026-10-07",
     "month": "2026-10",
-    "pct": 2.78,
+    "pct": 2.68,
     "key": "champion:2026-10",
     "provisional": true,
     "slot": 0
