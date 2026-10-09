@@ -313,6 +313,11 @@
       "date": "2026-10-08",
       "daily_return_pct": -2.3038,
       "cumulative_return_pct": 16.9822
+    },
+    {
+      "date": "2026-10-09",
+      "daily_return_pct": -0.2312,
+      "cumulative_return_pct": 16.7118
     }
   ]
 }
