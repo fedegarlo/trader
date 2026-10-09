@@ -1,7 +1,7 @@
 {
  "api": 1,
- "updated": "2026-10-09 21:43",
- "generatedAt": "2026-10-09T19:43:11Z",
+ "updated": "2026-10-09 23:32",
+ "generatedAt": "2026-10-09T21:32:20Z",
  "players": [
   {
    "id": "ana",
@@ -1142,20 +1142,20 @@
     },
     {
      "date": "2026-10-09",
-     "day": -0.6056,
-     "cum": 16.2737,
+     "day": -0.5716,
+     "cum": 16.3136,
      "bd": [
       {
        "ticker": "AMD",
-       "pct": -0.8985
+       "pct": -0.7968
       },
       {
        "ticker": "GOOGL",
-       "pct": 0.3762
+       "pct": 0.3202
       },
       {
        "ticker": "NVDA",
-       "pct": -0.08
+       "pct": -0.095
       }
      ]
     }
@@ -1164,8 +1164,8 @@
     {
      "month": 10,
      "month_year": 2026,
-     "ret": -0.2962,
-     "cum": 16.2737
+     "ret": -0.2621,
+     "cum": 16.3136
     },
     {
      "month": 9,
@@ -1189,15 +1189,15 @@
    "holdings": [
     {
      "ticker": "AMD",
-     "w": 42.66
+     "w": 42.76
     },
     {
      "ticker": "GOOGL",
-     "w": 37.17
+     "w": 37.09
     },
     {
      "ticker": "NVDA",
-     "w": 20.18
+     "w": 20.15
     }
    ]
   },
@@ -2892,38 +2892,38 @@
     },
     {
      "date": "2026-10-09",
-     "day": 0.4979,
-     "cum": 11.4909,
+     "day": 0.6615,
+     "cum": 11.6725,
      "bd": [
       {
-       "ticker": "GOOGL",
-       "pct": 0.3719
+       "ticker": "SPCX",
+       "pct": 0.4086
       },
       {
-       "ticker": "SPCX",
-       "pct": 0.2104
+       "ticker": "GOOGL",
+       "pct": 0.3129
       },
       {
        "ticker": "NVDA",
-       "pct": -0.1117
+       "pct": -0.1337
       },
       {
        "ticker": "WDC",
-       "pct": 0.0255
+       "pct": 0.0738
       }
      ],
      "start": 5384.62,
-     "end": 5411.43,
+     "end": 5420.24,
      "flow": 0.0,
-     "pnl": 26.81
+     "pnl": 35.62
     }
    ],
    "months": [
     {
      "month": 10,
      "month_year": 2026,
-     "ret": 0.3381,
-     "cum": 11.4909
+     "ret": 0.5014,
+     "cum": 11.6725
     },
     {
      "month": 9,
@@ -2947,26 +2947,26 @@
    "holdings": [
     {
      "ticker": "SPCX",
-     "w": 33.47
+     "w": 33.62
     },
     {
      "ticker": "GOOGL",
-     "w": 33.17
+     "w": 33.05
     },
     {
      "ticker": "NVDA",
-     "w": 25.93
+     "w": 25.86
     },
     {
      "ticker": "WDC",
-     "w": 7.44
+     "w": 7.47
     }
    ],
    "goal": {
     "target": 14000.0,
-    "pct": 34.5,
+    "pct": 34.55,
     "currency": "USD",
-    "value": 4830.24
+    "value": 4837.02
    }
   }
  ],
@@ -2976,7 +2976,7 @@
   "deadline": "2027-08-01",
   "days": 296,
   "fx": {
-   "USD": 0.8926
+   "USD": 0.8924
   }
  },
  "operations": [
@@ -3048,23 +3048,23 @@
  "allocation": [
   {
    "ticker": "GOOGL",
-   "w": 35.23
+   "w": 35.14
   },
   {
    "ticker": "NVDA",
-   "w": 22.95
+   "w": 22.91
   },
   {
    "ticker": "AMD",
-   "w": 22.06
+   "w": 22.1
   },
   {
    "ticker": "SPCX",
-   "w": 16.16
+   "w": 16.24
   },
   {
    "ticker": "WDC",
-   "w": 3.59
+   "w": 3.61
   }
  ],
  "market": null,
@@ -3073,17 +3073,17 @@
    "ticker": "GOOGL",
    "name": "Alphabet",
    "domain": "abc.xyz",
-   "w": 35.23,
+   "w": 35.14,
    "holders": [
     {
      "name": "Ana",
      "slot": 0,
-     "w": 37.17
+     "w": 37.09
     },
     {
      "name": "Fede",
      "slot": 1,
-     "w": 33.17
+     "w": 33.05
     }
    ],
    "prices": [
@@ -3205,10 +3205,10 @@
     },
     {
      "date": "2026-10-09",
-     "close": 352.295
+     "close": 351.66
     }
    ],
-   "ret": 1.65,
+   "ret": 1.46,
    "peers": [
     {
      "ticker": "MSFT",
@@ -3228,39 +3228,39 @@
    ],
    "news": [
     {
-     "title": "Elon Musk, Jensen Huang, and tech leaders receive White House National Medals",
-     "link": "https://finnhub.io/api/news?id=189c880b9208fee07e2dc21b40797cd24c20700ff3dbe64102a6e1e800bb4227",
+     "title": "Sector Update: Consumer Stocks Rise Late Afternoon",
+     "link": "https://finnhub.io/api/news?id=4bf1c55308cb0fec95eb17650c3c090a99ff1faebec0cc2ef7980b15d9e47416",
      "source": "Yahoo",
-     "at": "2026-10-09T17:45:53.000Z",
-     "desc": "Elon Musk, Tesla (TSLA), SpaceX (SPCX) CEO, Jensen Huang Nvidia (NVDA) CEO, Dr. Lisa Su, AMD (AMD) CEO, Michael Dell, Dell Technologies (DELL) CEO, Satya Nadella Microsoft (MSFT) CEO, and Sergey Brin, Google (GOOG) co-f…"
+     "at": "2026-10-09T19:51:09.000Z",
+     "desc": "Consumer stocks rose late Friday afternoon, with the State Street Consumer Staples Select Sector SPD"
     },
     {
-     "title": "How Much Growth Are You Paying For In Palantir Stock?",
-     "link": "https://finnhub.io/api/news?id=6aab87c6ca422474a925eecc8e61885d388f995b6c7a7ece674f489d417fd193",
+     "title": "What Could Surprise CoreWeave Stock Investors On The Upside?",
+     "link": "https://finnhub.io/api/news?id=7a66c1ae291228008e867b66f618835d7689b935959909a9860572fe7fffb98f",
      "source": "Yahoo",
-     "at": "2026-10-09T17:30:02.000Z",
-     "desc": "Palantir (PLTR) stock has gained 57% in three months, outpacing the 2.8% return for the S&P 500. On October 8, 2026, Goldman Sachs upgraded the stock to buy from neutral. Investors who already own the shares now face a…"
+     "at": "2026-10-09T19:41:36.000Z",
+     "desc": "CoreWeave (CRWV) stock has lost 37% over the past twelve months, trailing the 17.0% return of the S&P 500. A September 23 news report linked the stock's fall since May to investor anxiety over the company's debt load. W…"
     },
     {
-     "title": "How Investors May Respond To Berkshire Hathaway (BRK.A) Leadership Shift, Index Tilt, and Regulatory Scrutiny",
-     "link": "https://finnhub.io/api/news?id=767016c846cf36098c2e0699578d0de1856fdbe0e5bc265901c216b0135a4f10",
+     "title": "Is Adobe Stock Ready For Slower Subscription Growth?",
+     "link": "https://finnhub.io/api/news?id=d833349bc012a3f34bb740c1f0829ef0af390514946d0f48d04d10df024f11ad",
      "source": "Yahoo",
-     "at": "2026-10-09T17:16:19.000Z",
-     "desc": "In recent months, Berkshire Hathaway has undergone a leadership transition from Warren Buffett to Greg Abel, reshaped parts of its equity portfolio toward S&P 500 index funds, and faced a Texas investigation into Fruit…"
+     "at": "2026-10-09T18:33:04.000Z",
+     "desc": "Adobe (ADBE) stock has lost 31% over the past twelve months, significantly underperforming the S&P 500 and its 17.0% return. Investors appear to be worried about slower subscription growth, and the concern is justified.…"
     },
     {
-     "title": "Are You Overpaying For Microsoft Stock Versus Its Rivals?",
-     "link": "https://finnhub.io/api/news?id=d43f1ddef215c790aa3c296cc12a0c81865a274945ee96b0a16f98327aef0075",
+     "title": "Could Investing $10,000 in Alphabet Today Make You a Millionaire?",
+     "link": "https://finnhub.io/api/news?id=4b9500f8e43455ad629473ecdd456db4e40ebedc062af0a1e4393dcac2ad0539",
      "source": "Yahoo",
-     "at": "2026-10-09T17:10:48.000Z",
-     "desc": "Investors are paying a premium for Microsoft (MSFT), as the stock currently costs 29 times its earnings. That valuation sits higher than Alphabet, Amazon, or Salesforce, and of the four peers compared here, only Apple c…"
+     "at": "2026-10-09T18:32:01.000Z",
+     "desc": "The company’s market-beating days may not be over."
     },
     {
-     "title": "Reddit Has Lost 40% Since January: Needham Sees 92% Upside",
-     "link": "https://finnhub.io/api/news?id=e0dabf410711c6c3a70f183486b1cdc1c801709af9a6511711221b81f73f44bc",
+     "title": "Constellation Energy (CEG) Is Up 10.1% After Google Backs 20-Year Nuclear Power Expansion",
+     "link": "https://finnhub.io/api/news?id=b044ff925b9baac9bae32f251277374f5d2480218363dbd5776d7cfffa6a1efb",
      "source": "Yahoo",
-     "at": "2026-10-09T16:51:22.000Z",
-     "desc": "Key TakeawaysNeedham kept its Buy rating and $300 target on Reddit on Oct. 9, 92% above the Oct."
+     "at": "2026-10-09T18:08:31.000Z",
+     "desc": "In early October 2026, Google and Constellation Energy announced a long-term clean energy collaboration that will add 890 megawatts of new nuclear capacity to the PJM grid under a 20-year power purchase agreement, along…"
     }
    ]
   },
@@ -3268,17 +3268,17 @@
    "ticker": "NVDA",
    "name": "NVIDIA",
    "domain": "nvidia.com",
-   "w": 22.95,
+   "w": 22.91,
    "holders": [
     {
      "name": "Fede",
      "slot": 1,
-     "w": 25.93
+     "w": 25.86
     },
     {
      "name": "Ana",
      "slot": 0,
-     "w": 20.18
+     "w": 20.15
     }
    ],
    "prices": [
@@ -3400,10 +3400,10 @@
     },
     {
      "date": "2026-10-09",
-     "close": 229.4773
+     "close": 229.28
     }
    ],
-   "ret": 5.48,
+   "ret": 5.39,
    "peers": [
     {
      "ticker": "AMD",
@@ -3423,39 +3423,39 @@
    ],
    "news": [
     {
-     "title": "Friday's session: top gainers and losers in the dow jones index",
-     "link": "https://finnhub.io/api/news?id=e8e3b8da2da0d6ae4d9558e72857a3ca0885d2701f5b383c0d396564a0c319c7",
-     "source": "ChartMill",
-     "at": "2026-10-09T19:10:08.000Z",
-     "desc": "Uncover the latest developments among dow jones stocks in today's session. Stay tuned to the dow jones index's top gainers and losers on Friday."
-    },
-    {
-     "title": "Explore the S&P500 index on Friday and find out which stocks are the most active in today's session.",
-     "link": "https://finnhub.io/api/news?id=1fa9f1c674574e0933237001e1e66d77711e406a331cd57995c1136d4894f80d",
-     "source": "ChartMill",
-     "at": "2026-10-09T18:05:02.000Z",
-     "desc": "Stay informed about the most active stocks in the S&P500 index on Friday's session. Discover the stocks that are generating the highest trading volume and driving market activity."
-    },
-    {
-     "title": "Elon Musk, Jensen Huang, and tech leaders receive White House National Medals",
-     "link": "https://finnhub.io/api/news?id=189c880b9208fee07e2dc21b40797cd24c20700ff3dbe64102a6e1e800bb4227",
+     "title": "Sector Update: Tech Stocks Mixed Late Afternoon",
+     "link": "https://finnhub.io/api/news?id=39f065624a1766f0c3cc41bc76b37601070f130177da07d9f38817749ca5c858",
      "source": "Yahoo",
-     "at": "2026-10-09T17:45:53.000Z",
-     "desc": "Elon Musk, Tesla (TSLA), SpaceX (SPCX) CEO, Jensen Huang Nvidia (NVDA) CEO, Dr. Lisa Su, AMD (AMD) CEO, Michael Dell, Dell Technologies (DELL) CEO, Satya Nadella Microsoft (MSFT) CEO, and Sergey Brin, Google (GOOG) co-f…"
+     "at": "2026-10-09T19:47:53.000Z",
+     "desc": "Tech stocks were mixed late Friday afternoon with the State Street Technology Select Sector SPDR ETF"
     },
     {
-     "title": "Why T-Mobile Stock Just Crashed",
-     "link": "https://finnhub.io/api/news?id=0861bf3e9bc6fba4652910ee42145c37881ce716765e3123af657460fe8534fc",
+     "title": "What Could Surprise CoreWeave Stock Investors On The Upside?",
+     "link": "https://finnhub.io/api/news?id=7a66c1ae291228008e867b66f618835d7689b935959909a9860572fe7fffb98f",
      "source": "Yahoo",
-     "at": "2026-10-09T17:41:24.000Z",
-     "desc": "SpaceX is buying spectrum, and T-Mobile investors are nervous."
+     "at": "2026-10-09T19:41:36.000Z",
+     "desc": "CoreWeave (CRWV) stock has lost 37% over the past twelve months, trailing the 17.0% return of the S&P 500. A September 23 news report linked the stock's fall since May to investor anxiety over the company's debt load. W…"
     },
     {
-     "title": "Prediction: $5,000 Invested in Credo Technology Could Be Worth This Much by 2029",
-     "link": "https://finnhub.io/api/news?id=2f56f577c7d7d9fd336a4cbc2a0b58b01bcca30bf705964c178adeee94348f62",
+     "title": "CoreWeave's Backlog Is Huge. Here's the Risk Investors Shouldn't Ignore",
+     "link": "https://finnhub.io/api/news?id=1d87251457fdaff111c7c8e100d4e205d5166638b1ceea87e8a9aa79320cf952",
      "source": "Yahoo",
-     "at": "2026-10-09T17:35:00.000Z",
-     "desc": "Credo Technology is emerging as a popular artificial intelligence (AI) infrastructure stock."
+     "at": "2026-10-09T19:35:00.000Z",
+     "desc": "This neocloud company needs to prove its business model is sustainable."
+    },
+    {
+     "title": "If a Stock Market Crash Is Coming, Warren Buffett Says This Is the Smartest Move to Make Right Now",
+     "link": "https://finnhub.io/api/news?id=052445fdfdbecb4d76de63332c666353a0b1646b8dd8bef727e8eaec25572359",
+     "source": "Yahoo",
+     "at": "2026-10-09T19:20:00.000Z",
+     "desc": "As the stock market continues to soar, some investors worry a crash is on the way."
+    },
+    {
+     "title": "Arm Stock Is Up 143% This Year: Take Profits, or Hold On for the Ride?",
+     "link": "https://finnhub.io/api/news?id=586ffcc37bfc3d72da938e55beb9272a939869015dc029d229756909852105d3",
+     "source": "Yahoo",
+     "at": "2026-10-09T19:14:03.000Z",
+     "desc": "Arm stock has lapped the semiconductor sector and left chip giants NVIDIA and Broadcom in the dust, and now shareholders face a decision that hinges on whether a royalty story this early in its run is worth more than th…"
     }
    ]
   },
@@ -3463,12 +3463,12 @@
    "ticker": "AMD",
    "name": "AMD",
    "domain": "amd.com",
-   "w": 22.06,
+   "w": 22.1,
    "holders": [
     {
      "name": "Ana",
      "slot": 0,
-     "w": 42.66
+     "w": 42.76
     }
    ],
    "prices": [
@@ -3590,10 +3590,10 @@
     },
     {
      "date": "2026-10-09",
-     "close": 606.4938
+     "close": 608.1
     }
    ],
-   "ret": 30.27,
+   "ret": 30.61,
    "peers": [
     {
      "ticker": "NVDA",
@@ -3613,6 +3613,27 @@
    ],
    "news": [
     {
+     "title": "AMD CEO Su shares important supply news with stock market investors",
+     "link": "https://finnhub.io/api/news?id=628f953a8308e1b00c69cd4e9eac34a5f31ee334145f3e0ba2cd182f1f8f96a4",
+     "source": "Yahoo",
+     "at": "2026-10-09T19:13:00.000Z",
+     "desc": "Lisa Su latest comments could change how investors view AMD’s position in the AI race."
+    },
+    {
+     "title": "Management Raised the Bar For NVIDIA Stock; Does The Chart Agree?",
+     "link": "https://finnhub.io/api/news?id=b82eadbdd4bf3444c8b21203cfdcc96ac7f6f8489c199a743de1a1a0ffb4b378",
+     "source": "Yahoo",
+     "at": "2026-10-09T18:22:11.000Z",
+     "desc": "Since management forecast higher sales for its fiscal third quarter on August 26, 2026, NVIDIA (NVDA) stock has gained 8.3%, compared with 1.1% for the S&P 500. A forecast is simply an expectation from executives, but t…"
+    },
+    {
+     "title": "Elon Musk, Michael Dell, Jensen Huang, and other tech leaders receive White House National Medals",
+     "link": "https://finnhub.io/api/news?id=9e5ed728283686060da4e93ca0619ef4262ff0abc3dc61bffbca377e5f8f45e9",
+     "source": "Yahoo",
+     "at": "2026-10-09T17:45:53.000Z",
+     "desc": "Elon Musk, Tesla (TSLA), SpaceX (SPCX) CEO, Jensen Huang Nvidia (NVDA) CEO, Dr. Lisa Su, AMD (AMD) CEO, Michael Dell, Dell Technologies (DELL) CEO, Satya Nadella Microsoft (MSFT) CEO, and Sergey Brin, Google (GOOG) co-f…"
+    },
+    {
      "title": "Elon Musk, Jensen Huang, and tech leaders receive White House National Medals",
      "link": "https://finnhub.io/api/news?id=189c880b9208fee07e2dc21b40797cd24c20700ff3dbe64102a6e1e800bb4227",
      "source": "Yahoo",
@@ -3620,32 +3641,11 @@
      "desc": "Elon Musk, Tesla (TSLA), SpaceX (SPCX) CEO, Jensen Huang Nvidia (NVDA) CEO, Dr. Lisa Su, AMD (AMD) CEO, Michael Dell, Dell Technologies (DELL) CEO, Satya Nadella Microsoft (MSFT) CEO, and Sergey Brin, Google (GOOG) co-f…"
     },
     {
-     "title": "This AI Stock Snatches Share, Eyes Entry As Funds Pile In. Earnings Are Soaring.",
-     "link": "https://finnhub.io/api/news?id=a3308c1d0e4541641f18709c79e167566ca211d311bb39519f06e756ff3425ab",
-     "source": "Yahoo",
-     "at": "2026-10-09T17:00:04.000Z",
-     "desc": "The artificial intelligence revolution has boosted profits for a variety of stocks. And this AI stock is near an entry amid surging earnings."
-    },
-    {
-     "title": "Prediction: This Will Be AMD's Stock Price in 1 Year",
-     "link": "https://finnhub.io/api/news?id=6006383a7adb0d5cd91b8b0488fe970ff648d00d7541539edb13a37027e75b63",
-     "source": "Yahoo",
-     "at": "2026-10-09T16:52:00.000Z",
-     "desc": "The No. 2 data center GPU maker is trading at an incredibly high premium after its latest rally."
-    },
-    {
-     "title": "Should You Buy Taiwan Semiconductor Manufacturing Stock Before Oct. 15? History Is Crystal Clear on Where the Stock Is Headed Next.",
-     "link": "https://finnhub.io/api/news?id=02325040aafdcf4fad2483f118b14ea62a2b58c188e19b3967ed811acb0ccb92",
-     "source": "Yahoo",
-     "at": "2026-10-09T16:20:00.000Z",
-     "desc": "Taiwan Semiconductor reports Q3 earnings on Oct. 15."
-    },
-    {
-     "title": "AMD vs. Broadcom: How Much Faster Must AMD’s Cash Flow Grow to Earn Its Premium?",
-     "link": "https://finnhub.io/api/news?id=3d77e465ee3cd4a0ba756059f8224cad979ccdaca040777ddc51eb4ddbbedc4b",
-     "source": "Yahoo",
-     "at": "2026-10-09T16:05:21.000Z",
-     "desc": "Advanced Micro Devices, Inc. (NASDAQ:AMD) and Broadcom Inc. (NASDAQ:AVGO) offer competing ways to invest in AI computing: general-purpose processors and accelerators versus custom chips and networking. Their October 7 p…"
+     "title": "DRAM: Buy The Dip In The Most Important AI Bottleneck",
+     "link": "https://finnhub.io/api/news?id=b7a747fea6aa4038527088150cc74e7e4627c6c2170b643b7023f5808c59cc04",
+     "source": "SeekingAlpha",
+     "at": "2026-10-09T17:05:09.000Z",
+     "desc": "The Roundhill Memory ETF offers diversified exposure to the memory chip sector and key beneficiaries of the AI-driven memory demand surge. Read more on DRAM."
     }
    ]
   },
@@ -3653,12 +3653,12 @@
    "ticker": "SPCX",
    "name": "SpaceX",
    "domain": "spacex.com",
-   "w": 16.16,
+   "w": 16.24,
    "holders": [
     {
      "name": "Fede",
      "slot": 1,
-     "w": 33.47
+     "w": 33.62
     }
    ],
    "prices": [
@@ -3780,10 +3780,10 @@
     },
     {
      "date": "2026-10-09",
-     "close": 161.6
+     "close": 162.57
     }
    ],
-   "ret": 14.2,
+   "ret": 14.89,
    "peers": [
     {
      "ticker": "BA",
@@ -3803,39 +3803,39 @@
    ],
    "news": [
     {
-     "title": "Stock Market Today: Dow Rallies 400 Points As These Energy Stocks Hit Highs (Live Coverage)",
-     "link": "https://finnhub.io/api/news?id=cbe38f56101c893f3932ec6be25108dd15854eb678b9310edd35a4a786bc96e2",
+     "title": "Sector Update: Tech Stocks Mixed Late Afternoon",
+     "link": "https://finnhub.io/api/news?id=39f065624a1766f0c3cc41bc76b37601070f130177da07d9f38817749ca5c858",
      "source": "Yahoo",
-     "at": "2026-10-09T17:49:28.000Z",
-     "desc": "The Dow Jones index rises Friday even as Apple stock sells off in morning trading. SpaceX jumps on a Starlink move."
+     "at": "2026-10-09T19:47:53.000Z",
+     "desc": "Tech stocks were mixed late Friday afternoon with the State Street Technology Select Sector SPDR ETF"
     },
     {
-     "title": "Elon Musk, Jensen Huang, and tech leaders receive White House National Medals",
-     "link": "https://finnhub.io/api/news?id=189c880b9208fee07e2dc21b40797cd24c20700ff3dbe64102a6e1e800bb4227",
+     "title": "AST SpaceMobile Stock Is Down on SpaceX News—and It Shouldn’t Be",
+     "link": "https://finnhub.io/api/news?id=3d36f4c6682ec0b160181529a37f4785c27eb669624c49c8b7c5efd700b7d88b",
      "source": "Yahoo",
-     "at": "2026-10-09T17:45:53.000Z",
-     "desc": "Elon Musk, Tesla (TSLA), SpaceX (SPCX) CEO, Jensen Huang Nvidia (NVDA) CEO, Dr. Lisa Su, AMD (AMD) CEO, Michael Dell, Dell Technologies (DELL) CEO, Satya Nadella Microsoft (MSFT) CEO, and Sergey Brin, Google (GOOG) co-f…"
+     "at": "2026-10-09T19:21:00.000Z",
+     "desc": "AST SpaceMobile could become a valuable ally for wireless carriers competing with SpaceX’s satellite-to-phone service, analysts say."
     },
     {
-     "title": "Sector Update: Tech Stocks Mixed Friday Afternoon",
-     "link": "https://finnhub.io/api/news?id=db78ea4c45139f1912790d8842a4288fd50d8b3cd3eaff45b709958875562ff7",
+     "title": "ASTS Slides 13% On SpaceX 800 MHz Deal, But CEO Says Carriers Already Hold 1,000 MHz For Its Satellites",
+     "link": "https://finnhub.io/api/news?id=506888709538457e139bce6270ae8004ee6247f5ecbc6bc4e7a6afba7f35b82b",
      "source": "Yahoo",
-     "at": "2026-10-09T17:42:01.000Z",
-     "desc": "Tech stocks were mixed Friday afternoon, with the State Street Technology Select Sector SPDR ETF (XL"
+     "at": "2026-10-09T19:16:00.000Z",
+     "desc": "ASTS CEO Abel Avellan said in a post on X that American operators hold about 1,000 MHz of low- and mid-band spectrum that can be tuned onto the AST network."
     },
     {
-     "title": "Jeff Bezos said a Blue Origin IPO is on the horizon. What could that mean for SpaceX?",
-     "link": "https://finnhub.io/api/news?id=1ac305501614db3ccf86a697abd3f600e3da34718cda60b0e4fb61efc92778bf",
+     "title": "SpaceX's Secret Weapon Is Hiding in Plain Sight",
+     "link": "https://finnhub.io/api/news?id=827bbf2ff5e4c7ed41e6ae43bebccd29013bbeee984ddec8664ed1c02ad90550",
      "source": "Yahoo",
-     "at": "2026-10-09T17:41:50.000Z",
-     "desc": "Amazon (AMZN) founder Jeff Bezos recently stated that Blue Origin will IPO in the future. Business Insider executive editor and anchor Dan DeFrancesco and his panel of experts weigh in on the details and what it could m…"
+     "at": "2026-10-09T19:11:00.000Z",
+     "desc": "SpaceX may be just another AI company."
     },
     {
-     "title": "Why T-Mobile Stock Just Crashed",
-     "link": "https://finnhub.io/api/news?id=0861bf3e9bc6fba4652910ee42145c37881ce716765e3123af657460fe8534fc",
+     "title": "SpaceX’s low-band spectrum deal gives Starlink Mobile a terrestrial foothold, UBS says",
+     "link": "https://finnhub.io/api/news?id=dc1fca7f64a7bcf793cf5f6df2ba0e23e887a07608ae1b3471c2f802e4be722a",
      "source": "Yahoo",
-     "at": "2026-10-09T17:41:24.000Z",
-     "desc": "SpaceX is buying spectrum, and T-Mobile investors are nervous."
+     "at": "2026-10-09T19:09:00.000Z",
+     "desc": "SpaceX Corp (NASDAQ:SPCX) is buying 14 MHz of 800 MHz spectrum from Grain Management, giving Starlink Mobile the low-band coverage layer UBS says it needs to build a terrestrial network reaching dense urban areas and bu…"
     }
    ]
   },
@@ -3843,12 +3843,12 @@
    "ticker": "WDC",
    "name": "Western Digital",
    "domain": "westerndigital.com",
-   "w": 3.59,
+   "w": 3.61,
    "holders": [
     {
      "name": "Fede",
      "slot": 1,
-     "w": 7.44
+     "w": 7.47
     }
    ],
    "prices": [
@@ -3970,10 +3970,10 @@
     },
     {
      "date": "2026-10-09",
-     "close": 394.68
+     "close": 397.28
     }
    ],
-   "ret": -14.1,
+   "ret": -13.53,
    "peers": [
     {
      "ticker": "MU",
@@ -4033,7 +4033,7 @@
  "monthly": {
   "current": {
    "name": "Fede",
-   "value": 0.34,
+   "value": 0.5,
    "treat": 1,
    "slot": 1,
    "month": 10,
@@ -4052,7 +4052,7 @@
      "id": "fede",
      "name": "Fede",
      "slot": 1,
-     "value": 0.34,
+     "value": 0.5,
      "cum": [
       -0.3382,
       0.637,
@@ -4060,14 +4060,14 @@
       2.9696,
       2.4819,
       -0.1591,
-      0.3381
+      0.5014
      ]
     },
     {
      "id": "ana",
      "name": "Ana",
      "slot": 0,
-     "value": -0.3,
+     "value": -0.26,
      "cum": [
       -0.0435,
       1.4503,
@@ -4075,7 +4075,7 @@
       2.7614,
       2.6768,
       0.3113,
-      -0.2962
+      -0.2621
      ]
     }
    ]
@@ -4237,7 +4237,7 @@
      "fede"
     ],
     "slot": 1,
-    "value": 0.5
+    "value": 0.66
    },
    {
     "date": "2026-10-08",
@@ -4428,7 +4428,7 @@
     "name": "Fede",
     "date": "2026-10-09",
     "month": "2026-10",
-    "pct": 0.34,
+    "pct": 0.5,
     "key": "champion:2026-10",
     "provisional": true,
     "slot": 1
