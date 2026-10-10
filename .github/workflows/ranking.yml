@@ -22,8 +22,9 @@ name: Ranking
 
 on:
   # Cambio de diseño de la web: se publica sin recalcular la liga. Los commits
-  # del propio ranking (docs/api/, ranking.md) van con GITHUB_TOKEN, que no
-  # dispara `push`, y además quedan fuera del filtro.
+  # del propio ranking y de la ingesta (docs/api/, ranking.md) van con
+  # GITHUB_TOKEN, que no dispara `push`, y además quedan fuera del filtro.
+  # La ingesta despliega Pages en su propio job cuando commitea esos docs.
   push:
     branches: [main]
     paths:
