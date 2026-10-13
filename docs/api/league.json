@@ -1,7 +1,7 @@
 {
  "api": 1,
- "updated": "2026-10-13 21:57",
- "generatedAt": "2026-10-13T19:57:26Z",
+ "updated": "2026-10-13 22:20",
+ "generatedAt": "2026-10-13T20:20:30Z",
  "players": [
   {
    "id": "ana",
@@ -1188,24 +1188,24 @@
     },
     {
      "date": "2026-10-13",
-     "day": 0.8632,
-     "cum": 16.2754,
+     "day": 0.8662,
+     "cum": 16.2789,
      "bd": [
       {
        "ticker": "AMD",
-       "pct": 0.6613
+       "pct": 0.7256
       },
       {
        "ticker": "NVDA",
-       "pct": 0.1426
-      },
-      {
-       "ticker": "GOOGL",
-       "pct": 0.1306
+       "pct": 0.1767
       },
       {
        "ticker": "JPM",
-       "pct": -0.0895
+       "pct": -0.1383
+      },
+      {
+       "ticker": "GOOGL",
+       "pct": 0.1022
       }
      ]
     }
@@ -1214,8 +1214,8 @@
     {
      "month": 10,
      "month_year": 2026,
-     "ret": -0.2948,
-     "cum": 16.2754
+     "ret": -0.2918,
+     "cum": 16.2789
     },
     {
      "month": 9,
@@ -1239,19 +1239,19 @@
    "holdings": [
     {
      "ticker": "AMD",
-     "w": 36.2
+     "w": 36.25
     },
     {
      "ticker": "GOOGL",
-     "w": 31.8
+     "w": 31.77
     },
     {
      "ticker": "NVDA",
-     "w": 17.07
+     "w": 17.1
     },
     {
      "ticker": "JPM",
-     "w": 14.94
+     "w": 14.88
     }
    ]
   },
@@ -3000,38 +3000,38 @@
     },
     {
      "date": "2026-10-13",
-     "day": -1.2206,
-     "cum": 10.0355,
+     "day": -1.1728,
+     "cum": 10.0888,
      "bd": [
       {
        "ticker": "SPCX",
-       "pct": -1.4048
+       "pct": -1.3997
       },
       {
        "ticker": "NVDA",
-       "pct": 0.2003
+       "pct": 0.2441
       },
       {
        "ticker": "WDC",
-       "pct": -0.1306
+       "pct": -0.1153
       },
       {
        "ticker": "GOOGL",
-       "pct": 0.1253
+       "pct": 0.098
       }
      ],
      "start": 5406.79,
-     "end": 5340.79,
+     "end": 5343.38,
      "flow": 0.0,
-     "pnl": -66.0
+     "pnl": -63.41
     }
    ],
    "months": [
     {
      "month": 10,
      "month_year": 2026,
-     "ret": -0.9717,
-     "cum": 10.0355
+     "ret": -0.9238,
+     "cum": 10.0888
     },
     {
      "month": 9,
@@ -3055,26 +3055,26 @@
    "holdings": [
     {
      "ticker": "GOOGL",
-     "w": 33.78
+     "w": 33.74
     },
     {
      "ticker": "SPCX",
-     "w": 32.85
+     "w": 32.84
     },
     {
      "ticker": "NVDA",
-     "w": 26.12
+     "w": 26.15
     },
     {
      "ticker": "WDC",
-     "w": 7.25
+     "w": 7.26
     }
    ],
    "goal": {
     "target": 14000.0,
-    "pct": 34.05,
+    "pct": 34.07,
     "currency": "USD",
-    "value": 4767.19
+    "value": 4770.03
    }
   }
  ],
@@ -3084,7 +3084,7 @@
   "deadline": "2027-08-01",
   "days": 292,
   "fx": {
-   "USD": 0.8926
+   "USD": 0.8927
   }
  },
  "operations": [
@@ -3156,15 +3156,15 @@
  "allocation": [
   {
    "ticker": "GOOGL",
-   "w": 32.67
+   "w": 32.64
   },
   {
    "ticker": "NVDA",
-   "w": 21.05
+   "w": 21.08
   },
   {
    "ticker": "AMD",
-   "w": 20.28
+   "w": 20.31
   },
   {
    "ticker": "SPCX",
@@ -3172,7 +3172,7 @@
   },
   {
    "ticker": "JPM",
-   "w": 8.37
+   "w": 8.34
   },
   {
    "ticker": "WDC",
@@ -3185,17 +3185,17 @@
    "ticker": "GOOGL",
    "name": "Alphabet",
    "domain": "abc.xyz",
-   "w": 32.67,
+   "w": 32.64,
    "holders": [
     {
      "name": "Fede",
      "slot": 1,
-     "w": 33.78
+     "w": 33.74
     },
     {
      "name": "Ana",
      "slot": 0,
-     "w": 31.8
+     "w": 31.77
     }
    ],
    "prices": [
@@ -3317,10 +3317,10 @@
     },
     {
      "date": "2026-10-13",
-     "close": 354.075
+     "close": 353.78
     }
    ],
-   "ret": 5.69,
+   "ret": 5.6,
    "peers": [
     {
      "ticker": "MSFT",
@@ -3340,39 +3340,39 @@
    ],
    "news": [
     {
-     "title": "Apple Is Taking on Amazon and Google in the Smart Home With a $299 Siri AI Device. Is HomeView the First Big Win for New CEO John Ternus?",
-     "link": "https://finnhub.io/api/news?id=b2449258756238b8536a71b173a0b1988206eba55770f01f2c73559091a4cd73",
+     "title": "Apple may have a way to dominate the smart home space",
+     "link": "https://finnhub.io/api/news?id=c0b714d07ac3ac243ef9849e9a95fc14d7ba5989951f0209a8ec4188790e057c",
      "source": "Yahoo",
-     "at": "2026-10-13T17:50:21.000Z",
-     "desc": "With HomeView, Apple is trying to make AI a useful part of everyday life."
+     "at": "2026-10-13T19:46:52.000Z",
+     "desc": "Yahoo Finance Technology Editor Dan Howley joins Market Domination host Brooke DiPalma to discuss the latest round of Apple (AAPL) smart home products and the company's edge in competing with Google (GOOG) and Amazon (A…"
     },
     {
-     "title": "MercadoLibre vs. Shopify: Which Consumer Stock Is a Better Buy in 2026?",
-     "link": "https://finnhub.io/api/news?id=d3d9ec61a3706139930739732cbc380d79aac051d24d4ff4d9ee0bdef720813a",
+     "title": "Is Snowflake Stock Riskier Than It Looks?",
+     "link": "https://finnhub.io/api/news?id=c8cbac5682ddf94c74e3bb1ed5204b3fba5b0e217fbc754b361211c319b8f7e5",
      "source": "Yahoo",
-     "at": "2026-10-13T17:35:02.000Z",
-     "desc": "MercadoLibre trades at a fraction of Shopify's valuation despite comparable growth, but regional exposure and fintech leverage create vastly different risk profiles."
+     "at": "2026-10-13T19:12:26.000Z",
+     "desc": "Snowflake (SNOW) stock has returned 169% over the past six months, against 14.0% for the S&P 500. Investors appear to believe artificial intelligence has put the company on a faster growth track, and the latest quarter…"
     },
     {
-     "title": "Apple's privacy edge may not be enough to save it in AI phone race",
-     "link": "https://finnhub.io/api/news?id=25a5ae611f1a0c8030c51d0ce4a63a08018897e4d42bf3a5de199830911e8ba5",
+     "title": "Google Argon Leaves the Fairwind Fence Behind. The Intro Pricing Is the Real Move.",
+     "link": "https://finnhub.io/api/news?id=6f602c5c38e37f45196a4db580e8e3961f643a050205dbe2c9d5fd664b35dc0c",
      "source": "Yahoo",
-     "at": "2026-10-13T17:16:52.000Z",
-     "desc": "Gerber Kawasaki Wealth & Investment Management CEO Ross Gerber and his panel of experts weigh in on how Apple's (AAPL) history of trustworthiness around personal data and privacy may not be enough to give it an edge ove…"
+     "at": "2026-10-13T19:01:25.000Z",
+     "desc": "Google’s introductory pricing on Gemini 4 Argon is not a discount. It is a wedge. At $2 per million input tokens and $10 per million output through November 30, Google has broken the $4/$20 per million token floor that…"
     },
     {
-     "title": "Alphabet (GOOGL) Backs AI Game Creation Platform For Millions Of New Users",
-     "link": "https://finnhub.io/api/news?id=2648a110a882ce8b98e8fa7dc8e0c95a21ea7a4471eef9e992d146a2691809f0",
+     "title": "The Five Largest Holdings in the RANK ETF After Its Latest Rebalance",
+     "link": "https://finnhub.io/api/news?id=567de157dc5959bc72fbaf24453fcb5b90c56837a4b89a235c014dfebf7272d6",
      "source": "Yahoo",
-     "at": "2026-10-13T17:13:59.000Z",
-     "desc": "Alphabet (NasdaqGS:GOOGL) and Unity announced a new AI-driven game creation platform called Unity Spark, planned for launch later in 2026. Unity Spark is designed to blend Google's AI research with Unity's development t…"
+     "at": "2026-10-13T19:00:00.000Z",
+     "desc": "The Defiance KSM TipRanks Analyst ETF (RANK) has completed its latest quarterly reconstitution and rebalance, which took effect after the close on September 21, 2026 with notable changes among its largest holdings. RANK…"
     },
     {
-     "title": "Discover which dow jones stocks are making waves on Tuesday.",
-     "link": "https://finnhub.io/api/news?id=40d2c5297662fe6576264f21cdd4db7fc189e73028158a4128a0960d9c568eed",
-     "source": "ChartMill",
-     "at": "2026-10-13T16:40:15.000Z",
-     "desc": "Curious about the dow jones stocks that are in motion on Tuesday? Join us as we explore the top movers within the dow jones index during today's session."
+     "title": "What Would Weak iPhone Demand Do To Apple Stock?",
+     "link": "https://finnhub.io/api/news?id=143da93740e1bfd14960f73e897a2d8c288256a01ff3cbce8ff207d71a36a19c",
+     "source": "Yahoo",
+     "at": "2026-10-13T18:34:40.000Z",
+     "desc": "Apple (AAPL) shareholders are facing concerns that the iPhone 18 Pro is falling short of sales expectations. On October 9, Nikkei Asia reported that Apple instructed certain suppliers to scale back component production…"
     }
    ]
   },
@@ -3380,17 +3380,17 @@
    "ticker": "NVDA",
    "name": "NVIDIA",
    "domain": "nvidia.com",
-   "w": 21.05,
+   "w": 21.08,
    "holders": [
     {
      "name": "Fede",
      "slot": 1,
-     "w": 26.12
+     "w": 26.15
     },
     {
      "name": "Ana",
      "slot": 0,
-     "w": 17.07
+     "w": 17.1
     }
    ],
    "prices": [
@@ -3512,10 +3512,10 @@
     },
     {
      "date": "2026-10-13",
-     "close": 228.125
+     "close": 228.52
     }
    ],
-   "ret": 4.91,
+   "ret": 5.1,
    "peers": [
     {
      "ticker": "AMD",
@@ -3535,39 +3535,39 @@
    ],
    "news": [
     {
-     "title": "What's going on in today's session: S&P500 most active stocks",
-     "link": "https://finnhub.io/api/news?id=cf4b193290ba2707875c570cb7a6fa40447e3a4c1a0e281b98a05971f3058df9",
-     "source": "ChartMill",
-     "at": "2026-10-13T18:05:03.000Z",
-     "desc": "Explore the S&P500 index on Tuesday and find out which stocks are the most active in today's session. Stay updated with the stocks that are capturing market interest and driving market movements."
+     "title": "Prediction: JPMorgan Chase Raises Its Dividend Again in 2027",
+     "link": "https://finnhub.io/api/news?id=0a21cd1448caf5ff3b1a7b97b80ed7c4daa343d1746832e8f525f74885d4e125",
+     "source": "Yahoo",
+     "at": "2026-10-13T19:50:00.000Z",
+     "desc": "The nation's largest bank is built for this."
     },
     {
-     "title": "Nvidia says to invest in French medical website",
-     "link": "https://finnhub.io/api/news?id=03679d8fbf3aca2e555cef0d279b7216e440261fdbc295d4cd94f9f14b257ddc",
+     "title": "History Says This 1 Simple Strategy Could Build Life-Changing Wealth, and It Requires Next to No Effort",
+     "link": "https://finnhub.io/api/news?id=79b3070a39c4fcf6fad96a55c4bde17ccfad50b34ce193718623d9bf356dcf70",
      "source": "Yahoo",
-     "at": "2026-10-13T17:53:32.000Z",
-     "desc": "AI chip giant Nvidia will take a minority stake in French medical website Doctolib that plans to use the technology to improve health care, its chief executive Jensen Huang said Tuesday.The amount of the planned investm…"
+     "at": "2026-10-13T19:34:00.000Z",
+     "desc": "One simple, low-cost index fund could bring you life-changing money."
     },
     {
-     "title": "Apple Is Taking on Amazon and Google in the Smart Home With a $299 Siri AI Device. Is HomeView the First Big Win for New CEO John Ternus?",
-     "link": "https://finnhub.io/api/news?id=b2449258756238b8536a71b173a0b1988206eba55770f01f2c73559091a4cd73",
+     "title": "Oklo Stock Hits a New 52-Week Low: Time to Buy?",
+     "link": "https://finnhub.io/api/news?id=554e9935994772e1c2f9f4ea5bad83ec609bcc2c24c3d636d61096c9293046b3",
      "source": "Yahoo",
-     "at": "2026-10-13T17:50:21.000Z",
-     "desc": "With HomeView, Apple is trying to make AI a useful part of everyday life."
+     "at": "2026-10-13T19:30:01.000Z",
+     "desc": "The energy stock is down 84% from its high, with its valuation falling below $6 billion."
     },
     {
-     "title": "2 Stocks That Could Double by 2031",
-     "link": "https://finnhub.io/api/news?id=ee6c4b3155af287828b019c10bb2f9f0a03d806a25d0075a023cd3c1e925a0e8",
+     "title": "What Is Next For Micron Stock?",
+     "link": "https://finnhub.io/api/news?id=c7dd6f08d6d026874fc81826252e7aa9b277727048eb00a7affc82507f0fa670",
      "source": "Yahoo",
-     "at": "2026-10-13T17:50:00.000Z",
-     "desc": "These stocks are down, while the underlying businesses continue to grow."
+     "at": "2026-10-13T19:06:43.000Z",
+     "desc": "Shares of Micron Technology (MU) have returned 415% over the past twelve months, easily outpacing the 17.3% return for the S&P 500. Yet the stock trades at just 13.2 times earnings, well below the 21.9 multiple of the b…"
     },
     {
-     "title": "Nebius (NBIS) Has Pricing Power. Its Earnings Don’t Show It Yet.",
-     "link": "https://finnhub.io/api/news?id=8d33ed4334d7e8b4490fa2af4da47988b58c156ab8c201cb647497f2c5eb06f2",
+     "title": "If the Bond Market Sell-Off Triggers a Recession, Decades of History Says Investors Should Do This 1 Thing",
+     "link": "https://finnhub.io/api/news?id=183a92fb0aad0d9333260f847d7997c4d62215e34ebc673410494d0fc7b82770",
      "source": "Yahoo",
-     "at": "2026-10-13T17:45:32.000Z",
-     "desc": "Cloud companies don’t usually raise prices. Competition in renting out computing power tends to push the other way, with each new chip generation cheapening the last. Yet at the start of this month, Nebius Group (NASDAQ…"
+     "at": "2026-10-13T19:05:00.000Z",
+     "desc": "Higher bond yields are cause for caution, not panic. Long-term investors shouldn't shy away from stocks."
     }
    ]
   },
@@ -3575,12 +3575,12 @@
    "ticker": "AMD",
    "name": "AMD",
    "domain": "amd.com",
-   "w": 20.28,
+   "w": 20.31,
    "holders": [
     {
      "name": "Ana",
      "slot": 0,
-     "w": 36.2
+     "w": 36.25
     }
    ],
    "prices": [
@@ -3702,10 +3702,10 @@
     },
     {
      "date": "2026-10-13",
-     "close": 604.53
+     "close": 605.53
     }
    ],
-   "ret": 31.53,
+   "ret": 31.75,
    "peers": [
     {
      "ticker": "NVDA",
@@ -3724,6 +3724,20 @@
     }
    ],
    "news": [
+    {
+     "title": "What Is Next For Micron Stock?",
+     "link": "https://finnhub.io/api/news?id=c7dd6f08d6d026874fc81826252e7aa9b277727048eb00a7affc82507f0fa670",
+     "source": "Yahoo",
+     "at": "2026-10-13T19:06:43.000Z",
+     "desc": "Shares of Micron Technology (MU) have returned 415% over the past twelve months, easily outpacing the 17.3% return for the S&P 500. Yet the stock trades at just 13.2 times earnings, well below the 21.9 multiple of the b…"
+    },
+    {
+     "title": "MSI Showcases Open Data Center and AI Infrastructure at 2026 OCP Global Summit",
+     "link": "https://finnhub.io/api/news?id=20823944e69e23d44b550c658735baaddd853aab078f7df638aca80ea069757b",
+     "source": "Yahoo",
+     "at": "2026-10-13T18:00:00.000Z",
+     "desc": "MSI showcases its open data center and AI infrastructure at the 2026 OCP Global Summit (Booth #A49), led by new 21-inch ORv3 systems and DC-MHS modular building blocks, alongside NVIDIA MGX rack and GPU server platforms…"
+    },
     {
      "title": "How This Rare Options Strategy Might Work On AMD Stock",
      "link": "https://finnhub.io/api/news?id=352c0666348bd678e2066a5fcf86f8a48a63f0da2b42c74340a5f3b1d5636109",
@@ -3744,20 +3758,6 @@
      "source": "Yahoo",
      "at": "2026-10-13T16:45:00.000Z",
      "desc": "Ray Dalio warned the world that AI looks like a classic bubble, then quietly kept Nvidia as Bridgewater's single largest stock holding. When a legendary investor's words and his money point in opposite directions, follo…"
-    },
-    {
-     "title": "How Much Of Qualcomm Stock Rides On One Business?",
-     "link": "https://finnhub.io/api/news?id=9d363b43ab8ecd699cf8473a7847a465925473cb82b2379641d78118bcd5483a",
-     "source": "Yahoo",
-     "at": "2026-10-13T16:24:55.000Z",
-     "desc": "Phone chip revenue is the central metric to watch at Qualcomm (QCOM). Handset chips generated $5.1 billion in fiscal Q3 2026, accounting for more than half of the company's $9.9 billion in revenue. Total revenue fell 4.…"
-    },
-    {
-     "title": "Fermi Soars 16% as AMD Backs Its 222 MW Texas AI Lease: “An Important Step”",
-     "link": "https://finnhub.io/api/news?id=535ec5ae419ccaac6d01a858f6706c4c44fd0c41c62f938bf23f08b5f14e77bf",
-     "source": "Yahoo",
-     "at": "2026-10-13T15:57:24.000Z",
-     "desc": "Key TakeawaysFermi shares jumped 16% today after AMD signed a credit support agreement for the lease on the 222 MW first phase of Fermi’s Project Matador campus in Texas. AMD’s backing supplies the guaranty that Fermi’s…"
     }
    ]
   },
@@ -3770,7 +3770,7 @@
     {
      "name": "Fede",
      "slot": 1,
-     "w": 32.85
+     "w": 32.84
     }
    ],
    "prices": [
@@ -3892,10 +3892,10 @@
     },
     {
      "date": "2026-10-13",
-     "close": 156.515
+     "close": 156.54
     }
    ],
-   "ret": 10.04,
+   "ret": 10.06,
    "peers": [
     {
      "ticker": "BA",
@@ -3955,12 +3955,12 @@
    "ticker": "JPM",
    "name": "JPMorgan Chase",
    "domain": "jpmorganchase.com",
-   "w": 8.37,
+   "w": 8.34,
    "holders": [
     {
      "name": "Ana",
      "slot": 0,
-     "w": 14.94
+     "w": 14.88
     }
    ],
    "prices": [
@@ -4082,12 +4082,19 @@
     },
     {
      "date": "2026-10-13",
-     "close": 332.444
+     "close": 331.43
     }
    ],
-   "ret": -6.34,
+   "ret": -6.63,
    "peers": [],
    "news": [
+    {
+     "title": "Prediction: JPMorgan Chase Raises Its Dividend Again in 2027",
+     "link": "https://finnhub.io/api/news?id=0a21cd1448caf5ff3b1a7b97b80ed7c4daa343d1746832e8f525f74885d4e125",
+     "source": "Yahoo",
+     "at": "2026-10-13T19:50:00.000Z",
+     "desc": "The nation's largest bank is built for this."
+    },
     {
      "title": "Explore the top gainers and losers within the dow jones index in today's session.",
      "link": "https://finnhub.io/api/news?id=239f1ec0bd6003c75b83346777ebb77ec584c75f68f4c78fd3f43f5a7e2d2574",
@@ -4096,32 +4103,25 @@
      "desc": "Uncover the latest developments among dow jones stocks in today's session. Stay tuned to the dow jones index's top gainers and losers on Tuesday."
     },
     {
-     "title": "Wealth Revenues Climb at Major Firms, Masking Weaknesses in Divisions",
-     "link": "https://finnhub.io/api/news?id=55c92a6249ba4f583d55c8a38e6847a86e03ce5aa7ddd377479df1cda809ca83",
+     "title": "JPMorgan CEO sends stern warning on the next credit cycle",
+     "link": "https://finnhub.io/api/news?id=c1af13427cbac5b975ea6f899e55ed21b0b1545e0e54c71498693165a70ffd19",
      "source": "Yahoo",
-     "at": "2026-10-13T17:39:59.000Z",
-     "desc": "JPMorgan Chase, Wells Fargo, Goldman Sachs and Citigroup were among the firms that reported third-quarter earnings."
+     "at": "2026-10-13T18:03:00.000Z",
+     "desc": "Jamie Dimon has been raising a major red flag all year. His message just got sharper."
     },
     {
-     "title": "Why JPMorgan can 'do well' in any rate environment",
-     "link": "https://finnhub.io/api/news?id=5d3981645e5a727d333f51c47c6638412095a3d504d129f05e3317e40009877d",
+     "title": "Update: Equities Edge Down Following Big Bank Earnings",
+     "link": "https://finnhub.io/api/news?id=45519fc4dadabb548df2fe9094656b24e44f2294ecaf2613f86b283b12dab6b7",
      "source": "Yahoo",
-     "at": "2026-10-13T17:12:01.000Z",
-     "desc": "Gerber Kawasaki Wealth & Investment Management CEO Ross Gerber and his panel of experts weigh in on the first wave of Big Bank earnings, especially JPMorgan's (JPM).Today's panel includes iCapital chief investment strat…"
+     "at": "2026-10-13T17:56:54.000Z",
+     "desc": "(Updates with latest market prices and developments.) US benchmark equity indexes were mostly low"
     },
     {
-     "title": "JPMorgan Chase & Co. Q3 2026 Earnings Call Summary",
-     "link": "https://finnhub.io/api/news?id=8c0b10a39cb0acf6378fde887a2674d8f021eee49f929353da21679edc8b6f1f",
+     "title": "Big bank earnings, who's using Meta’s Muse, and dealing with elevated mortgage rates",
+     "link": "https://finnhub.io/api/news?id=1d10ae88748389f47f3c6198c49a208a79e09e6bf8617f21a4ef2ed4f287552d",
      "source": "Yahoo",
-     "at": "2026-10-13T16:48:19.000Z",
-     "desc": "Moby summary of JPMorgan Chase & Co.'s Q3 2026 earnings call"
-    },
-    {
-     "title": "Stock Market Today: Nasdaq-100, Small Caps Lead Dip; Apple Retakes Entry, Meta Near Pivot Point (Live Coverage)",
-     "link": "https://finnhub.io/api/news?id=71f4482e777541ac9de4b34e7bed4a040fe0ba601df0cf1a5e17fc04358b6031",
-     "source": "Yahoo",
-     "at": "2026-10-13T16:42:12.000Z",
-     "desc": "The Dow Jones index rises Tuesday as JPMorgan and Goldman report earnings. Micron, Sandisk and SK Hynix sell off."
+     "at": "2026-10-13T17:56:11.000Z",
+     "desc": "The Market Hang panel discusses the latest round of big bank earnings, who's using Meta’s (META) Muse, and how to deal with the pressures of elevated mortgage rates. Today's panel includes host Gerber Kawasaki Wealth &…"
     }
    ]
   },
@@ -4134,7 +4134,7 @@
     {
      "name": "Fede",
      "slot": 1,
-     "w": 7.25
+     "w": 7.26
     }
    ],
    "prices": [
@@ -4256,10 +4256,10 @@
     },
     {
      "date": "2026-10-13",
-     "close": 379.88
+     "close": 380.71
     }
    ],
-   "ret": -15.66,
+   "ret": -15.48,
    "peers": [
     {
      "ticker": "MU",
@@ -4279,6 +4279,27 @@
    ],
    "news": [
     {
+     "title": "Western Digital (WDC) Faces Fresh Pressure In The Memory Market",
+     "link": "https://finnhub.io/api/news?id=d1bc573fed8122299540480e0421cfe9402bad856b2fc67fb61579aa1424e3dc",
+     "source": "Yahoo",
+     "at": "2026-10-13T19:11:30.000Z",
+     "desc": "Western Digital (NasdaqGS:WDC) is in focus after rapid advances at Chinese memory rival CXMT intensified competitive pressure in DRAM. CXMT has reported progress in high density DRAM technology alongside a successful IP…"
+    },
+    {
+     "title": "What Is Next For Micron Stock?",
+     "link": "https://finnhub.io/api/news?id=c7dd6f08d6d026874fc81826252e7aa9b277727048eb00a7affc82507f0fa670",
+     "source": "Yahoo",
+     "at": "2026-10-13T19:06:43.000Z",
+     "desc": "Shares of Micron Technology (MU) have returned 415% over the past twelve months, easily outpacing the 17.3% return for the S&P 500. Yet the stock trades at just 13.2 times earnings, well below the 21.9 multiple of the b…"
+    },
+    {
+     "title": "Seagate and Western Digital Shares Plummet, What You Need To Know",
+     "link": "https://finnhub.io/api/news?id=31083b2ceaa142ed7dd3a1b9d595819e8fb4fe156d0ed64f80f2bf654bead588",
+     "source": "Yahoo",
+     "at": "2026-10-13T18:35:04.000Z",
+     "desc": "A number of stocks fell in the morning session after reports of design breakthroughs in China prompted investors to reassess expectations for tight memory and chip supplies."
+    },
+    {
      "title": "Should You Buy Sandisk Stock Before Oct. 29?",
      "link": "https://finnhub.io/api/news?id=343c0eb52d268362c58b882fff931bbb034ac87a5f7bcdd681c4e9bb86fdbef7",
      "source": "Yahoo",
@@ -4291,27 +4312,6 @@
      "source": "Yahoo",
      "at": "2026-10-13T14:45:23.000Z",
      "desc": "Seagate shares cratered 15% in a single week even as analysts refused to cut a single earnings estimate and the stock still sits nearly 52% below where the average price target says it should be. Something in that gap i…"
-    },
-    {
-     "title": "These S&P500 stocks are gapping in today's session",
-     "link": "https://finnhub.io/api/news?id=251766da1e5b52b9f8d9aa0b816bae4f1afe5880c09586fb51895499921bf780",
-     "source": "ChartMill",
-     "at": "2026-10-13T14:35:01.000Z",
-     "desc": "Curious about the S&P500 stocks that are gapping on Tuesday? Explore the gap up and gap down stocks in the S&P500 index during today's session."
-    },
-    {
-     "title": "Takeaways from Q3 bank earnings, & how United Airlines is betting big on Starlink",
-     "link": "https://finnhub.io/api/news?id=e35f5a2d7c7e88f82476d83910abdb87a55cbc08e66c9acf68474edf0a64f767",
-     "source": "Yahoo",
-     "at": "2026-10-13T14:23:13.000Z",
-     "desc": "Yahoo Finance Executive Editor Brian Sozzi takes a look at the biggest stories as the trading day kicks off, weighing in on Big Bank earnings, United Airlines (UAL) getting a leg up from SpaceX's (SPCX) Starlink, and mo…"
-    },
-    {
-     "title": "Memory chip stocks fall as China's latest development rattles investors",
-     "link": "https://finnhub.io/api/news?id=23e07f12e5da79f1d7b408673d83726d7dfc5b74576e7a2ae50d07a60c2673af",
-     "source": "Yahoo",
-     "at": "2026-10-13T14:14:00.000Z",
-     "desc": "Yahoo Finance Executive Editor Brian Sozzi breaks down why Micron (MU), Sandisk (SNDK), SK Hynix (SKHY), and Western Digital (WDC) are all lower today. Memory stocks are selling off following the news that the Chinese c…"
     }
    ]
   }
@@ -4350,14 +4350,14 @@
       0.3113,
       -0.1958,
       -1.148,
-      -0.2948
+      -0.2918
      ]
     },
     {
      "id": "fede",
      "name": "Fede",
      "slot": 1,
-     "value": -0.97,
+     "value": -0.92,
      "cum": [
       -0.3382,
       0.637,
@@ -4367,7 +4367,7 @@
       -0.1591,
       0.5014,
       0.252,
-      -0.9717
+      -0.9238
      ]
     }
    ]
@@ -4529,7 +4529,7 @@
      "ana"
     ],
     "slot": 0,
-    "value": 0.86
+    "value": 0.87
    },
    {
     "date": "2026-10-12",
