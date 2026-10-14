@@ -43,6 +43,12 @@ name: Ingesta
 # `player_id` es opcional (defecto: fede). `csv_base64` es obligatorio.
 # Para probar a mano: Actions → Ingesta → Run workflow; si rellenas
 # csv_base64 se usa el camino CSV, si no se lee el buzón por IMAP.
+#
+# Si hay operaciones nuevas, este workflow recalcula el ranking, lo
+# commitea en docs/ y despliega GitHub Pages aquí mismo. El push va
+# con GITHUB_TOKEN, que no dispara el `push` de ranking.yml, y un
+# Ranking posterior vería docs/ ya igual y se saltaría Pages. Sin
+# novedades no se publica ni se redespliega.
 
 on:
   # Email: Apps Script llama al timbre. CSV: Steve / gh / automatización.
@@ -62,6 +68,8 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 # Misma cola que ranking (league-publish): serializa publicaciones a main.
 concurrency:
@@ -71,6 +79,8 @@ concurrency:
 jobs:
   ingest:
     runs-on: ubuntu-latest
+    outputs:
+      docs_changed: ${{ steps.docs.outputs.changed || 'false' }}
     steps:
       - name: Elegir camino
         id: kind
@@ -90,6 +100,9 @@ jobs:
           fi
 
       - uses: actions/checkout@v4
+
+      - name: Recordar árbol de docs/
+        run: echo "DOCS_TREE_BEFORE=$(git rev-parse HEAD:docs)" >> "$GITHUB_ENV"
 
       - uses: actions/setup-python@v5
         with:
@@ -232,3 +245,44 @@ jobs:
           done
           echo "No se pudo publicar tras varios intentos." >&2
           exit 1
+
+      # Compara el docs/ publicado en la rama, no el working tree local:
+      # el enganche debe desplegar lo que Ingesta acaba de subir.
+      - name: ¿Cambió docs/?
+        id: docs
+        if: success()
+        run: |
+          set -euo pipefail
+          git fetch origin "${GITHUB_REF_NAME}"
+          after=$(git rev-parse "origin/${GITHUB_REF_NAME}:docs")
+          if [ "${DOCS_TREE_BEFORE:-}" != "$after" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "docs/ ha cambiado; se publica Pages."
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "docs/ igual que al empezar; no se redespliega Pages."
+          fi
+
+  pages:
+    needs: ingest
+    if: >
+      success()
+      && needs.ingest.outputs.docs_changed == 'true'
+      && github.ref_name == 'main'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
