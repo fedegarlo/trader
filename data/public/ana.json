@@ -376,8 +376,13 @@
     },
     {
       "date": "2026-10-27",
-      "daily_return_pct": 3.1894,
-      "cumulative_return_pct": 9.023
+      "daily_return_pct": 2.692,
+      "cumulative_return_pct": 8.4975
+    },
+    {
+      "date": "2026-10-28",
+      "daily_return_pct": 1.5677,
+      "cumulative_return_pct": 10.1984
     }
   ]
 }

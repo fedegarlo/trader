@@ -1,7 +1,7 @@
 {
  "api": 1,
- "updated": "2026-10-27 20:36",
- "generatedAt": "2026-10-27T19:36:58Z",
+ "updated": "2026-10-28 20:51",
+ "generatedAt": "2026-10-28T19:51:02Z",
  "players": [
   {
    "id": "ana",
@@ -1418,24 +1418,47 @@
     },
     {
      "date": "2026-10-27",
-     "day": 3.1894,
-     "cum": 9.023,
+     "day": 2.692,
+     "cum": 8.4975,
      "bd": [
       {
        "ticker": "AMD",
-       "pct": 2.1725
+       "pct": 2.0323
       },
       {
        "ticker": "GOOGL",
-       "pct": 0.7348
+       "pct": 0.3976
       },
       {
        "ticker": "NVDA",
-       "pct": 0.1657
+       "pct": 0.1701
       },
       {
        "ticker": "JPM",
-       "pct": 0.1141
+       "pct": 0.092
+      }
+     ]
+    },
+    {
+     "date": "2026-10-28",
+     "day": 1.5677,
+     "cum": 10.1984,
+     "bd": [
+      {
+       "ticker": "AMD",
+       "pct": 1.1718
+      },
+      {
+       "ticker": "GOOGL",
+       "pct": 0.4732
+      },
+      {
+       "ticker": "NVDA",
+       "pct": -0.2518
+      },
+      {
+       "ticker": "JPM",
+       "pct": 0.1808
       }
      ]
     }
@@ -1444,8 +1467,8 @@
     {
      "month": 10,
      "month_year": 2026,
-     "ret": -6.5137,
-     "cum": 9.023
+     "ret": -5.5057,
+     "cum": 10.1984
     },
     {
      "month": 9,
@@ -1469,19 +1492,19 @@
    "holdings": [
     {
      "ticker": "AMD",
-     "w": 35.76
+     "w": 36.35
     },
     {
      "ticker": "GOOGL",
-     "w": 30.89
+     "w": 30.71
     },
     {
      "ticker": "NVDA",
-     "w": 17.32
+     "w": 16.92
     },
     {
      "ticker": "JPM",
-     "w": 16.04
+     "w": 16.02
     }
    ]
   },
@@ -3500,38 +3523,65 @@
     },
     {
      "date": "2026-10-27",
-     "day": 2.042,
-     "cum": 4.124,
+     "day": 1.4896,
+     "cum": 3.5604,
      "bd": [
       {
+       "ticker": "WDC",
+       "pct": 0.4999
+      },
+      {
        "ticker": "GOOGL",
-       "pct": 0.6996
+       "pct": 0.3816
       },
       {
        "ticker": "SPCX",
-       "pct": 0.6141
-      },
-      {
-       "ticker": "WDC",
-       "pct": 0.4958
+       "pct": 0.3731
       },
       {
        "ticker": "NVDA",
-       "pct": 0.2223
+       "pct": 0.235
       }
      ],
      "start": 4952.73,
-     "end": 5053.86,
+     "end": 5026.51,
      "flow": 0.0,
-     "pnl": 101.13
+     "pnl": 73.78
+    },
+    {
+     "date": "2026-10-28",
+     "day": -0.2916,
+     "cum": 3.2584,
+     "bd": [
+      {
+       "ticker": "SPCX",
+       "pct": -0.6718
+      },
+      {
+       "ticker": "GOOGL",
+       "pct": 0.4626
+      },
+      {
+       "ticker": "NVDA",
+       "pct": -0.3489
+      },
+      {
+       "ticker": "WDC",
+       "pct": 0.2778
+      }
+     ],
+     "start": 5026.51,
+     "end": 5011.85,
+     "flow": 0.0,
+     "pnl": -14.66
     }
    ],
    "months": [
     {
      "month": 10,
      "month_year": 2026,
-     "ret": -6.292,
-     "cum": 4.124
+     "ret": -7.0709,
+     "cum": 3.2584
     },
     {
      "month": 9,
@@ -3554,27 +3604,27 @@
    ],
    "holdings": [
     {
-     "ticker": "SPCX",
-     "w": 33.24
+     "ticker": "GOOGL",
+     "w": 33.1
     },
     {
-     "ticker": "GOOGL",
-     "w": 32.68
+     "ticker": "SPCX",
+     "w": 32.59
     },
     {
      "ticker": "NVDA",
-     "w": 26.39
+     "w": 26.26
     },
     {
      "ticker": "WDC",
-     "w": 7.69
+     "w": 8.04
     }
    ],
    "goal": {
     "target": 14000.0,
-    "pct": 32.4,
+    "pct": 32.08,
     "currency": "USD",
-    "value": 4536.35
+    "value": 4491.62
    }
   }
  ],
@@ -3582,9 +3632,9 @@
  "goal": {
   "target": 14000.0,
   "deadline": "2027-08-01",
-  "days": 278,
+  "days": 277,
   "fx": {
-   "USD": 0.8976
+   "USD": 0.8962
   }
  },
  "operations": [
@@ -3656,27 +3706,27 @@
  "allocation": [
   {
    "ticker": "GOOGL",
-   "w": 31.68
+   "w": 31.75
   },
   {
    "ticker": "NVDA",
-   "w": 21.32
+   "w": 20.99
   },
   {
    "ticker": "AMD",
-   "w": 20.0
+   "w": 20.5
   },
   {
    "ticker": "SPCX",
-   "w": 14.64
+   "w": 14.21
   },
   {
    "ticker": "JPM",
-   "w": 8.97
+   "w": 9.04
   },
   {
    "ticker": "WDC",
-   "w": 3.39
+   "w": 3.51
   }
  ],
  "market": null,
@@ -3685,24 +3735,20 @@
    "ticker": "GOOGL",
    "name": "Alphabet",
    "domain": "abc.xyz",
-   "w": 31.68,
+   "w": 31.75,
    "holders": [
     {
      "name": "Fede",
      "slot": 1,
-     "w": 32.68
+     "w": 33.1
     },
     {
      "name": "Ana",
      "slot": 0,
-     "w": 30.89
+     "w": 30.71
     }
    ],
    "prices": [
-    {
-     "date": "2026-09-16",
-     "close": 342.87
-    },
     {
      "date": "2026-09-17",
      "close": 347.33
@@ -3817,10 +3863,14 @@
     },
     {
      "date": "2026-10-27",
-     "close": 323.73
+     "close": 320.58
+    },
+    {
+     "date": "2026-10-28",
+     "close": 325.23
     }
    ],
-   "ret": -5.58,
+   "ret": -6.36,
    "peers": [
     {
      "ticker": "MSFT",
@@ -3840,39 +3890,39 @@
    ],
    "news": [
     {
-     "title": "CEG Stock Gains On Reported $5B Nuclear Financing Offer – A Look At Some Key Highlights",
-     "link": "https://finnhub.io/api/news?id=7c4a1bafe408c87eded3e6c8a843a480101bc9698eddf96a358da21a0fa59c68",
+     "title": "Oracle has a spending question its new chip deals can’t answer",
+     "link": "https://finnhub.io/api/news?id=3811fbac98ac0d1165560b053ce1637a8725dbd180d4ff251d92803dcf977f1e",
      "source": "Yahoo",
-     "at": "2026-10-27T17:46:58.000Z",
-     "desc": "According to a Bloomberg report, Constellation Energy could receive up to $5 billion in federal financing to upgrade its nuclear reactors across eight sites."
+     "at": "2026-10-28T17:47:00.000Z",
+     "desc": "Oracle is lining up Google’s and Nvidia’s newest chips for cloud customers. The harder part comes when investors open the books."
     },
     {
-     "title": "Stock Market Today: Dow Wobbles As Boeing Dives; Broadcom Pops After Anthropic Report (Live Coverage)",
-     "link": "https://finnhub.io/api/news?id=f6e8fa1162489dc7702484ba185659de4a6a8c821e35970b2583c5a21c3f8d33",
+     "title": "Microsoft might be the 'adult in the room' when it comes AI. Here's why.",
+     "link": "https://finnhub.io/api/news?id=f4177ad66748f48b3034ff8fc6b0556481a11088642c0075a30a13db236788fa",
      "source": "Yahoo",
-     "at": "2026-10-27T17:29:58.000Z",
-     "desc": "Stock Market Today: The Dow Jones index rises Tuesday as the Fed meeting starts. Boeing stock tumbles. Consumer discretionary stocks rose."
+     "at": "2026-10-28T17:43:38.000Z",
+     "desc": "Ahead of key earnings from both Microsoft (MSFT) and Alphabet (GOOG, GOOGL), Laffer Tengler Investments CEO and CIO Nancy Tengler and her expert panel weigh in on how Microsoft could currently be the leader in AI due to…"
     },
     {
-     "title": "Alphabet Is Set to Become an Even Bigger Anthropic Shareholder After the IPO",
-     "link": "https://finnhub.io/api/news?id=bf6ea8f3bd7f6835856d65a5c08a9d5f3e0cfab8d726456c45831c32229c2e55",
+     "title": "Update: US Equity Indexes Gain Moderately Ahead of Fed Policy Moves, Mag-7 Earnings",
+     "link": "https://finnhub.io/api/news?id=f447cc0ba81da8f968eb2c47cd45dd19610c76b3cc563bb4f1bd67b8189deb3a",
      "source": "Yahoo",
-     "at": "2026-10-27T17:15:00.000Z",
-     "desc": "The tech giant is already the AI darling's second-largest shareholder."
+     "at": "2026-10-28T17:26:24.000Z",
+     "desc": "(Updates with index/price moves, macroeconomic data, and company/geopolitical news from the first pa"
     },
     {
-     "title": "IREN And 2 Top AI Stocks To Watch",
-     "link": "https://finnhub.io/api/news?id=756229202576e13ad008d947c8f097370b539ba0b54855466876809be7d44b8d",
+     "title": "Update: Equities Rise Intraday as Fed Decision Looms",
+     "link": "https://finnhub.io/api/news?id=c83ee1ee37f44d2440b4fa96e22e9d840278659665daa1e469355dfd93646bf4",
      "source": "Yahoo",
-     "at": "2026-10-27T17:08:02.000Z",
-     "desc": "Bond investors are starting to worry less about the Federal Reserve and more about whether huge AI infrastructure buildouts can be financed sustainably. This shift puts the spotlight on the companies selling the compute…"
+     "at": "2026-10-28T17:25:49.000Z",
+     "desc": "(Updates with latest market prices and developments.) US benchmark equity indexes edged higher in"
     },
     {
-     "title": "Meta’s Capital Raise Is Spooking Investors. What the Price Targets Say Now",
-     "link": "https://finnhub.io/api/news?id=18196c5c2e0bb0a065070dbaa7a77726e0305d1858a76cc35727428124d5e769",
+     "title": "Exchange-Traded Funds, US Equities Mixed After Midday",
+     "link": "https://finnhub.io/api/news?id=42cad959d793fdc20b716752e331a1f33a10bcf43bd14079af60d32a95222608",
      "source": "Yahoo",
-     "at": "2026-10-27T17:03:42.000Z",
-     "desc": "Meta just handed investors a legal charge, negative free cash flow, and a brand-new share class designed for raising capital, all in one earnings report. Whether that combination signals a buying opportunity or a warnin…"
+     "at": "2026-10-28T17:22:01.000Z",
+     "desc": "Broad Market Indicators Broad-market exchange-traded fund IWM edged lower and IVV rose. Active"
     }
    ]
   },
@@ -3880,24 +3930,20 @@
    "ticker": "NVDA",
    "name": "NVIDIA",
    "domain": "nvidia.com",
-   "w": 21.32,
+   "w": 20.99,
    "holders": [
     {
      "name": "Fede",
      "slot": 1,
-     "w": 26.39
+     "w": 26.26
     },
     {
      "name": "Ana",
      "slot": 0,
-     "w": 17.32
+     "w": 16.92
     }
    ],
    "prices": [
-    {
-     "date": "2026-09-16",
-     "close": 213.9
-    },
     {
      "date": "2026-09-17",
      "close": 219.34
@@ -4012,10 +4058,14 @@
     },
     {
      "date": "2026-10-27",
-     "close": 217.835
+     "close": 217.94
+    },
+    {
+     "date": "2026-10-28",
+     "close": 215.0174
     }
    ],
-   "ret": 1.84,
+   "ret": -1.97,
    "peers": [
     {
      "ticker": "AMD",
@@ -4035,39 +4085,39 @@
    ],
    "news": [
     {
-     "title": "IQVIA Holdings Inc. Q3 2026 Earnings Call Summary",
-     "link": "https://finnhub.io/api/news?id=5db3401fc3b8dbefd523b8eebfabd075f6d3a89d19e30a4ac5b2f2941db4e591",
+     "title": "Oracle has a spending question its new chip deals can’t answer",
+     "link": "https://finnhub.io/api/news?id=3811fbac98ac0d1165560b053ce1637a8725dbd180d4ff251d92803dcf977f1e",
      "source": "Yahoo",
-     "at": "2026-10-27T17:50:19.000Z",
-     "desc": "Moby summary of IQVIA Holdings Inc.'s Q3 2026 earnings call"
+     "at": "2026-10-28T17:47:00.000Z",
+     "desc": "Oracle is lining up Google’s and Nvidia’s newest chips for cloud customers. The harder part comes when investors open the books."
     },
     {
-     "title": "All It Takes Is 226 Shares of Altria Stock to Earn $1,000 a Year in Dividends. Is It Worth It?",
-     "link": "https://finnhub.io/api/news?id=e31a8316f20085351c112a64a1113b1e336de2809c66ed2379578575e2b304d1",
+     "title": "Garmin Ltd. Q3 2026 Earnings Call Summary",
+     "link": "https://finnhub.io/api/news?id=0305c52baf82c2a0b84e1046f1af54ab43d1664616c34028794db2d39d06ed30",
      "source": "Yahoo",
-     "at": "2026-10-27T17:50:00.000Z",
-     "desc": "The blue chip tobacco giant is still a reliable income investment."
+     "at": "2026-10-28T17:44:24.000Z",
+     "desc": "Moby summary of Garmin Ltd.'s Q3 2026 earnings call"
     },
     {
-     "title": "Galaxy Digital Q3 2026 Earnings Call Summary",
-     "link": "https://finnhub.io/api/news?id=1021aefab4adb74639d6abdcf14406514999f237fd444f25003465be352584dc",
+     "title": "Group 1 Automotive, Inc. Q3 2026 Earnings Call Summary",
+     "link": "https://finnhub.io/api/news?id=236d031b350976ace4261b63e3727e8ace840202993235c72bd656b95dbfbd1c",
      "source": "Yahoo",
-     "at": "2026-10-27T17:48:42.000Z",
-     "desc": "Moby summary of Galaxy Digital's Q3 2026 earnings call"
+     "at": "2026-10-28T17:40:38.000Z",
+     "desc": "Moby summary of Group 1 Automotive, Inc.'s Q3 2026 earnings call"
     },
     {
-     "title": "Independent Bank Corporation Q3 2026 Earnings Call Summary",
-     "link": "https://finnhub.io/api/news?id=6be9c10ade22af3efca476e5e55aa21df8f5233484e224df4c2abdf2a2304240",
+     "title": "Terex Corporation Q3 2026 Earnings Call Summary",
+     "link": "https://finnhub.io/api/news?id=71cf547ddb8df88606db4c8f59fb9f3b16f505e1dda467285a03d0908b95450e",
      "source": "Yahoo",
-     "at": "2026-10-27T17:45:50.000Z",
-     "desc": "Moby summary of Independent Bank Corporation's Q3 2026 earnings call"
+     "at": "2026-10-28T17:40:34.000Z",
+     "desc": "Moby summary of Terex Corporation's Q3 2026 earnings call"
     },
     {
-     "title": "JetBlue Airways Corporation Q3 2026 Earnings Call Summary",
-     "link": "https://finnhub.io/api/news?id=741a216d4ace9d9b9dd6abe368d4691e0691274275fd6976308a9a78b855ae08",
+     "title": "Jones Lang LaSalle Incorporated Q3 2026 Earnings Call Summary",
+     "link": "https://finnhub.io/api/news?id=fcdd1b3eb4a8760ef24226f56e4118ff75aef20371d9ac7d80cc932aaaa4502b",
      "source": "Yahoo",
-     "at": "2026-10-27T17:44:45.000Z",
-     "desc": "Moby summary of JetBlue Airways Corporation's Q3 2026 earnings call"
+     "at": "2026-10-28T17:36:21.000Z",
+     "desc": "Moby summary of Jones Lang LaSalle Incorporated's Q3 2026 earnings call"
     }
    ]
   },
@@ -4075,19 +4125,15 @@
    "ticker": "AMD",
    "name": "AMD",
    "domain": "amd.com",
-   "w": 20.0,
+   "w": 20.5,
    "holders": [
     {
      "name": "Ana",
      "slot": 0,
-     "w": 35.76
+     "w": 36.35
     }
    ],
    "prices": [
-    {
-     "date": "2026-09-16",
-     "close": 512.5
-    },
     {
      "date": "2026-09-17",
      "close": 545.09
@@ -4202,10 +4248,14 @@
     },
     {
      "date": "2026-10-27",
-     "close": 562.26
+     "close": 560.26
+    },
+    {
+     "date": "2026-10-28",
+     "close": 577.42
     }
    ],
-   "ret": 9.71,
+   "ret": 5.93,
    "peers": [
     {
      "ticker": "NVDA",
@@ -4225,39 +4275,39 @@
    ],
    "news": [
     {
-     "title": "The AI economy, Apple's iPhone Duo issues, and Meta partners with Nvidia",
-     "link": "https://finnhub.io/api/news?id=9351e5d42e674c7c80becfd2ee40949712115fb21899328229ef1fe892ee3c4d",
+     "title": "TSMC Gains 3% on Reported 20% Price Hike for AI Chip Packaging",
+     "link": "https://finnhub.io/api/news?id=7aed059e3e7663c05adc28e8b5e725b6a5cc57874ac0e99e8e62d0067268851b",
      "source": "Yahoo",
-     "at": "2026-10-27T17:40:40.000Z",
-     "desc": "In this episode of Market Hang, Laffer Tengler Investments CEO and CIO Nancy Tengler and her panel of experts weigh in on the risks of circular financing as Meta's (META) partners with Nvidia (NVDA) and AMD (AMD), and A…"
+     "at": "2026-10-28T16:35:55.000Z",
+     "desc": "Key TakeawaysTSMC shares rose 3% today after Taiwan’s Commercial Times reported that the company is preparing to raise prices for its CoWoS AI chip packaging by up to 20%. The increase would land on customers like Nvidi…"
     },
     {
-     "title": "Meta's deal with AMD, Nvidia, Broadcom: Is circular financing a risk?",
-     "link": "https://finnhub.io/api/news?id=35d438f71fa2f3f9ec3898bf4045b2b9a3cec9794dd861ee5bc7b49cd4a5d01b",
+     "title": "Advanced Micro Devices vs. Dell Technologies: Which Technology Stock Is a Better Buy in 2026?",
+     "link": "https://finnhub.io/api/news?id=8c921f4939701f0734b940e207f79cd54cae036e98aed9b9757f51106f42fe32",
      "source": "Yahoo",
-     "at": "2026-10-27T17:06:00.000Z",
-     "desc": "Laffer Tengler Investments CEO and CIO Nancy Tengler and her panel of experts weigh in on Meta's (META) partnerships with AMD (AMD), Nvidia (NVDA), and Broadcom (AVGO).Today's panel includes Yahoo Finance Senior Autos R…"
+     "at": "2026-10-28T16:20:02.000Z",
+     "desc": "AMD's 34% revenue growth and $5.5 billion in free cash flow come with a 70x forward P/E, while Dell pairs $8.6 billion in free cash flow with a 17.6x multiple and a $95 billion AI server backlog."
     },
     {
-     "title": "Broadcom Lined Up a $63B Deal for Anthropic to Get More of Its Chips. The Stock Is Climbing",
-     "link": "https://finnhub.io/api/news?id=130cdff4ef71b9a586b8d6919cd9448bf2762cb2533ecc645c338dd507e0d351",
+     "title": "JPMorgan, Coca-Cola Join Pushback Against OKX-ICE Tokenized Stock Trading",
+     "link": "https://finnhub.io/api/news?id=7478655b224fc4d8c8d5ac9954494fd4f5bc0a1adc84768ea62d7528771b7440",
      "source": "Yahoo",
-     "at": "2026-10-27T16:45:44.000Z",
-     "desc": "Broadcom shares are on the rise as the chipmaker strengthens its ties with Claude maker Anthropic ahead of what’s expected to be a historic initial public offering."
+     "at": "2026-10-28T15:53:00.000Z",
+     "desc": "JPMorgan Chase (NYSE: $JPM), Coca-Cola (NYSE: $KO), and Dell Technologies (NYSE: $DELL) and four other companies ha..."
     },
     {
-     "title": "AMD stock rallies on expanded Meta AI infrastructure deal and broader chip rally",
-     "link": "https://finnhub.io/api/news?id=c183bd39ed167d835da2c00b86089497740a2b65a2320004b926a989b2490495",
+     "title": "Cathie Wood Pours Millions into Archer Aviation Stock",
+     "link": "https://finnhub.io/api/news?id=b651af54cf7cb6e4789dfc86776d7d1dd69b2ebde4d8ab228ad5a7b36fbcb6ca",
      "source": "Yahoo",
-     "at": "2026-10-27T16:44:17.000Z",
-     "desc": "Investing.com -- Shares of Advanced Micro Devices Inc (NASDAQ:AMD) advanced 5.4% in Tuesday afternoon trading, lifted by an expanded artificial intelligence partnership with Meta Platforms Inc. alongside broader industr…"
+     "at": "2026-10-28T15:13:52.000Z",
+     "desc": "Cathie Wood doubles down on flying taxis with a surprise two day Archer Aviation haul"
     },
     {
-     "title": "Nvidia, AMD Get Their Jollies Hooking Up With Meta's Muse",
-     "link": "https://finnhub.io/api/news?id=e9fbfac689c4f6b9e750a8ac7270e5d1bcaeefd6f25760c5067178e33f65db96",
+     "title": "JPMorgan, Coca-Cola Among 7 More Companies Objecting to OKX-ICE Tokenized Stocks",
+     "link": "https://finnhub.io/api/news?id=444e415803a51a9a5dd741b502acddc982ba6ae6bdbb680b04d2301b2a98327e",
      "source": "Yahoo",
-     "at": "2026-10-27T16:43:23.000Z",
-     "desc": "Nvidia and AMD separately announced deals with Meta Platforms to power the social media company's AI endeavors."
+     "at": "2026-10-28T15:05:03.000Z",
+     "desc": "Seven more companies, including JPMorgan Chase, Coca-Cola and Dell, have objected to trading of their shares on the planned OKX-ICE tokenized stock venue, bringing the total to 33."
     }
    ]
   },
@@ -4265,19 +4315,15 @@
    "ticker": "SPCX",
    "name": "SpaceX",
    "domain": "spacex.com",
-   "w": 14.64,
+   "w": 14.21,
    "holders": [
     {
      "name": "Fede",
      "slot": 1,
-     "w": 33.24
+     "w": 32.59
     }
    ],
    "prices": [
-    {
-     "date": "2026-09-16",
-     "close": 150.88
-    },
     {
      "date": "2026-09-17",
      "close": 154.81
@@ -4392,10 +4438,14 @@
     },
     {
      "date": "2026-10-27",
-     "close": 149.665
+     "close": 148.58
+    },
+    {
+     "date": "2026-10-28",
+     "close": 145.51
     }
    ],
-   "ret": -0.81,
+   "ret": -6.01,
    "peers": [
     {
      "ticker": "BA",
@@ -4415,39 +4465,39 @@
    ],
    "news": [
     {
-     "title": "Disruptive raises $10 billion for first formal fund",
-     "link": "https://finnhub.io/api/news?id=e601bf986d038a8c77120a84b5dc486e3d86f0e1c1958a0e9baf95dfa72156ef",
+     "title": "SpaceX Retreats As Russia's Putin Says This About Elon Musk",
+     "link": "https://finnhub.io/api/news?id=dcb7dd5616f97c8018a56da021f1130e48eebf7683b8a1c5af566f26e62deb65",
      "source": "Yahoo",
-     "at": "2026-10-27T17:29:02.000Z",
-     "desc": "Disruptive, a Dallas-based growth equity firm, has raised $10 billion for its first flagship fund."
+     "at": "2026-10-28T17:10:09.000Z",
+     "desc": "Russia President Vladimir Putin praised \"genius\" Elon Musk and SpaceX during a space program update. Also, an ad firm was accused of spying via Starlink, reports say."
     },
     {
-     "title": "Alphabet Is Set to Become an Even Bigger Anthropic Shareholder After the IPO",
-     "link": "https://finnhub.io/api/news?id=bf6ea8f3bd7f6835856d65a5c08a9d5f3e0cfab8d726456c45831c32229c2e55",
+     "title": "SpaceX stock slides back toward $140 as smaller space names leave it behind",
+     "link": "https://finnhub.io/api/news?id=b0482a770505da4cb447038abf3e8f247ed73e05eab0c72240cb76b2b0b3e8e8",
      "source": "Yahoo",
-     "at": "2026-10-27T17:15:00.000Z",
-     "desc": "The tech giant is already the AI darling's second-largest shareholder."
+     "at": "2026-10-28T17:09:05.000Z",
+     "desc": "SpaceX stock is back near the $140 floor while smaller space stocks are running ahead."
     },
     {
-     "title": "Tesla Rises 4% as ARK Reiterates $4,400 Long-Term Price Target on Robotaxi Thesis; Rivian Gains 3%, Lucid Holds Steady",
-     "link": "https://finnhub.io/api/news?id=38d791e84d9321c0295e00b4a1ba12f15dff227ab94c8cfe316f8c20b2a333f1",
+     "title": "What Jim Cramer is watching as Anthropic heads to Nasdaq",
+     "link": "https://finnhub.io/api/news?id=4990195ab159b0e59448d187ea4c0479ee06f76a30b0d05de11439b45912cb60",
      "source": "Yahoo",
-     "at": "2026-10-27T16:55:17.000Z",
-     "desc": "ARK Invest just reiterated a staggering long-term price target for Tesla while Cybercab rides expand and a potential SpaceX merger adds a wild card that neither Rivian nor Lucid can counter. Here is what is moving EV st…"
+     "at": "2026-10-28T17:07:00.000Z",
+     "desc": "Anthropic just filed to go public. Jim Cramer has one big question about what comes next."
     },
     {
-     "title": "United’s Kirby Says Delta’s Starlink Snub Was A Mistake",
-     "link": "https://finnhub.io/api/news?id=2cbc9ee19275e4f2f20a83062811ecfe644c497ce5717b808821ce5d80a397b9",
+     "title": "Tesla Gains Another 4% as ARK Restates $4,400 Robotaxi Target and Musk Teases “A Storm of Cybercabs”",
+     "link": "https://finnhub.io/api/news?id=ecef6a7efb24578bb232bbf301f516d98a315a4bc162c058f49cae0391de2074",
      "source": "Yahoo",
-     "at": "2026-10-27T16:49:54.000Z",
-     "desc": "United CEO Kirby said that 48% of its flights are now on Starlink, with the share set to hit 50% within days."
+     "at": "2026-10-28T16:33:58.000Z",
+     "desc": "Key TakeawaysTesla shares rose 4% today, adding to Monday’s gain on a Barclays upgrade, after ARK Invest restated its $4,400 price target for 2031. Barclays’ $450 target rests on a SpaceX merger, while ARK puts about 80…"
     },
     {
-     "title": "Verizon Sinks 4% on Revenue Miss Despite Record Subscriber Growth: “Fundamentally Stronger”",
-     "link": "https://finnhub.io/api/news?id=df04cad1c53b18b99feba2f9440351a2839df3dafeac52bc7c983a097d9e293c",
+     "title": "SpaceX Could Keep Starship Cost Savings Instead of Cutting Launch Prices, Varda Executive Says",
+     "link": "https://finnhub.io/api/news?id=6c1fe408160ce5bca2d2e37c16386ea548323926bb3434f76fa08517792d6e1d",
      "source": "Yahoo",
-     "at": "2026-10-27T16:11:47.000Z",
-     "desc": "Key TakeawaysVerizon stock fell 4% today after its third-quarter revenue of $34. 3 billion missed the $34."
+     "at": "2026-10-28T16:00:23.000Z",
+     "desc": "Elon Musk‘s SpaceX (NASDAQ:SPCX) could slash the cost of reaching orbit with Starship without giving customers much of a discount, a senior executive at one of its launch customers told Benzinga. Michael Reilly, chief s…"
     }
    ]
   },
@@ -4455,19 +4505,15 @@
    "ticker": "JPM",
    "name": "JPMorgan Chase",
    "domain": "jpmorganchase.com",
-   "w": 8.97,
+   "w": 9.04,
    "holders": [
     {
      "name": "Ana",
      "slot": 0,
-     "w": 16.04
+     "w": 16.02
     }
    ],
    "prices": [
-    {
-     "date": "2026-09-16",
-     "close": 348.92
-    },
     {
      "date": "2026-09-17",
      "close": 349.31
@@ -4582,46 +4628,50 @@
     },
     {
      "date": "2026-10-27",
-     "close": 336.21
+     "close": 335.79
+    },
+    {
+     "date": "2026-10-28",
+     "close": 339.32
     }
    ],
-   "ret": -3.64,
+   "ret": -2.86,
    "peers": [],
    "news": [
     {
-     "title": "JPMorgan CEO Warns of 5 Risks Threatening US Stocks and Bonds",
-     "link": "https://finnhub.io/api/news?id=91d71343f7b83f7aec8df74398c7cc0dfdf1ec88e5d3528073422c84a9c50bec",
+     "title": "F5 Stock Is Having Its Worst Day in Over a Decade. Blame Its Costly AI Push.",
+     "link": "https://finnhub.io/api/news?id=47f2b734b38f4bfcebce4498e0bf1fdeeeb4b1d6b285357a34492d5cf146cba2",
      "source": "Yahoo",
-     "at": "2026-10-27T15:32:00.000Z",
-     "desc": "Gasoline is up 34% and the Fed may hike again. JPMorgan names five risks for the stock and bond markets in 2026."
+     "at": "2026-10-28T17:03:00.000Z",
+     "desc": "F5 stock was heading for its worst single-day percentage drop in over 13 years."
     },
     {
-     "title": "Can AI Adoption Sustain Morgan Stanley's Wealth Management Growth?",
-     "link": "https://finnhub.io/api/news?id=e028412f3b48bde6b6b6c68380e83229f9df6d055c97491eee600df0a8a44dfc",
+     "title": "JPMorgan, Coca-Cola Join Pushback Against OKX-ICE Tokenized Stock Trading",
+     "link": "https://finnhub.io/api/news?id=7478655b224fc4d8c8d5ac9954494fd4f5bc0a1adc84768ea62d7528771b7440",
      "source": "Yahoo",
-     "at": "2026-10-27T14:49:00.000Z",
-     "desc": "MS' AI adoption is boosting advisor efficiency as Wealth Management revenues hit record highs, but can it sustain asset inflows and margin growth?"
+     "at": "2026-10-28T15:53:00.000Z",
+     "desc": "JPMorgan Chase (NYSE: $JPM), Coca-Cola (NYSE: $KO), and Dell Technologies (NYSE: $DELL) and four other companies ha..."
     },
     {
-     "title": "AstraZeneca offers compelling risk-reward into 2027 pipeline readouts, says JPMorgan",
-     "link": "https://finnhub.io/api/news?id=d4918d7a43f583408d8f7c0c148bd726cd1d69e8bd8123cd2444984c3add64f4",
+     "title": "Lisa Morales Joins Vinson & Elkins as NY-Based Corporate Partner",
+     "link": "https://finnhub.io/api/news?id=40aeb81e648cbbe16579f998c682b714bbe647ced13990a6d58676c0d9663d03",
      "source": "Yahoo",
-     "at": "2026-10-27T14:30:00.000Z",
-     "desc": "AstraZeneca PLC (LSE:AZN, NYSE:AZN) offers a compelling risk-reward opportunity ahead of a busy slate of late-stage trial readouts in 2027, according to JPMorgan. The broker said upcoming Phase III results could collect…"
+     "at": "2026-10-28T15:30:32.000Z",
+     "desc": "By Karen Roman Vinson & Elkins said Lisa Morales is the firm’s new partner in its Corporate practice in New York, having previously served at Simpson Thacher & Bartlett as M&A partner. Ms. Morales’ experience focuses on…"
     },
     {
-     "title": "'Don't Be Stupid. Go To Work For Google'—Scott Galloway Says People 'Romanticize Entrepreneurship,' But Underestimate Corporate Jobs",
-     "link": "https://finnhub.io/api/news?id=020eea756bc0232a535861fed6da754ed5978b4d5ba6b1976d3d79e8b1439732",
+     "title": "ChatGPT Latest Stock Portfolio: 5 Stock Picks",
+     "link": "https://finnhub.io/api/news?id=fdccc57e8aafe709da0ff8663b7195072307a34db13ea736fb704de1542467bc",
      "source": "Yahoo",
-     "at": "2026-10-27T14:00:12.000Z",
-     "desc": "Starting your own business might sound like the ultimate path to financial freedom, but NYU Stern professor and entrepreneur Scott Galloway believes many people overlook a less glamorous way to build serious wealth: get…"
+     "at": "2026-10-28T15:27:56.000Z",
+     "desc": "Remember when everyone said AI could never pick stocks? Some of the early numbers are making that line look old. AI systems have improved fast, and early numbers are making that view harder to defend. FinQ launched two…"
     },
     {
-     "title": "Stablecoin Firm RedotPay To Hold IPO By Year’s End: Reports",
-     "link": "https://finnhub.io/api/news?id=9e5ddb55f5ab5988439f37ec852b39552c419822a7e50798cdfce6f454b9e064",
+     "title": "JP Morgan lashes out at ‘unprincipled’ bank tax",
+     "link": "https://finnhub.io/api/news?id=72dfef37f0f8e06d7c24d2698302870ad4b098bbf4fa8e21a8777c78e87d22d7",
      "source": "Yahoo",
-     "at": "2026-10-27T13:08:00.000Z",
-     "desc": "Multiple media reports say that Hong Kong-based stablecoin firm RedotPay plans to hold a U.S. initial public offeri..."
+     "at": "2026-10-28T15:26:43.000Z",
+     "desc": "JP Morgan has criticised John Healey’s tax raid on banks, saying it “lacks principle”."
     }
    ]
   },
@@ -4629,19 +4679,15 @@
    "ticker": "WDC",
    "name": "Western Digital",
    "domain": "westerndigital.com",
-   "w": 3.39,
+   "w": 3.51,
    "holders": [
     {
      "name": "Fede",
      "slot": 1,
-     "w": 7.69
+     "w": 8.04
     }
    ],
    "prices": [
-    {
-     "date": "2026-09-16",
-     "close": 416.97
-    },
     {
      "date": "2026-09-17",
      "close": 423.87
@@ -4756,10 +4802,14 @@
     },
     {
      "date": "2026-10-27",
-     "close": 380.68
+     "close": 380.88
+    },
+    {
+     "date": "2026-10-28",
+     "close": 394.84
     }
    ],
-   "ret": -8.7,
+   "ret": -6.85,
    "peers": [
     {
      "ticker": "MU",
@@ -4779,49 +4829,49 @@
    ],
    "news": [
     {
-     "title": "Down More Than 50% From Its High, Is Western Digital Stock a Buy?",
-     "link": "https://finnhub.io/api/news?id=caa0e6b1a108300d0f7441f69b3d702fdb181cdc4f8b3c7aa8b099c59fdf5111",
+     "title": "Did The Market Read SanDisk Stock Right?",
+     "link": "https://finnhub.io/api/news?id=820b43ab4c63ff54379f1f0cfb18a5cb078c4ff07ae7ccb3df32e8909b5e988b",
      "source": "Yahoo",
-     "at": "2026-10-27T16:45:02.000Z",
-     "desc": "The company recently reported strong quarterly results and hiked its dividend."
+     "at": "2026-10-28T17:04:44.000Z",
+     "desc": "For questions about this article or underlying research, email help@trefis.com."
     },
     {
-     "title": "Stock Market Today: Boeing Drags Down The Dow; Nasdaq Up As Consumer Confidence Does This (Live Coverage)",
-     "link": "https://finnhub.io/api/news?id=cf807ebaed829b0d9d40da44b51aad9fbc4dfd41e10224160e9ac787b0a73d6e",
+     "title": "Looking for a Growth Stock? 3 Reasons Why Western Digital (WDC) is a Solid Choice",
+     "link": "https://finnhub.io/api/news?id=5d4541d0d833f792c3efb19940742d1b5e743f5d9f5079bd0f58239060ca9419",
      "source": "Yahoo",
-     "at": "2026-10-27T15:15:15.000Z",
-     "desc": "Stock Market Today: The Dow Jones index rises Tuesday as the Fed meeting starts. Boeing stock tumbles. Consumer discretionary stocks rose."
+     "at": "2026-10-28T15:45:02.000Z",
+     "desc": "Western Digital (WDC) could produce exceptional returns because of its solid growth attributes."
     },
     {
-     "title": "Seagate Stock Needs a Boost From Earnings—But the Bar Is High",
-     "link": "https://finnhub.io/api/news?id=788ee300b809cbd2b76a0988e54b69a022f019a6a0cb68cf608f322edee2a60f",
+     "title": "Seagate Draws Downgrade, Price Target Cuts Despite Strong Quarter — Why Wall Street Is Turning Cautious On STX Stock",
+     "link": "https://finnhub.io/api/news?id=d70e3e7bf78175a32011b8b80bc0c228ceb85aaaaff8b1fa52c6b61dcafc2eba",
      "source": "Yahoo",
-     "at": "2026-10-27T15:12:00.000Z",
-     "desc": "Seagate Technology reports fiscal-first quarter earnings on Tuesday afternoon, and Wall Street has high expectations for the hard-drive maker."
+     "at": "2026-10-28T15:13:44.000Z",
+     "desc": "Analysts remain divided over whether Seagate's pricing power and HAMR technology advantages can offset slower storage shipments and potential industry supply increases."
     },
     {
-     "title": "All You Need to Know About Western Digital (WDC) Rating Upgrade to Buy",
-     "link": "https://finnhub.io/api/news?id=e34b09a525d43cd6519a11c23bf68bca279d12e1e42c06cd52e800eb3c9f42ae",
+     "title": "WDC Q1 Earnings Call Highlights Pricing Strength and Storage Demand",
+     "link": "https://finnhub.io/api/news?id=fad5fe8b358103531641b36901fd76e3024497ebf0b3cd7bd56a2df1bd44c873",
      "source": "Yahoo",
-     "at": "2026-10-27T15:00:06.000Z",
-     "desc": "Western Digital (WDC) might move higher on growing optimism about its earnings prospects, which is reflected by its upgrade to a Zacks Rank #2 (Buy)."
+     "at": "2026-10-28T14:59:00.000Z",
+     "desc": "Western Digital's Q1 earnings beat highlights strong HDD demand, rising prices and AI storage opportunities, with higher-capacity drives fueling growth."
     },
     {
-     "title": "Tech Bubble Will Pop In 2027",
-     "link": "https://finnhub.io/api/news?id=249d072d0ec878891cae66633365859152b300dbbdda250429fa2f72ea35763e",
-     "source": "SeekingAlpha",
-     "at": "2026-10-27T15:00:00.000Z",
-     "desc": "Sara Awad from Tech Contrarians answers if this is a dip worth buying and wonders whether tech earnings will bring a trick or a treat."
+     "title": "Prediction: Micron’s Next Earnings Cycle Could Reset Expectations for the Stock",
+     "link": "https://finnhub.io/api/news?id=3ac22e41b80362afe2324b1aa78b3f2a9ec3b655f8a88e47975d0f1e57681f0c",
+     "source": "Yahoo",
+     "at": "2026-10-28T14:33:33.000Z",
+     "desc": "Micron just crushed earnings for the eighth straight quarter, yet the stock sits 15% below where it was a month ago. With a make-or-break December report on the horizon and 75% of fiscal 2027 shipments already committed…"
     }
    ]
   }
  ],
  "monthly": {
   "current": {
-   "name": "Fede",
-   "value": -6.29,
+   "name": "Ana",
+   "value": -5.51,
    "treat": 0,
-   "slot": 1,
+   "slot": 0,
    "month": 10,
    "month_year": 2026,
    "dates": [
@@ -4843,41 +4893,15 @@
     "2026-10-22",
     "2026-10-23",
     "2026-10-26",
-    "2026-10-27"
+    "2026-10-27",
+    "2026-10-28"
    ],
    "series": [
-    {
-     "id": "fede",
-     "name": "Fede",
-     "slot": 1,
-     "value": -6.29,
-     "cum": [
-      -0.3382,
-      0.637,
-      2.3416,
-      2.9696,
-      2.4819,
-      -0.1591,
-      0.5014,
-      0.252,
-      -0.9238,
-      -3.4977,
-      -4.6679,
-      -6.7946,
-      -5.364,
-      -5.6046,
-      -2.8917,
-      -8.3754,
-      -8.5225,
-      -8.1671,
-      -6.292
-     ]
-    },
     {
      "id": "ana",
      "name": "Ana",
      "slot": 0,
-     "value": -6.51,
+     "value": -5.51,
      "cum": [
       -0.0435,
       1.4503,
@@ -4897,7 +4921,36 @@
       -10.3614,
       -10.5163,
       -9.4032,
-      -6.5137
+      -6.9643,
+      -5.5057
+     ]
+    },
+    {
+     "id": "fede",
+     "name": "Fede",
+     "slot": 1,
+     "value": -7.07,
+     "cum": [
+      -0.3382,
+      0.637,
+      2.3416,
+      2.9696,
+      2.4819,
+      -0.1591,
+      0.5014,
+      0.252,
+      -0.9238,
+      -3.4977,
+      -4.6679,
+      -6.7946,
+      -5.364,
+      -5.6046,
+      -2.8917,
+      -8.3754,
+      -8.5225,
+      -8.1671,
+      -6.7992,
+      -7.0709
      ]
     }
    ]
@@ -5051,6 +5104,17 @@
   "month_year": 2026,
   "rows": [
    {
+    "date": "2026-10-28",
+    "names": [
+     "Ana"
+    ],
+    "ids": [
+     "ana"
+    ],
+    "slot": 0,
+    "value": 1.57
+   },
+   {
     "date": "2026-10-27",
     "names": [
      "Ana"
@@ -5059,7 +5123,7 @@
      "ana"
     ],
     "slot": 0,
-    "value": 3.19
+    "value": 2.69
    },
    {
     "date": "2026-10-26",
@@ -5378,14 +5442,14 @@
   "provisional": [
    {
     "type": "champion_month",
-    "player": "fede",
-    "name": "Fede",
-    "date": "2026-10-27",
+    "player": "ana",
+    "name": "Ana",
+    "date": "2026-10-28",
     "month": "2026-10",
-    "pct": -6.29,
+    "pct": -5.51,
     "key": "champion:2026-10",
     "provisional": true,
-    "slot": 1
+    "slot": 0
    }
   ],
   "record": {
