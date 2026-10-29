@@ -1,7 +1,7 @@
 {
  "api": 1,
- "updated": "2026-10-28 20:51",
- "generatedAt": "2026-10-28T19:51:02Z",
+ "updated": "2026-10-29 20:49",
+ "generatedAt": "2026-10-29T19:49:48Z",
  "players": [
   {
    "id": "ana",
@@ -1441,24 +1441,47 @@
     },
     {
      "date": "2026-10-28",
-     "day": 1.5677,
-     "cum": 10.1984,
+     "day": 1.6442,
+     "cum": 10.2814,
      "bd": [
       {
        "ticker": "AMD",
-       "pct": 1.1718
+       "pct": 1.2415
       },
       {
        "ticker": "GOOGL",
-       "pct": 0.4732
+       "pct": 0.4415
       },
       {
        "ticker": "NVDA",
-       "pct": -0.2518
+       "pct": -0.2185
       },
       {
        "ticker": "JPM",
-       "pct": 0.1808
+       "pct": 0.1798
+      }
+     ]
+    },
+    {
+     "date": "2026-10-29",
+     "day": -5.2136,
+     "cum": 4.5318,
+     "bd": [
+      {
+       "ticker": "GOOGL",
+       "pct": -4.2759
+      },
+      {
+       "ticker": "AMD",
+       "pct": -0.9547
+      },
+      {
+       "ticker": "JPM",
+       "pct": 0.2023
+      },
+      {
+       "ticker": "NVDA",
+       "pct": -0.1873
       }
      ]
     }
@@ -1467,8 +1490,8 @@
     {
      "month": 10,
      "month_year": 2026,
-     "ret": -5.5057,
-     "cum": 10.1984
+     "ret": -10.3648,
+     "cum": 4.5318
     },
     {
      "month": 9,
@@ -1492,19 +1515,19 @@
    "holdings": [
     {
      "ticker": "AMD",
-     "w": 36.35
+     "w": 37.32
     },
     {
      "ticker": "GOOGL",
-     "w": 30.71
+     "w": 28.03
     },
     {
      "ticker": "NVDA",
-     "w": 16.92
+     "w": 17.62
     },
     {
      "ticker": "JPM",
-     "w": 16.02
+     "w": 17.03
     }
    ]
   },
@@ -3550,38 +3573,65 @@
     },
     {
      "date": "2026-10-28",
-     "day": -0.2916,
-     "cum": 3.2584,
+     "day": -0.3007,
+     "cum": 3.249,
      "bd": [
       {
        "ticker": "SPCX",
-       "pct": -0.6718
+       "pct": -0.7331
       },
       {
        "ticker": "GOOGL",
-       "pct": 0.4626
-      },
-      {
-       "ticker": "NVDA",
-       "pct": -0.3489
+       "pct": 0.4287
       },
       {
        "ticker": "WDC",
-       "pct": 0.2778
+       "pct": 0.3093
+      },
+      {
+       "ticker": "NVDA",
+       "pct": -0.3056
       }
      ],
      "start": 5026.51,
-     "end": 5011.85,
+     "end": 5011.39,
      "flow": 0.0,
-     "pnl": -14.66
+     "pnl": -15.12
+    },
+    {
+     "date": "2026-10-29",
+     "day": -4.9907,
+     "cum": -1.9039,
+     "bd": [
+      {
+       "ticker": "GOOGL",
+       "pct": -4.2273
+      },
+      {
+       "ticker": "SPCX",
+       "pct": -0.4334
+      },
+      {
+       "ticker": "NVDA",
+       "pct": -0.2646
+      },
+      {
+       "ticker": "WDC",
+       "pct": -0.0567
+      }
+     ],
+     "start": 5011.39,
+     "end": 4761.29,
+     "flow": 0.0,
+     "pnl": -250.11
     }
    ],
    "months": [
     {
      "month": 10,
      "month_year": 2026,
-     "ret": -7.0709,
-     "cum": 3.2584
+     "ret": -11.7169,
+     "cum": -1.9039
     },
     {
      "month": 9,
@@ -3604,27 +3654,27 @@
    ],
    "holdings": [
     {
-     "ticker": "GOOGL",
-     "w": 33.1
+     "ticker": "SPCX",
+     "w": 33.81
     },
     {
-     "ticker": "SPCX",
-     "w": 32.59
+     "ticker": "GOOGL",
+     "w": 30.3
     },
     {
      "ticker": "NVDA",
-     "w": 26.26
+     "w": 27.44
     },
     {
      "ticker": "WDC",
-     "w": 8.04
+     "w": 8.45
     }
    ],
    "goal": {
     "target": 14000.0,
-    "pct": 32.08,
+    "pct": 30.45,
     "currency": "USD",
-    "value": 4491.62
+    "value": 4263.26
    }
   }
  ],
@@ -3632,9 +3682,9 @@
  "goal": {
   "target": 14000.0,
   "deadline": "2027-08-01",
-  "days": 277,
+  "days": 276,
   "fx": {
-   "USD": 0.8962
+   "USD": 0.8954
   }
  },
  "operations": [
@@ -3706,27 +3756,27 @@
  "allocation": [
   {
    "ticker": "GOOGL",
-   "w": 31.75
+   "w": 29.02
   },
   {
    "ticker": "NVDA",
-   "w": 20.99
+   "w": 21.9
   },
   {
    "ticker": "AMD",
-   "w": 20.5
+   "w": 21.07
   },
   {
    "ticker": "SPCX",
-   "w": 14.21
+   "w": 14.72
   },
   {
    "ticker": "JPM",
-   "w": 9.04
+   "w": 9.62
   },
   {
    "ticker": "WDC",
-   "w": 3.51
+   "w": 3.68
   }
  ],
  "market": null,
@@ -3735,24 +3785,20 @@
    "ticker": "GOOGL",
    "name": "Alphabet",
    "domain": "abc.xyz",
-   "w": 31.75,
+   "w": 29.02,
    "holders": [
     {
      "name": "Fede",
      "slot": 1,
-     "w": 33.1
+     "w": 30.3
     },
     {
      "name": "Ana",
      "slot": 0,
-     "w": 30.71
+     "w": 28.03
     }
    ],
    "prices": [
-    {
-     "date": "2026-09-17",
-     "close": 347.33
-    },
     {
      "date": "2026-09-18",
      "close": 349.54
@@ -3867,10 +3913,14 @@
     },
     {
      "date": "2026-10-28",
-     "close": 325.23
+     "close": 324.89
+    },
+    {
+     "date": "2026-10-29",
+     "close": 282.5205
     }
    ],
-   "ret": -6.36,
+   "ret": -19.17,
    "peers": [
     {
      "ticker": "MSFT",
@@ -3887,67 +3937,26 @@
      "name": "Amazon",
      "domain": "amazon.com"
     }
-   ],
-   "news": [
-    {
-     "title": "Oracle has a spending question its new chip deals can’t answer",
-     "link": "https://finnhub.io/api/news?id=3811fbac98ac0d1165560b053ce1637a8725dbd180d4ff251d92803dcf977f1e",
-     "source": "Yahoo",
-     "at": "2026-10-28T17:47:00.000Z",
-     "desc": "Oracle is lining up Google’s and Nvidia’s newest chips for cloud customers. The harder part comes when investors open the books."
-    },
-    {
-     "title": "Microsoft might be the 'adult in the room' when it comes AI. Here's why.",
-     "link": "https://finnhub.io/api/news?id=f4177ad66748f48b3034ff8fc6b0556481a11088642c0075a30a13db236788fa",
-     "source": "Yahoo",
-     "at": "2026-10-28T17:43:38.000Z",
-     "desc": "Ahead of key earnings from both Microsoft (MSFT) and Alphabet (GOOG, GOOGL), Laffer Tengler Investments CEO and CIO Nancy Tengler and her expert panel weigh in on how Microsoft could currently be the leader in AI due to…"
-    },
-    {
-     "title": "Update: US Equity Indexes Gain Moderately Ahead of Fed Policy Moves, Mag-7 Earnings",
-     "link": "https://finnhub.io/api/news?id=f447cc0ba81da8f968eb2c47cd45dd19610c76b3cc563bb4f1bd67b8189deb3a",
-     "source": "Yahoo",
-     "at": "2026-10-28T17:26:24.000Z",
-     "desc": "(Updates with index/price moves, macroeconomic data, and company/geopolitical news from the first pa"
-    },
-    {
-     "title": "Update: Equities Rise Intraday as Fed Decision Looms",
-     "link": "https://finnhub.io/api/news?id=c83ee1ee37f44d2440b4fa96e22e9d840278659665daa1e469355dfd93646bf4",
-     "source": "Yahoo",
-     "at": "2026-10-28T17:25:49.000Z",
-     "desc": "(Updates with latest market prices and developments.) US benchmark equity indexes edged higher in"
-    },
-    {
-     "title": "Exchange-Traded Funds, US Equities Mixed After Midday",
-     "link": "https://finnhub.io/api/news?id=42cad959d793fdc20b716752e331a1f33a10bcf43bd14079af60d32a95222608",
-     "source": "Yahoo",
-     "at": "2026-10-28T17:22:01.000Z",
-     "desc": "Broad Market Indicators Broad-market exchange-traded fund IWM edged lower and IVV rose. Active"
-    }
    ]
   },
   {
    "ticker": "NVDA",
    "name": "NVIDIA",
    "domain": "nvidia.com",
-   "w": 20.99,
+   "w": 21.9,
    "holders": [
     {
      "name": "Fede",
      "slot": 1,
-     "w": 26.26
+     "w": 27.44
     },
     {
      "name": "Ana",
      "slot": 0,
-     "w": 16.92
+     "w": 17.62
     }
    ],
    "prices": [
-    {
-     "date": "2026-09-17",
-     "close": 219.34
-    },
     {
      "date": "2026-09-18",
      "close": 222.27
@@ -4062,10 +4071,14 @@
     },
     {
      "date": "2026-10-28",
-     "close": 215.0174
+     "close": 215.38
+    },
+    {
+     "date": "2026-10-29",
+     "close": 213.17
     }
    ],
-   "ret": -1.97,
+   "ret": -4.09,
    "peers": [
     {
      "ticker": "AMD",
@@ -4082,62 +4095,21 @@
      "name": "Broadcom",
      "domain": "broadcom.com"
     }
-   ],
-   "news": [
-    {
-     "title": "Oracle has a spending question its new chip deals can’t answer",
-     "link": "https://finnhub.io/api/news?id=3811fbac98ac0d1165560b053ce1637a8725dbd180d4ff251d92803dcf977f1e",
-     "source": "Yahoo",
-     "at": "2026-10-28T17:47:00.000Z",
-     "desc": "Oracle is lining up Google’s and Nvidia’s newest chips for cloud customers. The harder part comes when investors open the books."
-    },
-    {
-     "title": "Garmin Ltd. Q3 2026 Earnings Call Summary",
-     "link": "https://finnhub.io/api/news?id=0305c52baf82c2a0b84e1046f1af54ab43d1664616c34028794db2d39d06ed30",
-     "source": "Yahoo",
-     "at": "2026-10-28T17:44:24.000Z",
-     "desc": "Moby summary of Garmin Ltd.'s Q3 2026 earnings call"
-    },
-    {
-     "title": "Group 1 Automotive, Inc. Q3 2026 Earnings Call Summary",
-     "link": "https://finnhub.io/api/news?id=236d031b350976ace4261b63e3727e8ace840202993235c72bd656b95dbfbd1c",
-     "source": "Yahoo",
-     "at": "2026-10-28T17:40:38.000Z",
-     "desc": "Moby summary of Group 1 Automotive, Inc.'s Q3 2026 earnings call"
-    },
-    {
-     "title": "Terex Corporation Q3 2026 Earnings Call Summary",
-     "link": "https://finnhub.io/api/news?id=71cf547ddb8df88606db4c8f59fb9f3b16f505e1dda467285a03d0908b95450e",
-     "source": "Yahoo",
-     "at": "2026-10-28T17:40:34.000Z",
-     "desc": "Moby summary of Terex Corporation's Q3 2026 earnings call"
-    },
-    {
-     "title": "Jones Lang LaSalle Incorporated Q3 2026 Earnings Call Summary",
-     "link": "https://finnhub.io/api/news?id=fcdd1b3eb4a8760ef24226f56e4118ff75aef20371d9ac7d80cc932aaaa4502b",
-     "source": "Yahoo",
-     "at": "2026-10-28T17:36:21.000Z",
-     "desc": "Moby summary of Jones Lang LaSalle Incorporated's Q3 2026 earnings call"
-    }
    ]
   },
   {
    "ticker": "AMD",
    "name": "AMD",
    "domain": "amd.com",
-   "w": 20.5,
+   "w": 21.07,
    "holders": [
     {
      "name": "Ana",
      "slot": 0,
-     "w": 36.35
+     "w": 37.32
     }
    ],
    "prices": [
-    {
-     "date": "2026-09-17",
-     "close": 545.09
-    },
     {
      "date": "2026-09-18",
      "close": 559.82
@@ -4252,10 +4224,14 @@
     },
     {
      "date": "2026-10-28",
-     "close": 577.42
+     "close": 578.44
+    },
+    {
+     "date": "2026-10-29",
+     "close": 564.23
     }
    ],
-   "ret": 5.93,
+   "ret": 0.79,
    "peers": [
     {
      "ticker": "NVDA",
@@ -4272,62 +4248,21 @@
      "name": "Taiwan Semiconductor",
      "domain": "tsmc.com"
     }
-   ],
-   "news": [
-    {
-     "title": "TSMC Gains 3% on Reported 20% Price Hike for AI Chip Packaging",
-     "link": "https://finnhub.io/api/news?id=7aed059e3e7663c05adc28e8b5e725b6a5cc57874ac0e99e8e62d0067268851b",
-     "source": "Yahoo",
-     "at": "2026-10-28T16:35:55.000Z",
-     "desc": "Key TakeawaysTSMC shares rose 3% today after Taiwan’s Commercial Times reported that the company is preparing to raise prices for its CoWoS AI chip packaging by up to 20%. The increase would land on customers like Nvidi…"
-    },
-    {
-     "title": "Advanced Micro Devices vs. Dell Technologies: Which Technology Stock Is a Better Buy in 2026?",
-     "link": "https://finnhub.io/api/news?id=8c921f4939701f0734b940e207f79cd54cae036e98aed9b9757f51106f42fe32",
-     "source": "Yahoo",
-     "at": "2026-10-28T16:20:02.000Z",
-     "desc": "AMD's 34% revenue growth and $5.5 billion in free cash flow come with a 70x forward P/E, while Dell pairs $8.6 billion in free cash flow with a 17.6x multiple and a $95 billion AI server backlog."
-    },
-    {
-     "title": "JPMorgan, Coca-Cola Join Pushback Against OKX-ICE Tokenized Stock Trading",
-     "link": "https://finnhub.io/api/news?id=7478655b224fc4d8c8d5ac9954494fd4f5bc0a1adc84768ea62d7528771b7440",
-     "source": "Yahoo",
-     "at": "2026-10-28T15:53:00.000Z",
-     "desc": "JPMorgan Chase (NYSE: $JPM), Coca-Cola (NYSE: $KO), and Dell Technologies (NYSE: $DELL) and four other companies ha..."
-    },
-    {
-     "title": "Cathie Wood Pours Millions into Archer Aviation Stock",
-     "link": "https://finnhub.io/api/news?id=b651af54cf7cb6e4789dfc86776d7d1dd69b2ebde4d8ab228ad5a7b36fbcb6ca",
-     "source": "Yahoo",
-     "at": "2026-10-28T15:13:52.000Z",
-     "desc": "Cathie Wood doubles down on flying taxis with a surprise two day Archer Aviation haul"
-    },
-    {
-     "title": "JPMorgan, Coca-Cola Among 7 More Companies Objecting to OKX-ICE Tokenized Stocks",
-     "link": "https://finnhub.io/api/news?id=444e415803a51a9a5dd741b502acddc982ba6ae6bdbb680b04d2301b2a98327e",
-     "source": "Yahoo",
-     "at": "2026-10-28T15:05:03.000Z",
-     "desc": "Seven more companies, including JPMorgan Chase, Coca-Cola and Dell, have objected to trading of their shares on the planned OKX-ICE tokenized stock venue, bringing the total to 33."
-    }
    ]
   },
   {
    "ticker": "SPCX",
    "name": "SpaceX",
    "domain": "spacex.com",
-   "w": 14.21,
+   "w": 14.72,
    "holders": [
     {
      "name": "Fede",
      "slot": 1,
-     "w": 32.59
+     "w": 33.81
     }
    ],
    "prices": [
-    {
-     "date": "2026-09-17",
-     "close": 154.81
-    },
     {
      "date": "2026-09-18",
      "close": 152.71
@@ -4442,10 +4377,14 @@
     },
     {
      "date": "2026-10-28",
-     "close": 145.51
+     "close": 145.23
+    },
+    {
+     "date": "2026-10-29",
+     "close": 143.2557
     }
    ],
-   "ret": -6.01,
+   "ret": -6.19,
    "peers": [
     {
      "ticker": "BA",
@@ -4462,62 +4401,21 @@
      "name": "LMT",
      "domain": ""
     }
-   ],
-   "news": [
-    {
-     "title": "SpaceX Retreats As Russia's Putin Says This About Elon Musk",
-     "link": "https://finnhub.io/api/news?id=dcb7dd5616f97c8018a56da021f1130e48eebf7683b8a1c5af566f26e62deb65",
-     "source": "Yahoo",
-     "at": "2026-10-28T17:10:09.000Z",
-     "desc": "Russia President Vladimir Putin praised \"genius\" Elon Musk and SpaceX during a space program update. Also, an ad firm was accused of spying via Starlink, reports say."
-    },
-    {
-     "title": "SpaceX stock slides back toward $140 as smaller space names leave it behind",
-     "link": "https://finnhub.io/api/news?id=b0482a770505da4cb447038abf3e8f247ed73e05eab0c72240cb76b2b0b3e8e8",
-     "source": "Yahoo",
-     "at": "2026-10-28T17:09:05.000Z",
-     "desc": "SpaceX stock is back near the $140 floor while smaller space stocks are running ahead."
-    },
-    {
-     "title": "What Jim Cramer is watching as Anthropic heads to Nasdaq",
-     "link": "https://finnhub.io/api/news?id=4990195ab159b0e59448d187ea4c0479ee06f76a30b0d05de11439b45912cb60",
-     "source": "Yahoo",
-     "at": "2026-10-28T17:07:00.000Z",
-     "desc": "Anthropic just filed to go public. Jim Cramer has one big question about what comes next."
-    },
-    {
-     "title": "Tesla Gains Another 4% as ARK Restates $4,400 Robotaxi Target and Musk Teases “A Storm of Cybercabs”",
-     "link": "https://finnhub.io/api/news?id=ecef6a7efb24578bb232bbf301f516d98a315a4bc162c058f49cae0391de2074",
-     "source": "Yahoo",
-     "at": "2026-10-28T16:33:58.000Z",
-     "desc": "Key TakeawaysTesla shares rose 4% today, adding to Monday’s gain on a Barclays upgrade, after ARK Invest restated its $4,400 price target for 2031. Barclays’ $450 target rests on a SpaceX merger, while ARK puts about 80…"
-    },
-    {
-     "title": "SpaceX Could Keep Starship Cost Savings Instead of Cutting Launch Prices, Varda Executive Says",
-     "link": "https://finnhub.io/api/news?id=6c1fe408160ce5bca2d2e37c16386ea548323926bb3434f76fa08517792d6e1d",
-     "source": "Yahoo",
-     "at": "2026-10-28T16:00:23.000Z",
-     "desc": "Elon Musk‘s SpaceX (NASDAQ:SPCX) could slash the cost of reaching orbit with Starship without giving customers much of a discount, a senior executive at one of its launch customers told Benzinga. Michael Reilly, chief s…"
-    }
    ]
   },
   {
    "ticker": "JPM",
    "name": "JPMorgan Chase",
    "domain": "jpmorganchase.com",
-   "w": 9.04,
+   "w": 9.62,
    "holders": [
     {
      "name": "Ana",
      "slot": 0,
-     "w": 16.02
+     "w": 17.03
     }
    ],
    "prices": [
-    {
-     "date": "2026-09-17",
-     "close": 349.31
-    },
     {
      "date": "2026-09-18",
      "close": 349.67
@@ -4632,66 +4530,29 @@
     },
     {
      "date": "2026-10-28",
-     "close": 339.32
+     "close": 339.3
+    },
+    {
+     "date": "2026-10-29",
+     "close": 343.315
     }
    ],
-   "ret": -2.86,
-   "peers": [],
-   "news": [
-    {
-     "title": "F5 Stock Is Having Its Worst Day in Over a Decade. Blame Its Costly AI Push.",
-     "link": "https://finnhub.io/api/news?id=47f2b734b38f4bfcebce4498e0bf1fdeeeb4b1d6b285357a34492d5cf146cba2",
-     "source": "Yahoo",
-     "at": "2026-10-28T17:03:00.000Z",
-     "desc": "F5 stock was heading for its worst single-day percentage drop in over 13 years."
-    },
-    {
-     "title": "JPMorgan, Coca-Cola Join Pushback Against OKX-ICE Tokenized Stock Trading",
-     "link": "https://finnhub.io/api/news?id=7478655b224fc4d8c8d5ac9954494fd4f5bc0a1adc84768ea62d7528771b7440",
-     "source": "Yahoo",
-     "at": "2026-10-28T15:53:00.000Z",
-     "desc": "JPMorgan Chase (NYSE: $JPM), Coca-Cola (NYSE: $KO), and Dell Technologies (NYSE: $DELL) and four other companies ha..."
-    },
-    {
-     "title": "Lisa Morales Joins Vinson & Elkins as NY-Based Corporate Partner",
-     "link": "https://finnhub.io/api/news?id=40aeb81e648cbbe16579f998c682b714bbe647ced13990a6d58676c0d9663d03",
-     "source": "Yahoo",
-     "at": "2026-10-28T15:30:32.000Z",
-     "desc": "By Karen Roman Vinson & Elkins said Lisa Morales is the firm’s new partner in its Corporate practice in New York, having previously served at Simpson Thacher & Bartlett as M&A partner. Ms. Morales’ experience focuses on…"
-    },
-    {
-     "title": "ChatGPT Latest Stock Portfolio: 5 Stock Picks",
-     "link": "https://finnhub.io/api/news?id=fdccc57e8aafe709da0ff8663b7195072307a34db13ea736fb704de1542467bc",
-     "source": "Yahoo",
-     "at": "2026-10-28T15:27:56.000Z",
-     "desc": "Remember when everyone said AI could never pick stocks? Some of the early numbers are making that line look old. AI systems have improved fast, and early numbers are making that view harder to defend. FinQ launched two…"
-    },
-    {
-     "title": "JP Morgan lashes out at ‘unprincipled’ bank tax",
-     "link": "https://finnhub.io/api/news?id=72dfef37f0f8e06d7c24d2698302870ad4b098bbf4fa8e21a8777c78e87d22d7",
-     "source": "Yahoo",
-     "at": "2026-10-28T15:26:43.000Z",
-     "desc": "JP Morgan has criticised John Healey’s tax raid on banks, saying it “lacks principle”."
-    }
-   ]
+   "ret": -1.82,
+   "peers": []
   },
   {
    "ticker": "WDC",
    "name": "Western Digital",
    "domain": "westerndigital.com",
-   "w": 3.51,
+   "w": 3.68,
    "holders": [
     {
      "name": "Fede",
      "slot": 1,
-     "w": 8.04
+     "w": 8.45
     }
    ],
    "prices": [
-    {
-     "date": "2026-09-17",
-     "close": 423.87
-    },
     {
      "date": "2026-09-18",
      "close": 441.36
@@ -4806,10 +4667,14 @@
     },
     {
      "date": "2026-10-28",
-     "close": 394.84
+     "close": 396.42
+    },
+    {
+     "date": "2026-10-29",
+     "close": 393.58
     }
    ],
-   "ret": -6.85,
+   "ret": -10.83,
    "peers": [
     {
      "ticker": "MU",
@@ -4826,50 +4691,13 @@
      "name": "Taiwan Semiconductor",
      "domain": "tsmc.com"
     }
-   ],
-   "news": [
-    {
-     "title": "Did The Market Read SanDisk Stock Right?",
-     "link": "https://finnhub.io/api/news?id=820b43ab4c63ff54379f1f0cfb18a5cb078c4ff07ae7ccb3df32e8909b5e988b",
-     "source": "Yahoo",
-     "at": "2026-10-28T17:04:44.000Z",
-     "desc": "For questions about this article or underlying research, email help@trefis.com."
-    },
-    {
-     "title": "Looking for a Growth Stock? 3 Reasons Why Western Digital (WDC) is a Solid Choice",
-     "link": "https://finnhub.io/api/news?id=5d4541d0d833f792c3efb19940742d1b5e743f5d9f5079bd0f58239060ca9419",
-     "source": "Yahoo",
-     "at": "2026-10-28T15:45:02.000Z",
-     "desc": "Western Digital (WDC) could produce exceptional returns because of its solid growth attributes."
-    },
-    {
-     "title": "Seagate Draws Downgrade, Price Target Cuts Despite Strong Quarter — Why Wall Street Is Turning Cautious On STX Stock",
-     "link": "https://finnhub.io/api/news?id=d70e3e7bf78175a32011b8b80bc0c228ceb85aaaaff8b1fa52c6b61dcafc2eba",
-     "source": "Yahoo",
-     "at": "2026-10-28T15:13:44.000Z",
-     "desc": "Analysts remain divided over whether Seagate's pricing power and HAMR technology advantages can offset slower storage shipments and potential industry supply increases."
-    },
-    {
-     "title": "WDC Q1 Earnings Call Highlights Pricing Strength and Storage Demand",
-     "link": "https://finnhub.io/api/news?id=fad5fe8b358103531641b36901fd76e3024497ebf0b3cd7bd56a2df1bd44c873",
-     "source": "Yahoo",
-     "at": "2026-10-28T14:59:00.000Z",
-     "desc": "Western Digital's Q1 earnings beat highlights strong HDD demand, rising prices and AI storage opportunities, with higher-capacity drives fueling growth."
-    },
-    {
-     "title": "Prediction: Micron’s Next Earnings Cycle Could Reset Expectations for the Stock",
-     "link": "https://finnhub.io/api/news?id=3ac22e41b80362afe2324b1aa78b3f2a9ec3b655f8a88e47975d0f1e57681f0c",
-     "source": "Yahoo",
-     "at": "2026-10-28T14:33:33.000Z",
-     "desc": "Micron just crushed earnings for the eighth straight quarter, yet the stock sits 15% below where it was a month ago. With a make-or-break December report on the horizon and 75% of fiscal 2027 shipments already committed…"
-    }
    ]
   }
  ],
  "monthly": {
   "current": {
    "name": "Ana",
-   "value": -5.51,
+   "value": -10.36,
    "treat": 0,
    "slot": 0,
    "month": 10,
@@ -4894,14 +4722,15 @@
     "2026-10-23",
     "2026-10-26",
     "2026-10-27",
-    "2026-10-28"
+    "2026-10-28",
+    "2026-10-29"
    ],
    "series": [
     {
      "id": "ana",
      "name": "Ana",
      "slot": 0,
-     "value": -5.51,
+     "value": -10.36,
      "cum": [
       -0.0435,
       1.4503,
@@ -4922,14 +4751,15 @@
       -10.5163,
       -9.4032,
       -6.9643,
-      -5.5057
+      -5.4346,
+      -10.3648
      ]
     },
     {
      "id": "fede",
      "name": "Fede",
      "slot": 1,
-     "value": -7.07,
+     "value": -11.72,
      "cum": [
       -0.3382,
       0.637,
@@ -4950,7 +4780,8 @@
       -8.5225,
       -8.1671,
       -6.7992,
-      -7.0709
+      -7.0794,
+      -11.7169
      ]
     }
    ]
@@ -5104,6 +4935,17 @@
   "month_year": 2026,
   "rows": [
    {
+    "date": "2026-10-29",
+    "names": [
+     "Fede"
+    ],
+    "ids": [
+     "fede"
+    ],
+    "slot": 1,
+    "value": -4.99
+   },
+   {
     "date": "2026-10-28",
     "names": [
      "Ana"
@@ -5112,7 +4954,7 @@
      "ana"
     ],
     "slot": 0,
-    "value": 1.57
+    "value": 1.64
    },
    {
     "date": "2026-10-27",
@@ -5444,9 +5286,9 @@
     "type": "champion_month",
     "player": "ana",
     "name": "Ana",
-    "date": "2026-10-28",
+    "date": "2026-10-29",
     "month": "2026-10",
-    "pct": -5.51,
+    "pct": -10.36,
     "key": "champion:2026-10",
     "provisional": true,
     "slot": 0
